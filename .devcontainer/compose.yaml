@@ -1,5 +1,5 @@
 services:
-  vuejs:
+  react:
     volumes:
       - ../../../:/workspaces:cached
 

@@ -1,7 +1,7 @@
 name: ${DOCKER_DEV_NAME}
 
 services:
-  vuejs:
+  react:
     build:
       context: ../../
       dockerfile: docker/dev/Dockerfile
