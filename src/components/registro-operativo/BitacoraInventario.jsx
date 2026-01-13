@@ -1,0 +1,306 @@
+import React, { useEffect, useState } from "react";
+import {
+  Box, Card, CardContent, Grid, Typography, TextField, Button,
+  Table, TableHead, TableRow, TableCell, TableBody, Paper,
+} from "@mui/material";
+import axios from "axios";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
+function BitacoraInventarioContent() {
+  const [form, setForm] = useState({
+    fn_num_instalacion: "",
+    fn_cantidad: "",
+    fn_talla: "",
+    fc_lote: "",
+    fc_observacion: "",
+    fd_fecha_siembra: "",
+    fd_fecha_salida_hormonado: "",
+    fi_usuario_id: 1,
+  });
+  const [data, setData] = useState([]);
+  const [editId, setEditId] = useState(null);
+
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const cargarDatos = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/medellin/inventario");
+      setData(res.data);
+    } catch (err) {
+      console.error("Error al cargar inventario:", err.message);
+    }
+  };
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const guardar = async () => {
+    try {
+      if (editId)
+        await axios.put(
+          `http://localhost:5000/medellin/inventario/${editId}`,
+          form
+        );
+      else
+        await axios.post("http://localhost:5000/medellin/inventario", form);
+
+      setEditId(null);
+      setForm({
+        fn_num_instalacion: "",
+        fn_cantidad: "",
+        fn_talla: "",
+        fc_lote: "",
+        fc_observacion: "",
+        fd_fecha_siembra: "",
+        fd_fecha_salida_hormonado: "",
+        fi_usuario_id: 1,
+      });
+      cargarDatos();
+    } catch (err) {
+      alert("Error al guardar: " + err.message);
+    }
+  };
+
+  const editar = (r) => {
+    setEditId(r.fi_id);
+    setForm({
+      ...r,
+      fd_fecha_siembra: r.fd_fecha_siembra?.split("T")[0],
+      fd_fecha_salida_hormonado: r.fd_fecha_salida_hormonado?.split("T")[0],
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const eliminar = async (id) => {
+    if (!window.confirm("¿Eliminar registro?")) return;
+    await axios.delete(`http://localhost:5000/medellin/inventario/${id}`);
+    cargarDatos();
+  };
+
+  // 🗑️ Eliminar todos
+  const eliminarTodos = async () => {
+    if (
+      !window.confirm("⚠️ ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")
+    ) return;
+    try {
+      await axios.delete("http://localhost:5000/medellin/inventario");
+      cargarDatos();
+      alert("Todos los registros fueron eliminados correctamente.");
+    } catch (err) {
+      alert("Error eliminando todos los registros: " + err.message);
+    }
+  };
+
+  // 📄 Exportar PDF
+  const exportarPDF = () => {
+    const doc = new jsPDF("l", "mm", "a4");
+    const logo = `${process.env.PUBLIC_URL}/images/medellin.png`;
+
+    doc.addImage(logo, "PNG", 10, 8, 25, 25);
+    doc.setFontSize(14);
+    doc.text("Bitácora de Inventario — Granja Acuícola Medellín", 45, 20);
+    doc.setFontSize(10);
+    doc.text("Control de inventario de alevines, siembras y observaciones", 45, 26);
+
+    const columnas = [
+      "Instalación",
+      "Cantidad",
+      "Talla",
+      "Lote",
+      "Siembra",
+      "Salida Hormonado",
+      "Observación",
+    ];
+    const filas = data.map((r) => [
+      r.fn_num_instalacion,
+      r.fn_cantidad,
+      r.fn_talla,
+      r.fc_lote,
+      r.fd_fecha_siembra?.split("T")[0],
+      r.fd_fecha_salida_hormonado?.split("T")[0],
+      r.fc_observacion,
+    ]);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [columnas],
+      body: filas,
+      styles: { fontSize: 7, cellWidth: "wrap" },
+      headStyles: {
+        fillColor: [21, 101, 192], // Azul institucional
+        textColor: 255,
+        halign: "center",
+      },
+    });
+
+    const fecha = new Date().toLocaleDateString();
+    doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
+    doc.save(`Bitacora_Inventario_Medellin_${fecha}.pdf`);
+  };
+
+  return (
+    <Box>
+      <Typography variant="h4" fontWeight="bold" mb={3}>
+        🟦 Medellín — Inventario de Alevines
+      </Typography>
+
+      {/* FORMULARIO */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label="No. Instalación"
+                name="fn_num_instalacion"
+                value={form.fn_num_instalacion}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label="Cantidad"
+                name="fn_cantidad"
+                type="number"
+                value={form.fn_cantidad}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label="Talla"
+                name="fn_talla"
+                type="number"
+                value={form.fn_talla}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label="Lote"
+                name="fc_lote"
+                value={form.fc_lote}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Fecha Siembra"
+                type="date"
+                name="fd_fecha_siembra"
+                InputLabelProps={{ shrink: true }}
+                value={form.fd_fecha_siembra}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Fecha Salida Hormonado"
+                type="date"
+                name="fd_fecha_salida_hormonado"
+                InputLabelProps={{ shrink: true }}
+                value={form.fd_fecha_salida_hormonado}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Observación"
+                name="fc_observacion"
+                multiline
+                rows={2}
+                fullWidth
+                value={form.fc_observacion}
+                onChange={handleChange}
+              />
+            </Grid>
+          </Grid>
+
+          <Box sx={{ mt: 3 }}>
+            <Button variant="contained" onClick={guardar}>
+              {editId ? "Actualizar" : "Guardar"}
+            </Button>
+            <Button
+              variant="outlined"
+              color="primary"
+              sx={{ ml: 2 }}
+              onClick={exportarPDF}
+            >
+              📄 Exportar PDF
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              sx={{ ml: 2 }}
+              onClick={eliminarTodos}
+            >
+              🗑️ Eliminar Todos
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* TABLA */}
+      <Paper>
+        <Table>
+          <TableHead sx={{ background: "#E3F2FD" }}>
+            <TableRow>
+              <TableCell>Instalación</TableCell>
+              <TableCell>Cantidad</TableCell>
+              <TableCell>Talla</TableCell>
+              <TableCell>Lote</TableCell>
+              <TableCell>Siembra</TableCell>
+              <TableCell>Salida Hormonado</TableCell>
+              <TableCell>Observación</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((r) => (
+              <TableRow key={r.fi_id}>
+                <TableCell>{r.fn_num_instalacion}</TableCell>
+                <TableCell>{r.fn_cantidad}</TableCell>
+                <TableCell>{r.fn_talla}</TableCell>
+                <TableCell>{r.fc_lote}</TableCell>
+                <TableCell>{r.fd_fecha_siembra?.split("T")[0]}</TableCell>
+                <TableCell>{r.fd_fecha_salida_hormonado?.split("T")[0]}</TableCell>
+                <TableCell>{r.fc_observacion}</TableCell>
+                <TableCell>
+                  <Button
+                    size="small"
+                    color="warning"
+                    variant="contained"
+                    sx={{ mr: 1 }}
+                    onClick={() => editar(r)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="contained"
+                    onClick={() => eliminar(r.fi_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
+    </Box>
+  );
+}
+
+export default function BitacoraInventario() {
+  return <BitacoraInventarioContent />;
+}

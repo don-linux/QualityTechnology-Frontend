@@ -1,0 +1,213 @@
+// src/components/Login.jsx
+import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Paper,
+  CircularProgress,
+  InputAdornment,
+} from "@mui/material";
+import { Person, Lock } from "@mui/icons-material";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+
+const Login = () => {
+  const [usuario, setUsuario] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:5000/usuarios/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: usuario, contrasena: password }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Error al iniciar sesión");
+      if (!data.usuario) throw new Error("Respuesta inválida del servidor");
+
+      const usuarioId =
+        data.usuario.fi_usuario_id ||
+        data.usuario.usuario_id ||
+        data.usuario.id_usuario ||
+        data.usuario.id ||
+        null;
+      if (!usuarioId)
+        throw new Error("El servidor no devolvió un ID de usuario válido.");
+
+      const rolTexto = data.usuario.rol || data.usuario.rol_nombre || "";
+      const rolNormalizado = rolTexto
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+      localStorage.setItem("auth", "true");
+      localStorage.setItem("token", data.token || "");
+      localStorage.setItem("rol", rolNormalizado);
+      localStorage.setItem("nombre", data.usuario.nombre || "Usuario");
+      localStorage.setItem("usuario_id", usuarioId.toString());
+
+      let granjaAsignada = "ALL";
+      if (rolNormalizado.toLowerCase().includes("gam")) granjaAsignada = "Medellin";
+      if (rolNormalizado.toLowerCase().includes("gac")) granjaAsignada = "La Ceiba";
+      localStorage.setItem("granja", granjaAsignada);
+
+      setTimeout(() => navigate("/"), 800);
+    } catch (err) {
+      console.error("Error en login:", err);
+      setError(
+        err.message === "Failed to fetch"
+          ? "No se pudo conectar con el servidor. Verifica que el backend esté corriendo."
+          : err.message || "Error de autenticación"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        background: "linear-gradient(135deg, #1B5E20 0%, #0D47A1 100%)",
+        p: 2,
+      }}
+    >
+      {/* Logos */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 4,
+          mb: 4,
+          flexWrap: "wrap",
+        }}
+      >
+        <img src="/images/ceiba.png" alt="La Ceiba" style={{ width: 150 }} />
+        <img src="/images/quality.png" alt="Quality" style={{ width: 150 }} />
+        <img src="/images/medellin.png" alt="Medellin" style={{ width: 150 }} />
+      </Box>
+
+      {/* Formulario con animación */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Paper
+          elevation={8}
+          sx={{
+            p: 4,
+            width: { xs: "90vw", sm: 350 },
+            borderRadius: 4,
+            backdropFilter: "blur(8px)",
+            backgroundColor: "rgba(255,255,255,0.9)",
+            textAlign: "center",
+          }}
+        >
+          {loading ? (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 250,
+              }}
+            >
+              <CircularProgress color="primary" size={50} sx={{ mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                Verificando credenciales...
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              <Typography
+                variant="h5"
+                sx={{ mb: 2, fontWeight: "bold", color: "#0D47A1" }}
+              >
+                Iniciar Sesión
+              </Typography>
+
+              <TextField
+                label="Usuario"
+                fullWidth
+                margin="normal"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person sx={{ color: "#1B5E20" }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                label="Contraseña"
+                type="password"
+                fullWidth
+                margin="normal"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: "#1B5E20" }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              {error && (
+                <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                  {error}
+                </Typography>
+              )}
+
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{
+                  mt: 3,
+                  py: 1,
+                  backgroundColor: "#2E7D32",
+                  fontWeight: "bold",
+                  borderRadius: 3,
+                  "&:hover": { backgroundColor: "#1B5E20" },
+                }}
+                onClick={handleLogin}
+              >
+                Acceder
+              </Button>
+
+              <Typography
+                variant="body2"
+                sx={{ mt: 2, color: "text.secondary", fontSize: 13 }}
+              >
+                © 2025 Quality Technology . Medellin . Ceiba  .
+              </Typography>
+            </>
+          )}
+        </Paper>
+      </motion.div>
+    </Box>
+  );
+};
+
+export default Login;
