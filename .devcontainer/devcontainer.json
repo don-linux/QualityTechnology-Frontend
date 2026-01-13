@@ -7,7 +7,7 @@
   "overrideCommand": false,
   "forwardPorts": [3000],
   "postCreateCommand": "npm ci || npm install",
-  "postStartCommand": "npm start --port 3000",
+  "postStartCommand": "PORT=3000 npm start",
   "customizations": {
     "vscode": {
       "extensions": [
