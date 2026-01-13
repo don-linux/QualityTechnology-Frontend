@@ -1,0 +1,10 @@
+name: ${DOCKER_PROD_NAME}
+
+services:
+  vuejs:
+    build:
+      context: ../../
+      dockerfile: docker/prod/Dockerfile
+    volumes:
+      - ../../dist:/dist # The volume to store the built files
+    command: sh -c "cp -r /app/dist/* /dist/"

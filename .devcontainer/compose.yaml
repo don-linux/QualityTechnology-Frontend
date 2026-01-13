@@ -1,0 +1,6 @@
+services:
+  vuejs:
+    volumes:
+      - ../../../:/workspaces:cached
+
+    command: sleep infinity
