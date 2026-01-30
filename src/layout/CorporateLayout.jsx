@@ -40,6 +40,7 @@ import {
   ReceiptLong,
 } from "@mui/icons-material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import { Link, useLocation, Outlet } from "react-router-dom";
 
 const drawerWidth = 270;
@@ -371,6 +372,13 @@ export default function CorporateLayout() {
             <ListItemText primary="Reproductores" />
           </ListItemButton>
 
+       <ListItemButton component={Link} to="/instalaciones">
+            <ListItemIcon sx={{ color: "white" }}>
+              <HomeWorkIcon />
+            </ListItemIcon>
+            <ListItemText primary="Instalaciones" />
+          </ListItemButton>
+
           <ListItemButton component={Link} to="/engorda">
             <ListItemIcon sx={{ color: "white" }}>
               <Grass />
@@ -447,11 +455,18 @@ export default function CorporateLayout() {
             </Typography>
           )}
 
-          <ListItemButton component={Link} to="/concentrado-ventas">
+          <ListItemButton component={Link} to="/flujo-caja">
             <ListItemIcon sx={{ color: "white" }}>
               <AccountBalance />
             </ListItemIcon>
             <ListItemText primary="Flujo de Caja" />
+          </ListItemButton>
+
+          <ListItemButton component={Link} to="/tesoreria">
+            <ListItemIcon sx={{ color: "white" }}>
+              <AccountBalance />
+            </ListItemIcon>
+            <ListItemText primary="Tesorería General" />
           </ListItemButton>
 
           <ListItemButton component={Link} to="/proveedores">

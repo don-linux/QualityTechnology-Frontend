@@ -14,6 +14,8 @@ import {
   CardContent,
   Grid,
   Paper,
+  MenuItem,
+  FormControl,
 } from "@mui/material";
 
 export default function Pileta() {
@@ -24,388 +26,625 @@ function PiletaContent() {
   const usuario_id = localStorage.getItem("usuario_id");
 
   const [form, setForm] = useState({
-    nombre_instalacion: "",
+    fi_instalacion_id: "",
+    origen_instalacion: "",
     cantidad: "",
     talla_gr: "",
     no_lote: "",
     observacion: "",
     fecha_siembra: "",
     fecha_ultima_biometria: "",
+    fc_granja: "Granja Acuícola Medellin",
   });
 
+  const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
+  const [inventario, setInventario] = useState([]);
   const [piletas, setPiletas] = useState([]);
+  const [instalaciones, setInstalaciones] = useState([]);
+  const [rastreos, setRastreos] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
-  const [mensaje, setMensaje] = useState("");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [buscar, setBuscar] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+
+  /* =========================================================
+     🔹 Cargar datos según granja
+  ========================================================= */
+  const obtenerInventario = async () => {
+    try {
+      const data = await apiFetch(`/piletas/inventario/${granjaActiva}`);
+      setInventario(data);
+    } catch (error) {
+      console.error("❌ Error al obtener inventario:", error);
+    }
+  };
 
   const obtenerPiletas = async () => {
-    if (!usuario_id) {
-      setMensaje("⚠️ Debes iniciar sesión nuevamente.");
-      return;
-    }
     try {
-      const data = await apiFetch(`/piletas/${usuario_id}`);
+      const data = await apiFetch(`/piletas/granja/${granjaActiva}`);
       setPiletas(data);
-      setMensaje("✅ Piletas cargadas correctamente.");
     } catch (error) {
       console.error("❌ Error al obtener piletas:", error);
-      setMensaje("Error al obtener piletas del servidor");
+    }
+  };
+
+  const obtenerInstalaciones = async () => {
+    try {
+      const data = await apiFetch(`/instalaciones/${usuario_id}`);
+      const filtradas = data.filter((i) => i.fc_granja === granjaActiva);
+      setInstalaciones(filtradas);
+    } catch (error) {
+      console.error("❌ Error al obtener instalaciones:", error);
+    }
+  };
+
+  const obtenerRastreos = async () => {
+    try {
+      const data = await apiFetch(
+        `/piletas/movimientos/${usuario_id}/${granjaActiva}`
+      );
+      setRastreos(data);
+    } catch (error) {
+      console.error("❌ Error al obtener rastreabilidad:", error);
     }
   };
 
   useEffect(() => {
+    limpiarFormulario();
+    obtenerInventario();
     obtenerPiletas();
-  }, []);
+    obtenerInstalaciones();
+    obtenerRastreos();
+  }, [granjaActiva]);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  /* =========================================================
+     🔹 CRUD y filtros
+  ========================================================= */
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const limpiarFormulario = () => {
     setForm({
-      nombre_instalacion: "",
+      fi_instalacion_id: "",
+      origen_instalacion: "",
       cantidad: "",
       talla_gr: "",
       no_lote: "",
       observacion: "",
       fecha_siembra: "",
       fecha_ultima_biometria: "",
+      fc_granja: granjaActiva,
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
   };
 
   const registrarPileta = async () => {
+    if (!form.cantidad || !form.fi_instalacion_id)
+      return alert("⚠️ Es necesario especificar instalación destino y cantidad.");
+
+    if (["venta", "mortalidad"].includes(form.observacion.toLowerCase())) {
+      const ok = window.confirm(
+        `⚠️ Este movimiento (${form.observacion}) restará ${form.cantidad} organismos del origen. ¿Continuar?`
+      );
+      if (!ok) return;
+    }
+
     try {
-      await apiFetch("/piletas", {
+      const res = await apiFetch("/piletas", {
         method: "POST",
         body: JSON.stringify({
           ...form,
           fi_usuario_id: usuario_id,
+          fc_granja: granjaActiva,
         }),
       });
 
-      setMensaje("✅ Pileta registrada correctamente");
+      if (res?.message?.includes("No se puede trasladar entre granjas")) {
+        return alert("🚫 No se puede trasladar entre granjas distintas.");
+      }
+
+      alert("✅ Movimiento registrado correctamente");
       limpiarFormulario();
       obtenerPiletas();
+      obtenerInventario();
+      obtenerRastreos();
     } catch (error) {
       console.error("❌ Error al registrar la pileta:", error);
-      setMensaje("Error al registrar la pileta");
+      alert("Error al registrar la pileta");
     }
   };
 
   const actualizarPileta = async () => {
-    if (!seleccionado) return;
-
+    if (!seleccionado) return alert("Selecciona un registro para actualizar.");
     try {
       await apiFetch(`/piletas/${seleccionado}`, {
         method: "PUT",
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, fc_granja: granjaActiva }),
       });
-
-      setMensaje("✅ Pileta actualizada correctamente");
+      alert("✅ Pileta actualizada correctamente");
       limpiarFormulario();
-      obtenerPiletas();
+      obtenerInventario();
+      obtenerRastreos();
     } catch (error) {
       console.error("❌ Error al actualizar la pileta:", error);
-      setMensaje("Error al actualizar la pileta");
     }
   };
 
   const eliminarPileta = async () => {
-    if (!seleccionado) return;
-
+    if (!seleccionado) return alert("Selecciona una pileta para eliminar.");
+    if (!window.confirm("¿Eliminar esta pileta definitivamente?")) return;
     try {
       await apiFetch(`/piletas/${seleccionado}`, { method: "DELETE" });
-
-      setMensaje("🗑️ Pileta eliminada correctamente");
+      alert("🗑️ Pileta eliminada correctamente");
       limpiarFormulario();
-      obtenerPiletas();
+      obtenerInventario();
+      obtenerRastreos();
     } catch (error) {
       console.error("❌ Error al eliminar la pileta:", error);
-      setMensaje("Error al eliminar la pileta");
     }
   };
 
   const seleccionarPileta = (p) => {
     setSeleccionado(p.fi_pileta_id);
     setForm({
-      nombre_instalacion: p.nombre_instalacion,
+      fi_instalacion_id: p.fi_instalacion_id || "",
+      origen_instalacion: p.origen_instalacion || "",
       cantidad: p.cantidad,
       talla_gr: p.talla_gr,
       no_lote: p.no_lote,
       observacion: p.observacion,
-      fecha_siembra: p.fecha_siembra ? p.fecha_siembra.substring(0, 10) : "",
-      fecha_ultima_biometria: p.fecha_ultima_biometria
-        ? p.fecha_ultima_biometria.substring(0, 10)
-        : "",
+      fecha_siembra: p.fecha_siembra?.substring(0, 10) || "",
+      fecha_ultima_biometria: p.fecha_ultima_biometria?.substring(0, 10) || "",
+      fc_granja: p.fc_granja,
     });
     setMostrarFormulario(true);
   };
 
-  // 🎨 Lógica de color según la observación
-  const getRowColor = (observacion) => {
-    if (observacion.toLowerCase().includes("hormonado")) {
-      return { backgroundColor: "#FFEB3B" }; // Color amarillo
-    } else if (observacion.toLowerCase().includes("tratamiento")) {
-      return { backgroundColor: "#f07ea0", color: "white" }; // Color marino
+  const filtrarRastreabilidad = async () => {
+    try {
+      const query = new URLSearchParams({
+        buscar,
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin,
+      }).toString();
+
+      const data = await apiFetch(
+        `/piletas/movimientos/filtro/${usuario_id}/${granjaActiva}?${query}`
+      );
+      setRastreos(data);
+    } catch (error) {
+      console.error("❌ Error al filtrar rastreabilidad:", error);
     }
-    return {};
   };
 
-  // 🎨 Semáforo clásico solo para "Días Transcurridos": verde, amarillo, rojo
+  const eliminarUno = async (id) => {
+    if (!window.confirm("¿Eliminar este movimiento?")) return;
+    try {
+      await apiFetch("/piletas/movimientos/eliminar", {
+        method: "DELETE",
+        body: JSON.stringify({ movimiento_id: id }),
+      });
+      filtrarRastreabilidad();
+    } catch (error) {
+      console.error("❌ Error al eliminar movimiento:", error);
+    }
+  };
+
+  const eliminarTodos = async () => {
+    if (
+      !window.confirm(
+        `⚠️ Esto eliminará todos los movimientos de ${granjaActiva}. ¿Continuar?`
+      )
+    )
+      return;
+    try {
+      await apiFetch("/piletas/movimientos/eliminar", {
+        method: "DELETE",
+        body: JSON.stringify({
+          eliminar_todos: true,
+          granja: granjaActiva,
+        }),
+      });
+      setRastreos([]);
+    } catch (error) {
+      console.error("❌ Error al eliminar todos:", error);
+    }
+  };
+
   const getBadgeStyle = (dias) => {
-    if (dias <= 60) {
-      return {
-        backgroundColor: "#4CAF50", // verde
-        color: "white",
-        fontWeight: "bold",
-        borderRadius: "12px",
-        padding: "6px 12px",
-        display: "inline-block",
-        boxShadow: "0 0 6px rgba(76,175,80,0.5)",
-      };
-    } else if (dias <= 100) {
-      return {
-        backgroundColor: "#FFC107", // amarillo
-        color: "#333",
-        fontWeight: "bold",
-        borderRadius: "12px",
-        padding: "6px 12px",
-        display: "inline-block",
-        boxShadow: "0 0 6px rgba(255,193,7,0.4)",
-      };
-    } else {
-      return {
-        backgroundColor: "#F44336", // rojo
-        color: "white",
-        fontWeight: "bold",
-        borderRadius: "12px",
-        padding: "6px 12px",
-        display: "inline-block",
-        boxShadow: "0 0 6px rgba(244,67,54,0.4)",
-      };
-    }
+    if (dias <= 60)
+      return { backgroundColor: "#4CAF50", color: "white", borderRadius: 12, padding: "6px 12px" };
+    if (dias <= 100)
+      return { backgroundColor: "#FFC107", color: "#333", borderRadius: 12, padding: "6px 12px" };
+    return { backgroundColor: "#F44336", color: "white", borderRadius: 12, padding: "6px 12px" };
   };
 
+  const totalOrganismos = inventario.reduce((acc, p) => acc + (p.cantidad || 0), 0);
+
+  /* =========================================================
+     🔹 Render principal
+  ========================================================= */
   return (
     <Box>
-      <Typography variant="h4" fontWeight="bold" mb={3} color="#004C7D">
-        🐟 Control de Alevinaje
+      <Typography variant="h4" fontWeight="bold" mb={2} color="#004C7D">
+        🧬 Control de Alevinaje — Sistema
       </Typography>
 
-      <Button
-        variant="contained"
-        color="success"
-        onClick={() => setMostrarFormulario(true)}
-        sx={{ backgroundColor: "#32CD32" }}
-      >
-        Registrar Nueva Pileta
-      </Button>
+      {/* Pestañas de granja */}
+      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+        <Button
+          variant={granjaActiva.includes("Medellin") ? "contained" : "outlined"}
+          color="primary"
+          onClick={() => setGranjaActiva("Granja Acuícola Medellin")}
+        >
+          MEDELLÍN
+        </Button>
+        <Button
+          variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"}
+          color="secondary"
+          onClick={() => setGranjaActiva("Granja Acuícola La Ceiba")}
+        >
+          LA CEIBA
+        </Button>
+      </Box>
 
-      {mostrarFormulario && (
-        <Card sx={{ mb: 4 }}>
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="Instalación"
-                  name="nombre_instalacion"
-                  value={form.nombre_instalacion}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </Grid>
+      {/* Resumen */}
+      <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
+        <Typography><b>Granja activa:</b> {granjaActiva.replace("Granja Acuícola ", "")}</Typography>
+        <Typography><b>Piletas registradas:</b> {inventario.length}</Typography>
+        <Typography><b>Total organismos:</b> {totalOrganismos.toLocaleString("es-MX")}</Typography>
+      </Paper>
 
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="Cantidad"
-                  name="cantidad"
-                  value={form.cantidad}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="Talla (Gr)"
-                  name="talla_gr"
-                  value={form.talla_gr}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="No. Lote"
-                  name="no_lote"
-                  value={form.no_lote}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid item xs={12} md={8}>
-                <TextField
-                  label="Observación"
-                  name="observacion"
-                  value={form.observacion}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  type="date"
-                  label="Fecha Siembra"
-                  name="fecha_siembra"
-                  InputLabelProps={{ shrink: true }}
-                  value={form.fecha_siembra}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  type="date"
-                  label="Fecha Última Biometría"
-                  name="fecha_ultima_biometria"
-                  InputLabelProps={{ shrink: true }}
-                  value={form.fecha_ultima_biometria}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </Grid>
-            </Grid>
-
-            <Box sx={{ mt: 3 }}>
-              <Button
-                variant="contained"
-                color="success"
-                onClick={registrarPileta}
-                sx={{ backgroundColor: "#32CD32" }}
-              >
-                REGISTRAR
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ ml: 2 }}
-                onClick={actualizarPileta}
-                disabled={!seleccionado}
-              >
-                ACTUALIZAR
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                sx={{ ml: 2 }}
-                onClick={eliminarPileta}
-                disabled={!seleccionado}
-              >
-                ELIMINAR
-              </Button>
-              <Button
-                variant="outlined"
-                sx={{ ml: 2 }}
-                onClick={limpiarFormulario}
-              >
-                CERRAR
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
-      )}
-
-      {mensaje && (
-        <Typography color={mensaje.includes("Error") ? "error" : "green"} mb={2}>
-          {mensaje}
-        </Typography>
-      )}
+      {/* ================== INVENTARIO PRINCIPAL ================== */}
+      <Typography variant="h6" color="#00796B" fontWeight="bold" mb={2}>
+        📋 Inventario
+      </Typography>
 
       <Paper
         sx={{
-          mt: 3,
           borderRadius: 3,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
           overflow: "hidden",
-          border: "1px solid #e0e0e0",
+          mb: 4,
+          p: 3,
+          backgroundColor: "#FAFAFA",
+          boxShadow: 3,
         }}
       >
+        {/* Encabezado del bloque */}
         <Box
           sx={{
-            background: "linear-gradient(90deg, #00BFA5 0%, #00ACC1 100%)",
-            color: "white",
-            py: 1.2,
-            px: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+            flexWrap: "wrap",
+            gap: 2,
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            Lista de Piletas
+          <Typography variant="h6" color="#00796B" fontWeight="bold">
+            ✏️ Registro de Movimientos
           </Typography>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => setMostrarFormulario(!mostrarFormulario)}
+            sx={{
+              backgroundColor: "#32CD32",
+              fontWeight: "bold",
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+            }}
+          >
+            {mostrarFormulario ? "OCULTAR FORMULARIO" : "+ NUEVO REGISTRO"}
+          </Button>
         </Box>
 
-        <Table
-          stickyHeader
-          sx={{
-            minWidth: 1100,
-            "& th": {
-              backgroundColor: "rgba(0, 188, 212, 0.15)",
-              color: "#004C7D",
-              fontWeight: "bold",
-              textAlign: "center",
-            },
-            "& td": {
-              textAlign: "center",
-              borderBottom: "1px solid #e0e0e0",
-            },
-            "& tr:hover": {
-              backgroundColor: "rgba(0, 188, 212, 0.05)",
-            },
-          }}
-        >
+        {/* Formulario dentro del bloque */}
+        {mostrarFormulario && (
+          <Card
+            sx={{
+              mb: 3,
+              boxShadow: 1,
+              border: "1px solid #e0e0e0",
+              backgroundColor: "#ffffff",
+            }}
+          >
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6} lg={4}>
+                  <FormControl fullWidth>
+                    <Typography variant="caption" sx={{ fontWeight: "bold", color: "#555" }}>
+                      Origen
+                    </Typography>
+                    <TextField
+                      select
+                      name="origen_instalacion"
+                      value={form.origen_instalacion}
+                      onChange={handleChange}
+                      fullWidth
+                    >
+                      <MenuItem value="">Seleccione pila origen</MenuItem>
+                      {piletas.map((p) => (
+                        <MenuItem key={p.fi_pileta_id} value={p.fi_pileta_id}>
+                          {`${p.destino_nombre || p.nombre_instalacion} — ${p.cantidad} organismos`}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} md={6} lg={4}>
+                  <FormControl fullWidth>
+                    <Typography variant="caption" sx={{ fontWeight: "bold", color: "#555" }}>
+                      Destino
+                    </Typography>
+                    <TextField
+                      select
+                      name="fi_instalacion_id"
+                      value={form.fi_instalacion_id}
+                      onChange={handleChange}
+                      fullWidth
+                    >
+                      <MenuItem value="">Seleccione instalación destino</MenuItem>
+                      {instalaciones.map((inst) => (
+                        <MenuItem
+                          key={inst.fi_instalacion_id}
+                          value={inst.fi_instalacion_id}
+                        >
+                          {inst.nombre_instalacion}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} md={6} lg={4}>
+                  <TextField
+                    label="Cantidad"
+                    name="cantidad"
+                    value={form.cantidad}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6} lg={4}>
+                  <TextField
+                    label="Talla (Gr)"
+                    name="talla_gr"
+                    value={form.talla_gr}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6} lg={4}>
+                  <TextField
+                    label="No. Lote"
+                    name="no_lote"
+                    value={form.no_lote}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={12} lg={4}>
+                  <TextField
+                    label="Observación"
+                    name="observacion"
+                    value={form.observacion}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    type="date"
+                    label="Fecha Siembra"
+                    name="fecha_siembra"
+                    InputLabelProps={{ shrink: true }}
+                    value={form.fecha_siembra}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    type="date"
+                    label="Fecha Última Biometría"
+                    name="fecha_ultima_biometria"
+                    InputLabelProps={{ shrink: true }}
+                    value={form.fecha_ultima_biometria}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+              </Grid>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 2,
+                  mt: 3,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={registrarPileta}
+                  sx={{ backgroundColor: "#32CD32" }}
+                >
+                  REGISTRAR
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={actualizarPileta}
+                  disabled={!seleccionado}
+                >
+                  ACTUALIZAR
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={eliminarPileta}
+                  disabled={!seleccionado}
+                >
+                  ELIMINAR
+                </Button>
+                <Button variant="outlined" onClick={limpiarFormulario}>
+                  CERRAR
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Tabla */}
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
               <TableCell>Instalación</TableCell>
-              <TableCell>Cantidad</TableCell>
-              <TableCell>Talla</TableCell>
+              <TableCell>Cantidad (organismos)</TableCell>
+              <TableCell>Talla (Gr)</TableCell>
               <TableCell>No. Lote</TableCell>
               <TableCell>Observación</TableCell>
               <TableCell>Fecha Siembra</TableCell>
-              <TableCell>Fecha Última Biometría</TableCell>
               <TableCell>Días en Pila</TableCell>
+              <TableCell>Fecha Última Biometría</TableCell>
               <TableCell>Días Transcurridos</TableCell>
-              <TableCell>Acción</TableCell>
             </TableRow>
           </TableHead>
-
           <TableBody>
-            {piletas.map((p) => (
-              <TableRow key={p.fi_pileta_id} style={getRowColor(p.observacion)}>
-                <TableCell>{p.fi_pileta_id}</TableCell>
+            {inventario.map((p) => (
+              <TableRow
+                key={p.fi_instalacion_id}
+                hover
+                sx={{ cursor: "pointer" }}
+                onClick={() => seleccionarPileta(p)}
+              >
                 <TableCell>{p.nombre_instalacion}</TableCell>
                 <TableCell>{p.cantidad}</TableCell>
                 <TableCell>{p.talla_gr}</TableCell>
                 <TableCell>{p.no_lote}</TableCell>
                 <TableCell>{p.observacion}</TableCell>
-                <TableCell>{p.fecha_siembra}</TableCell>
-                <TableCell>{p.fecha_ultima_biometria}</TableCell>
-                <TableCell>{p.dias_en_pila}</TableCell>
-
                 <TableCell>
-                  <span style={getBadgeStyle(p.dias_transcurridos)}>{p.dias_transcurridos}</span>
+                  {p.fecha_siembra ? new Date(p.fecha_siembra).toLocaleDateString("es-MX") : "—"}
                 </TableCell>
+                <TableCell>{p.dias_en_pila || "—"}</TableCell>
+                <TableCell>
+                  {p.fecha_ultima_biometria
+                    ? new Date(p.fecha_ultima_biometria).toLocaleDateString("es-MX")
+                    : "—"}
+                </TableCell>
+                <TableCell>
+                  {p.dias_transcurridos !== null ? (
+                    <span style={getBadgeStyle(p.dias_transcurridos)}>
+                      {p.dias_transcurridos}
+                    </span>
+                  ) : "—"}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
 
+      {/* =================== RASTREABILIDAD =================== */}
+      <Typography variant="h6" mt={5} mb={2} color="#E65100">
+        🔁 Trazabilidad
+      </Typography>
+
+      <Grid container spacing={2} mb={2}>
+        <Grid item xs={12} md={3}>
+          <TextField
+            label="Buscar por pileta o instalación"
+            fullWidth
+            size="small"
+            value={buscar}
+            onChange={(e) => setBuscar(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <TextField
+            label="Fecha inicio"
+            type="date"
+            size="small"
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            value={fechaInicio}
+            onChange={(e) => setFechaInicio(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <TextField
+            label="Fecha fin"
+            type="date"
+            size="small"
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            value={fechaFin}
+            onChange={(e) => setFechaFin(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: "#0288d1" }}
+            onClick={filtrarRastreabilidad}
+          >
+            Buscar
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            sx={{ ml: 2 }}
+            onClick={eliminarTodos}
+          >
+            Eliminar Todos
+          </Button>
+        </Grid>
+      </Grid>
+
+      <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>Origen</TableCell>
+              <TableCell>Destino</TableCell>
+              <TableCell>Organismos Trasladados</TableCell>
+              <TableCell>Fecha Movimiento</TableCell>
+              <TableCell>Observación</TableCell>
+              <TableCell>Acción</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rastreos.map((r) => (
+              <TableRow key={r.fi_movimiento_id}>
+                <TableCell>{r.origen_nombre || "—"}</TableCell>
+                <TableCell>{r.destino_nombre || "—"}</TableCell>
+                <TableCell>{r.cantidad_trasladada}</TableCell>
+                <TableCell>
+                  {r.fecha_movimiento
+                    ? new Date(r.fecha_movimiento).toLocaleDateString("es-MX")
+                    : "—"}
+                </TableCell>
+                <TableCell>{r.observacion}</TableCell>
                 <TableCell>
                   <Button
                     variant="outlined"
+                    color="error"
                     size="small"
-                    onClick={() => seleccionarPileta(p)}
+                    onClick={() => eliminarUno(r.fi_movimiento_id)}
                   >
-                    Seleccionar
+                    Eliminar
                   </Button>
                 </TableCell>
               </TableRow>

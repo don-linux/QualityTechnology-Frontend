@@ -17,6 +17,7 @@ import Cliente from "./components/Cliente";
 
 // Inventarios
 import Pileta from "./components/Pileta";
+import Instalaciones from "./components/Instalaciones";
 import Reproductores from "./components/Reproductores";
 import Alimentos from "./components/Alimentos";
 import Engorda from "./components/Engorda";
@@ -24,8 +25,9 @@ import Equipos from "./components/Equipos";
 
 // Ventas
 import Venta from "./components/Venta";
-import ConcentradoVentas from "./components/ConcentradoVentas";
+import FlujoCaja from "./components/FlujoCaja";
 import ListaEspera from "./components/ListaEspera";
+import TesoreriaGeneral from "./components/TesoreriaGeneral";
 
 // Registro Operativos
 import BitacoraPlagas from "./components/registro-operativo/BitacoraPlagas";
@@ -78,6 +80,7 @@ function App() {
 
             {/* INVENTARIOS */}
             <Route path="piletas" element={<Pileta />} />
+            <Route path="/instalaciones" element={<Instalaciones />} />
             <Route path="reproductores" element={<Reproductores />} />
             <Route path="alimentos" element={<Alimentos />} />
             <Route path="engorda" element={<Engorda />} />
@@ -85,13 +88,14 @@ function App() {
 
             {/* VENTAS */}
             <Route path="venta" element={<Venta />} />
-            <Route path="concentrado-ventas" element={<ConcentradoVentas />} />
+            <Route path="/flujo-caja" element={<FlujoCaja />} />
+            <Route path="/tesoreria" element={<TesoreriaGeneral />} />
             <Route path="lista-espera" element={<ListaEspera />} />
 
             {/* REGISTRO OPERATIVO */}
             <Route path="registro-operativo">
 
-              {/* Medellín */}
+              {/* BITACORAS */}
               <Route path="plagas" element={<BitacoraPlagas />} />
               <Route path="recepcion-insumos" element={<BitacoraRecepcionInsumos />} />
               <Route path="visitas" element={<BitacoraVisitas />} />
@@ -100,8 +104,6 @@ function App() {
               <Route path="medicamentos" element={<BitacoraMedicamentos />} />
               <Route path="recambios" element={<BitacoraRecambios />} />
               <Route path="inventario" element={<BitacoraInventario />} />
-
-              {/* La Ceiba */}
               <Route path="biometrias" element={<BioBiometrias />} />
               <Route path="alimentacion" element={<BioAlimentacion />} />
               <Route path="insumos" element={<BioInsumos />} />

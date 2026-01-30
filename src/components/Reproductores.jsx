@@ -1,11 +1,20 @@
-import React, { useState, useEffect } from "react";
-import {
-  Container, Card, CardContent, Grid, TextField, Button,
-  Typography, TableContainer, Paper, Table, TableHead, TableRow,
-  TableCell, TableBody, Stack, Box,
-} from "@mui/material";
-import { Add, Edit, Delete } from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
 import { apiFetch } from "../utils/api";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Card,
+  CardContent,
+  Grid,
+  Paper,
+} from "@mui/material";
 
 export default function Reproductores() {
   return <ReproductoresContent />;
@@ -14,6 +23,7 @@ export default function Reproductores() {
 function ReproductoresContent() {
   const usuario_id = localStorage.getItem("usuario_id");
 
+  // 🔹 Estados principales
   const [form, setForm] = useState({
     fc_instalacion: "",
     fn_cantidad: "",
@@ -22,38 +32,45 @@ function ReproductoresContent() {
     fc_observacion: "",
     fd_fecha_siembra: "",
     fd_fecha_biometria: "",
-    fi_usuario_id: usuario_id,
-    fi_reproductor_id: null,
+    fn_machos: "",
+    fn_hembras: "",
+    fc_linea: "",
+    fc_familia: "",
+    fc_granja: "Granja Acuícola Medellín",
   });
 
+  const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellín");
   const [reproductores, setReproductores] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [mensaje, setMensaje] = useState("");
+  const [seleccionado, setSeleccionado] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [accion, setAccion] = useState("");
 
-  const cargarDatos = async () => {
-    setLoading(true);
+  // 🔹 Estados para trazabilidad
+  const [trazabilidad, setTrazabilidad] = useState([]);
+  const [buscar, setBuscar] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+
+  /* =========================================================
+     🔹 Cargar datos según granja
+  ========================================================= */
+  const obtenerReproductores = async () => {
     try {
-      if (!usuario_id) {
-        setMensaje("⚠️ Debes iniciar sesión para ver los registros.");
-        return;
-      }
-      const res = await apiFetch(`/reproductores/${usuario_id}`);
-      setReproductores(res);
-      setMensaje("");
+      const data = await apiFetch(`/reproductores/${usuario_id}/${granjaActiva}`);
+      setReproductores(data);
+      setTrazabilidad(data);
     } catch (error) {
-      console.error("Error al cargar datos de reproductores:", error);
-      setMensaje("❌ Error al obtener datos del servidor");
-    } finally {
-      setLoading(false);
+      console.error("❌ Error al obtener reproductores:", error);
     }
   };
 
   useEffect(() => {
-    cargarDatos();
-  }, []);
+    limpiarFormulario();
+    obtenerReproductores();
+  }, [granjaActiva]);
 
+  /* =========================================================
+     🔹 CRUD
+  ========================================================= */
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -66,371 +83,528 @@ function ReproductoresContent() {
       fc_observacion: "",
       fd_fecha_siembra: "",
       fd_fecha_biometria: "",
-      fi_usuario_id: usuario_id,
-      fi_reproductor_id: null,
+      fn_machos: "",
+      fn_hembras: "",
+      fc_linea: "",
+      fc_familia: "",
+      fc_granja: granjaActiva,
     });
-    setMensaje("");
+    setSeleccionado(null);
     setMostrarFormulario(false);
-    setAccion("");
   };
 
   const registrarReproductor = async () => {
+    if (!form.fc_instalacion || !form.fn_cantidad)
+      return alert("⚠️ Debes llenar los campos de instalación y cantidad.");
+
     try {
       await apiFetch("/reproductores", {
         method: "POST",
         body: JSON.stringify({ ...form, fi_usuario_id: usuario_id }),
       });
-      setMensaje("✅ Reproductor registrado correctamente");
+      alert("✅ Reproductor registrado correctamente");
       limpiarFormulario();
-      cargarDatos();
+      obtenerReproductores();
     } catch (error) {
-      console.error(error);
-      setMensaje("❌ Error al registrar reproductor");
+      console.error("❌ Error al registrar reproductor:", error);
+      alert("Error al registrar reproductor");
     }
   };
 
   const actualizarReproductor = async () => {
-    if (!form.fi_reproductor_id)
-      return alert("Selecciona un reproductor para actualizar");
+    if (!seleccionado) return alert("Selecciona un registro para actualizar.");
+
     try {
-      await apiFetch(`/reproductores/${form.fi_reproductor_id}`, {
+      await apiFetch(`/reproductores/${seleccionado}`, {
         method: "PUT",
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, fc_granja: granjaActiva }),
       });
-      setMensaje("✅ Reproductor actualizado correctamente");
+      alert("✅ Reproductor actualizado correctamente");
       limpiarFormulario();
-      cargarDatos();
+      obtenerReproductores();
     } catch (error) {
-      console.error(error);
-      setMensaje("❌ Error al actualizar reproductor");
+      console.error("❌ Error al actualizar reproductor:", error);
     }
   };
 
   const eliminarReproductor = async () => {
-    if (!form.fi_reproductor_id)
-      return alert("Selecciona un reproductor para eliminar");
-    if (!window.confirm("¿Seguro que deseas eliminar este registro?")) return;
+    if (!seleccionado) return alert("Selecciona un registro para eliminar.");
+    if (!window.confirm("¿Eliminar este registro definitivamente?")) return;
+
     try {
-      await apiFetch(`/reproductores/${form.fi_reproductor_id}`, {
-        method: "DELETE",
-      });
-      setMensaje("✅ Reproductor eliminado correctamente");
+      await apiFetch(`/reproductores/${seleccionado}`, { method: "DELETE" });
+      alert("🗑️ Registro eliminado correctamente");
       limpiarFormulario();
-      cargarDatos();
+      obtenerReproductores();
     } catch (error) {
-      console.error(error);
-      setMensaje("❌ Error al eliminar reproductor");
+      console.error("❌ Error al eliminar reproductor:", error);
     }
   };
 
-  const handleEdit = (item) => {
+  const seleccionarReproductor = (r) => {
+    setSeleccionado(r.fi_reproductor_id);
     setForm({
-      fc_instalacion: item.fc_instalacion,
-      fn_cantidad: item.fn_cantidad,
-      fn_talla: item.fn_talla,
-      fn_no_lote: item.fn_no_lote,
-      fc_observacion: item.fc_observacion,
-      fd_fecha_siembra: item.fd_fecha_siembra,
-      fd_fecha_biometria: item.fd_fecha_biometria,
-      fi_usuario_id: item.fi_usuario_id,
-      fi_reproductor_id: item.fi_reproductor_id,
+      fc_instalacion: r.fc_instalacion,
+      fn_cantidad: r.fn_cantidad,
+      fn_talla: r.fn_talla,
+      fn_no_lote: r.fn_no_lote,
+      fc_observacion: r.fc_observacion,
+      fd_fecha_siembra: r.fd_fecha_siembra?.substring(0, 10) || "",
+      fd_fecha_biometria: r.fd_fecha_biometria?.substring(0, 10) || "",
+      fn_machos: r.fn_machos,
+      fn_hembras: r.fn_hembras,
+      fc_linea: r.fc_linea,
+      fc_familia: r.fc_familia,
+      fc_granja: r.fc_granja,
     });
     setMostrarFormulario(true);
-    setAccion("actualizar");
   };
 
-  const totalCantidad = reproductores.reduce(
-    (sum, r) => sum + Number(r.fn_cantidad || 0),
+  /* =========================================================
+     🔹 Trazabilidad
+  ========================================================= */
+  const filtrarTrazabilidad = async () => {
+    try {
+      const query = new URLSearchParams({
+        buscar,
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin,
+      }).toString();
+
+      const data = await apiFetch(
+        `/reproductores/${usuario_id}/${granjaActiva}?${query}`
+      );
+      setTrazabilidad(data);
+    } catch (error) {
+      console.error("❌ Error al filtrar trazabilidad:", error);
+    }
+  };
+
+  const eliminarUnoTrazabilidad = async (id) => {
+    if (!window.confirm("¿Eliminar este registro de trazabilidad?")) return;
+    try {
+      await apiFetch(`/reproductores/${id}`, { method: "DELETE" });
+      obtenerReproductores();
+    } catch (error) {
+      console.error("❌ Error al eliminar trazabilidad:", error);
+    }
+  };
+
+  const eliminarTodosTrazabilidad = async () => {
+    if (
+      !window.confirm(
+        `⚠️ Esto eliminará todos los registros de ${granjaActiva}. ¿Continuar?`
+      )
+    )
+      return;
+    try {
+      await apiFetch(`/reproductores/eliminar/todos/${granjaActiva}`, {
+        method: "DELETE",
+      });
+      setTrazabilidad([]);
+    } catch (error) {
+      console.error("❌ Error al eliminar todos:", error);
+    }
+  };
+
+  /* =========================================================
+     🔹 Totales
+  ========================================================= */
+  const totalOrganismos = reproductores.reduce(
+    (acc, r) => acc + (r.fn_cantidad || 0),
     0
   );
 
-  // 🟢🟡🔴 estilo tipo badge solo para "Días Transcurridos"
-  const getBadgeStyle = (dias) => {
-    if (dias <= 50) {
-      return {
-        backgroundColor: "#4CAF50",
-        color: "white",
-        fontWeight: "bold",
-        borderRadius: "12px",
-        padding: "6px 12px",
-        display: "inline-block",
-        boxShadow: "0 0 6px rgba(76,175,80,0.4)",
-      };
-    } else if (dias <= 100) {
-      return {
-        backgroundColor: "#FFC107",
-        color: "#333",
-        fontWeight: "bold",
-        borderRadius: "12px",
-        padding: "6px 12px",
-        display: "inline-block",
-        boxShadow: "0 0 6px rgba(255,193,7,0.4)",
-      };
-    } else {
-      return {
-        backgroundColor: "#F44336",
-        color: "white",
-        fontWeight: "bold",
-        borderRadius: "12px",
-        padding: "6px 12px",
-        display: "inline-block",
-        boxShadow: "0 0 6px rgba(244,67,54,0.4)",
-      };
-    }
-  };
-
+  /* =========================================================
+     🔹 Render principal
+  ========================================================= */
   return (
-    <Container maxWidth="md">
-      <Card>
-        <CardContent>
-          <Typography variant="h4" align="center" sx={{ fontWeight: "bold" }}>
-            🐟 Control de Reproductores
-          </Typography>
+    <Box>
+      <Typography variant="h4" fontWeight="bold" mb={2} color="#004C7D">
+        🧬 Control de Reproductores — Sistema
+      </Typography>
 
+      {/* Pestañas de granja */}
+      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+        <Button
+          variant={granjaActiva.includes("Medellín") ? "contained" : "outlined"}
+          color="primary"
+          onClick={() => setGranjaActiva("Granja Acuícola Medellín")}
+        >
+          MEDELLÍN
+        </Button>
+        <Button
+          variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"}
+          color="secondary"
+          onClick={() => setGranjaActiva("Granja Acuícola La Ceiba")}
+        >
+          CEIBA
+        </Button>
+      </Box>
+
+      {/* Resumen */}
+      <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
+        <Typography>
+          <b>Granja activa:</b> {granjaActiva.replace("Granja Acuícola ", "")}
+        </Typography>
+        <Typography>
+          <b>Reproductores registrados:</b> {reproductores.length}
+        </Typography>
+        <Typography>
+          <b>Total organismos:</b> {totalOrganismos.toLocaleString("es-MX")}
+        </Typography>
+      </Paper>
+
+      {/* ================== INVENTARIO PRINCIPAL ================== */}
+      <Typography variant="h6" color="#00796B" fontWeight="bold" mb={2}>
+        📋 Inventario
+      </Typography>
+
+      <Paper
+        sx={{
+          borderRadius: 3,
+          overflow: "hidden",
+          mb: 4,
+          p: 3,
+          backgroundColor: "#FAFAFA",
+          boxShadow: 3,
+        }}
+      >
+        {/* Encabezado */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Typography variant="h6" color="#00796B" fontWeight="bold">
+            ✏️ Registro de Reproductores
+          </Typography>
           <Button
             variant="contained"
             color="success"
-            onClick={() => {
-              setMostrarFormulario(true);
-              setAccion("registrar");
-            }}
+            onClick={() => setMostrarFormulario(!mostrarFormulario)}
             sx={{
               backgroundColor: "#32CD32",
-              "&:hover": { backgroundColor: "#28A745" },
+              fontWeight: "bold",
+              px: 3,
+              py: 1,
+              borderRadius: 2,
             }}
           >
-            <Add /> Registrar
+            {mostrarFormulario ? "OCULTAR FORMULARIO" : "+ NUEVO REGISTRO"}
           </Button>
+        </Box>
 
-          {mostrarFormulario && (
-            <Card sx={{ mt: 2 }}>
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="Instalación"
-                      name="fc_instalacion"
-                      value={form.fc_instalacion}
-                      onChange={handleChange}
-                      fullWidth
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="Cantidad"
-                      name="fn_cantidad"
-                      value={form.fn_cantidad}
-                      onChange={handleChange}
-                      fullWidth
-                      type="number"
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="Talla"
-                      name="fn_talla"
-                      value={form.fn_talla}
-                      onChange={handleChange}
-                      fullWidth
-                      type="number"
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="No Lote"
-                      name="fn_no_lote"
-                      value={form.fn_no_lote}
-                      onChange={handleChange}
-                      fullWidth
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Observación"
-                      name="fc_observacion"
-                      value={form.fc_observacion}
-                      onChange={handleChange}
-                      fullWidth
-                      multiline
-                      rows={3}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="Fecha de Siembra"
-                      name="fd_fecha_siembra"
-                      type="date"
-                      value={form.fd_fecha_siembra}
-                      onChange={handleChange}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      label="Fecha Última Biometría"
-                      name="fd_fecha_biometria"
-                      type="date"
-                      value={form.fd_fecha_biometria}
-                      onChange={handleChange}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
+        {/* Formulario */}
+        {mostrarFormulario && (
+          <Card sx={{ mb: 3, boxShadow: 1, border: "1px solid #e0e0e0" }}>
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    label="Instalación"
+                    name="fc_instalacion"
+                    value={form.fc_instalacion}
+                    onChange={handleChange}
+                    fullWidth
+                  />
                 </Grid>
-              </CardContent>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    label="Cantidad"
+                    name="fn_cantidad"
+                    value={form.fn_cantidad}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    label="Talla (Gr)"
+                    name="fn_talla"
+                    value={form.fn_talla}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    label="No. Lote"
+                    name="fn_no_lote"
+                    value={form.fn_no_lote}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    label="Machos"
+                    name="fn_machos"
+                    value={form.fn_machos}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    label="Hembras"
+                    name="fn_hembras"
+                    value={form.fn_hembras}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    label="Línea"
+                    name="fc_linea"
+                    value={form.fc_linea}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    label="Familia"
+                    name="fc_familia"
+                    value={form.fc_familia}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    label="Observación"
+                    name="fc_observacion"
+                    value={form.fc_observacion}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    type="date"
+                    label="Fecha Siembra"
+                    name="fd_fecha_siembra"
+                    InputLabelProps={{ shrink: true }}
+                    value={form.fd_fecha_siembra}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    type="date"
+                    label="Fecha Biometría"
+                    name="fd_fecha_biometria"
+                    InputLabelProps={{ shrink: true }}
+                    value={form.fd_fecha_biometria}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Grid>
+              </Grid>
 
-              <Stack direction="row" spacing={2} sx={{ padding: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 2,
+                  mt: 3,
+                }}
+              >
                 <Button
                   variant="contained"
                   color="success"
-                  onClick={
-                    accion === "registrar"
-                      ? registrarReproductor
-                      : actualizarReproductor
-                  }
-                  sx={{
-                    backgroundColor: "#32CD32",
-                    "&:hover": { backgroundColor: "#28A745" },
-                  }}
+                  onClick={registrarReproductor}
+                  sx={{ backgroundColor: "#32CD32" }}
                 >
-                  {accion === "registrar" ? <Add /> : <Edit />}{" "}
-                  {accion === "registrar" ? "Registrar" : "Actualizar"}
+                  REGISTRAR
                 </Button>
-
-                {accion === "actualizar" && (
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={eliminarReproductor}
-                    sx={{
-                      backgroundColor: "#FF5733",
-                      "&:hover": { backgroundColor: "#FF3D00" },
-                    }}
-                  >
-                    <Delete /> Eliminar
-                  </Button>
-                )}
-
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={actualizarReproductor}
+                  disabled={!seleccionado}
+                >
+                  ACTUALIZAR
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={eliminarReproductor}
+                  disabled={!seleccionado}
+                >
+                  ELIMINAR
+                </Button>
                 <Button variant="outlined" onClick={limpiarFormulario}>
-                  Limpiar
+                  CERRAR
                 </Button>
-              </Stack>
-            </Card>
-          )}
-        </CardContent>
-      </Card>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* 🌊 TABLA CON DISEÑO MEJORADO */}
-      <Paper
-        sx={{
-          mt: 4,
-          borderRadius: 3,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-          overflow: "hidden",
-          border: "1px solid #e0e0e0",
-        }}
-      >
-        <Box
-          sx={{
-            background: "linear-gradient(90deg, #00BFA5 0%, #00ACC1 100%)",
-            color: "white",
-            py: 1.2,
-            px: 2,
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            Lista de Reproductores
-          </Typography>
-        </Box>
-
-        <Table
-          stickyHeader
-          sx={{
-            "& th": {
-              backgroundColor: "rgba(0,188,212,0.15)",
-              color: "#004C7D",
-              fontWeight: "bold",
-              textAlign: "center",
-            },
-            "& td": { textAlign: "center", borderBottom: "1px solid #e0e0e0" },
-            "& tr:hover": { backgroundColor: "rgba(0,188,212,0.05)" },
-          }}
-        >
+        {/* Tabla */}
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
               <TableCell>Instalación</TableCell>
+              <TableCell>Línea</TableCell>
+              <TableCell>Familia</TableCell>
               <TableCell>Cantidad</TableCell>
               <TableCell>Talla</TableCell>
-              <TableCell>No Lote</TableCell>
+              <TableCell>No. Lote</TableCell>
+              <TableCell>Machos</TableCell>
+              <TableCell>Hembras</TableCell>
+              <TableCell>Ratio</TableCell>
+              <TableCell>Fecha Siembra</TableCell>
+              <TableCell>Fecha Biometría</TableCell>
               <TableCell>Observación</TableCell>
-              <TableCell>Días en Pila</TableCell>
-              <TableCell>Días Transcurridos</TableCell>
-              <TableCell>Acción</TableCell>
             </TableRow>
           </TableHead>
-
           <TableBody>
-            {reproductores.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} align="center">
-                  No hay registros
+            {reproductores.map((r) => (
+              <TableRow
+                key={r.fi_reproductor_id}
+                hover
+                sx={{ cursor: "pointer" }}
+                onClick={() => seleccionarReproductor(r)}
+              >
+                <TableCell>{r.fc_instalacion}</TableCell>
+                <TableCell>{r.fc_linea}</TableCell>
+                <TableCell>{r.fc_familia}</TableCell>
+                <TableCell>{r.fn_cantidad}</TableCell>
+                <TableCell>{r.fn_talla}</TableCell>
+                <TableCell>{r.fn_no_lote}</TableCell>
+                <TableCell>{r.fn_machos}</TableCell>
+                <TableCell>{r.fn_hembras}</TableCell>
+                <TableCell>{r.fc_ratio}</TableCell>
+                <TableCell>
+                  {r.fd_fecha_siembra
+                    ? new Date(r.fd_fecha_siembra).toLocaleDateString("es-MX")
+                    : "—"}
                 </TableCell>
+                <TableCell>
+                  {r.fd_fecha_biometria
+                    ? new Date(r.fd_fecha_biometria).toLocaleDateString("es-MX")
+                    : "—"}
+                </TableCell>
+                <TableCell>{r.fc_observacion}</TableCell>
               </TableRow>
-            ) : (
-              reproductores.map((item) => (
-                <TableRow key={item.fi_reproductor_id}>
-                  <TableCell>{item.fi_reproductor_id}</TableCell>
-                  <TableCell>{item.fc_instalacion}</TableCell>
-                  <TableCell>{item.fn_cantidad}</TableCell>
-                  <TableCell>{item.fn_talla}</TableCell>
-                  <TableCell>{item.fn_no_lote}</TableCell>
-                  <TableCell>{item.fc_observacion}</TableCell>
-
-                  <TableCell>{item.dias_en_pila}</TableCell>
-
-                  <TableCell>
-                    <span style={getBadgeStyle(item.dias_transcurridos)}>
-                      {item.dias_transcurridos}
-                    </span>
-                  </TableCell>
-
-                  <TableCell>
-                    <Button
-                      variant="outlined"
-                      onClick={() => handleEdit(item)}
-                      sx={{
-                        color: "#00695C",
-                        borderColor: "#00695C",
-                        "&:hover": { backgroundColor: "rgba(0,105,92,0.1)" },
-                      }}
-                    >
-                      Editar
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-
-            <TableRow sx={{ backgroundColor: "#E8F5E9" }}>
-              <TableCell colSpan={2} align="right" sx={{ fontWeight: "bold" }}>
-                TOTAL
-              </TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>
-                {totalCantidad.toLocaleString()}
-              </TableCell>
-              <TableCell colSpan={6}></TableCell>
-            </TableRow>
+            ))}
           </TableBody>
         </Table>
       </Paper>
-    </Container>
+
+      {/* =================== RASTREABILIDAD =================== */}
+      <Typography variant="h6" mt={5} mb={2} color="#E65100">
+        🔁 Trazabilidad
+      </Typography>
+
+      <Grid container spacing={2} mb={2}>
+        <Grid item xs={12} md={3}>
+          <TextField
+            label="Buscar por instalación o familia"
+            fullWidth
+            size="small"
+            value={buscar}
+            onChange={(e) => setBuscar(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <TextField
+            label="Fecha inicio"
+            type="date"
+            size="small"
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            value={fechaInicio}
+            onChange={(e) => setFechaInicio(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <TextField
+            label="Fecha fin"
+            type="date"
+            size="small"
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            value={fechaFin}
+            onChange={(e) => setFechaFin(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: "#0288d1" }}
+            onClick={filtrarTrazabilidad}
+          >
+            Buscar
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            sx={{ ml: 2 }}
+            onClick={eliminarTodosTrazabilidad}
+          >
+            Eliminar Todos
+          </Button>
+        </Grid>
+      </Grid>
+
+      <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>Instalación</TableCell>
+              <TableCell>Línea</TableCell>
+              <TableCell>Familia</TableCell>
+              <TableCell>Cantidad</TableCell>
+              <TableCell>Fecha Siembra</TableCell>
+              <TableCell>Fecha Biometría</TableCell>
+              <TableCell>Observación</TableCell>
+              <TableCell>Acción</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {trazabilidad.map((t) => (
+              <TableRow key={t.fi_reproductor_id}>
+                <TableCell>{t.fc_instalacion}</TableCell>
+                <TableCell>{t.fc_linea}</TableCell>
+                <TableCell>{t.fc_familia}</TableCell>
+                <TableCell>{t.fn_cantidad}</TableCell>
+                <TableCell>
+                  {t.fd_fecha_siembra
+                    ? new Date(t.fd_fecha_siembra).toLocaleDateString("es-MX")
+                    : "—"}
+                </TableCell>
+                <TableCell>
+                  {t.fd_fecha_biometria
+                    ? new Date(t.fd_fecha_biometria).toLocaleDateString("es-MX")
+                    : "—"}
+                </TableCell>
+                <TableCell>{t.fc_observacion}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    onClick={() => eliminarUnoTrazabilidad(t.fi_reproductor_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
+    </Box>
   );
 }
