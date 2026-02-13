@@ -1,6 +1,0 @@
-services:
-  react:
-    volumes:
-      - ../../../:/workspaces:cached
-
-    command: sleep infinity
