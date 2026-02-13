@@ -1,0 +1,495 @@
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Typography,
+  TextField,
+  Button,
+  MenuItem,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+} from "@mui/material";
+import axios from "axios";
+
+export default function BioBiometrias() {
+  return <BioBiometriasContent />;
+}
+
+function BioBiometriasContent() {
+  const usuario_id = localStorage.getItem("usuario_id") || 1;
+
+  const [granja, setGranja] = useState("Medellin");
+
+  const [data, setData] = useState([]);
+  const [instalaciones, setInstalaciones] = useState([]);
+  const [lotes, setLotes] = useState([]);
+  const [editId, setEditId] = useState(null);
+
+  /* -----------------------------
+      Normalización de granja
+  ------------------------------*/
+  const mapGranja = (g) => (g === "Medellin" ? "med" : "ceiba");
+
+  const displayGranja = {
+    med: "Granja Acuícola Medellín",
+    ceiba: "Granja Acuícola La Ceiba",
+  };
+
+  const ruta = `http://localhost:5000/biometrias/${mapGranja(granja)}`;
+
+  /* FORMULARIO */
+  const [form, setForm] = useState({
+    fd_fecha: "",
+    fn_peso_total_gramos: "",
+    fn_organismos_muestreados: "",
+    fn_peso_promedio: "",
+    fc_observaciones: "",
+    fc_encargado: "",
+    fi_instalacion_id: "",
+    fi_lote_id: "",
+    tipo: "",
+    fc_granja: granja,
+    fi_usuario_id: usuario_id,
+  });
+
+  /* -----------------------------
+      Cargar datos iniciales
+  ------------------------------*/
+  const cargarDatos = async () => {
+    const res = await axios.get(ruta);
+    setData(res.data);
+  };
+
+  const cargarInstalaciones = async () => {
+    const res = await axios.get(
+      `http://localhost:5000/instalaciones/granja/${displayGranja[mapGranja(granja)]}`
+    );
+    setInstalaciones(res.data);
+  };
+
+  const cargarLotes = async (instalacionId) => {
+    const res = await axios.get(
+      `http://localhost:5000/lotes/instalacion/${instalacionId}`
+    );
+    setLotes(res.data);
+  };
+
+  useEffect(() => {
+    cargarDatos();
+    cargarInstalaciones();
+  }, [granja]);
+
+  /* -----------------------------
+      AUTORRELLENADO
+  ------------------------------*/
+  const cargarInfoInstalacion = async (instalacionId) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/biometrias/info/${mapGranja(granja)}/${instalacionId}`
+      );
+
+      const d = res.data;
+
+      if (!d.tipo) {
+        // No hay registros previos
+        setForm((prev) => ({
+          ...prev,
+          tipo: "",
+          fi_lote_id: "",
+          fn_organismos_muestreados: "",
+          fn_peso_total_gramos: "",
+          fn_peso_promedio: "",
+        }));
+        return;
+      }
+
+      // Sí hay datos → autorrellenar
+      setForm((prev) => ({
+        ...prev,
+        tipo: d.tipo.toLowerCase(),
+        fi_lote_id: d.fi_lote_id,
+        fn_organismos_muestreados: d.organismos,
+        fn_peso_total_gramos: "",
+        fn_peso_promedio: "",
+      }));
+    } catch (err) {
+      console.log("❌ Error cargando info de instalación:", err);
+    }
+  };
+
+  /* -----------------------------
+      HANDLE CHANGE
+  ------------------------------*/
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    // Cálculo de peso promedio
+    if (
+      name === "fn_peso_total_gramos" ||
+      name === "fn_organismos_muestreados"
+    ) {
+      const p =
+        name === "fn_peso_total_gramos"
+          ? value
+          : form.fn_peso_total_gramos;
+
+      const o =
+        name === "fn_organismos_muestreados"
+          ? value
+          : form.fn_organismos_muestreados;
+
+      const prom =
+        p > 0 && o > 0 ? (parseFloat(p) / parseFloat(o)).toFixed(2) : "";
+
+      setForm({
+        ...form,
+        [name]: value,
+        fn_peso_promedio: prom,
+      });
+      return;
+    }
+
+    // Cambio de instalación
+    if (name === "fi_instalacion_id") {
+      setForm({ ...form, fi_instalacion_id: value });
+      cargarLotes(value);
+      cargarInfoInstalacion(value);
+      return;
+    }
+
+    setForm({ ...form, [name]: value });
+  };
+
+  /* -----------------------------
+      GUARDAR / ACTUALIZAR
+  ------------------------------*/
+  const guardar = async () => {
+    try {
+      const body = {
+        ...form,
+        fc_granja: displayGranja[mapGranja(granja)],
+        tipo: form.tipo?.toLowerCase(),
+      };
+
+      if (editId) {
+        await axios.put(`http://localhost:5000/biometrias/${editId}`, body);
+        alert("Registro actualizado");
+      } else {
+        await axios.post("http://localhost:5000/biometrias/", body);
+        alert("Registro creado");
+      }
+
+      limpiar();
+      cargarDatos();
+    } catch {
+      alert("Error guardando biometría");
+    }
+  };
+
+  /* -----------------------------
+      EDITAR
+  ------------------------------*/
+  const editar = (row) => {
+    setEditId(row.fi_id);
+
+    setForm({
+      fd_fecha: row.fd_fecha?.split("T")[0],
+      fn_peso_total_gramos: row.fn_peso_total_gramos,
+      fn_organismos_muestreados: row.fn_organismos_muestreados,
+      fn_peso_promedio: row.fn_peso_promedio,
+      fc_observaciones: row.fc_observaciones,
+      fc_encargado: row.fc_encargado,
+      fi_instalacion_id: row.fi_instalacion_id,
+      fi_lote_id: row.fi_lote_id,
+      tipo: row.tipo?.toLowerCase(),
+      fc_granja: granja,
+      fi_usuario_id: usuario_id,
+    });
+
+    cargarLotes(row.fi_instalacion_id);
+  };
+
+  /* -----------------------------
+      ELIMINAR
+  ------------------------------*/
+  const eliminar = async (id) => {
+    if (!window.confirm("¿Eliminar registro?")) return;
+    await axios.delete(`http://localhost:5000/biometrias/${id}`);
+    cargarDatos();
+  };
+
+  /* -----------------------------
+      LIMPIAR FORMULARIO
+  ------------------------------*/
+  const limpiar = () => {
+    setEditId(null);
+    setForm({
+      fd_fecha: "",
+      fn_peso_total_gramos: "",
+      fn_organismos_muestreados: "",
+      fn_peso_promedio: "",
+      fc_observaciones: "",
+      fc_encargado: "",
+      fi_instalacion_id: "",
+      fi_lote_id: "",
+      tipo: "",
+      fc_granja: granja,
+      fi_usuario_id: usuario_id,
+    });
+  };
+
+  /* ----------------------------- */
+  const formatNum = (n) =>
+    Number(n).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+  /* -----------------------------
+      UI
+  ------------------------------*/
+  return (
+    <Box>
+      {/* BOTONES DE GRANJA */}
+      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+        <Button
+          variant={granja === "Medellin" ? "contained" : "outlined"}
+          onClick={() => setGranja("Medellin")}
+        >
+          MEDELLÍN
+        </Button>
+
+        <Button
+          variant={granja === "Ceiba" ? "contained" : "outlined"}
+          onClick={() => setGranja("Ceiba")}
+        >
+          LA CEIBA
+        </Button>
+      </Box>
+
+      <Typography variant="h4" fontWeight="bold" mb={3}>
+        🧪 {granja} — Biometrías
+      </Typography>
+
+      {/* FORMULARIO */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Grid container spacing={2}>
+            {/* FECHA */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                type="date"
+                label="Fecha"
+                name="fd_fecha"
+                value={form.fd_fecha}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+            </Grid>
+
+            {/* INSTALACIÓN */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                select
+                label="Instalación"
+                name="fi_instalacion_id"
+                value={form.fi_instalacion_id}
+                onChange={handleChange}
+                fullWidth
+              >
+                <MenuItem value="">Seleccione</MenuItem>
+                {instalaciones.map((i) => (
+                  <MenuItem key={i.fi_instalacion_id} value={i.fi_instalacion_id}>
+                    {i.nombre_instalacion}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            {/* LOTE */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                select
+                label="Lote"
+                name="fi_lote_id"
+                value={form.fi_lote_id}
+                onChange={handleChange}
+                fullWidth
+              >
+                <MenuItem value="">Seleccione</MenuItem>
+                {lotes.map((l) => (
+                  <MenuItem key={l.fi_lote_id} value={l.fi_lote_id}>
+                    {l.no_lote}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            {/* TIPO */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                select
+                label="Tipo"
+                name="tipo"
+                value={form.tipo}
+                onChange={handleChange}
+                fullWidth
+                InputProps={{
+                  readOnly:
+                    form.fi_lote_id !== "" &&
+                    (form.tipo === "alevinaje" ||
+                      form.tipo === "engorda" ||
+                      form.tipo === "reproductores"),
+                }}
+              >
+                <MenuItem value="">Seleccionar</MenuItem>
+                <MenuItem value="alevinaje">Alevinaje</MenuItem>
+                <MenuItem value="engorda">Engorda</MenuItem>
+                <MenuItem value="reproductores">Reproductores</MenuItem>
+              </TextField>
+            </Grid>
+
+            {/* PESO TOTAL */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Peso Total (g)"
+                name="fn_peso_total_gramos"
+                type="number"
+                value={form.fn_peso_total_gramos}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+
+            {/* ORGANISMOS */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Organismos Muestreados"
+                name="fn_organismos_muestreados"
+                type="number"
+                value={form.fn_organismos_muestreados}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+
+            {/* PESO PROMEDIO */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Peso Promedio (g)"
+                name="fn_peso_promedio"
+                type="number"
+                value={form.fn_peso_promedio}
+                InputProps={{ readOnly: true }}
+                fullWidth
+              />
+            </Grid>
+
+            {/* ENCARGADO */}
+            <Grid item xs={12} md={8}>
+              <TextField
+                label="Encargado"
+                name="fc_encargado"
+                value={form.fc_encargado}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+
+            {/* OBSERVACIONES */}
+            <Grid item xs={12}>
+              <TextField
+                label="Observaciones"
+                name="fc_observaciones"
+                value={form.fc_observaciones}
+                onChange={handleChange}
+                fullWidth
+                multiline
+                rows={2}
+              />
+            </Grid>
+          </Grid>
+
+          <Box sx={{ mt: 3 }}>
+            <Button variant="contained" onClick={guardar}>
+              {editId ? "Actualizar" : "Guardar"}
+            </Button>
+
+            <Button
+              variant="contained"
+              color="error"
+              sx={{ ml: 2 }}
+              onClick={limpiar}
+            >
+              Limpiar
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* TABLA */}
+      <Paper>
+        <Table>
+          <TableHead sx={{ background: "#E8F5E9" }}>
+            <TableRow>
+              <TableCell>Fecha</TableCell>
+              <TableCell>Instalación</TableCell>
+              <TableCell>Lote</TableCell>
+              <TableCell>Peso Total</TableCell>
+              <TableCell>Organismos</TableCell>
+              <TableCell>Peso Promedio</TableCell>
+              <TableCell>Tipo</TableCell>
+              <TableCell>Encargado</TableCell>
+              <TableCell>Observaciones</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {data.map((row) => (
+              <TableRow key={row.fi_id}>
+                <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
+                <TableCell>{row.instalacion_nombre}</TableCell>
+                <TableCell>{row.no_lote}</TableCell>
+                <TableCell>{formatNum(row.fn_peso_total_gramos)}</TableCell>
+                <TableCell>{row.fn_organismos_muestreados}</TableCell>
+                <TableCell>{formatNum(row.fn_peso_promedio)}</TableCell>
+                <TableCell>{row.tipo}</TableCell>
+                <TableCell>{row.fc_encargado}</TableCell>
+                <TableCell>{row.fc_observaciones}</TableCell>
+
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="warning"
+                    onClick={() => editar(row)}
+                  >
+                    Editar
+                  </Button>
+
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{ ml: 1 }}
+                    color="error"
+                    onClick={() => eliminar(row.fi_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
+    </Box>
+  );
+}

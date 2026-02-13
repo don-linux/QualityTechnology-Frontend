@@ -1,0 +1,308 @@
+// src/components/FormDialog.jsx
+import React, { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  TextField,
+  Button,
+  MenuItem,
+} from "@mui/material";
+import axios from "axios";
+
+const FormDialog = React.memo(
+  ({ open, onClose, onSubmit, formData, setFormData, editId }) => {
+    const [clientes, setClientes] = useState([]);
+    const [proveedores, setProveedores] = useState([]);
+    const [cuentas, setCuentas] = useState([]);
+
+    // ✅ Cargar clientes, proveedores y cuentas al abrir el modal
+    useEffect(() => {
+      if (open) {
+        const fetchDatos = async () => {
+          try {
+            const [resClientes, resProveedores, resCuentas] = await Promise.all([
+              axios.get("http://localhost:5000/flujo-caja/clientes"),
+              axios.get("http://localhost:5000/flujo-caja/proveedores"),
+              axios.get("http://localhost:5000/cuentas"),
+            ]);
+            setClientes(resClientes.data);
+            setProveedores(resProveedores.data);
+            setCuentas(resCuentas.data);
+          } catch (err) {
+            console.error("❌ Error al obtener datos:", err);
+          }
+        };
+        fetchDatos();
+      }
+    }, [open]);
+
+    const handleChange = (e) => {
+      setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value ?? "" }));
+    };
+
+    // ✅ Manejar guardar con validación de saldo y soporte de imagen
+const handleSave = async () => {
+  try {
+    const form = new FormData();
+    for (const key in formData) {
+      if (formData[key]) form.append(key, formData[key]);
+    }
+
+    await axios.post("http://localhost:5000/flujo-caja", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    onSubmit(formData);
+    onClose();
+  } catch (err) {
+    const mensaje = err.response?.data?.error || "❌ Error al guardar movimiento";
+    alert(mensaje);
+  }
+};
+
+    return (
+      <Dialog open={open} onClose={onClose} fullWidth>
+        <DialogTitle>{editId ? "Editar Movimiento" : "Nuevo Movimiento"}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={6}>
+              <TextField
+                label="Fecha"
+                type="date"
+                name="fd_fecha"
+                value={formData.fd_fecha || ""}
+                onChange={handleChange}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+
+            {/* ✅ Select de cuentas */}
+            <Grid item xs={6}>
+              <TextField
+                select
+                label="Cuenta"
+                name="fc_cuenta"
+                value={formData.fc_cuenta || ""}
+                onChange={handleChange}
+                fullWidth
+              >
+                {cuentas.map((cuenta) => (
+                  <MenuItem key={cuenta.id} value={cuenta.nombre}>
+                    {cuenta.nombre} — ${parseFloat(cuenta.saldo).toLocaleString("es-MX")}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            <Grid item xs={6}>
+              <TextField
+                label="Ingreso"
+                type="number"
+                name="fn_ingreso"
+                value={formData.fn_ingreso || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    fn_ingreso: val,
+                    fn_egreso: val > 0 ? "" : prev.fn_egreso,
+                    fc_beneficiario: "",
+                  }));
+                }}
+                disabled={Number(formData.fn_egreso) > 0}
+                fullWidth
+                margin="dense"
+              />
+            </Grid>
+
+            <Grid item xs={6}>
+              <TextField
+                label="Egreso"
+                type="number"
+                name="fn_egreso"
+                value={formData.fn_egreso || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    fn_egreso: val,
+                    fn_ingreso: val > 0 ? "" : prev.fn_ingreso,
+                    fc_beneficiario: "",
+                  }));
+                }}
+                disabled={Number(formData.fn_ingreso) > 0}
+                fullWidth
+                margin="dense"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Descripción"
+                name="fc_descripcion"
+                value={formData.fc_descripcion || ""}
+                onChange={handleChange}
+                fullWidth
+                multiline
+              />
+            </Grid>
+
+            <Grid item xs={6}>
+              <TextField
+                label="Categoría"
+                name="fc_categoria"
+                value={formData.fc_categoria || ""}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+
+            <Grid item xs={6}>
+              <TextField
+                label="Subcategoría"
+                name="fc_subcategoria"
+                value={formData.fc_subcategoria || ""}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+
+            {/* ✅ Beneficiario dinámico */}
+            <Grid item xs={12}>
+              <TextField
+                select
+                label="Beneficiario / Proveedor"
+                name="fc_beneficiario"
+                value={formData.fc_beneficiario || ""}
+                onChange={handleChange}
+                fullWidth
+                disabled={!formData.fn_ingreso && !formData.fn_egreso}
+                SelectProps={{
+                  MenuProps: {
+                    PaperProps: {
+                      sx: {
+                        backgroundColor: "#ffffff !important",
+                        color: "#000000 !important",
+                        "& .MuiMenuItem-root": {
+                          color: "#000000 !important",
+                          "&:hover": {
+                            backgroundColor: "#f5f5f5 !important",
+                          },
+                        },
+                      },
+                    },
+                  },
+                }}
+              >
+                {Number(formData.fn_ingreso) > 0 &&
+                  clientes.map((cli, i) => (
+                    <MenuItem key={i} value={cli.nombre}>
+                      {cli.nombre}
+                    </MenuItem>
+                  ))}
+
+                {Number(formData.fn_egreso) > 0 &&
+                  proveedores.map((prov, i) => (
+                    <MenuItem key={i} value={prov.nombre}>
+                      {prov.nombre}
+                    </MenuItem>
+                  ))}
+              </TextField>
+            </Grid>
+
+            <Grid item xs={6}>
+              <TextField
+                label="Proyecto"
+                name="fc_noproyecto"
+                value={formData.fc_noproyecto || ""}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+{/* ✅ Menú de factura con 3 opciones */}
+<Grid item xs={6}>
+  <TextField
+    select
+    label="Factura"
+    name="fc_factura_opcion"
+    value={formData.fc_factura_opcion || ""}
+    onChange={(e) => {
+      const opcion = e.target.value;
+      setFormData((prev) => ({
+        ...prev,
+        fc_factura_opcion: opcion,
+        fc_factura:
+          opcion === "NO_APLICA"
+            ? "NO"
+            : opcion === "PENDIENTE"
+            ? ""
+            : prev.fc_factura,
+        facturaFile: opcion === "CON_FACTURA" ? prev.facturaFile : null,
+      }));
+    }}
+    fullWidth
+  >
+    <MenuItem value="APLICA">Con factura</MenuItem>
+    <MenuItem value="PENDIENTE">Pendiente</MenuItem>
+    <MenuItem value="NO_APLICA">No aplica</MenuItem>
+  </TextField>
+</Grid>
+
+    {/* ✅ Mostrar botón de carga solo si elige "Con factura" */}
+    {formData.fc_factura_opcion === "APLICA" && (
+      <Grid item xs={6}>
+        <Button
+          variant="outlined"
+          component="label"
+          fullWidth
+          sx={{ textTransform: "none" }}
+        >
+          {formData.facturaFile ? formData.facturaFile.name : "Subir factura"}
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                facturaFile: e.target.files[0],
+              }))
+            }
+          />
+        </Button>
+      </Grid>
+    )}
+            <Grid item xs={6}>
+              <TextField
+                select
+                label="Estatus"
+                name="fc_estatus"
+                value={formData.fc_estatus || ""}
+                onChange={handleChange}
+                fullWidth
+              >
+                <MenuItem value="REPOSICION">Reposición</MenuItem>
+                <MenuItem value="LIQUIDADO">Liquidado</MenuItem>
+                <MenuItem value="ADEUDO">Adeudo</MenuItem>
+                <MenuItem value="PARCIAL">Parcial</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={onClose}>Cancelar</Button>
+          <Button onClick={handleSave} variant="contained" color="success">
+            Guardar
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  }
+);
+
+export default FormDialog;
