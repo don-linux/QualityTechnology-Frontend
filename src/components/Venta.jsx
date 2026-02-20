@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Card,
@@ -64,15 +64,14 @@ function VentaContent() {
   /* ============================================================
       CARGAR VENTAS POR EMPRESA
   ============================================================ */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    obtenerVentas();
-  }, [empresa]);
-
-  const obtenerVentas = async () => {
+  const obtenerVentas = useCallback(async () => {
     const res = await axios.get(API);
     setVentas(res.data.filter((v) => v.fc_empresa === empresa));
-  };
+  }, [empresa]);
+
+  useEffect(() => {
+    obtenerVentas();
+  }, [obtenerVentas]);
 
   /* ============================================================
       CARGAR CLIENTES
@@ -82,23 +81,14 @@ function VentaContent() {
   }, []);
 
   const obtenerClientes = async () => {
-  const res = await axios.get("http://localhost:5000/ventas/clientes");
-  setClientes(res.data);
-};
+    const res = await axios.get("http://localhost:5000/ventas/clientes");
+    setClientes(res.data);
+  };
 
   /* ============================================================
       CARGAR ENCARGADOS POR EMPRESA
   ============================================================ */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    obtenerEncargados();
-    setForm((prev) => ({
-      ...prev,
-      fc_encargado_venta: "",
-    }));
-  }, [empresa]);
-
-  const obtenerEncargados = async () => {
+  const obtenerEncargados = useCallback(async () => {
     try {
       const res = await axios.get(
         `http://localhost:5000/ventas/encargados/${empresa}`
@@ -108,7 +98,12 @@ function VentaContent() {
       console.error(err);
       setExpedientes([]);
     }
-  };
+  }, [empresa]);
+
+  useEffect(() => {
+    obtenerEncargados();
+    setForm((prev) => ({ ...prev, fc_encargado_venta: "" }));
+  }, [obtenerEncargados]);
 
   /* ============================================================
       HANDLE CHANGE
@@ -256,7 +251,7 @@ function VentaContent() {
 
         <Grid container spacing={2}>
           {/* FECHA */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               type="date"
               label="Fecha"
@@ -269,7 +264,7 @@ function VentaContent() {
           </Grid>
 
           {/* FOLIO */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               label="Folio"
               name="fc_folio"
@@ -280,7 +275,7 @@ function VentaContent() {
           </Grid>
 
           {/* CLIENTE */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Autocomplete
               options={listaClientes}
               getOptionLabel={(o) => o.nombre}
@@ -302,7 +297,7 @@ function VentaContent() {
           </Grid>
 
           {/* TIPO */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               select
               label="Tipo de venta"
@@ -319,7 +314,7 @@ function VentaContent() {
           </Grid>
 
           {/* CANTIDAD */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               label="Cantidad"
               name="fn_cantidad_vendida"
@@ -330,7 +325,7 @@ function VentaContent() {
           </Grid>
 
           {/* PRECIO */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               label="Precio"
               name="fn_precio_venta"
@@ -341,7 +336,7 @@ function VentaContent() {
           </Grid>
 
           {/* TOTAL */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
             label="Total"
             value={formatNumero(total)}
@@ -351,7 +346,7 @@ function VentaContent() {
           </Grid>
 
           {/* ABONADO */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               label="Abonado"
               name="fn_abonado"
@@ -362,7 +357,7 @@ function VentaContent() {
           </Grid>
 
           {/* ESTADO */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               label="Estado"
               value={estado}
@@ -378,7 +373,7 @@ function VentaContent() {
           </Grid>
 
           {/* ENCARGADO */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Autocomplete
               options={listaEncargados}
               getOptionLabel={(o) => o.nombre}
@@ -400,7 +395,7 @@ function VentaContent() {
           </Grid>
 
           {/* OBSERVACIONES */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <TextField
               label="Observaciones"
               name="fc_observaciones"
@@ -413,7 +408,7 @@ function VentaContent() {
           </Grid>
 
           {/* BOTONES */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Button
               fullWidth
               variant="contained"

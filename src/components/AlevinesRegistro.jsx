@@ -267,7 +267,7 @@ export default function AlevinesRegistro() {
       <Card sx={{ borderRadius: 3, boxShadow: 3, marginBottom: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 name="numero_lote"
                 label="Número de Lote"
@@ -278,7 +278,7 @@ export default function AlevinesRegistro() {
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 name="cantidad_nacidos"
                 label="Cantidad Nacidos"
@@ -290,7 +290,7 @@ export default function AlevinesRegistro() {
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 name="peso_promedio"
                 label="Peso Promedio (g)"
@@ -303,7 +303,7 @@ export default function AlevinesRegistro() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <FormControl fullWidth size="medium">
                 <InputLabel id="label-colecta">Colecta</InputLabel>
                 <Select
@@ -322,7 +322,7 @@ export default function AlevinesRegistro() {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 name="observacion"
                 label="Observación"
@@ -336,7 +336,7 @@ export default function AlevinesRegistro() {
             </Grid>
 
             {/* Botones */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={2}

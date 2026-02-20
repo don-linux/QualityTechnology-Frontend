@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Container,
   Box,
@@ -17,35 +17,33 @@ import {
 import axios from "axios";
 import * as XLSX from "xlsx";
 
+const API_TESORERIA = "http://localhost:5000/tesoreria";
+const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
+
 export default function TesoreriaGeneral() {
   const [tab, setTab] = useState(0);
   const [datos, setDatos] = useState([]);
   const [anioSeleccionado] = useState(new Date().getFullYear());
 
-  // ✅ Usa la ruta sin acento (coincide con backend)
-  const API = "http://localhost:5000/tesoreria";
-  const granjas = ["Medellin", "La Ceiba", "Quality"];
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    obtenerDatos();
-  }, [anioSeleccionado, tab]);
-
-  const obtenerDatos = async () => {
+  const obtenerDatos = useCallback(async () => {
     try {
-      const granjaActual = granjas[tab];
-      const res = await axios.get(`${API}?anio=${anioSeleccionado}&granja=${granjaActual}`);
+      const granjaActual = GRANJAS[tab];
+      const res = await axios.get(`${API_TESORERIA}?anio=${anioSeleccionado}&granja=${granjaActual}`);
       setDatos(res.data || []);
     } catch (err) {
       console.error("❌ Error al obtener datos de tesoreria:", err);
     }
-  };
+  }, [anioSeleccionado, tab]);
+
+  useEffect(() => {
+    obtenerDatos();
+  }, [obtenerDatos]);
 
   const exportarExcel = () => {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(datos);
     XLSX.utils.book_append_sheet(wb, ws, `Tesoreria_${anioSeleccionado}`);
-    XLSX.writeFile(wb, `Tesoreria_${granjas[tab]}_${anioSeleccionado}.xlsx`);
+    XLSX.writeFile(wb, `Tesoreria_${GRANJAS[tab]}_${anioSeleccionado}.xlsx`);
   };
 
   const agrupados = datos.reduce((acc, item) => {
@@ -77,7 +75,7 @@ export default function TesoreriaGeneral() {
 
       <Box sx={{ p: 3 }}>
         <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", color: "#0A3D2D" }}>
-          Tesoreria {granjas[tab]} — {anioSeleccionado}
+          Tesoreria {GRANJAS[tab]} — {anioSeleccionado}
         </Typography>
 
         <TableContainer component={Paper}>

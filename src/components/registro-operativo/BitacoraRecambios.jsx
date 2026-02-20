@@ -232,7 +232,7 @@ const exportarPDF = () => {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Mes"
                 name="fc_mes"
@@ -241,7 +241,7 @@ const exportarPDF = () => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Instalación"
                 name="fn_num_instalacion"
@@ -254,7 +254,7 @@ const exportarPDF = () => {
 
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <React.Fragment key={n}>
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <TextField
                     label={`Fecha ${n}`}
                     type="date"
@@ -265,7 +265,7 @@ const exportarPDF = () => {
                     fullWidth
                   />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <TextField
                     label={`Tipo ${n}`}
                     name={`fc_tipo${n}`}
@@ -277,7 +277,7 @@ const exportarPDF = () => {
               </React.Fragment>
             ))}
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Responsable"
                 name="fc_responsable"

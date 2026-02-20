@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
@@ -35,7 +35,7 @@ function RecepcionInsumosContent() {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   // 🔍 Cargar y filtrar registros
-  const cargarDatos = async () => {
+  const cargarDatos = useCallback(async () => {
     try {
       const res = await axios.get(`http://localhost:5000/recepcion_insumos?ubicacion=${form.ubicacion}`);
       const filtrados = res.data.filter((r) => {
@@ -49,12 +49,11 @@ function RecepcionInsumosContent() {
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
     }
-  };
+  }, [form.ubicacion, busqueda]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     cargarDatos();
-  }, [form.ubicacion, busqueda]);
+  }, [cargarDatos]);
 
   // 💾 Guardar o actualizar
   const guardar = async () => {
@@ -197,12 +196,14 @@ function RecepcionInsumosContent() {
           size="small"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="primary" />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="primary" />
+                </InputAdornment>
+              ),
+            },
           }}
         />
       </Box>
@@ -211,7 +212,7 @@ function RecepcionInsumosContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={1.5}>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Fecha"
                 type="date"
@@ -223,7 +224,7 @@ function RecepcionInsumosContent() {
                 size="small"
               />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Proveedor"
                 name="fc_proveedor"
@@ -233,7 +234,7 @@ function RecepcionInsumosContent() {
                 size="small"
               />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Producto"
                 name="fc_producto"
@@ -243,7 +244,7 @@ function RecepcionInsumosContent() {
                 size="small"
               />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Lote"
                 name="fc_lote"
@@ -254,7 +255,7 @@ function RecepcionInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Cantidad"
                 name="fn_cantidad"
@@ -265,7 +266,7 @@ function RecepcionInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 select
                 label="Unidad de Medida"
@@ -281,7 +282,7 @@ function RecepcionInsumosContent() {
               </TextField>
             </Grid>
 
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Condiciones de entrega"
                 name="fc_condiciones_entrega"
@@ -292,7 +293,7 @@ function RecepcionInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Verificó"
                 name="fc_verifico"
@@ -303,7 +304,7 @@ function RecepcionInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Observaciones"
                 name="fc_observaciones"

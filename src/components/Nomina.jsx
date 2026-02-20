@@ -103,28 +103,28 @@ export default function Nomina() {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField label="Nombre del empleado" name="fc_nombre_empleado" value={form.fc_nombre_empleado} onChange={(e) => setForm({ ...form, fc_nombre_empleado: e.target.value })} fullWidth />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <TextField label="ID" name="fi_empleado_id" value={form.fi_empleado_id} onChange={(e) => setForm({ ...form, fi_empleado_id: e.target.value })} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Fecha de Pago" type="date" name="fd_fecha_pago" InputLabelProps={{ shrink: true }} value={form.fd_fecha_pago} onChange={(e) => setForm({ ...form, fd_fecha_pago: e.target.value })} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Total" type="number" name="fn_total" value={form.fn_total} onChange={(e) => setForm({ ...form, fn_total: e.target.value })} fullWidth />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <TextField label="Bono" type="number" name="fn_bono" value={form.fn_bono} onChange={(e) => setForm({ ...form, fn_bono: e.target.value })} fullWidth />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <TextField label="Deuda" type="number" name="fn_deuda" value={form.fn_deuda} onChange={(e) => setForm({ ...form, fn_deuda: e.target.value })} fullWidth />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <TextField label="Descuento" type="number" name="fn_descuento" value={form.fn_descuento} onChange={(e) => setForm({ ...form, fn_descuento: e.target.value })} fullWidth />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <TextField label="Anticipo" type="number" name="fn_anticipo" value={form.fn_anticipo} onChange={(e) => setForm({ ...form, fn_anticipo: e.target.value })} fullWidth />
             </Grid>
           </Grid>
@@ -141,13 +141,13 @@ export default function Nomina() {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField label="Buscar por nombre" value={busqueda.nombre} onChange={(e) => setBusqueda({ ...busqueda, nombre: e.target.value })} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Buscar por fecha" type="date" InputLabelProps={{ shrink: true }} value={busqueda.fecha} onChange={(e) => setBusqueda({ ...busqueda, fecha: e.target.value })} fullWidth />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
               <Button variant="contained" sx={{ height: "100%" }} onClick={buscar}>Buscar</Button>
             </Grid>
           </Grid>

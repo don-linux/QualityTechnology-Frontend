@@ -151,7 +151,7 @@ function BitacoraInventarioContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Instalación"
                 name="fn_num_instalacion"
@@ -160,7 +160,7 @@ function BitacoraInventarioContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Cantidad"
                 name="fn_cantidad"
@@ -170,7 +170,7 @@ function BitacoraInventarioContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Talla"
                 name="fn_talla"
@@ -180,7 +180,7 @@ function BitacoraInventarioContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Lote"
                 name="fc_lote"
@@ -189,7 +189,7 @@ function BitacoraInventarioContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Fecha Siembra"
                 type="date"
@@ -200,7 +200,7 @@ function BitacoraInventarioContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Fecha Salida Hormonado"
                 type="date"
@@ -211,7 +211,7 @@ function BitacoraInventarioContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Observación"
                 name="fc_observacion"

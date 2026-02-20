@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
@@ -37,7 +37,7 @@ function BitacoraPlagasContent() {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   // 🔍 Cargar y filtrar registros
-  const cargarDatos = async () => {
+  const cargarDatos = useCallback(async () => {
     try {
       const res = await axios.get(`http://localhost:5000/plagas?ubicacion=${form.ubicacion}`);
       const filtrados = res.data.filter((r) => {
@@ -51,12 +51,11 @@ function BitacoraPlagasContent() {
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
     }
-  };
+  }, [form.ubicacion, busqueda]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     cargarDatos();
-  }, [form.ubicacion, busqueda]);
+  }, [cargarDatos]);
 
   // 💾 Guardar o actualizar
   const guardar = async () => {
@@ -198,12 +197,14 @@ function BitacoraPlagasContent() {
           size="small"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="primary" />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="primary" />
+                </InputAdornment>
+              ),
+            },
           }}
           sx={{ width: 250 }}
         />
@@ -213,7 +214,7 @@ function BitacoraPlagasContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={1.5}>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Fecha"
                 type="date"
@@ -225,7 +226,7 @@ function BitacoraPlagasContent() {
                 size="small"
               />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="No. Trampa"
                 name="fn_num_trampa"
@@ -235,7 +236,7 @@ function BitacoraPlagasContent() {
                 size="small"
               />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 select
                 label="Tipo de Trampa"
@@ -250,7 +251,7 @@ function BitacoraPlagasContent() {
                 ))}
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 select
                 label="Unidad de Producción"
@@ -266,7 +267,7 @@ function BitacoraPlagasContent() {
               </TextField>
             </Grid>
 
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 select
                 label="Malla"
@@ -281,7 +282,7 @@ function BitacoraPlagasContent() {
                 ))}
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 select
                 label="Veneno"
@@ -296,7 +297,7 @@ function BitacoraPlagasContent() {
                 ))}
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 label="Verificó"
                 name="fc_verifico"
@@ -307,7 +308,7 @@ function BitacoraPlagasContent() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Hallazgo"
                 name="fc_hallazgo"
@@ -318,7 +319,7 @@ function BitacoraPlagasContent() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Observaciones"
                 name="fc_observaciones"

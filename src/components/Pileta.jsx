@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "../utils/api";
 import {
   Box,
@@ -80,7 +80,7 @@ function PiletaContent() {
   /* ============================================================
       PETICIONES API
   ============================================================ */
-  const obtenerInventario = async () => {
+  const obtenerInventario = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
       const data = await apiFetch(`/piletas/inventario/${granja}`);
@@ -88,9 +88,9 @@ function PiletaContent() {
     } catch (error) {
       console.error("❌ Error inventario:", error);
     }
-  };
+  }, [granjaActiva]);
 
-  const obtenerLotes = async () => {
+  const obtenerLotes = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
       const data = await apiFetch(`/piletas/lotes/${granja}`);
@@ -98,22 +98,19 @@ function PiletaContent() {
     } catch (error) {
       console.error("❌ Error lotes:", error);
     }
-  };
+  }, [granjaActiva]);
 
-const obtenerInstalaciones = async () => {
-  try {
-    const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+  const obtenerInstalaciones = useCallback(async () => {
+    try {
+      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const data = await apiFetch(`/piletas/origen/${granja}`);
+      setInstalaciones(data || []);
+    } catch (error) {
+      console.error("❌ Error instalaciones:", error);
+    }
+  }, [granjaActiva]);
 
-    // ✅ CORRECTO → esta ruta sí existe en tu backend
-    const data = await apiFetch(`/piletas/origen/${granja}`);
-
-    setInstalaciones(data || []);
-  } catch (error) {
-    console.error("❌ Error instalaciones:", error);
-  }
-};
-
-  const obtenerRastreos = async () => {
+  const obtenerRastreos = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
       const data = await apiFetch(`/piletas/movimientos/${usuario_id}/${granja}`);
@@ -121,7 +118,25 @@ const obtenerInstalaciones = async () => {
     } catch (error) {
       console.error("❌ Error trazabilidad:", error);
     }
-  };
+  }, [granjaActiva, usuario_id]);
+
+  const limpiarFormulario = useCallback(() => {
+    setForm({
+      fi_instalacion_id: "",
+      origen_instalacion: "",
+      origen_externo: "",
+      fi_lote_id: "",
+      no_lote: "",
+      cantidad: "",
+      talla_gr: "",
+      observacion: "",
+      fecha_siembra: "",
+      fecha_ultima_biometria: "",
+      fc_granja: granjaActiva,
+    });
+    setSeleccionado(null);
+    setMostrarFormulario(false);
+  }, [granjaActiva]);
 
   /* ============================================================
       CARGAR TODO CUANDO CAMBIA LA GRANJA
@@ -130,10 +145,9 @@ const obtenerInstalaciones = async () => {
     limpiarFormulario();
     obtenerInventario();
     obtenerLotes();
-    obtenerInstalaciones(); 
+    obtenerInstalaciones();
     obtenerRastreos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [granjaActiva]);
+  }, [limpiarFormulario, obtenerInventario, obtenerLotes, obtenerInstalaciones, obtenerRastreos]);
 
   /* ============================================================
      ORIGEN = CARGAR LOTE REAL DESDE BACKEND
@@ -190,26 +204,6 @@ const obtenerInstalaciones = async () => {
     setForm({ ...form, [name]: value });
   };
 
-  /* ============================================================
-      LIMPIAR FORMULARIO
-  ============================================================ */
-  const limpiarFormulario = () => {
-    setForm({
-      fi_instalacion_id: "",
-      origen_instalacion: "",
-      origen_externo: "",
-      fi_lote_id: "",
-      no_lote: "",
-      cantidad: "",
-      talla_gr: "",
-      observacion: "",
-      fecha_siembra: "",
-      fecha_ultima_biometria: "",
-      fc_granja: granjaActiva,
-    });
-    setSeleccionado(null);
-    setMostrarFormulario(false);
-  };
 
   /* ============================================================
       REGISTRAR
@@ -415,7 +409,7 @@ const obtenerInstalaciones = async () => {
             <Grid container spacing={2}>
 
               {/* ORIGEN */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                 select
                 label="Origen"
@@ -444,7 +438,7 @@ const obtenerInstalaciones = async () => {
               </Grid>
 
               {/* DESTINO */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
                   label="Destino"
@@ -464,17 +458,17 @@ const obtenerInstalaciones = async () => {
               </Grid>
 
               {/* LOTE */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Lote asignado"
                   value={form.no_lote}
                   fullWidth
-                  InputProps={{ readOnly: true }}
+                  slotProps={{ input: { readOnly: true } }}
                 />
               </Grid>
 
               {/* CANTIDAD */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Cantidad"
                   name="cantidad"
@@ -485,7 +479,7 @@ const obtenerInstalaciones = async () => {
               </Grid>
 
               {/* TALLA */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Talla (Gr)"
                   name="talla_gr"
@@ -496,7 +490,7 @@ const obtenerInstalaciones = async () => {
               </Grid>
 
               {/* OBSERVACIÓN */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Observación"
                   name="observacion"
@@ -507,7 +501,7 @@ const obtenerInstalaciones = async () => {
               </Grid>
 
               {/* FECHAS */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   type="date"
                   label="Fecha Siembra"
@@ -519,7 +513,7 @@ const obtenerInstalaciones = async () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   type="date"
                   label="Última Biometría"
@@ -625,7 +619,7 @@ const obtenerInstalaciones = async () => {
       </Typography>
 
       <Grid container spacing={2} mb={2}>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <TextField
             label="Buscar"
             fullWidth
@@ -635,7 +629,7 @@ const obtenerInstalaciones = async () => {
           />
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <TextField
             type="date"
             label="Fecha inicio"
@@ -647,7 +641,7 @@ const obtenerInstalaciones = async () => {
           />
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <TextField
             type="date"
             label="Fecha fin"
@@ -659,7 +653,7 @@ const obtenerInstalaciones = async () => {
           />
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Button
             variant="contained"
             sx={{ backgroundColor: "#0288d1" }}

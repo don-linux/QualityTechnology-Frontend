@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "../utils/api";
 import {
   Box,
@@ -49,7 +49,7 @@ function InstalacionesContent() {
   /* =========================================================
      🔹 Obtener instalaciones por tipo y granja
   ========================================================= */
-  const obtenerInstalaciones = async () => {
+  const obtenerInstalaciones = useCallback(async () => {
     try {
       const data = await apiFetch(`/instalaciones/granja/${granja}`);
 
@@ -82,12 +82,11 @@ function InstalacionesContent() {
       setInstalaciones([]);
       setMensaje("Error al obtener instalaciones");
     }
-  };
+  }, [tipo, granja]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     obtenerInstalaciones();
-  }, [tipo, granja]);
+  }, [obtenerInstalaciones]);
 
   /* =========================================================
      🔹 CRUD
@@ -264,7 +263,7 @@ function InstalacionesContent() {
           <CardContent>
             <Grid container spacing={2}>
               
-              <Grid item xs={12} md={3}>
+              <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
                   label="Nombre"
                   name="nombre_instalacion"
@@ -274,7 +273,7 @@ function InstalacionesContent() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={2}>
+              <Grid size={{ xs: 12, md: 2 }}>
                 <TextField
                   label="Largo"
                   name="largo"
@@ -285,7 +284,7 @@ function InstalacionesContent() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={2}>
+              <Grid size={{ xs: 12, md: 2 }}>
                 <TextField
                   label="Ancho"
                   name="ancho"
@@ -296,7 +295,7 @@ function InstalacionesContent() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={2}>
+              <Grid size={{ xs: 12, md: 2 }}>
                 <TextField
                   label="Altura"
                   name="altura"
@@ -307,7 +306,7 @@ function InstalacionesContent() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={3}>
+              <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
                   label="Material"
                   name="material"
@@ -318,7 +317,7 @@ function InstalacionesContent() {
               </Grid>
 
               {/* ESTADO */}
-              <Grid item xs={12} md={3}>
+              <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
                   select
                   label="Estado"
@@ -333,7 +332,7 @@ function InstalacionesContent() {
               </Grid>
 
               {/* TIPO */}
-              <Grid item xs={12} md={3}>
+              <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
                   select
                   label="Tipo"

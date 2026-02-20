@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -32,19 +32,18 @@ export default function CajaAhorro() {
   /* =========================================================
      🟢 Obtener datos por granja
      ========================================================= */
-  const obtenerDatos = async () => {
+  const obtenerDatos = useCallback(async () => {
     try {
       const res = await axios.get(`${api}/${granja}`);
       setRegistros(res.data);
     } catch (err) {
       console.error("❌ Error al cargar caja de ahorro:", err);
     }
-  };
+  }, [granja]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     obtenerDatos();
-  }, [granja]);
+  }, [obtenerDatos]);
 
   /* =========================================================
      🔍 Buscar categoría
@@ -170,7 +169,7 @@ export default function CajaAhorro() {
       {/* 🔹 Barra de acciones */}
       <Paper sx={{ p: 2, mb: 3, background: "#f8f9fa" }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item>
+          <Grid>
             <TextField
               label="Buscar categoría"
               variant="outlined"
@@ -180,12 +179,12 @@ export default function CajaAhorro() {
               sx={{ width: 250 }}
             />
           </Grid>
-          <Grid item>
+          <Grid>
             <Button variant="contained" onClick={buscarCategoria}>
               BUSCAR
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="outlined"
               color="secondary"
@@ -198,7 +197,7 @@ export default function CajaAhorro() {
               LIMPIAR
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="contained"
               color="success"
@@ -208,7 +207,7 @@ export default function CajaAhorro() {
               NUEVA CATEGORÍA
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="contained"
               color="error"

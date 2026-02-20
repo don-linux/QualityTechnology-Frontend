@@ -120,7 +120,7 @@ export default function Cliente() {
       <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 name="fc_nombre"
                 label="Nombre o Razón Social"
@@ -130,7 +130,7 @@ export default function Cliente() {
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 name="fc_telefono"
                 label="Teléfono"
@@ -140,7 +140,7 @@ export default function Cliente() {
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 name="fc_correo"
                 label="Correo Electrónico"
@@ -150,7 +150,7 @@ export default function Cliente() {
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 name="fc_localidad"
                 label="Localidad"
@@ -160,7 +160,7 @@ export default function Cliente() {
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 name="fc_cp"
                 label="Código Postal"

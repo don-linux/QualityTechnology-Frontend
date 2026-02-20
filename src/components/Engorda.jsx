@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -42,72 +42,43 @@ function EngordaContent() {
   /* =========================================================
       📦 OBTENER DATOS
   ========================================================= */
-  const obtenerInstalaciones = async () => {
+  const obtenerInstalaciones = useCallback(async () => {
     try {
-      // ✅ Obtenemos instalaciones tipo "Engorda"
       const data = await apiFetch(`/instalaciones/tipo/Engorda/${granjaActiva}`);
       setInstalaciones(data || []);
     } catch (err) {
       console.error("❌ Error al obtener instalaciones:", err);
     }
-  };
+  }, [granjaActiva]);
 
-  const obtenerLotes = async () => {
+  const obtenerLotes = useCallback(async () => {
     try {
-      // ✅ Obtenemos los lotes con inventario disponible (Igual que en piletas)
       const data = await apiFetch(`/piletas/lotes/inventario/${granjaActiva}`);
       setLotes(data || []);
     } catch (err) {
       console.error("❌ Error al obtener lotes:", err);
     }
-  };
+  }, [granjaActiva]);
 
-  const obtenerEngordas = async () => {
+  const obtenerEngordas = useCallback(async () => {
     try {
       const data = await apiFetch(`/engorda/granja/${granjaActiva}`);
       setEngordas(data || []);
     } catch (err) {
       console.error("Error al obtener engordas:", err);
     }
-  };
+  }, [granjaActiva]);
 
-  const obtenerMovimientos = async () => {
+  const obtenerMovimientos = useCallback(async () => {
     try {
       const data = await apiFetch(`/engorda/movimientos/${usuario_id}`);
       setMovimientos(data || []);
     } catch (err) {
       console.error("Error al obtener movimientos:", err);
     }
-  };
+  }, [usuario_id]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    limpiarFormulario();
-    obtenerEngordas();
-    obtenerMovimientos();
-    obtenerInstalaciones();
-    obtenerLotes();
-  }, [granjaActiva]);
-
-  /* =========================================================
-      ✏️ FORMULARIO Y CAMBIOS
-  ========================================================= */
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  // ✅ Nueva función para manejar el cambio de origen (Lote)
-  const handleOrigenLote = (loteId) => {
-    const lote = lotes.find((l) => l.fi_lote_id === loteId);
-    setForm({
-      ...form,
-      origen_instalacion: loteId, // Este se manda al backend como origen_id
-      no_lote: lote?.no_lote || "",
-      talla_gr: lote?.talla_gr || "",
-      cantidad: "", // El usuario define cuánto mover
-      fecha_siembra: lote?.fecha_siembra?.substring(0, 10) || "",
-    });
-  };
-
-  const limpiarFormulario = () => {
+  const limpiarFormulario = useCallback(() => {
     setForm({
       origen_instalacion: "",
       fi_instalacion_id: "",
@@ -122,6 +93,32 @@ function EngordaContent() {
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
+  }, [granjaActiva, usuario_id]);
+
+  useEffect(() => {
+    limpiarFormulario();
+    obtenerEngordas();
+    obtenerMovimientos();
+    obtenerInstalaciones();
+    obtenerLotes();
+  }, [limpiarFormulario, obtenerEngordas, obtenerMovimientos, obtenerInstalaciones, obtenerLotes]);
+
+  /* =========================================================
+      ✏️ FORMULARIO Y CAMBIOS
+  ========================================================= */
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // ✅ Nueva función para manejar el cambio de origen (Lote)
+  const handleOrigenLote = (loteId) => {
+    const lote = lotes.find((l) => l.fi_lote_id === loteId);
+    setForm({
+      ...form,
+      origen_instalacion: loteId,
+      no_lote: lote?.no_lote || "",
+      talla_gr: lote?.talla_gr || "",
+      cantidad: "",
+      fecha_siembra: lote?.fecha_siembra?.substring(0, 10) || "",
+    });
   };
 
   /* =========================================================
@@ -255,7 +252,7 @@ function EngordaContent() {
             <CardContent>
               <Grid container spacing={2}>
                 {/* 1. ORIGEN */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     select
                     label="Origen"
@@ -274,7 +271,7 @@ function EngordaContent() {
                 </Grid>
 
                 {/* 2.DESTINO */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     select
                     label="Destino"
@@ -292,27 +289,27 @@ function EngordaContent() {
                   </TextField>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField label="Cantidad a Sembrar" name="cantidad" type="number" value={form.cantidad || ""} onChange={handleChange} fullWidth />
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField label="Talla (Gr)" name="talla_gr" type="number" value={form.talla_gr || ""} onChange={handleChange} fullWidth />
                 </Grid>
 
-                <Grid item xs={12} md={4}>
-                  <TextField label="No. Lote" name="no_lote" value={form.no_lote || ""} fullWidth InputProps={{ readOnly: true }} />
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <TextField label="No. Lote" name="no_lote" value={form.no_lote || ""} fullWidth slotProps={{ input: { readOnly: true } }} />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField label="Observación" name="observacion" value={form.observacion || ""} onChange={handleChange} fullWidth multiline rows={2} />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField type="date" label="Fecha Siembra" name="fecha_siembra" InputLabelProps={{ shrink: true }} value={form.fecha_siembra || ""} onChange={handleChange} fullWidth />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField type="date" label="Fecha Biometría" name="fecha_biometria" InputLabelProps={{ shrink: true }} value={form.fecha_biometria || ""} onChange={handleChange} fullWidth />
                 </Grid>
               </Grid>

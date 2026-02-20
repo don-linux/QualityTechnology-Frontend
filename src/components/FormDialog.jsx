@@ -68,7 +68,7 @@ const handleSave = async () => {
         <DialogTitle>{editId ? "Editar Movimiento" : "Nuevo Movimiento"}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 label="Fecha"
                 type="date"
@@ -81,7 +81,7 @@ const handleSave = async () => {
             </Grid>
 
             {/* ✅ Select de cuentas */}
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 select
                 label="Cuenta"
@@ -98,7 +98,7 @@ const handleSave = async () => {
               </TextField>
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 label="Ingreso"
                 type="number"
@@ -119,7 +119,7 @@ const handleSave = async () => {
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 label="Egreso"
                 type="number"
@@ -140,7 +140,7 @@ const handleSave = async () => {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Descripción"
                 name="fc_descripcion"
@@ -151,7 +151,7 @@ const handleSave = async () => {
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 label="Categoría"
                 name="fc_categoria"
@@ -161,7 +161,7 @@ const handleSave = async () => {
               />
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 label="Subcategoría"
                 name="fc_subcategoria"
@@ -172,7 +172,7 @@ const handleSave = async () => {
             </Grid>
 
             {/* ✅ Beneficiario dinámico */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 select
                 label="Beneficiario / Proveedor"
@@ -214,7 +214,7 @@ const handleSave = async () => {
               </TextField>
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 label="Proyecto"
                 name="fc_noproyecto"
@@ -224,7 +224,7 @@ const handleSave = async () => {
               />
             </Grid>
 {/* ✅ Menú de factura con 3 opciones */}
-<Grid item xs={6}>
+<Grid size={6}>
   <TextField
     select
     label="Factura"
@@ -254,7 +254,7 @@ const handleSave = async () => {
 
     {/* ✅ Mostrar botón de carga solo si elige "Con factura" */}
     {formData.fc_factura_opcion === "APLICA" && (
-      <Grid item xs={6}>
+      <Grid size={6}>
         <Button
           variant="outlined"
           component="label"
@@ -276,7 +276,7 @@ const handleSave = async () => {
         </Button>
       </Grid>
     )}
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField
                 select
                 label="Estatus"

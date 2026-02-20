@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Card,
@@ -71,7 +71,7 @@ function EquiposContent() {
     setForm({ ...form, [e.target.name]: e.target.value });
 
   // 📦 Cargar equipos
-  const cargarDatos = async () => {
+  const cargarDatos = useCallback(async () => {
     try {
       const res = await axios.get(`${api}/${usuario_id}`);
       setData(res.data);
@@ -82,12 +82,11 @@ function EquiposContent() {
         severity: "error",
       });
     }
-  };
+  }, [usuario_id]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (usuario_id) cargarDatos();
-  }, [usuario_id]);
+  }, [usuario_id, cargarDatos]);
 
   // 💾 Guardar / actualizar
   const guardar = async () => {
@@ -280,7 +279,7 @@ function EquiposContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Nombre"
                 name="fc_nombre"
@@ -289,7 +288,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Marca"
                 name="fc_marca"
@@ -298,7 +297,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Modelo"
                 name="fc_modelo"
@@ -307,7 +306,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Tipo"
                 name="fc_tipo"
@@ -316,7 +315,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 type="date"
                 label="Fecha Compra"
@@ -327,7 +326,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Costo"
                 type="number"
@@ -337,7 +336,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
                 label="Estado"
@@ -351,7 +350,7 @@ function EquiposContent() {
                 <MenuItem value="Dañado">Dañado</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Ubicación"
                 name="fc_ubicacion"
@@ -360,7 +359,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Responsable"
                 name="fc_responsable"
@@ -369,7 +368,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 type="date"
                 label="Próximo Mantenimiento"
@@ -380,7 +379,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Notas"
                 name="fc_notas"
@@ -494,7 +493,7 @@ function EquiposContent() {
         <DialogTitle>Mantenimientos del Equipo</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 type="date"
                 label="Fecha"
@@ -510,7 +509,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
                 label="Tipo"
@@ -528,7 +527,7 @@ function EquiposContent() {
                 <MenuItem value="Correctivo">Correctivo</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Responsable"
                 name="fc_responsable"
@@ -542,7 +541,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Descripción"
                 name="fc_descripcion"
@@ -558,7 +557,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Costo"
                 type="number"
@@ -573,7 +572,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Estado Posterior"
                 name="fc_estado_post"
@@ -587,7 +586,7 @@ function EquiposContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 type="date"
                 label="Próximo Mantenimiento"

@@ -127,7 +127,7 @@ export default function UsuariosRegistro() {
       <Card>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 name="nombre"
                 label="Nombre de Usuario"
@@ -136,7 +136,7 @@ export default function UsuariosRegistro() {
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 name="contraseña"
                 label="Contraseña"
@@ -146,7 +146,7 @@ export default function UsuariosRegistro() {
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 select
                 name="rol_id"
@@ -162,7 +162,7 @@ export default function UsuariosRegistro() {
                 ))}
               </TextField>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Button
                 variant="contained"
                 color="success"
@@ -197,7 +197,7 @@ export default function UsuariosRegistro() {
                 Limpiar
               </Button>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>
