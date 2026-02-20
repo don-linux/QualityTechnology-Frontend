@@ -40,7 +40,7 @@ import {
 } from "recharts";
 
 // 📦 Librerías para exportar a Excel
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
 // 🔹 Configurar dayjs en español
@@ -216,7 +216,7 @@ export default function AlevinesRegistro() {
   }));
 
   // 📥 Función para exportar a Excel SOLO lo filtrado
-  const exportarYLimpiarPantalla = () => {
+  const exportarYLimpiarPantalla = async () => {
     const datos = alevinesFiltrados.map((a) => ({
       "Número Lote": a.fc_numero_lote,
       Cantidad: a.fn_cantidad,
@@ -237,16 +237,22 @@ export default function AlevinesRegistro() {
       Cantidad: d.cantidad,
     }));
 
-    const wsTabla = XLSX.utils.json_to_sheet(datos);
-    const wsGrafica = XLSX.utils.json_to_sheet(datosGrafica);
+    const wb = new ExcelJS.Workbook();
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, wsTabla, "Registros");
-    XLSX.utils.book_append_sheet(wb, wsGrafica, "Gráfica");
+    const wsTabla = wb.addWorksheet("Registros");
+    if (datos.length > 0) {
+      wsTabla.columns = Object.keys(datos[0]).map((key) => ({ header: key, key }));
+      wsTabla.addRows(datos);
+    }
 
-    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, `Alevines_${dayjs().format("YYYY_MM_DD")}.xlsx`);
+    const wsGrafica = wb.addWorksheet("Gráfica");
+    if (datosGrafica.length > 0) {
+      wsGrafica.columns = Object.keys(datosGrafica[0]).map((key) => ({ header: key, key }));
+      wsGrafica.addRows(datosGrafica);
+    }
+
+    const excelBuffer = await wb.xlsx.writeBuffer();
+    saveAs(new Blob([excelBuffer]), `Alevines_${dayjs().format("YYYY_MM_DD")}.xlsx`);
 
     setAlevines([]); // limpiar pantalla
     limpiarFormulario();

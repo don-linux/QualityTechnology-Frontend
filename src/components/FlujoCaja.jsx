@@ -6,7 +6,8 @@ import {
   Snackbar, Alert
 } from "@mui/material";
 import axios from "axios";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
 
@@ -42,11 +43,15 @@ export default function FlujoCaja() {
   // =====================================================
   // 📤 Exportar Excel
   // =====================================================
-  const exportarExcel = () => {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(movimientos);
-    XLSX.utils.book_append_sheet(wb, ws, "FlujoCaja");
-    XLSX.writeFile(wb, `FlujoCaja_${GRANJAS[subTab]}.xlsx`);
+  const exportarExcel = async () => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("FlujoCaja");
+    if (movimientos.length > 0) {
+      ws.columns = Object.keys(movimientos[0]).map((key) => ({ header: key, key }));
+      ws.addRows(movimientos);
+    }
+    const buffer = await wb.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `FlujoCaja_${GRANJAS[subTab]}.xlsx`);
   };
 
   // =====================================================

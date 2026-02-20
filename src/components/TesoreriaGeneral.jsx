@@ -15,7 +15,8 @@ import {
   Button,
 } from "@mui/material";
 import axios from "axios";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 const API_TESORERIA = "http://localhost:5000/tesoreria";
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
@@ -39,11 +40,15 @@ export default function TesoreriaGeneral() {
     obtenerDatos();
   }, [obtenerDatos]);
 
-  const exportarExcel = () => {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(datos);
-    XLSX.utils.book_append_sheet(wb, ws, `Tesoreria_${anioSeleccionado}`);
-    XLSX.writeFile(wb, `Tesoreria_${GRANJAS[tab]}_${anioSeleccionado}.xlsx`);
+  const exportarExcel = async () => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet(`Tesoreria_${anioSeleccionado}`);
+    if (datos.length > 0) {
+      ws.columns = Object.keys(datos[0]).map((key) => ({ header: key, key }));
+      ws.addRows(datos);
+    }
+    const buffer = await wb.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `Tesoreria_${GRANJAS[tab]}_${anioSeleccionado}.xlsx`);
   };
 
   const agrupados = datos.reduce((acc, item) => {
