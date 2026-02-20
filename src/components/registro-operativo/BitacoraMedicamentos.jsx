@@ -87,7 +87,7 @@ function BitacoraMedicamentosContent() {
   // 📄 Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logoMedellin = `${process.env.PUBLIC_URL}/images/medellin.png`;
+    const logoMedellin = `${""}/images/medellin.png`;
 
     doc.addImage(logoMedellin, "PNG", 10, 8, 25, 25);
     doc.setFontSize(14);

@@ -117,7 +117,7 @@ function BitacoraPlagasContent() {
   // 📄 Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = `${process.env.PUBLIC_URL}/images/${form.ubicacion}.png`;
+    const logo = `${""}/images/${form.ubicacion}.png`;
     const color = getColorPorUbicacion();
 
     try {

@@ -122,7 +122,7 @@ function BioAlimentacionContent() {
   // 🧾 Exportar a PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logoCeiba = `${process.env.PUBLIC_URL}/images/ceiba.png`;
+    const logoCeiba = `${""}/images/ceiba.png`;
 
     doc.addImage(logoCeiba, "PNG", 10, 8, 25, 25);
     doc.setFontSize(14);

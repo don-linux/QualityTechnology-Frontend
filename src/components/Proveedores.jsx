@@ -142,7 +142,7 @@ export default function Proveedores() {
   // ============================
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = `${process.env.PUBLIC_URL}/images/quality.png`;
+    const logo = `${""}/images/quality.png`;
 
     doc.addImage(logo, "PNG", 10, 8, 25, 25);
     doc.setFontSize(14);

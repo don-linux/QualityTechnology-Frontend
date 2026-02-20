@@ -179,7 +179,7 @@ export default function CorporateLayout() {
       >
         <Box sx={{ textAlign: "center", mb: 2 }}>
           <img
-            src={`${process.env.PUBLIC_URL}/images/quality.png`}
+            src={`${""}/images/quality.png`}
             alt="Logo"
             width={drawerOpen ? "110" : "40"}
             style={{ marginTop: "10px", transition: "all 0.3s ease" }}

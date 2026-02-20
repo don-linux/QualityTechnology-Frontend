@@ -109,7 +109,7 @@ function BitacoraVisitasContent() {
 
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = `${process.env.PUBLIC_URL}/images/${form.ubicacion}.png`;
+    const logo = `${""}/images/${form.ubicacion}.png`;
     const color = form.ubicacion === "ceiba" ? [46, 125, 50] : form.ubicacion === "quality" ? [25, 118, 210] : [13, 71, 161];
 
     try {

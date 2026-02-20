@@ -10,6 +10,7 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
@@ -23,3 +24,4 @@ node_modules/
 *.log
 *.tmp
 CLAUDE.local.md
+.vite-cache/

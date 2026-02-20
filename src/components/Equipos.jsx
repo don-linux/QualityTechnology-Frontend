@@ -220,11 +220,11 @@ function EquiposContent() {
     const doc = new jsPDF("l", "mm", "a4");
 
     // Logo según usuario
-    let logo = `${process.env.PUBLIC_URL}/images/quality.png`;
+    let logo = `${""}/images/quality.png`;
     if (nombreUsuario.includes("ceiba"))
-      logo = `${process.env.PUBLIC_URL}/images/ceiba.png`;
+      logo = `${""}/images/ceiba.png`;
     if (nombreUsuario.includes("medellin"))
-      logo = `${process.env.PUBLIC_URL}/images/medellin.png`;
+      logo = `${""}/images/medellin.png`;
 
     doc.addImage(logo, "PNG", 10, 8, 25, 25);
     doc.setFontSize(14);

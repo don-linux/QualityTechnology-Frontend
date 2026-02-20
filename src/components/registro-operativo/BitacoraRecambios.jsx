@@ -124,7 +124,7 @@ function BitacoraRecambiosContent() {
 // 📄 Exportar PDF (formato institucional limpio)
 const exportarPDF = () => {
   const doc = new jsPDF("l", "mm", "a4");
-  const logo = `${process.env.PUBLIC_URL}/images/medellin.png`;
+  const logo = `${""}/images/medellin.png`;
 
   // Logo superior
   doc.addImage(logo, "PNG", 10, 8, 25, 25);

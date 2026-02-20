@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(# Buscar otros patrones deprecados comunes en MUI v7 echo \"\"=== makeStyles/withStyles \\(removidos en MUI v5+\\) ===\"\" grep -rn \"\"makeStyles\\\\|withStyles\\\\|createStyles\"\" src/ echo \"\"=== FormControl con variant legacy ===\"\" grep -rn \"\"variant=\\\\\"\"filled\\\\\"\"\\\\|variant=\\\\\"\"standard\\\\\"\"\"\" src/)"
+      "Bash(# Buscar otros patrones deprecados comunes en MUI v7 echo \"\"=== makeStyles/withStyles \\(removidos en MUI v5+\\) ===\"\" grep -rn \"\"makeStyles\\\\|withStyles\\\\|createStyles\"\" src/ echo \"\"=== FormControl con variant legacy ===\"\" grep -rn \"\"variant=\\\\\"\"filled\\\\\"\"\\\\|variant=\\\\\"\"standard\\\\\"\"\"\" src/)",
+      "Bash(grep:*)"
     ]
   }
 }

@@ -5,61 +5,74 @@ Agentic coding guidelines for this React frontend repository.
 ## Build, Lint, Test Commands
 
 ```bash
-# Development server
+# Development server (port 3000)
 npm start
 
-# Production build
+# Production build (output: /dist)
 npm run build
 
-# Run all tests in watch mode
-npm test
-
-# Run single test file
-npm test -- App.test.js
+# Preview production build
+npm run preview
 
 # Run tests once (CI mode)
-npm test -- --watchAll=false
+npm test
+
+# Run tests in watch mode
+npm run test:watch
 
 # Run tests with coverage
-npm test -- --coverage --watchAll=false
+npx vitest run --coverage
 ```
 
 ## Project Structure
 
-- `/src/components/` - React components (PascalCase .jsx files)
-- `/src/components/registro-operativo/` - Operational registry subcomponents
-- `/src/layout/` - Layout components
-- `/src/utils/` - Utility functions (api.js, auth.js)
-- `/public/images/` - Static images
-- `/docker/` - Docker configurations (dev/prod)
+```
+/
+├── index.html                          # Vite entry point (raíz, NO en /public)
+├── vite.config.js                      # Vite + Vitest config
+├── src/
+│   ├── index.jsx                       # React root (ReactDOM.createRoot)
+│   ├── App.jsx                         # Router y rutas principales
+│   ├── setupTests.js                   # Vitest setup (@testing-library/jest-dom)
+│   ├── components/                     # Componentes React (PascalCase.jsx)
+│   │   └── registro-operativo/         # Bitácoras y registros operativos
+│   ├── layout/                         # CorporateLayout, etc.
+│   └── utils/                          # api.js, auth.js
+├── public/
+│   └── images/                         # Imágenes estáticas (logo, etc.)
+└── docker/                             # Configuraciones Docker (dev/prod)
+```
 
 ## Technology Stack
 
-- **Framework**: React 18 (Create React App)
-- **UI Library**: Material-UI (MUI) v7 with @emotion/styled
+- **Framework**: React 19 + Vite 6
+- **UI Library**: MUI v7 (@mui/material, @mui/icons-material, @mui/lab, @mui/x-charts, @mui/x-date-pickers)
 - **Routing**: React Router v7
 - **HTTP Client**: axios
 - **Animation**: framer-motion
-- **Charts**: @mui/x-charts, recharts
-- **Testing**: Jest + React Testing Library
-- **Linting**: ESLint (react-app config)
+- **Charts**: recharts, @mui/x-charts, react-heatmap-grid
+- **PDF Export**: jspdf v4 + jspdf-autotable, html2canvas, html-to-image
+- **Excel Export**: exceljs + file-saver
+- **Fechas**: dayjs
+- **Testing**: Vitest + @testing-library/react v16 + jsdom
 
 ## Code Style Guidelines
 
 ### File Organization
-- Components: `PascalCase.jsx` (e.g., `Usuarios.jsx`, `Login.jsx`)
-- Utilities: `camelCase.js` (e.g., `api.js`, `auth.js`)
-- One component per file
-- Place component comment at top: `// src/components/ComponentName.jsx`
+- Componentes: `PascalCase.jsx` (e.g., `Usuarios.jsx`, `Login.jsx`)
+- Utilidades: `camelCase.js` (e.g., `api.js`, `auth.js`)
+- Un componente por archivo
+- Comentario de ruta al inicio: `// src/components/ComponentName.jsx`
+- **Todos los archivos con JSX deben usar extensión `.jsx`** (requerido por Rollup/Vite)
 
 ### Imports Order
-1. React and hooks
-2. Third-party libraries (MUI, axios, framer-motion)
-3. Internal utilities
-4. Relative components
+1. React y hooks
+2. Librerías de terceros (MUI, axios, framer-motion)
+3. Utilidades internas
+4. Componentes relativos
 
 ```jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
@@ -68,31 +81,39 @@ import PageHeader from "./PageHeader";
 
 ### Component Patterns
 
-**Function Components:** Use arrow functions or regular functions (both accepted)
+**Function Components:** Arrow functions o funciones regulares (ambas aceptadas)
 
 ```jsx
-// Arrow function (preferred for simple components)
+// Arrow function (preferida para componentes simples)
 const Login = () => { ... };
 export default Login;
 
-// Regular function
+// Función regular
 export default function UsuariosRegistro() { ... }
 ```
 
 **State Management:**
-- Use `useState` for local state
-- Use `useEffect` for side effects
-- Initialize state with default values
+- `useState` para estado local
+- `useEffect` para side effects
+- `useCallback` para funciones usadas en dependencias de useEffect
 
 ```jsx
 const [form, setForm] = useState({ nombre: "", contraseña: "", rol_id: "" });
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState("");
+
+const cargarDatos = useCallback(async () => {
+  // fetch logic
+}, [usuario_id]);
+
+useEffect(() => {
+  if (usuario_id) cargarDatos();
+}, [usuario_id, cargarDatos]);
 ```
 
 ### API Calls
 
-Use `apiFetch` utility for authenticated requests:
+Usar `apiFetch` para requests autenticados:
 
 ```jsx
 import { apiFetch } from "../utils/api";
@@ -108,7 +129,7 @@ const obtenerUsuarios = async () => {
 };
 ```
 
-For simple requests, axios is also acceptable:
+Para requests simples, axios también es aceptable:
 
 ```jsx
 import axios from "axios";
@@ -116,32 +137,71 @@ const res = await axios.get("http://localhost:5000/usuarios");
 ```
 
 ### Error Handling
-- Always wrap API calls in try-catch
-- Log errors to console with descriptive messages
-- Show user-friendly error messages in UI
-- Handle 204 No Content responses properly
+- Siempre envolver llamadas a la API en try-catch
+- Loguear errores a consola con mensajes descriptivos
+- Mostrar mensajes de error amigables en la UI
+- Manejar respuestas 204 No Content correctamente
 
-### MUI Styling
+### MUI v7 Styling
 
-Use `sx` prop for inline styles:
+Usar prop `sx` para estilos inline:
 
 ```jsx
-<Box sx={{ 
-  minHeight: "100vh", 
+<Box sx={{
+  minHeight: "100vh",
   display: "flex",
-  backgroundColor: "#f4f6f8" 
+  backgroundColor: "#f4f6f8"
 }}>
 ```
 
-Use color scheme:
-- Primary green: `#2E7D32`, `#1B5E20`
-- Secondary blue: `#0D47A1`
-- Background: `#f4f6f8`
-- Text: `#C8E6C9` (light green), white
+**Grid API v7** — usar `size` en lugar de `item xs`:
+
+```jsx
+// CORRECTO (MUI v7)
+<Grid size={{ xs: 12, md: 4 }}>
+
+// INCORRECTO (MUI v5/v6, no usar)
+<Grid item xs={12} md={4}>
+```
+
+**TextField con InputAdornment** — usar `slotProps` en lugar de `InputProps`:
+
+```jsx
+// CORRECTO (MUI v7)
+slotProps={{
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon color="primary" />
+      </InputAdornment>
+    ),
+  },
+}}
+
+// INCORRECTO (deprecado, no usar)
+InputProps={{ startAdornment: ... }}
+```
+
+Paleta de colores:
+- Verde primario: `#2E7D32`, `#1B5E20`
+- Azul secundario: `#0D47A1`
+- Fondo: `#f4f6f8`
+- Texto claro: `#C8E6C9` (verde claro), blanco
+
+### Rutas de imágenes estáticas
+
+Las imágenes viven en `/public/images/` y se referencian con rutas absolutas:
+
+```jsx
+// CORRECTO
+src="/images/quality.png"
+const logo = `/images/${nombre}.png`;
+
+// INCORRECTO (ruta relativa, falla en subrutas)
+src="images/quality.png"
+```
 
 ### Authentication & Routes
-
-Check auth using `isAuthenticated()` from `utils/auth`:
 
 ```jsx
 import { isAuthenticated } from "../utils/auth";
@@ -150,7 +210,7 @@ const PrivateRoute = ({ rolesPermitidos }) => {
   const auth = isAuthenticated();
   const rol = (localStorage.getItem("rol") || "").normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "").trim();
-  
+
   if (!auth) return <Navigate to="/login" replace />;
   if (rolesPermitidos && !rolesPermitidos.includes(rol)) {
     return <Navigate to="/sin-acceso" replace />;
@@ -159,13 +219,15 @@ const PrivateRoute = ({ rolesPermitidos }) => {
 };
 ```
 
+Auth en localStorage: `token`, `rol`, `nombre`, `usuario_id`, `granja`.
+
 ### Naming Conventions
 
-- **Components**: PascalCase (e.g., `BitacoraPlagas`, `CorporateLayout`)
-- **Functions**: camelCase (e.g., `handleLogin`, `obtenerUsuarios`)
+- **Componentes**: PascalCase (e.g., `BitacoraPlagas`, `CorporateLayout`)
+- **Funciones**: camelCase (e.g., `handleLogin`, `obtenerUsuarios`)
 - **Variables**: camelCase (e.g., `usuarioSeleccionado`, `loading`)
-- **Constants**: UPPER_SNAKE_CASE for true constants
-- **Files**: Match component name exactly
+- **Constantes globales**: UPPER_SNAKE_CASE fuera del componente
+- **Archivos**: Coincidir exactamente con el nombre del componente, extensión `.jsx`
 
 ### Testing
 
@@ -180,30 +242,35 @@ test('renders app component', () => {
 });
 ```
 
+El setup file `src/setupTests.js` importa `@testing-library/jest-dom` para los matchers.
+Vitest está configurado con `globals: true`, por lo que `describe/test/expect` están disponibles sin importar.
+
 ## Environment Variables
 
-- `REACT_APP_*` prefix required for client-side env vars
+- Prefijo `VITE_*` requerido para variables accesibles en el cliente (e.g., `VITE_API_URL`)
 - API base URL: `http://localhost:5000`
+- **No usar** `process.env.REACT_APP_*` (era CRA, ya no aplica)
+- En Vite las variables se acceden con `import.meta.env.VITE_*`
 
 ## Git Workflow
 
-1. Create feature branches from main
-2. Use conventional commit messages
-3. Do NOT commit `.env`, `node_modules/`, or `build/`
-4. Run tests before committing
+1. Crear ramas feature desde `main`
+2. Usar mensajes de commit convencionales
+3. NO commitear `.env`, `node_modules/`, ni `dist/`
+4. Correr tests antes de commitear
 
 ## Backend API
 
 Base URL: `http://localhost:5000`
 
-Common endpoints:
-- `POST /usuarios/login` - Authentication
-- `GET /usuarios` - List users
-- `GET /roles` - List roles
+Endpoints comunes:
+- `POST /usuarios/login` - Autenticación
+- `GET /usuarios` - Listar usuarios
+- `GET /roles` - Listar roles
 
 ## Docker Support
 
-Development:
+Development (requiere `.env` con `DOCKER_DEV_NAME` y `DOCKER_DEV_REACT_PORT`):
 ```bash
 docker-compose -f docker/dev/compose.yaml up
 ```
