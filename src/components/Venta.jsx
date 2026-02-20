@@ -64,6 +64,7 @@ function VentaContent() {
   /* ============================================================
       CARGAR VENTAS POR EMPRESA
   ============================================================ */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     obtenerVentas();
   }, [empresa]);
@@ -88,6 +89,7 @@ function VentaContent() {
   /* ============================================================
       CARGAR ENCARGADOS POR EMPRESA
   ============================================================ */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     obtenerEncargados();
     setForm((prev) => ({

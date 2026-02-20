@@ -57,7 +57,7 @@ function PiletaContent() {
 
   const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
   const [inventario, setInventario] = useState([]);
-  const [lotes, setLotes] = useState([]);
+  const [, setLotes] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
   const [rastreos, setRastreos] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
@@ -132,6 +132,7 @@ const obtenerInstalaciones = async () => {
     obtenerLotes();
     obtenerInstalaciones(); 
     obtenerRastreos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [granjaActiva]);
 
   /* ============================================================

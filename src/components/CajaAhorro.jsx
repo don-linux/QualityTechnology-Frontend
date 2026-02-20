@@ -41,6 +41,7 @@ export default function CajaAhorro() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     obtenerDatos();
   }, [granja]);

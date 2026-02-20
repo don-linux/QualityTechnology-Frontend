@@ -109,6 +109,7 @@ function ReproductoresContent() {
     setRastreos(data || []);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     obtenerReproductores();
     obtenerInstalaciones();

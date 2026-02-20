@@ -84,6 +84,7 @@ function EquiposContent() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (usuario_id) cargarDatos();
   }, [usuario_id]);

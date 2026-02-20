@@ -20,12 +20,13 @@ import * as XLSX from "xlsx";
 export default function TesoreriaGeneral() {
   const [tab, setTab] = useState(0);
   const [datos, setDatos] = useState([]);
-  const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
+  const [anioSeleccionado] = useState(new Date().getFullYear());
 
   // ✅ Usa la ruta sin acento (coincide con backend)
   const API = "http://localhost:5000/tesoreria";
   const granjas = ["Medellin", "La Ceiba", "Quality"];
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     obtenerDatos();
   }, [anioSeleccionado, tab]);

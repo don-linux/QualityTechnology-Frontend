@@ -16,17 +16,14 @@ import {
   MenuItem,
   Stack,
 } from "@mui/material";
-import { Add, Edit, Delete, Search, PictureAsPdf, CleaningServices } from "@mui/icons-material";
+import { Add, Edit, Delete, Search, CleaningServices } from "@mui/icons-material";
 import axios from "axios";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 // =========================================================
 // ✅ COMPONENTE PRINCIPAL
 // =========================================================
 export default function Expedientes() {
   const usuario_id = localStorage.getItem("usuario_id");
-  const nombreUsuario = localStorage.getItem("usuario_nombre")?.toLowerCase() || "";
   const api = "http://localhost:5000/expedientes";
 
   const [form, setForm] = useState({

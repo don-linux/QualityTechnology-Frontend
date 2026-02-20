@@ -15,7 +15,7 @@ import {
   CardContent,
   MenuItem,
 } from "@mui/material";
-import { Add, Edit, Delete, Clear } from "@mui/icons-material";
+import { Delete, Clear } from "@mui/icons-material";
 import { apiFetch } from "../utils/api";
 
 export default function Engorda() {
@@ -80,6 +80,7 @@ function EngordaContent() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     limpiarFormulario();
     obtenerEngordas();

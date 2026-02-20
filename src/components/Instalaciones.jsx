@@ -36,6 +36,7 @@ function InstalacionesContent() {
 
   const [instalaciones, setInstalaciones] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [mensaje, setMensaje] = useState("");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [granja, setGranja] = useState("Medellin");
@@ -83,6 +84,7 @@ function InstalacionesContent() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     obtenerInstalaciones();
   }, [tipo, granja]);

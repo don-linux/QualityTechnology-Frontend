@@ -23,7 +23,7 @@ const LotesRegistro = () => {
   const [granja, setGranja] = useState("Medellin");
   const [instalaciones, setInstalaciones] = useState([]);
   const [lotes, setLotes] = useState([]);
-  const [instalacionSeleccionada, setInstalacionSeleccionada] = useState("");
+  const [, setInstalacionSeleccionada] = useState("");
   const [loteSeleccionado, setLoteSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
 

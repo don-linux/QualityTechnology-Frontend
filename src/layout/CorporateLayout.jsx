@@ -25,7 +25,6 @@ import {
   ExpandMore,
   Handyman,
   Science,
-  Engineering,
   LocalMall,
   LocalAtm,
   Person,

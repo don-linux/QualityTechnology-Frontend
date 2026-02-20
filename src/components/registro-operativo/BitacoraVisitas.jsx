@@ -47,6 +47,7 @@ function BitacoraVisitasContent() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     cargarDatos();
   }, [form.ubicacion, busqueda]);

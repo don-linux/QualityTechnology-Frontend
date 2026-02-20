@@ -55,6 +55,7 @@ function AlimentosContent() {
       obtenerReproductores();
       obtenerEngorda();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario_id]);
 
   // =======================================

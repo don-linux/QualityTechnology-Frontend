@@ -25,6 +25,7 @@ export default function FlujoCaja() {
   // =====================================================
   // 🔁 Cargar datos
   // =====================================================
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     obtenerMovimientos();
   }, [subTab]);
@@ -37,6 +38,7 @@ export default function FlujoCaja() {
       console.error("❌ Error al obtener movimientos:", err);
       mostrarAlerta("Error al obtener los movimientos", "error");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subTab]);
 
   // =====================================================

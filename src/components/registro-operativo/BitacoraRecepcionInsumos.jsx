@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
-  InputAdornment, MenuItem, Select, FormControl, InputLabel, Chip
+  InputAdornment, MenuItem, Select, FormControl, InputLabel
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
@@ -30,8 +30,6 @@ function RecepcionInsumosContent() {
 
   // 🔽 Opciones para selects
   const unidadesMedida = ["Kg", "Litros", "Piezas", "Bultos", "Otro"];
-  const proveedores = ["Proveedor A", "Proveedor B", "Proveedor C"];
-  const productos = ["Producto 1", "Producto 2", "Producto 3"];
   const ubicaciones = ["medellin", "ceiba", "quality"]; // Opciones para la ubicación
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -53,6 +51,7 @@ function RecepcionInsumosContent() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     cargarDatos();
   }, [form.ubicacion, busqueda]);

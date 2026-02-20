@@ -14,7 +14,6 @@ import {
   Grid,
 } from "@mui/material";
 import {
-  PictureAsPdf,
   CleaningServices,
   EventAvailable,
   Delete,
