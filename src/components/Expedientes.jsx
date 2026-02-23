@@ -16,17 +16,14 @@ import {
   MenuItem,
   Stack,
 } from "@mui/material";
-import { Add, Edit, Delete, Search, PictureAsPdf, CleaningServices } from "@mui/icons-material";
+import { Add, Edit, Delete, Search, CleaningServices } from "@mui/icons-material";
 import axios from "axios";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 // =========================================================
 // ✅ COMPONENTE PRINCIPAL
 // =========================================================
 export default function Expedientes() {
   const usuario_id = localStorage.getItem("usuario_id");
-  const nombreUsuario = localStorage.getItem("usuario_nombre")?.toLowerCase() || "";
   const api = "http://localhost:5000/expedientes";
 
   const [form, setForm] = useState({
@@ -156,18 +153,18 @@ export default function Expedientes() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField label="Nombre completo" name="fc_nombre" value={form.fc_nombre} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField label="ID Empleado" name="fc_id_empleado" value={form.fc_id_empleado} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField label="Uniformes" name="fn_uniformes" type="number" value={form.fn_uniformes} onChange={handleChange} fullWidth />
             </Grid>
 
             {/* CAMPO PUESTO */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
                 label="Puesto"
@@ -203,7 +200,7 @@ export default function Expedientes() {
               "fc_codigo_conducta",
               "fc_solicitud_empleo",
             ].map((campo) => (
-              <Grid item xs={12} md={3} key={campo}>
+              <Grid size={{ xs: 12, md: 3 }} key={campo}>
                 <TextField
                   select
                   label={campo.replace("fc_", "").replace(/_/g, " ").toUpperCase()}

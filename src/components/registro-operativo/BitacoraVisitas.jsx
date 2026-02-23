@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
@@ -38,18 +38,18 @@ function BitacoraVisitasContent() {
     });
   };
 
-  const cargarDatos = async () => {
+  const cargarDatos = useCallback(async () => {
     try {
       const res = await axios.get(`http://localhost:5000/visitas?ubicacion=${form.ubicacion}&filtro=${busqueda}`);
       setData(res.data);
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
     }
-  };
+  }, [form.ubicacion, busqueda]);
 
   useEffect(() => {
     cargarDatos();
-  }, [form.ubicacion, busqueda]);
+  }, [cargarDatos]);
 
   const guardar = async () => {
     try {
@@ -109,7 +109,7 @@ function BitacoraVisitasContent() {
 
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = `${process.env.PUBLIC_URL}/images/${form.ubicacion}.png`;
+    const logo = `${""}/images/${form.ubicacion}.png`;
     const color = form.ubicacion === "ceiba" ? [46, 125, 50] : form.ubicacion === "quality" ? [25, 118, 210] : [13, 71, 161];
 
     try {
@@ -175,12 +175,14 @@ function BitacoraVisitasContent() {
           size="small"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="primary" />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="primary" />
+                </InputAdornment>
+              ),
+            },
           }}
         />
       </Box>
@@ -189,7 +191,7 @@ function BitacoraVisitasContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Fecha"
                 type="date"
@@ -202,7 +204,7 @@ function BitacoraVisitasContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={5}>
+            <Grid size={{ xs: 12, md: 5 }}>
               <TextField
                 label="Nombre Completo"
                 name="fc_nombre_completo"
@@ -213,7 +215,7 @@ function BitacoraVisitasContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Origen"
                 name="fc_origen"
@@ -224,7 +226,7 @@ function BitacoraVisitasContent() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Motivo"
                 name="fc_motivo"
@@ -235,7 +237,7 @@ function BitacoraVisitasContent() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Observaciones"
                 name="fc_observaciones"
@@ -248,9 +250,9 @@ function BitacoraVisitasContent() {
             </Grid>
 
             {/* 🔹 Fila final con carga de archivo y horas alineadas */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Button
                       variant="outlined"
@@ -291,7 +293,7 @@ function BitacoraVisitasContent() {
                   </Box>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     label="Hora de Entrada"
                     type="time"
@@ -304,7 +306,7 @@ function BitacoraVisitasContent() {
                   />
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     label="Hora de Salida"
                     type="time"

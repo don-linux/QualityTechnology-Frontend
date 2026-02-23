@@ -194,7 +194,7 @@ function ListaEsperaContent() {
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               fullWidth
               type="date"
@@ -206,18 +206,18 @@ function ListaEsperaContent() {
             />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField fullWidth label="Talla" name="fc_talla" value={form.fc_talla} onChange={handleChange} />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField fullWidth type="number" label="Cantidad" name="fn_cantidad" value={form.fn_cantidad} onChange={handleChange} />
           </Grid>
 
           {/* CLIENTE AUTOCOMPLETE */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Grid container spacing={1}>
-              <Grid item xs={10}>
+              <Grid size={10}>
                 <Autocomplete
                   freeSolo
                   fullWidth
@@ -230,7 +230,7 @@ function ListaEsperaContent() {
                   )}
                 />
               </Grid>
-              <Grid item xs={2}>
+              <Grid size={2}>
                 <Button
                   fullWidth
                   variant="contained"
@@ -243,27 +243,27 @@ function ListaEsperaContent() {
             </Grid>
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField fullWidth label="Lugar" name="fc_lugar_entrega" value={form.fc_lugar_entrega} onChange={handleChange} />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField fullWidth label="Unidad Producción" name="fc_unidad_produccion" value={form.fc_unidad_produccion} onChange={handleChange} />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField fullWidth label="Hora Embolsado" name="fc_hora_embolsado" value={form.fc_hora_embolsado} onChange={handleChange} />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField fullWidth label="Hora Entrega" name="fc_hora_entrega" value={form.fc_hora_entrega} onChange={handleChange} />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField fullWidth label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <FormControl fullWidth>
               <InputLabel>Tipo de Venta</InputLabel>
               <Select
@@ -280,14 +280,14 @@ function ListaEsperaContent() {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             {rol === "Administrador" ? (
               <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange}>
                 <MenuItem value="Medellin">Medellín</MenuItem>
                 <MenuItem value="La Ceiba">La Ceiba</MenuItem>
               </TextField>
             ) : (
-              <TextField fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} InputProps={{ readOnly: true }} />
+              <TextField fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} slotProps={{ input: { readOnly: true } }} />
             )}
           </Grid>
         </Grid>
@@ -369,19 +369,19 @@ function ListaEsperaContent() {
         <DialogTitle>Registrar nuevo cliente</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField label="Nombre o razón social" fullWidth value={nuevoCliente.fc_nombre} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_nombre: e.target.value })} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField label="Teléfono" fullWidth value={nuevoCliente.fc_telefono} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_telefono: e.target.value })} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField label="Correo" fullWidth value={nuevoCliente.fc_correo} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_correo: e.target.value })} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField label="Localidad" fullWidth value={nuevoCliente.fc_localidad} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_localidad: e.target.value })} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TextField label="Código postal" fullWidth value={nuevoCliente.fc_cp} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_cp: e.target.value })} />
             </Grid>
           </Grid>

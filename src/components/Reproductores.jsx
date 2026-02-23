@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "../utils/api";
 import {
   Box,
@@ -84,36 +84,30 @@ function ReproductoresContent() {
 
   /* ===================== CARGA DE DATOS ===================== */
 
-  const obtenerReproductores = async () => {
+  const obtenerReproductores = useCallback(async () => {
     const data = await apiFetch(`/reproductores/${granjaActiva}`);
     setReproductores(data || []);
-  };
+  }, [granjaActiva]);
 
-  const obtenerInstalaciones = async () => {
-  // Normalizar nombres tal como los usa tu backend
-  const granjaNormalizada = granjaActiva.includes("Ceiba")
-    ? "Granja Acuícola La Ceiba"
-    : "Granja Acuícola Medellin";
+  const obtenerInstalaciones = useCallback(async () => {
+    const granjaNormalizada = granjaActiva.includes("Ceiba")
+      ? "Granja Acuícola La Ceiba"
+      : "Granja Acuícola Medellin";
+    const granja = encodeURIComponent(granjaNormalizada);
+    const data = await apiFetch(`/instalaciones/granja/${granja}`);
+    setInstalaciones(data || []);
+  }, [granjaActiva]);
 
-  // Asegura encoding correcto
-  const granja = encodeURIComponent(granjaNormalizada);
-
-  // Llamada al backend que debe devolver TODAS las instalaciones de esa granja
- const data = await apiFetch(`/instalaciones/granja/${granja}`);
-
-  setInstalaciones(data || []);
-};
-
-  const obtenerTrazabilidad = async () => {
+  const obtenerTrazabilidad = useCallback(async () => {
     const data = await apiFetch(`/reproductores/movimientos/${granjaActiva}`);
     setRastreos(data || []);
-  };
+  }, [granjaActiva]);
 
   useEffect(() => {
     obtenerReproductores();
     obtenerInstalaciones();
     obtenerTrazabilidad();
-  }, [granjaActiva]);
+  }, [obtenerReproductores, obtenerInstalaciones, obtenerTrazabilidad]);
 
   /* ===================== FORMULARIO ===================== */
 
@@ -278,7 +272,7 @@ Pronto conectaremos este botón con traspasos internos.`);
             <CardContent>
               <Grid container spacing={2}>
                 {/* ORIGEN */}
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <TextField
                     select
                     size="small"
@@ -301,7 +295,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                   </TextField>
                 </Grid>
 
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <TextField
                     size="small"
                     label="Origen externo"
@@ -314,7 +308,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                 </Grid>
 
                 {/* DESTINO */}
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <TextField
                     select
                     size="small"
@@ -337,7 +331,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                 </Grid>
 
                 {/* MACHOS, HEMBRAS, CANTIDAD */}
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <TextField
                     size="small"
                     label="Machos"
@@ -347,7 +341,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                     fullWidth
                   />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <TextField
                     size="small"
                     label="Hembras"
@@ -357,18 +351,18 @@ Pronto conectaremos este botón con traspasos internos.`);
                     fullWidth
                   />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <TextField
                     size="small"
                     label="Cantidad"
                     value={formatNumber(form.fn_cantidad)}
-                    InputProps={{ readOnly: true }}
+                    slotProps={{ input: { readOnly: true } }}
                     fullWidth
                   />
                 </Grid>
 
                 {/* TALLA */}
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <TextField
                     size="small"
                     label="Talla (gr)"
@@ -380,7 +374,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                 </Grid>
 
                 {/* LINEA – FAMILIA – RATIO */}
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <TextField
                     size="small"
                     label="Línea"
@@ -391,7 +385,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                   />
                 </Grid>
 
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <TextField
                     size="small"
                     label="Familia"
@@ -402,18 +396,18 @@ Pronto conectaremos este botón con traspasos internos.`);
                   />
                 </Grid>
 
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <TextField
                     size="small"
                     label="Ratio"
                     value={form.fc_ratio}
-                    InputProps={{ readOnly: true }}
+                    slotProps={{ input: { readOnly: true } }}
                     fullWidth
                   />
                 </Grid>
 
                 {/* FECHAS */}
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <TextField
                     type="date"
                     size="small"
@@ -426,7 +420,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                   />
                 </Grid>
 
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <TextField
                     type="date"
                     size="small"
@@ -440,7 +434,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                 </Grid>
 
                 {/* OBSERVACIÓN */}
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     size="small"
                     label="Observación"

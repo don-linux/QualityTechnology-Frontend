@@ -14,7 +14,6 @@ import {
   Grid,
 } from "@mui/material";
 import {
-  PictureAsPdf,
   CleaningServices,
   EventAvailable,
   Delete,
@@ -127,7 +126,7 @@ export default function Vacaciones() {
 
       <Paper sx={{ p: 2, mb: 3, background: "#f8f9fa" }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item>
+          <Grid>
             <TextField
               label="Buscar por nombre"
               variant="outlined"
@@ -137,12 +136,12 @@ export default function Vacaciones() {
               sx={{ width: 250 }}
             />
           </Grid>
-          <Grid item>
+          <Grid>
             <Button variant="contained" onClick={buscarEmpleado}>
               BUSCAR
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="outlined"
               color="secondary"
@@ -155,7 +154,7 @@ export default function Vacaciones() {
               LIMPIAR
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="contained"
               color="success"
@@ -165,7 +164,7 @@ export default function Vacaciones() {
               NUEVO
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="contained"
               color="error"

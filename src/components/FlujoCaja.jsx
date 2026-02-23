@@ -6,32 +6,29 @@ import {
   Snackbar, Alert
 } from "@mui/material";
 import axios from "axios";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
+
+const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
+const API = "http://localhost:5000";
 
 export default function FlujoCaja() {
   const [subTab, setSubTab] = useState(0);
   const [movimientos, setMovimientos] = useState([]);
   const [open, setOpen] = useState(false);
-  const [openCuentas, setOpenCuentas] = useState(false); // ✅ nuevo estado
+  const [openCuentas, setOpenCuentas] = useState(false);
   const [formData, setFormData] = useState({});
   const [editId, setEditId] = useState(null);
   const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
 
-  const granjas = ["Medellin", "La Ceiba", "Quality"];
-  const API = "http://localhost:5000";
-
   // =====================================================
   // 🔁 Cargar datos
   // =====================================================
-  useEffect(() => {
-    obtenerMovimientos();
-  }, [subTab]);
-
   const obtenerMovimientos = useCallback(async () => {
     try {
-      const res = await axios.get(`${API}/flujo-caja/${granjas[subTab]}`);
+      const res = await axios.get(`${API}/flujo-caja/${GRANJAS[subTab]}`);
       setMovimientos(res.data || []);
     } catch (err) {
       console.error("❌ Error al obtener movimientos:", err);
@@ -39,14 +36,22 @@ export default function FlujoCaja() {
     }
   }, [subTab]);
 
+  useEffect(() => {
+    obtenerMovimientos();
+  }, [obtenerMovimientos]);
+
   // =====================================================
   // 📤 Exportar Excel
   // =====================================================
-  const exportarExcel = () => {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(movimientos);
-    XLSX.utils.book_append_sheet(wb, ws, "FlujoCaja");
-    XLSX.writeFile(wb, `FlujoCaja_${granjas[subTab]}.xlsx`);
+  const exportarExcel = async () => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("FlujoCaja");
+    if (movimientos.length > 0) {
+      ws.columns = Object.keys(movimientos[0]).map((key) => ({ header: key, key }));
+      ws.addRows(movimientos);
+    }
+    const buffer = await wb.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `FlujoCaja_${GRANJAS[subTab]}.xlsx`);
   };
 
   // =====================================================
@@ -79,7 +84,7 @@ export default function FlujoCaja() {
 
   const handleSubmit = async (data) => {
     try {
-      const payload = { ...data, fc_granja: granjas[subTab] };
+      const payload = { ...data, fc_granja: GRANJAS[subTab] };
       if (editId) {
         await axios.put(`${API}/flujo-caja/${editId}`, payload);
         mostrarAlerta("Movimiento actualizado correctamente ✅", "success");

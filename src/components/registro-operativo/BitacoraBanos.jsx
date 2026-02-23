@@ -119,7 +119,7 @@ function BitacoraBanosContent() {
   // 📄 Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logoMedellin = `${process.env.PUBLIC_URL}/images/medellin.png`;
+    const logoMedellin = `${""}/images/medellin.png`;
 
     // Encabezado
     doc.addImage(logoMedellin, "PNG", 10, 8, 25, 25);
@@ -178,28 +178,28 @@ function BitacoraBanosContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Mes" name="fc_mes" value={form.fc_mes} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Día" name="fc_dia" value={form.fc_dia} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Baño Hombres" name="fc_banio_hombres" value={form.fc_banio_hombres} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Baño Mujeres" name="fc_banio_mujeres" value={form.fc_banio_mujeres} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Regadera" name="fc_regadera" value={form.fc_regadera} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Realizó" name="fc_realizo" value={form.fc_realizo} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Firma" name="fc_firma" value={form.fc_firma} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Observaciones"
                 name="fc_observaciones"

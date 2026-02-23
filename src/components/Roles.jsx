@@ -98,7 +98,7 @@ export default function Roles() {
       <Card sx={{ mb: 3, boxShadow: 3, borderRadius: 2 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 name="nombre"
                 label="Nombre del Rol"
@@ -109,12 +109,12 @@ export default function Roles() {
             </Grid>
 
             {mensaje && (
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Typography color={mensaje.includes('✅') ? 'green' : 'error'}>{mensaje}</Typography>
               </Grid>
             )}
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Stack direction="row" spacing={2}>
                 <Button
                   variant="contained"
@@ -150,7 +150,7 @@ export default function Roles() {
               </Stack>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
                 <Table>
                   <TableHead sx={{ backgroundColor: '#f5f5f5' }}>

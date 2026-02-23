@@ -109,7 +109,7 @@ function BioInsumosContent() {
 
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logoCeiba = `${process.env.PUBLIC_URL}/images/ceiba.png`;
+    const logoCeiba = `${""}/images/ceiba.png`;
 
     doc.addImage(logoCeiba, "PNG", 10, 8, 25, 25);
     doc.setFontSize(14);
@@ -163,7 +163,7 @@ function BioInsumosContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 type="date"
                 label="Fecha"
@@ -175,7 +175,7 @@ function BioInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Cantidad UdM"
                 name="fc_cantidad_udm"
@@ -185,7 +185,7 @@ function BioInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Lote"
                 name="fc_num_lote"
@@ -195,7 +195,7 @@ function BioInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Descripción"
                 name="fc_descripcion"
@@ -205,7 +205,7 @@ function BioInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Observaciones"
                 name="fc_observaciones"
@@ -217,7 +217,7 @@ function BioInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Encargado de Entrega"
                 name="fc_encargado_entrega"
@@ -227,7 +227,7 @@ function BioInsumosContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Encargado de Recepción"
                 name="fc_encargado_recepcion"
