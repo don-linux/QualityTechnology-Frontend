@@ -14,6 +14,7 @@ import Inicio from "./components/Inicio";
 import Usuarios from "./components/Usuarios";
 import Roles from "./components/Roles";
 import Cliente from "./components/Cliente";
+import Estado from "./components/Estado";
 
 // Inventarios
 import Pileta from "./components/Pileta";
@@ -122,6 +123,7 @@ function App() {
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="roles" element={<Roles />} />
             <Route path="cliente" element={<Cliente />} />
+            <Route path="estados" element={<Estado />} />
           </Route>
         </Route>
 

@@ -38,7 +38,9 @@ import {
   Grass,
   Biotech,
   ReceiptLong,
+  LocationOn,
 } from "@mui/icons-material";
+
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import { Link, useLocation, Outlet } from "react-router-dom";
@@ -577,6 +579,24 @@ export default function CorporateLayout() {
           <Assignment />
         </ListItemIcon>
         {drawerOpen && <ListItemText primary="Roles" />}
+      </ListItemButton>
+
+      <ListItemButton
+        component={Link}
+        to="/estados"
+        sx={{
+          borderRadius: 1,
+          mb: 0.5,
+          backgroundColor:
+            location.pathname === "/estados" ? "#388E3C" : "transparent",
+          "&:hover": { backgroundColor: "#43A047" },
+          justifyContent: drawerOpen ? "flex-start" : "center",
+        }}
+      >
+        <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
+          <LocationOn />
+        </ListItemIcon>
+        {drawerOpen && <ListItemText primary="Estados" />}
       </ListItemButton>
       </Drawer>
       
