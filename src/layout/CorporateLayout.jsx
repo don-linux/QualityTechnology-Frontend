@@ -93,6 +93,7 @@ export default function CorporateLayout() {
       <AppBar
         position="fixed"
         sx={{
+          borderRadius: 0,
           background: "linear-gradient(90deg, #006d52, #3aa87d)",
           color: "white",
           zIndex: 1300,
@@ -168,6 +169,7 @@ export default function CorporateLayout() {
         sx={{
           width: drawerOpen ? drawerWidth : 80,
           "& .MuiDrawer-paper": {
+            borderRadius: 0,
             width: drawerOpen ? drawerWidth : 80,
             background: "linear-gradient(180deg, #2E7D32 0%, #1B5E20 100%)",
             color: "white",
@@ -584,7 +586,7 @@ export default function CorporateLayout() {
         sx={{
           flexGrow: 1,
           p: 4,
-          ml: drawerOpen ? `${drawerWidth}px` : "80px",
+          ml: "10px",
           mt: "70px",
           minHeight: "100vh",
           backgroundColor: "#f4f6f8",
@@ -597,7 +599,7 @@ export default function CorporateLayout() {
         <Box
           sx={{
             width: "95%",
-            maxWidth: 1200,
+            maxWidth: "1400px",
             backgroundColor: "#fff",
             borderRadius: 3,
             boxShadow: "0px 3px 10px rgba(0,0,0,0.1)",
