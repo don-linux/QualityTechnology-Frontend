@@ -87,7 +87,7 @@ function BitacoraMedicamentosContent() {
   // 📄 Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logoMedellin = `${process.env.PUBLIC_URL}/images/medellin.png`;
+    const logoMedellin = `${""}/images/medellin.png`;
 
     doc.addImage(logoMedellin, "PNG", 10, 8, 25, 25);
     doc.setFontSize(14);
@@ -142,37 +142,37 @@ function BitacoraMedicamentosContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Fecha" type="date" name="fd_fecha_hora" InputLabelProps={{ shrink: true }}
                 value={form.fd_fecha_hora} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Estanque" name="fn_num_estanque"
                 value={form.fn_num_estanque} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField label="Diagnóstico" name="fc_diagnosis"
                 value={form.fc_diagnosis} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField label="Tratamiento" name="fc_tratamiento"
                 value={form.fc_tratamiento} onChange={handleChange}
                 multiline rows={2} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Dosis" name="fc_dosis"
                 value={form.fc_dosis} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Forma Aplicación" name="fc_forma_aplicacion"
                 value={form.fc_forma_aplicacion} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Última Dosis" type="date" name="fd_fecha_ultima_dosis"
                 InputLabelProps={{ shrink: true }}
                 value={form.fd_fecha_ultima_dosis} onChange={handleChange} fullWidth />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Responsable" name="fc_responsable"
                 value={form.fc_responsable} onChange={handleChange} fullWidth />
             </Grid>

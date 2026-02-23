@@ -90,7 +90,7 @@ const CuentasDialog = ({ open, onClose }) => {
 
         {/* 🆕 Nueva cuenta */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={5}>
+          <Grid size={5}>
             <TextField
               label="Nombre de cuenta"
               fullWidth
@@ -101,7 +101,7 @@ const CuentasDialog = ({ open, onClose }) => {
             />
           </Grid>
 
-          <Grid item xs={5}>
+          <Grid size={5}>
             <TextField
               label="Saldo inicial"
               type="number"
@@ -113,7 +113,7 @@ const CuentasDialog = ({ open, onClose }) => {
             />
           </Grid>
 
-          <Grid item xs={2}>
+          <Grid size={2}>
             <Button
               variant="contained"
               color="success"

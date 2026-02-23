@@ -148,12 +148,14 @@ const Login = () => {
                 margin="normal"
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person sx={{ color: "#1B5E20" }} />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Person sx={{ color: "#1B5E20" }} />
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
 
@@ -165,12 +167,14 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock sx={{ color: "#1B5E20" }} />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock sx={{ color: "#1B5E20" }} />
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
 

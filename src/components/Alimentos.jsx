@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Container,
   Card,
@@ -48,6 +48,45 @@ function AlimentosContent() {
   const safeNumber = (val, decimals = 2) =>
     !isNaN(Number(val)) ? Number(val).toFixed(decimals) : "—";
 
+  // =======================================
+  // Obtener datos
+  // =======================================
+  const obtenerRegistros = useCallback(async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/alimentos/${usuario_id}`);
+      setRegistros(res.data);
+    } catch (error) {
+      console.error("Error al obtener alimentos:", error);
+    }
+  }, [usuario_id]);
+
+  const obtenerReproductores = useCallback(async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/reproductores/${usuario_id}`);
+      setReproductores(res.data);
+    } catch (error) {
+      console.error("Error al obtener reproductores:", error);
+    }
+  }, [usuario_id]);
+
+  const obtenerPiletas = useCallback(async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/piletas/${usuario_id}`);
+      setPiletas(res.data);
+    } catch (error) {
+      console.error("Error al obtener piletas:", error);
+    }
+  }, [usuario_id]);
+
+  const obtenerEngorda = useCallback(async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/engorda/${usuario_id}`);
+      setEngorda(res.data);
+    } catch (error) {
+      console.error("Error al obtener engorda:", error);
+    }
+  }, [usuario_id]);
+
   useEffect(() => {
     if (usuario_id) {
       obtenerRegistros();
@@ -55,46 +94,7 @@ function AlimentosContent() {
       obtenerReproductores();
       obtenerEngorda();
     }
-  }, [usuario_id]);
-
-  // =======================================
-  // Obtener datos
-  // =======================================
-  const obtenerRegistros = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/alimentos/${usuario_id}`);
-      setRegistros(res.data);
-    } catch (error) {
-      console.error("Error al obtener alimentos:", error);
-    }
-  };
-
-  const obtenerReproductores = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/reproductores/${usuario_id}`);
-      setReproductores(res.data);
-    } catch (error) {
-      console.error("Error al obtener reproductores:", error);
-    }
-  };
-
-  const obtenerPiletas = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/piletas/${usuario_id}`);
-      setPiletas(res.data);
-    } catch (error) {
-      console.error("Error al obtener piletas:", error);
-    }
-  };
-
-  const obtenerEngorda = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/engorda/${usuario_id}`);
-      setEngorda(res.data);
-    } catch (error) {
-      console.error("Error al obtener engorda:", error);
-    }
-  };
+  }, [usuario_id, obtenerRegistros, obtenerPiletas, obtenerReproductores, obtenerEngorda]);
 
   // =======================================
   // Registro y acciones
@@ -198,7 +198,7 @@ function AlimentosContent() {
         <CardContent>
           <Grid container spacing={2}>
             {tab === "alevinaje" && (
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Pileta</InputLabel>
                   <Select
@@ -219,7 +219,7 @@ function AlimentosContent() {
             )}
 
             {tab === "engorda" && (
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Instalación Engorda</InputLabel>
                   <Select
@@ -240,7 +240,7 @@ function AlimentosContent() {
             )}
 
             {tab === "reproductores" && (
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Reproductor</InputLabel>
                   <Select
@@ -261,7 +261,7 @@ function AlimentosContent() {
             )}
 
             {/* BOTONES */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Stack direction="row" spacing={2} justifyContent="center">
                 <Button
                   variant="contained"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Card,
@@ -17,6 +17,13 @@ import {
 } from "@mui/material";
 import axios from "axios";
 
+const mapGranja = (g) => (g === "Medellin" ? "med" : "ceiba");
+
+const displayGranja = {
+  med: "Granja Acuícola Medellín",
+  ceiba: "Granja Acuícola La Ceiba",
+};
+
 export default function BioBiometrias() {
   return <BioBiometriasContent />;
 }
@@ -30,18 +37,6 @@ function BioBiometriasContent() {
   const [instalaciones, setInstalaciones] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [editId, setEditId] = useState(null);
-
-  /* -----------------------------
-      Normalización de granja
-  ------------------------------*/
-  const mapGranja = (g) => (g === "Medellin" ? "med" : "ceiba");
-
-  const displayGranja = {
-    med: "Granja Acuícola Medellín",
-    ceiba: "Granja Acuícola La Ceiba",
-  };
-
-  const ruta = `http://localhost:5000/biometrias/${mapGranja(granja)}`;
 
   /* FORMULARIO */
   const [form, setForm] = useState({
@@ -61,17 +56,17 @@ function BioBiometriasContent() {
   /* -----------------------------
       Cargar datos iniciales
   ------------------------------*/
-  const cargarDatos = async () => {
-    const res = await axios.get(ruta);
+  const cargarDatos = useCallback(async () => {
+    const res = await axios.get(`http://localhost:5000/biometrias/${mapGranja(granja)}`);
     setData(res.data);
-  };
+  }, [granja]);
 
-  const cargarInstalaciones = async () => {
+  const cargarInstalaciones = useCallback(async () => {
     const res = await axios.get(
       `http://localhost:5000/instalaciones/granja/${displayGranja[mapGranja(granja)]}`
     );
     setInstalaciones(res.data);
-  };
+  }, [granja]);
 
   const cargarLotes = async (instalacionId) => {
     const res = await axios.get(
@@ -83,7 +78,7 @@ function BioBiometriasContent() {
   useEffect(() => {
     cargarDatos();
     cargarInstalaciones();
-  }, [granja]);
+  }, [cargarDatos, cargarInstalaciones]);
 
   /* -----------------------------
       AUTORRELLENADO
@@ -282,7 +277,7 @@ function BioBiometriasContent() {
         <CardContent>
           <Grid container spacing={2}>
             {/* FECHA */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 type="date"
                 label="Fecha"
@@ -295,7 +290,7 @@ function BioBiometriasContent() {
             </Grid>
 
             {/* INSTALACIÓN */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
                 label="Instalación"
@@ -314,7 +309,7 @@ function BioBiometriasContent() {
             </Grid>
 
             {/* LOTE */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
                 label="Lote"
@@ -333,7 +328,7 @@ function BioBiometriasContent() {
             </Grid>
 
             {/* TIPO */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
                 label="Tipo"
@@ -341,12 +336,14 @@ function BioBiometriasContent() {
                 value={form.tipo}
                 onChange={handleChange}
                 fullWidth
-                InputProps={{
-                  readOnly:
-                    form.fi_lote_id !== "" &&
-                    (form.tipo === "alevinaje" ||
-                      form.tipo === "engorda" ||
-                      form.tipo === "reproductores"),
+                slotProps={{
+                  input: {
+                    readOnly:
+                      form.fi_lote_id !== "" &&
+                      (form.tipo === "alevinaje" ||
+                        form.tipo === "engorda" ||
+                        form.tipo === "reproductores"),
+                  },
                 }}
               >
                 <MenuItem value="">Seleccionar</MenuItem>
@@ -357,7 +354,7 @@ function BioBiometriasContent() {
             </Grid>
 
             {/* PESO TOTAL */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Peso Total (g)"
                 name="fn_peso_total_gramos"
@@ -369,7 +366,7 @@ function BioBiometriasContent() {
             </Grid>
 
             {/* ORGANISMOS */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Organismos Muestreados"
                 name="fn_organismos_muestreados"
@@ -381,19 +378,19 @@ function BioBiometriasContent() {
             </Grid>
 
             {/* PESO PROMEDIO */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Peso Promedio (g)"
                 name="fn_peso_promedio"
                 type="number"
                 value={form.fn_peso_promedio}
-                InputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 fullWidth
               />
             </Grid>
 
             {/* ENCARGADO */}
-            <Grid item xs={12} md={8}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <TextField
                 label="Encargado"
                 name="fc_encargado"
@@ -404,7 +401,7 @@ function BioBiometriasContent() {
             </Grid>
 
             {/* OBSERVACIONES */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Observaciones"
                 name="fc_observaciones"

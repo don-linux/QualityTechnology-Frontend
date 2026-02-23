@@ -142,7 +142,7 @@ export default function Proveedores() {
   // ============================
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = `${process.env.PUBLIC_URL}/images/quality.png`;
+    const logo = `${""}/images/quality.png`;
 
     doc.addImage(logo, "PNG", 10, 8, 25, 25);
     doc.setFontSize(14);
@@ -224,7 +224,7 @@ export default function Proveedores() {
       {/* Barra de acciones */}
       <Paper sx={{ p: 2, mb: 3, background: "#f8f9fa" }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item>
+          <Grid>
             <TextField
               label="Buscar proveedor"
               size="small"
@@ -233,12 +233,12 @@ export default function Proveedores() {
               sx={{ width: 250 }}
             />
           </Grid>
-          <Grid item>
+          <Grid>
             <Button variant="contained" onClick={buscar}>
               BUSCAR
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="outlined"
               color="secondary"
@@ -251,7 +251,7 @@ export default function Proveedores() {
               LIMPIAR
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="contained"
               color="success"
@@ -261,7 +261,7 @@ export default function Proveedores() {
               NUEVO PROVEEDOR
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="contained"
               color="error"
@@ -381,7 +381,7 @@ export default function Proveedores() {
               { label: "Última compra", name: "ultima_compra", type: "date" },
               { label: "Monto promedio", name: "monto_promedio", type: "number" },
             ].map((f) => (
-              <Grid item xs={6} key={f.name}>
+              <Grid size={6} key={f.name}>
                 <TextField
                   label={f.label}
                   name={f.name}

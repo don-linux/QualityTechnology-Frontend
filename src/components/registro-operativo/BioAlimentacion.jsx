@@ -122,7 +122,7 @@ function BioAlimentacionContent() {
   // 🧾 Exportar a PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logoCeiba = `${process.env.PUBLIC_URL}/images/ceiba.png`;
+    const logoCeiba = `${""}/images/ceiba.png`;
 
     doc.addImage(logoCeiba, "PNG", 10, 8, 25, 25);
     doc.setFontSize(14);
@@ -200,7 +200,7 @@ function BioAlimentacionContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Mes"
                 name="fc_mes"
@@ -210,7 +210,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Instalación"
                 name="fn_num_instalacion"
@@ -221,7 +221,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Peso Promedio Entrada"
                 name="fn_peso_promedio_entrada"
@@ -232,7 +232,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Fecha Siembra"
                 type="date"
@@ -244,7 +244,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Origen Alevines"
                 name="fc_origen_alevines"
@@ -254,7 +254,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Fecha"
                 type="date"
@@ -266,7 +266,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Total Alimento (Kg)"
                 type="number"
@@ -277,7 +277,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Mortalidad"
                 name="fn_mortalidad"
@@ -288,7 +288,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Recambio Agua"
                 name="fc_recambio_agua"
@@ -298,7 +298,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Temp. Agua"
                 type="number"
@@ -309,7 +309,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Amonio"
                 type="number"
@@ -320,7 +320,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="pH"
                 type="number"
@@ -331,7 +331,7 @@ function BioAlimentacionContent() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 label="Observaciones"
                 name="fc_observaciones"

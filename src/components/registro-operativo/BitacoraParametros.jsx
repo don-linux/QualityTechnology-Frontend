@@ -81,7 +81,7 @@ function BitacoraParametrosContent() {
   // 📄 Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
-    const logoMedellin = `${process.env.PUBLIC_URL}/images/medellin.png`;
+    const logoMedellin = `${""}/images/medellin.png`;
 
     doc.addImage(logoMedellin, "PNG", 10, 8, 25, 25);
     doc.setFontSize(14);
@@ -140,7 +140,7 @@ function BitacoraParametrosContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Fecha"
                 type="date"
@@ -151,7 +151,7 @@ function BitacoraParametrosContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Estanque"
                 name="fn_num_estanque"
@@ -160,7 +160,7 @@ function BitacoraParametrosContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Oxígeno"
                 name="fn_oxigeno"
@@ -169,7 +169,7 @@ function BitacoraParametrosContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Temperatura"
                 name="fn_temperatura"
@@ -178,7 +178,7 @@ function BitacoraParametrosContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="pH"
                 name="fn_ph"
@@ -187,7 +187,7 @@ function BitacoraParametrosContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Amonio"
                 name="fn_amonio"
@@ -196,7 +196,7 @@ function BitacoraParametrosContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Nitritos"
                 name="fn_nitritos"
@@ -205,7 +205,7 @@ function BitacoraParametrosContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Nitratos"
                 name="fn_nitratos"
@@ -214,7 +214,7 @@ function BitacoraParametrosContent() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Responsable"
                 name="fc_responsable"

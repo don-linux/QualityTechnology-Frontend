@@ -23,7 +23,7 @@ const LotesRegistro = () => {
   const [granja, setGranja] = useState("Medellin");
   const [instalaciones, setInstalaciones] = useState([]);
   const [lotes, setLotes] = useState([]);
-  const [instalacionSeleccionada, setInstalacionSeleccionada] = useState("");
+  const [, setInstalacionSeleccionada] = useState("");
   const [loteSeleccionado, setLoteSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
 
@@ -223,7 +223,7 @@ useEffect(() => {
 
       {/* ----------------- BOTONES DE GRANJA ----------------- */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid item>
+        <Grid>
           <Button
             variant={granja === "Medellin" ? "contained" : "outlined"}
             onClick={() => setGranja("Medellin")}
@@ -237,7 +237,7 @@ useEffect(() => {
           </Button>
         </Grid>
 
-        <Grid item>
+        <Grid>
           <Button
             variant={granja === "La Ceiba" ? "contained" : "outlined"}
             onClick={() => setGranja("La Ceiba")}
@@ -264,7 +264,7 @@ useEffect(() => {
           <Grid container spacing={2}>
 
             {/* FECHA */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Fecha"
                 type="date"
@@ -277,7 +277,7 @@ useEffect(() => {
             </Grid>
 
             {/* FAMILIA */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
               label="Familia"
               name="familia"
@@ -288,7 +288,7 @@ useEffect(() => {
             </Grid>
 
             {/* INSTALACION */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
               select
               label="Instalación"
@@ -328,7 +328,7 @@ useEffect(() => {
             </Grid>
 
             {/* HUEVOS ML */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Huevos (ml)"
                 name="huevos_ml"
@@ -339,7 +339,7 @@ useEffect(() => {
             </Grid>
 
             {/* MORTALIDAD */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Mortalidad"
                 name="mortalidad"
@@ -351,7 +351,7 @@ useEffect(() => {
             </Grid>
 
             {/* NO LOTE */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="No. Lote"
                 name="no_lote"
@@ -362,7 +362,7 @@ useEffect(() => {
             </Grid>
 
             {/* OBSERVACION */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 label="Observación"
                 name="observacion"
@@ -374,7 +374,7 @@ useEffect(() => {
             </Grid>
 
             {/* BOTÓN REGISTRAR / ACTUALIZAR */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Button
                 variant="contained"
                 startIcon={<AddCircleIcon />}
