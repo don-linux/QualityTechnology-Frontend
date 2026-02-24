@@ -88,23 +88,24 @@ const colorDias = (dias) => {
 };
 
 const CirculoNumero = ({ color, value }) => (
-  <div
-    style={{
-      width: "28px",
-      height: "28px",
+  <Box
+    component="span"
+    sx={{
+      width: 28,
+      height: 28,
       borderRadius: "50%",
-      backgroundColor: color,
+      bgcolor: color,
       color: "white",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       fontWeight: "bold",
-      fontSize: "14px",
-      margin: "0 auto",
+      fontSize: 14,
+      m: "0 auto",
     }}
   >
     {value}
-  </div>
+  </Box>
 );
   /* ===================== CARGA DE DATOS ===================== */
 
