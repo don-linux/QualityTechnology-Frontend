@@ -605,7 +605,7 @@ export default function CorporateLayout() {
         sx={{
           flexGrow: 1,
           p: 4,
-          ml: "10px",
+          ml: drawerOpen ? `${drawerWidth}px` : "10px",
           mt: "70px",
           minHeight: "100vh",
           backgroundColor: "#f4f6f8",
