@@ -283,7 +283,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     fullWidth
                     disabled={!!seleccionado && !!form.origen_texto}
                   >
-                    <MenuItem value="">— Sin origen —</MenuItem>
+                    <MenuItem value="">Seleccionar</MenuItem>
+                    <MenuItem value="EXTERNO">Externo</MenuItem>
                     {instalaciones.map((i) => (
                       <MenuItem
                         key={i.fi_instalacion_id}
@@ -294,8 +295,9 @@ Pronto conectaremos este botón con traspasos internos.`);
                     ))}
                   </TextField>
                 </Grid>
-
+                {form.origen_instalacion === "EXTERNO" && (
                 <Grid size={{ xs: 12, md: 3 }}>
+                
                   <TextField
                     size="small"
                     label="Origen externo"
@@ -306,6 +308,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                     disabled={!!seleccionado && !!form.origen_instalacion}
                   />
                 </Grid>
+                )}
 
                 {/* DESTINO */}
                 <Grid size={{ xs: 12, md: 3 }}>
