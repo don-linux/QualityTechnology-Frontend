@@ -54,6 +54,7 @@ const Login = () => {
       localStorage.setItem("rol", rolNormalizado);
       localStorage.setItem("nombre", data.usuario.nombre || "Usuario");
       localStorage.setItem("usuario_id", usuarioId.toString());
+      localStorage.setItem("modulos", JSON.stringify(data.modulos || []));
 
       let granjaAsignada = "ALL";
       if (rolNormalizado.toLowerCase().includes("gam")) granjaAsignada = "Medellin";

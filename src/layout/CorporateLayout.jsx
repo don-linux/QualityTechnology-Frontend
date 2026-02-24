@@ -55,6 +55,10 @@ export default function CorporateLayout() {
 
   const nombre = (localStorage.getItem("nombre") || "Usuario").trim();
   const rolRaw = localStorage.getItem("rol") || "";
+  const modulosGuardados = JSON.parse(localStorage.getItem("modulos") || "[]");
+  const modulos = new Set(
+    modulosGuardados.map((m) => m.fc_nombre?.trim())
+  );
 
   const rol = rolRaw
     .toString()
@@ -217,388 +221,405 @@ export default function CorporateLayout() {
             </ListItemIcon>
             {drawerOpen && <ListItemText primary="Inicio" />}
           </ListItemButton>
-
-          {/* OPERACIONES */}
-          {drawerOpen && (
-            <Typography
-              sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
-            >
-              OPERACIONES
-            </Typography>
-          )}
-
-          <ListItemButton
-            onClick={() => setOpenBitacora(!openBitacora)}
-            sx={{
-              justifyContent: drawerOpen ? "flex-start" : "center",
-            }}
-          >
-            <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-              <Assignment />
-            </ListItemIcon>
-            {drawerOpen && <ListItemText primary="Bitácoras" />}
-            {drawerOpen && (openBitacora ? <ExpandLess /> : <ExpandMore />)}
-          </ListItemButton>
-
-          <Collapse in={openBitacora && drawerOpen} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
+          {modulos.has("Operaciones") && (
+            <>
+            {/* OPERACIONES */}
+            {drawerOpen && (
               <Typography
-                sx={{
-                  ml: 4,
-                  mt: 1,
-                  mb: 0.5,
-                  fontSize: "13px",
-                  color: "#61fce7ff",
-                }}
+                sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
               >
+                OPERACIONES
               </Typography>
+            )}
 
-              <ListItemButton component={Link} to="/registro-operativo/plagas" sx={{ pl: 5 }}>
+            <ListItemButton
+              onClick={() => setOpenBitacora(!openBitacora)}
+              sx={{
+                justifyContent: drawerOpen ? "flex-start" : "center",
+              }}
+            >
+              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
+                <Assignment />
+              </ListItemIcon>
+              {drawerOpen && <ListItemText primary="Bitácoras" />}
+              {drawerOpen && (openBitacora ? <ExpandLess /> : <ExpandMore />)}
+            </ListItemButton>
+
+            <Collapse in={openBitacora && drawerOpen} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                <Typography
+                  sx={{
+                    ml: 4,
+                    mt: 1,
+                    mb: 0.5,
+                    fontSize: "13px",
+                    color: "#61fce7ff",
+                  }}
+                >
+                </Typography>
+
+                <ListItemButton component={Link} to="/registro-operativo/plagas" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <BugReport />
+                  </ListItemIcon>
+                  <ListItemText primary="Control de Plagas" />
+                </ListItemButton>
+
+                <ListItemButton component={Link} to="/registro-operativo/recepcion-insumos" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <ReceiptLong />
+                  </ListItemIcon>
+                  <ListItemText primary="Recepción de Insumos" />
+                </ListItemButton>
+
+                <ListItemButton component={Link} to="/registro-operativo/visitas" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <People />
+                  </ListItemIcon>
+                  <ListItemText primary="Control de Visitas" />
+                </ListItemButton>
+
+                <ListItemButton component={Link} to="/registro-operativo/limpieza-banos" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <CleaningServices />
+                  </ListItemIcon>
+                  <ListItemText primary="Limpieza de Baños" />
+                </ListItemButton>
+
+                <ListItemButton component={Link} to="/registro-operativo/parametros" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <Biotech />
+                  </ListItemIcon>
+                  <ListItemText primary="Parámetros Físico-Químicos" />
+                </ListItemButton>
+
+                <ListItemButton component={Link} to="/registro-operativo/medicamentos" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <LocalHospital />
+                  </ListItemIcon>
+                  <ListItemText primary="Aplicación de Medicamentos" />
+                </ListItemButton>
+
+                <ListItemButton component={Link} to="/registro-operativo/recambios" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <ScienceOutlined />
+                  </ListItemIcon>
+                  <ListItemText primary="Recambios" />
+                </ListItemButton>
+
+                {/* La Ceiba */}
+                <Typography
+                  sx={{
+                    ml: 4,
+                    mt: 1,
+                    mb: 0.5,
+                    fontSize: "13px",
+                    color: "#ebf74dff",
+                  }}
+                >
+                </Typography>
+
+                <ListItemButton component={Link} to="/registro-operativo/biometrias" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <Science />
+                  </ListItemIcon>
+                  <ListItemText primary="Biometrías" />
+                </ListItemButton>
+
+                <ListItemButton component={Link} to="/registro-operativo/alimentacion" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <Grass />
+                  </ListItemIcon>
+                  <ListItemText primary="Alimentación" />
+                </ListItemButton>
+                
+                <ListItemButton component={Link} to="/registro-operativo/insumos" sx={{ pl: 5 }}>
+                  <ListItemIcon sx={{ color: "white" }}>
+                    <Inventory />
+                  </ListItemIcon>
+                  <ListItemText primary="Ingresos / Egresos Insumos" />
+                </ListItemButton>
+              </List>
+            </Collapse>
+            </>
+          )}
+          {modulos.has("Inventarios") && (
+            <>
+              {/* ===================== INVENTARIOS ===================== */}
+              {drawerOpen && (
+                <Typography
+                  sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
+                >
+                  INVENTARIOS
+                </Typography>
+              )}
+
+              {/* 🐟 INVENTARIO DE ORGANISMOS */}
+              {drawerOpen && (
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    color: "#90cdffff",
+                    ml: 2,
+                    mt: 1,
+                    mb: 0.5,
+                    fontSize: "13px",
+                  }}
+                >
+                  Inventario de Organismos
+                </Typography>
+              )}
+
+              <ListItemButton component={Link} to="/inventarios/lotes">
                 <ListItemIcon sx={{ color: "white" }}>
-                  <BugReport />
+                  <EggAltIcon />
                 </ListItemIcon>
-                <ListItemText primary="Control de Plagas" />
+                <ListItemText primary="Control Reproductivo" />
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/registro-operativo/recepcion-insumos" sx={{ pl: 5 }}>
-                <ListItemIcon sx={{ color: "white" }}>
-                  <ReceiptLong />
-                </ListItemIcon>
-                <ListItemText primary="Recepción de Insumos" />
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/registro-operativo/visitas" sx={{ pl: 5 }}>
-                <ListItemIcon sx={{ color: "white" }}>
-                  <People />
-                </ListItemIcon>
-                <ListItemText primary="Control de Visitas" />
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/registro-operativo/limpieza-banos" sx={{ pl: 5 }}>
-                <ListItemIcon sx={{ color: "white" }}>
-                  <CleaningServices />
-                </ListItemIcon>
-                <ListItemText primary="Limpieza de Baños" />
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/registro-operativo/parametros" sx={{ pl: 5 }}>
-                <ListItemIcon sx={{ color: "white" }}>
-                  <Biotech />
-                </ListItemIcon>
-                <ListItemText primary="Parámetros Físico-Químicos" />
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/registro-operativo/medicamentos" sx={{ pl: 5 }}>
-                <ListItemIcon sx={{ color: "white" }}>
-                  <LocalHospital />
-                </ListItemIcon>
-                <ListItemText primary="Aplicación de Medicamentos" />
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/registro-operativo/recambios" sx={{ pl: 5 }}>
-                <ListItemIcon sx={{ color: "white" }}>
-                  <ScienceOutlined />
-                </ListItemIcon>
-                <ListItemText primary="Recambios" />
-              </ListItemButton>
-
-              {/* La Ceiba */}
-              <Typography
-                sx={{
-                  ml: 4,
-                  mt: 1,
-                  mb: 0.5,
-                  fontSize: "13px",
-                  color: "#ebf74dff",
-                }}
-              >
-               </Typography>
-
-              <ListItemButton component={Link} to="/registro-operativo/biometrias" sx={{ pl: 5 }}>
+              <ListItemButton component={Link} to="/inventarios/piletas">
                 <ListItemIcon sx={{ color: "white" }}>
                   <Science />
                 </ListItemIcon>
-                <ListItemText primary="Biometrías" />
+                <ListItemText primary="Alevinaje" />
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/registro-operativo/alimentacion" sx={{ pl: 5 }}>
+              <ListItemButton component={Link} to="/inventarios/reproductores">
+                <ListItemIcon sx={{ color: "white" }}>
+                  <Biotech />
+                </ListItemIcon>
+                <ListItemText primary="Reproductores" />
+              </ListItemButton>
+
+              <ListItemButton component={Link} to="/inventarios/engorda">
                 <ListItemIcon sx={{ color: "white" }}>
                   <Grass />
                 </ListItemIcon>
-                <ListItemText primary="Alimentación" />
+                <ListItemText primary="Engorda" />
               </ListItemButton>
-              
-              <ListItemButton component={Link} to="/registro-operativo/insumos" sx={{ pl: 5 }}>
+
+              {/* ⚙️ OTROS INVENTARIOS */}
+              {drawerOpen && (
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    color: "#e3eb72ff",
+                    ml: 2,
+                    mt: 1.5,
+                    mb: 0.5,
+                    fontSize: "13px",
+                  }}
+                >
+                  Otros Inventarios
+                </Typography>
+              )}
+
+              <ListItemButton component={Link} to="/inventarios/instalaciones">
                 <ListItemIcon sx={{ color: "white" }}>
-                  <Inventory />
+                  <HomeWorkIcon />
                 </ListItemIcon>
-                <ListItemText primary="Ingresos / Egresos Insumos" />
+                <ListItemText primary="Instalaciones" />
               </ListItemButton>
-            </List>
-          </Collapse>
 
-          {/* ===================== INVENTARIOS ===================== */}
-          {drawerOpen && (
-            <Typography
-              sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
-            >
-              INVENTARIOS
-            </Typography>
+              <ListItemButton component={Link} to="/inventarios/alimentos">
+                <ListItemIcon sx={{ color: "white" }}>
+                  <LocalMall />
+                </ListItemIcon>
+                <ListItemText primary="Alimento e Insumos" />
+              </ListItemButton>
+
+              <ListItemButton component={Link} to="/inventarios/registro-operativo">
+                <ListItemIcon sx={{ color: "white" }}>
+                  <Handyman />
+                </ListItemIcon>
+                <ListItemText primary="Equipo y Herramientas" />
+              </ListItemButton>
+            </>
           )}
+          {modulos.has("Ventas") && (
+            <>
+            {/* ===================== VENTAS ===================== */}
+            {drawerOpen && (
+              <Typography
+                sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
+              >
+                VENTAS
+              </Typography>
+            )}
 
-          {/* 🐟 INVENTARIO DE ORGANISMOS */}
-          {drawerOpen && (
-            <Typography
-              sx={{
-                fontWeight: "bold",
-                color: "#90cdffff",
-                ml: 2,
-                mt: 1,
-                mb: 0.5,
-                fontSize: "13px",
-              }}
-            >
-              Inventario de Organismos
-            </Typography>
+            <ListItemButton component={Link} to="/ventas/lista-espera">
+              <ListItemIcon sx={{ color: "white" }}>
+                <Store />
+              </ListItemIcon>
+              <ListItemText primary="Próximas Ventas" />
+            </ListItemButton>
+
+            <ListItemButton component={Link} to="/ventas/registro">
+              <ListItemIcon sx={{ color: "white" }}>
+                <LocalAtm />
+              </ListItemIcon>
+              <ListItemText primary="Registro de Ventas" />
+            </ListItemButton>
+
+            <ListItemButton component={Link} to="registro/cliente">
+              <ListItemIcon sx={{ color: "white" }}>
+                <People />
+              </ListItemIcon>
+              <ListItemText primary="Clientes" />
+            </ListItemButton>
+            </>
           )}
-         <ListItemButton component={Link} to="/lotes">
-            <ListItemIcon sx={{ color: "white" }}>
-              <EggAltIcon />
-            </ListItemIcon>
-            <ListItemText primary="Control Reproductivo" />
-          </ListItemButton>
+          {modulos.has("Finanzas") && (
+            <>
+              {/* ===================== ADMIN Y FINANZAS ===================== */}
+              {drawerOpen && (
+                <Typography
+                  sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
+                >
+                  ADMIN Y FINANZAS
+                </Typography>
+              )}
 
-          <ListItemButton component={Link} to="/piletas">
-            <ListItemIcon sx={{ color: "white" }}>
-              <Science />
-            </ListItemIcon>
-            <ListItemText primary="Alevinaje" />
-          </ListItemButton>
+              <ListItemButton component={Link} to="/ventas/flujo-caja">
+                <ListItemIcon sx={{ color: "white" }}>
+                  <AccountBalance />
+                </ListItemIcon>
+                <ListItemText primary="Flujo de Caja" />
+              </ListItemButton>
 
-          <ListItemButton component={Link} to="/reproductores">
-            <ListItemIcon sx={{ color: "white" }}>
-              <Biotech />
-            </ListItemIcon>
-            <ListItemText primary="Reproductores" />
-          </ListItemButton>
+              <ListItemButton component={Link} to="/ventas/tesoreria">
+                <ListItemIcon sx={{ color: "white" }}>
+                  <AccountBalance />
+                </ListItemIcon>
+                <ListItemText primary="Tesorería General" />
+              </ListItemButton>
 
-          <ListItemButton component={Link} to="/engorda">
-            <ListItemIcon sx={{ color: "white" }}>
-              <Grass />
-            </ListItemIcon>
-            <ListItemText primary="Engorda" />
-          </ListItemButton>
-
-          {/* ⚙️ OTROS INVENTARIOS */}
-          {drawerOpen && (
-            <Typography
-              sx={{
-                fontWeight: "bold",
-                color: "#e3eb72ff",
-                ml: 2,
-                mt: 1.5,
-                mb: 0.5,
-                fontSize: "13px",
-              }}
-            >
-              Otros Inventarios
-            </Typography>
+              <ListItemButton component={Link} to="/proveedores">
+                <ListItemIcon sx={{ color: "white" }}>
+                  <Store />
+                </ListItemIcon>
+                <ListItemText primary="Proveedores" />
+              </ListItemButton>
+            </>
           )}
+          {modulos.has("RRHH") && (
+            <>
+            {/* ===================== RRHH ===================== */}
+              {drawerOpen && (
+                <Typography
+                  sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
+                >
+                  RRHH
+                </Typography>
+              )}
 
-          <ListItemButton component={Link} to="/instalaciones">
-            <ListItemIcon sx={{ color: "white" }}>
-              <HomeWorkIcon />
-            </ListItemIcon>
-            <ListItemText primary="Instalaciones" />
-          </ListItemButton>
+              <ListItemButton component={Link} to="/nomina">
+                <ListItemIcon sx={{ color: "white" }}>
+                  <Person />
+                </ListItemIcon>
+                <ListItemText primary="Nómina" />
+              </ListItemButton>
 
-          <ListItemButton component={Link} to="/alimentos">
-            <ListItemIcon sx={{ color: "white" }}>
-              <LocalMall />
-            </ListItemIcon>
-            <ListItemText primary="Alimento e Insumos" />
-          </ListItemButton>
+              <ListItemButton component={Link} to="/expedientes">
+                <ListItemIcon sx={{ color: "white" }}>
+                  <Folder />
+                </ListItemIcon>
+                <ListItemText primary="Expedientes" />
+              </ListItemButton>
 
-          <ListItemButton component={Link} to="/registro-operativo/inventario">
-            <ListItemIcon sx={{ color: "white" }}>
-              <Handyman />
-            </ListItemIcon>
-            <ListItemText primary="Equipo y Herramientas" />
-          </ListItemButton>
+              <ListItemButton
+                component={Link}
+                to="/vacaciones"
+                sx={{
+                  borderRadius: 1,
+                  mb: 0.5,
+                  backgroundColor:
+                    location.pathname === "/vacaciones" ? "#388E3C" : "transparent",
+                  "&:hover": { backgroundColor: "#43A047" },
+                }}
+              >
+                <ListItemIcon sx={{ color: "white" }}>
+                  <EventAvailableIcon />
+                </ListItemIcon>
+                <ListItemText primary="Vacaciones y Ausencias" />
+              </ListItemButton>
 
-          {/* ===================== VENTAS ===================== */}
-          {drawerOpen && (
-            <Typography
-              sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
-            >
-              VENTAS
-            </Typography>
+              <ListItemButton component={Link} to="/caja-ahorro">
+                <ListItemIcon sx={{ color: "white" }}>
+                  <Savings />
+                </ListItemIcon>
+                <ListItemText primary="Caja de Ahorro" />
+              </ListItemButton>
+            </>
           )}
-
-          <ListItemButton component={Link} to="/lista-espera">
-            <ListItemIcon sx={{ color: "white" }}>
-              <Store />
-            </ListItemIcon>
-            <ListItemText primary="Próximas Ventas" />
-          </ListItemButton>
-
-          <ListItemButton component={Link} to="/venta">
-            <ListItemIcon sx={{ color: "white" }}>
-              <LocalAtm />
-            </ListItemIcon>
-            <ListItemText primary="Registro de Ventas" />
-          </ListItemButton>
-
-          <ListItemButton component={Link} to="/cliente">
-            <ListItemIcon sx={{ color: "white" }}>
-              <People />
-            </ListItemIcon>
-            <ListItemText primary="Clientes" />
-          </ListItemButton>
-
-          {/* ===================== ADMIN Y FINANZAS ===================== */}
-          {drawerOpen && (
-            <Typography
-              sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
-            >
-              ADMIN Y FINANZAS
-            </Typography>
-          )}
-
-          <ListItemButton component={Link} to="/flujo-caja">
-            <ListItemIcon sx={{ color: "white" }}>
-              <AccountBalance />
-            </ListItemIcon>
-            <ListItemText primary="Flujo de Caja" />
-          </ListItemButton>
-
-          <ListItemButton component={Link} to="/tesoreria">
-            <ListItemIcon sx={{ color: "white" }}>
-              <AccountBalance />
-            </ListItemIcon>
-            <ListItemText primary="Tesorería General" />
-          </ListItemButton>
-
-          <ListItemButton component={Link} to="/proveedores">
-            <ListItemIcon sx={{ color: "white" }}>
-              <Store />
-            </ListItemIcon>
-            <ListItemText primary="Proveedores" />
-          </ListItemButton>
-
-          {/* ===================== RRHH ===================== */}
-          {drawerOpen && (
-            <Typography
-              sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
-            >
-              RRHH
-            </Typography>
-          )}
-
-          <ListItemButton component={Link} to="/nomina">
-            <ListItemIcon sx={{ color: "white" }}>
-              <Person />
-            </ListItemIcon>
-            <ListItemText primary="Nómina" />
-          </ListItemButton>
-
-          <ListItemButton component={Link} to="/expedientes">
-            <ListItemIcon sx={{ color: "white" }}>
-              <Folder />
-            </ListItemIcon>
-            <ListItemText primary="Expedientes" />
-          </ListItemButton>
-
-          <ListItemButton
-            component={Link}
-            to="/vacaciones"
-            sx={{
-              borderRadius: 1,
-              mb: 0.5,
-              backgroundColor:
-                location.pathname === "/vacaciones" ? "#388E3C" : "transparent",
-              "&:hover": { backgroundColor: "#43A047" },
-            }}
-          >
-            <ListItemIcon sx={{ color: "white" }}>
-              <EventAvailableIcon />
-            </ListItemIcon>
-            <ListItemText primary="Vacaciones y Ausencias" />
-          </ListItemButton>
-
-          <ListItemButton component={Link} to="/caja-ahorro">
-            <ListItemIcon sx={{ color: "white" }}>
-              <Savings />
-            </ListItemIcon>
-            <ListItemText primary="Caja de Ahorro" />
-          </ListItemButton>
         </List>
+        {/* ===================== CATÁLOGOS ===================== */}
+        {modulos.has("Catálogos") && (
+          <>
+            {drawerOpen && (
+              <Typography
+                sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
+              >
+                CATÁLOGOS
+              </Typography>
+            )}
 
+            <ListItemButton
+              component={Link}
+              to="/usuarios"
+              sx={{
+                borderRadius: 1,
+                mb: 0.5,
+                backgroundColor:
+                  location.pathname === "/usuarios" ? "#388E3C" : "transparent",
+                "&:hover": { backgroundColor: "#43A047" },
+                justifyContent: drawerOpen ? "flex-start" : "center",
+              }}
+            >
+              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
+                <People />
+              </ListItemIcon>
+              {drawerOpen && <ListItemText primary="Usuarios" />}
+            </ListItemButton>
 
-      {/* ===================== CATÁLOGOS ===================== */}
-      {drawerOpen && (
-        <Typography
-          sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
-        >
-          CATÁLOGOS
-        </Typography>
-      )}
+            <ListItemButton
+              component={Link}
+              to="/roles"
+              sx={{
+                borderRadius: 1,
+                mb: 0.5,
+                backgroundColor:
+                  location.pathname === "/roles" ? "#388E3C" : "transparent",
+                "&:hover": { backgroundColor: "#43A047" },
+                justifyContent: drawerOpen ? "flex-start" : "center",
+              }}
+            >
+              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
+                <Assignment />
+              </ListItemIcon>
+              {drawerOpen && <ListItemText primary="Roles" />}
+            </ListItemButton>
 
-      <ListItemButton
-        component={Link}
-        to="/usuarios"
-        sx={{
-          borderRadius: 1,
-          mb: 0.5,
-          backgroundColor:
-            location.pathname === "/usuarios" ? "#388E3C" : "transparent",
-          "&:hover": { backgroundColor: "#43A047" },
-          justifyContent: drawerOpen ? "flex-start" : "center",
-        }}
-      >
-        <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-          <People />
-        </ListItemIcon>
-        {drawerOpen && <ListItemText primary="Usuarios" />}
-      </ListItemButton>
-
-      <ListItemButton
-        component={Link}
-        to="/roles"
-        sx={{
-          borderRadius: 1,
-          mb: 0.5,
-          backgroundColor:
-            location.pathname === "/roles" ? "#388E3C" : "transparent",
-          "&:hover": { backgroundColor: "#43A047" },
-          justifyContent: drawerOpen ? "flex-start" : "center",
-        }}
-      >
-        <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-          <Assignment />
-        </ListItemIcon>
-        {drawerOpen && <ListItemText primary="Roles" />}
-      </ListItemButton>
-
-      <ListItemButton
-        component={Link}
-        to="/estados"
-        sx={{
-          borderRadius: 1,
-          mb: 0.5,
-          backgroundColor:
-            location.pathname === "/estados" ? "#388E3C" : "transparent",
-          "&:hover": { backgroundColor: "#43A047" },
-          justifyContent: drawerOpen ? "flex-start" : "center",
-        }}
-      >
-        <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-          <LocationOn />
-        </ListItemIcon>
-        {drawerOpen && <ListItemText primary="Estados" />}
-      </ListItemButton>
+            <ListItemButton
+              component={Link}
+              to="/estados"
+              sx={{
+                borderRadius: 1,
+                mb: 0.5,
+                backgroundColor:
+                  location.pathname === "/estados" ? "#388E3C" : "transparent",
+                "&:hover": { backgroundColor: "#43A047" },
+                justifyContent: drawerOpen ? "flex-start" : "center",
+              }}
+            >
+              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
+                <LocationOn />
+              </ListItemIcon>
+              {drawerOpen && <ListItemText primary="Estados" />}
+            </ListItemButton>
+          </>
+        )}
       </Drawer>
-      
       {/* ===================== CONTENIDO ===================== */}
       <Box
         component="main"
