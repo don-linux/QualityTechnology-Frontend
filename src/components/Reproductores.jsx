@@ -40,6 +40,7 @@ function ReproductoresContent() {
   const [totalOrganismos, setTotalOrganismos] = useState(0);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
+  const [origenTipo, setOrigenTipo] = useState("Interno");
 
   const [form, setForm] = useState({
     origen_instalacion: "",
@@ -339,42 +340,63 @@ Pronto conectaremos este botón con traspasos internos.`);
             <CardContent>
               <Grid container spacing={2}>
                 
-                {/* ORIGEN */}
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <TextField
-                    select
-                    size="small"
-                    label="Origen (instalación)"
-                    name="origen_instalacion"
-                    value={form.origen_instalacion}
-                    onChange={handleChange}
-                    fullWidth
-                    disabled={!!seleccionado && !!form.origen_texto}
-                  >
-                    <MenuItem value="">— Sin origen —</MenuItem>
-                    {instalaciones.map((i) => (
-                      <MenuItem
-                        key={i.fi_instalacion_id}
-                        value={i.nombre_instalacion}
-                      >
-                        {i.nombre_instalacion}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
+               {/* ORIGEN NUEVO */}
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                size="small"
+                label="Origen"
+                value={origenTipo}
+                onChange={(e) => {
+                  setOrigenTipo(e.target.value);
+                  setForm({
+                    ...form,
+                    origen_instalacion: "",
+                    origen_texto: "",
+                  });
+                }}
+                fullWidth
+              >
+                <MenuItem value="Interno">Interno</MenuItem>
+                <MenuItem value="Externo">Externo</MenuItem>
+              </TextField>
+            </Grid>
 
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <TextField
-                    size="small"
-                    label="Origen externo"
-                    name="origen_texto"
-                    value={form.origen_texto}
-                    onChange={handleChange}
-                    fullWidth
-                    disabled={!!seleccionado && !!form.origen_instalacion}
-                  />
-                </Grid>
+            {/* SI ES INTERNO → MOSTRAR INSTALACIONES */}
+            {origenTipo === "Interno" && (
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  select
+                  size="small"
+                  label="Instalación (origen)"
+                  name="origen_instalacion"
+                  value={form.origen_instalacion}
+                  onChange={handleChange}
+                  fullWidth
+                >
+                  <MenuItem value="">Seleccione</MenuItem>
+                  {instalaciones.map((i) => (
+                    <MenuItem key={i.fi_instalacion_id} value={i.nombre_instalacion}>
+                      {i.nombre_instalacion}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            )}
 
+            {/* SI ES EXTERNO → MOSTRAR INPUT LIBRE */}
+            {origenTipo === "Externo" && (
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  size="small"
+                  label="Origen externo"
+                  name="origen_texto"
+                  value={form.origen_texto}
+                  onChange={handleChange}
+                  fullWidth
+                />
+              </Grid>
+            )}
                 {/* DESTINO */}
                 <Grid size={{ xs: 12, md: 3 }}>
                   <TextField
