@@ -114,7 +114,10 @@ const CirculoNumero = ({ color, value }) => (
     const data = await apiFetch(`/reproductores/granja/${granja}`);
     setReproductores(data || []);
     setTotalOrganismos(
-    data?.reduce((acc, r) => acc + (r.fn_cantidad || 0), 0) || 0
+      data?.reduce(
+        (acc, r) => acc + (Number(r.fn_cantidad) || 0),
+        0
+      ) || 0
     );
   }, [granjaActiva]);
 
