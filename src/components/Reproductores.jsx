@@ -33,8 +33,14 @@ function ReproductoresContent() {
   const [reproductores, setReproductores] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
   const [rastreos, setRastreos] = useState([]);
+  const [filtroTexto, setFiltroTexto] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+  const [totalInstalaciones, setTotalInstalaciones] = useState(0);
+  const [totalOrganismos, setTotalOrganismos] = useState(0);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
+  const [origenTipo, setOrigenTipo] = useState("Interno");
 
   const [form, setForm] = useState({
     origen_instalacion: "",
@@ -75,18 +81,45 @@ function ReproductoresContent() {
     return Math.floor((hoy - f) / (1000 * 60 * 60 * 24));
   };
 
-  const colorDias = (dias) => {
-    if (dias === null) return "inherit";
-    if (dias <= 10) return "#2e7d32";
-    if (dias <= 15) return "#f9a825";
-    return "#c62828";
-  };
+const colorDias = (dias) => {
+  if (dias === null) return "inherit";
+  if (dias <= 10) return "#2e7d32";
+  if (dias <= 15) return "#f9a825";
+  return "#c62828";
+};
 
+const CirculoNumero = ({ color, value }) => (
+  <Box
+    component="span"
+    sx={{
+      width: 28,
+      height: 28,
+      borderRadius: "50%",
+      bgcolor: color,
+      color: "white",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontWeight: "bold",
+      fontSize: 14,
+      m: "0 auto",
+    }}
+  >
+    {value}
+  </Box>
+);
   /* ===================== CARGA DE DATOS ===================== */
 
   const obtenerReproductores = useCallback(async () => {
-    const data = await apiFetch(`/reproductores/${granjaActiva}`);
+    const granja = encodeURIComponent(granjaActiva);
+    const data = await apiFetch(`/reproductores/granja/${granja}`);
     setReproductores(data || []);
+    setTotalOrganismos(
+      data?.reduce(
+        (acc, r) => acc + (Number(r.fn_cantidad) || 0),
+        0
+      ) || 0
+    );
   }, [granjaActiva]);
 
   const obtenerInstalaciones = useCallback(async () => {
@@ -96,6 +129,7 @@ function ReproductoresContent() {
     const granja = encodeURIComponent(granjaNormalizada);
     const data = await apiFetch(`/instalaciones/granja/${granja}`);
     setInstalaciones(data || []);
+    setTotalInstalaciones(data?.length || 0);
   }, [granjaActiva]);
 
   const obtenerTrazabilidad = useCallback(async () => {
@@ -108,6 +142,24 @@ function ReproductoresContent() {
     obtenerInstalaciones();
     obtenerTrazabilidad();
   }, [obtenerReproductores, obtenerInstalaciones, obtenerTrazabilidad]);
+
+  const rastreosFiltrados = rastreos.filter((r) => {
+  const texto = filtroTexto.toLowerCase();
+
+  const coincideTexto =
+    r.origen?.toLowerCase().includes(texto) ||
+    r.destino?.toLowerCase().includes(texto) ||
+    r.observacion?.toLowerCase().includes(texto);
+
+  const fechaMov = new Date(r.fecha_movimiento);
+  const desde = fechaInicio ? new Date(fechaInicio) : null;
+  const hasta = fechaFin ? new Date(fechaFin) : null;
+
+  const coincideFecha =
+    (!desde || fechaMov >= desde) && (!hasta || fechaMov <= hasta);
+
+  return coincideTexto && coincideFecha;
+});
 
   /* ===================== FORMULARIO ===================== */
 
@@ -137,10 +189,18 @@ function ReproductoresContent() {
     let updated = { ...form, [name]: value };
 
     if (name === "fn_machos" || name === "fn_hembras") {
-      const m = parseInt(updated.fn_machos || 0);
-      const h = parseInt(updated.fn_hembras || 0);
+      const m = Number(updated.fn_machos || 0);
+      const h = Number(updated.fn_hembras || 0);
+
       updated.fn_cantidad = m + h;
-      updated.fc_ratio = m > 0 ? `1:${h}` : "";
+
+      if (m > 0 && h > 0) {
+        const ratio = h / m;
+        const redondeado = Math.round(ratio * 100) / 100;
+        updated.fc_ratio = `1:${redondeado}`;
+      } else {
+        updated.fc_ratio = "";
+      }
     }
 
     setForm(updated);
@@ -183,8 +243,8 @@ function ReproductoresContent() {
       fc_familia: r.fc_familia,
       fc_ratio: r.fc_ratio,
       fc_observacion: r.fc_observacion,
-      fd_fecha_siembra: r.fd_fecha_siembra,
-      fd_fecha_biometria: r.fd_fecha_biometria,
+      fd_fecha_siembra: r.fd_fecha_siembra?.split("T")[0] || "",
+      fd_fecha_biometria: r.fd_fecha_biometria?.split("T")[0] || "",
     });
 
     setMostrarFormulario(true);
@@ -198,21 +258,6 @@ function ReproductoresContent() {
         fi_usuario_id: usuario_id,
       }),
     });
-
-    // Crear trazabilidad si cambia instalación
-    if (form.fc_instalacion !== seleccionado.fc_instalacion) {
-      await apiFetch(`/reproductores/movimiento`, {
-        method: "POST",
-        body: JSON.stringify({
-          fi_repro_origen: seleccionado.fi_reproductor_id,
-          origen_texto: seleccionado.fc_instalacion,
-          fi_repro_destino: seleccionado.fi_reproductor_id,
-          cantidad_trasladada: form.fn_cantidad,
-          observacion: "Cambio de instalación",
-          fi_usuario_id: usuario_id,
-        }),
-      });
-    }
 
     limpiarFormulario();
     obtenerReproductores();
@@ -229,7 +274,7 @@ function ReproductoresContent() {
   };
 
   const trazarReproductor = (r) => {
-    alert(`Movimiento desde ${r.fc_instalacion}.  
+    alert(`Movimiento desde ${r.fc_instalacion}.
 Pronto conectaremos este botón con traspasos internos.`);
   };
 
@@ -240,73 +285,118 @@ Pronto conectaremos este botón con traspasos internos.`);
       <Typography variant="h4" fontWeight="bold" mb={2} color="#004C7D">
         🧬 Control de Reproductores
       </Typography>
-
-      {/* Selector de granja */}
+      <Paper
+          elevation={0}
+          sx={{
+            backgroundColor: "#E3F2FD",
+            p: 2,
+            mb: 3,
+            borderRadius: 2,
+            borderLeft: "6px solid #2196F3",
+          }}
+        >
+        <Typography><strong>Granja activa:</strong> {granjaActiva}</Typography>
+        <Typography><strong>Total instalaciones:</strong> {totalInstalaciones}</Typography>
+        <Typography><strong>Total organismos:</strong> {totalOrganismos}</Typography>
+      </Paper>
+      
+     {/* Selector de granja */}
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
         <Button
           variant={granjaActiva.includes("Medellin") ? "contained" : "outlined"}
+          color="primary"
+          sx={{ width: 130, fontWeight: "bold" }}
           onClick={() => setGranjaActiva("Granja Acuícola Medellin")}
         >
           MEDELLÍN
         </Button>
+
         <Button
           variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"}
+          color="primary"
+          sx={{ width: 130, fontWeight: "bold" }}
           onClick={() => setGranjaActiva("Granja Acuícola La Ceiba")}
         >
           LA CEIBA
         </Button>
       </Box>
 
-      {/* FORMULARIO */}
-      <Paper sx={{ p: 3, mb: 4 }}>
+      {/* Botón para abrir formulario */}
+      <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mb: 2 }}>
         <Button
           variant="contained"
           color="success"
+          sx={{ fontWeight: "bold", px: 4 }}
           onClick={() => setMostrarFormulario(!mostrarFormulario)}
         >
           {mostrarFormulario ? "OCULTAR FORMULARIO" : "+ NUEVO REGISTRO"}
         </Button>
-
+      </Box>
+      
+      {/* FORMULARIO */}
+      <Paper sx={{ p: 3, mb: 4 }}>
         {mostrarFormulario && (
           <Card sx={{ mt: 3 }}>
             <CardContent>
               <Grid container spacing={2}>
-                {/* ORIGEN */}
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <TextField
-                    select
-                    size="small"
-                    label="Origen (instalación)"
-                    name="origen_instalacion"
-                    value={form.origen_instalacion}
-                    onChange={handleChange}
-                    fullWidth
-                    disabled={!!seleccionado && !!form.origen_texto}
-                  >
-                    <MenuItem value="">— Sin origen —</MenuItem>
-                    {instalaciones.map((i) => (
-                      <MenuItem
-                        key={i.fi_instalacion_id}
-                        value={i.nombre_instalacion}
-                      >
-                        {i.nombre_instalacion}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
+                
+               {/* ORIGEN NUEVO */}
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                size="small"
+                label="Origen"
+                value={origenTipo}
+                onChange={(e) => {
+                  setOrigenTipo(e.target.value);
+                  setForm({
+                    ...form,
+                    origen_instalacion: "",
+                    origen_texto: "",
+                  });
+                }}
+                fullWidth
+              >
+                <MenuItem value="Interno">Interno</MenuItem>
+                <MenuItem value="Externo">Externo</MenuItem>
+              </TextField>
+            </Grid>
 
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <TextField
-                    size="small"
-                    label="Origen externo"
-                    name="origen_texto"
-                    value={form.origen_texto}
-                    onChange={handleChange}
-                    fullWidth
-                    disabled={!!seleccionado && !!form.origen_instalacion}
-                  />
-                </Grid>
+            {/* SI ES INTERNO → MOSTRAR INSTALACIONES */}
+            {origenTipo === "Interno" && (
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  select
+                  size="small"
+                  label="Instalación (origen)"
+                  name="origen_instalacion"
+                  value={form.origen_instalacion}
+                  onChange={handleChange}
+                  fullWidth
+                >
+                  <MenuItem value="">Seleccione</MenuItem>
+                  {instalaciones.map((i) => (
+                    <MenuItem key={i.fi_instalacion_id} value={i.nombre_instalacion}>
+                      {i.nombre_instalacion}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            )}
 
+            {/* SI ES EXTERNO → MOSTRAR INPUT LIBRE */}
+            {origenTipo === "Externo" && (
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  size="small"
+                  label="Origen externo"
+                  name="origen_texto"
+                  value={form.origen_texto}
+                  onChange={handleChange}
+                  fullWidth
+                />
+              </Grid>
+            )}
                 {/* DESTINO */}
                 <Grid size={{ xs: 12, md: 3 }}>
                   <TextField
@@ -467,7 +557,7 @@ Pronto conectaremos este botón con traspasos internos.`);
       </Paper>
 
       {/* TABLA PRINCIPAL */}
-      <Paper sx={{ mb: 6, overflowX: "auto" }}>
+      <Paper sx={{ mb: 6, overflowX: "auto", p: 1 }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>
@@ -483,16 +573,19 @@ Pronto conectaremos este botón con traspasos internos.`);
               <TableCell>Fecha siembra</TableCell>
               <TableCell>Días en pila</TableCell>
               <TableCell>Últ. biometría</TableCell>
+              <TableCell>Días transcurridos</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {reproductores.map((r) => {
-              const dias = calcularDias(r.fd_fecha_siembra);
+              const diasPila = calcularDias(r.fd_fecha_siembra);
+              const diasBiometria = calcularDias(r.fd_fecha_biometria);
 
               return (
                 <TableRow key={r.fi_reproductor_id}>
+
                   <TableCell>{r.fc_instalacion}</TableCell>
                   <TableCell>{formatNumber(r.fn_cantidad)}</TableCell>
                   <TableCell>{formatNumber(r.fn_talla)}</TableCell>
@@ -502,20 +595,30 @@ Pronto conectaremos este botón con traspasos internos.`);
                   <TableCell>{r.fc_linea || "—"}</TableCell>
                   <TableCell>{r.fc_familia || "—"}</TableCell>
                   <TableCell>{r.fc_observacion || "—"}</TableCell>
+
                   <TableCell>{formatFecha(r.fd_fecha_siembra)}</TableCell>
 
+                  {/* DÍAS EN PILA (SIN SEMÁFORO) */}
                   <TableCell
                     sx={{
                       fontWeight: "bold",
-                      color: colorDias(dias),
                       textAlign: "center",
                     }}
                   >
-                    {dias ?? "—"}
+                    {diasPila ?? "—"}
                   </TableCell>
 
+                  {/* FECHA BIOMETRÍA */}
                   <TableCell>{formatFecha(r.fd_fecha_biometria)}</TableCell>
 
+                  {/* DÍAS TRANSCURRIDOS (CON SEMÁFORO) */}
+                  <TableCell sx={{ textAlign: "center" }}>
+                  {diasBiometria !== null ? (
+                    <CirculoNumero color={colorDias(diasBiometria)} value={diasBiometria} />
+                  ) : "—"}
+                </TableCell>
+
+                  {/* ACCIONES */}
                   <TableCell>
                     <Tooltip title="Editar">
                       <IconButton color="primary" onClick={() => editarReproductor(r)}>
@@ -535,6 +638,7 @@ Pronto conectaremos este botón con traspasos internos.`);
                       </IconButton>
                     </Tooltip>
                   </TableCell>
+
                 </TableRow>
               );
             })}
@@ -547,7 +651,55 @@ Pronto conectaremos este botón con traspasos internos.`);
         🔁 Trazabilidad de Movimientos
       </Typography>
 
-      <Paper sx={{ mb: 6, overflowX: "auto" }}>
+      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+      <TextField
+        size="small"
+        label="Buscar"
+        fullWidth
+        value={filtroTexto}
+        onChange={(e) => setFiltroTexto(e.target.value)}
+      />
+
+      <TextField
+        type="date"
+        size="small"
+        label="Fecha inicio"
+        value={fechaInicio}
+        onChange={(e) => setFechaInicio(e.target.value)}
+        InputLabelProps={{ shrink: true }}
+      />
+
+      <TextField
+        type="date"
+        size="small"
+        label="Fecha fin"
+        value={fechaFin}
+        onChange={(e) => setFechaFin(e.target.value)}
+        InputLabelProps={{ shrink: true }}
+      />
+
+      <Button
+        variant="contained"
+        onClick={() => obtenerTrazabilidad()}
+        sx={{ height: "40px" }}
+      >
+        BUSCAR
+      </Button>
+
+      <Button
+        variant="outlined"
+        color="error"
+        sx={{ height: "40px" }}
+        onClick={() => {
+          setFiltroTexto("");
+          setFechaInicio("");
+          setFechaFin("");
+        }}
+      >
+        LIMPIAR
+      </Button>
+    </Box>
+    <Paper sx={{ mb: 6, overflowX: "auto", boxShadow: 2 }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>
@@ -560,7 +712,7 @@ Pronto conectaremos este botón con traspasos internos.`);
           </TableHead>
 
           <TableBody>
-            {rastreos.map((r) => (
+           {rastreosFiltrados.map((r) => (
               <TableRow key={r.fi_movimiento_id}>
                 <TableCell>{r.origen || "—"}</TableCell>
                 <TableCell>{r.destino || "—"}</TableCell>
