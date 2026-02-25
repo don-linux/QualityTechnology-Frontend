@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
@@ -39,7 +40,7 @@ function BitacoraPlagasContent() {
   // 🔍 Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/plagas?ubicacion=${form.ubicacion}`);
+      const res = await axios.get(`${API_URL}/plagas?ubicacion=${form.ubicacion}`);
       const filtrados = res.data.filter((r) => {
         if (!busqueda) return true;
         return (
@@ -61,8 +62,8 @@ function BitacoraPlagasContent() {
   const guardar = async () => {
     try {
       if (editId)
-        await axios.put(`http://localhost:5000/plagas/${editId}`, form);
-      else await axios.post(`http://localhost:5000/plagas`, form);
+        await axios.put(`${API_URL}/plagas/${editId}`, form);
+      else await axios.post(`${API_URL}/plagas`, form);
 
       setEditId(null);
       setForm({
@@ -92,13 +93,13 @@ function BitacoraPlagasContent() {
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/plagas/${id}`);
+    await axios.delete(`${API_URL}/plagas/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!window.confirm("⚠️ ¿Eliminar todos los registros de esta ubicación?")) return;
-    await axios.delete(`http://localhost:5000/plagas?ubicacion=${form.ubicacion}`);
+    await axios.delete(`${API_URL}/plagas?ubicacion=${form.ubicacion}`);
     cargarDatos();
   };
 

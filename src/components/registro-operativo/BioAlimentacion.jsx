@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box,
   Card,
@@ -44,7 +45,7 @@ function BioAlimentacionContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/ceiba/alimentacion");
+      const res = await axios.get(`${API_URL}/ceiba/alimentacion`);
       setData(res.data);
     } catch {
       alert("Error al cargar registros.");
@@ -59,12 +60,12 @@ function BioAlimentacionContent() {
     try {
       if (editId) {
         await axios.put(
-          `http://localhost:5000/ceiba/alimentacion/${editId}`,
+          `${API_URL}/ceiba/alimentacion/${editId}`,
           form
         );
         alert("Registro actualizado");
       } else {
-        await axios.post("http://localhost:5000/ceiba/alimentacion", form);
+        await axios.post(`${API_URL}/ceiba/alimentacion`, form);
         alert("Registro guardado");
       }
 
@@ -115,7 +116,7 @@ function BioAlimentacionContent() {
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/ceiba/alimentacion/${id}`);
+    await axios.delete(`${API_URL}/ceiba/alimentacion/${id}`);
     cargarDatos();
   };
 
@@ -186,7 +187,7 @@ function BioAlimentacionContent() {
         "⚠️ ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer."
       )
     ) {
-      await axios.delete("http://localhost:5000/ceiba/alimentacion");
+      await axios.delete(`${API_URL}/ceiba/alimentacion`);
       cargarDatos();
     }
   };

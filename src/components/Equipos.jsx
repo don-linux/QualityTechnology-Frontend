@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Box,
   Card,
@@ -65,7 +66,7 @@ function EquiposContent() {
     fd_proximo_mantenimiento: "",
   });
 
-  const api = "http://localhost:5000/equipos";
+  const api = `${API_URL}/equipos`;
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });

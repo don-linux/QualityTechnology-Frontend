@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Container,
   Card,
@@ -33,7 +34,7 @@ export default function Estados() {
 
   const obtenerEstados = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/estados");
+      const res = await axios.get(`${API_URL}/estados`);
       setEstados(res.data);
     } catch (error) {
       console.error("Error al obtener estados", error);
@@ -54,7 +55,7 @@ export default function Estados() {
   const registrarEstado = async () => {
     if (!form.fc_nombre.trim()) return alert("El nombre es obligatorio");
     try {
-      await axios.post("http://localhost:5000/estados", {
+      await axios.post(`${API_URL}/estados`, {
         fc_nombre: form.fc_nombre,
       });
       obtenerEstados();
@@ -71,7 +72,7 @@ export default function Estados() {
 
     try {
       await axios.put(
-        `http://localhost:5000/estados/${form.fi_estado_id}`,
+        `${API_URL}/estados/${form.fi_estado_id}`,
         { fc_nombre: form.fc_nombre }
       );
       obtenerEstados();
@@ -90,7 +91,7 @@ export default function Estados() {
 
     try {
       await axios.delete(
-        `http://localhost:5000/estados/${form.fi_estado_id}`
+        `${API_URL}/estados/${form.fi_estado_id}`
       );
       obtenerEstados();
       limpiarFormulario();

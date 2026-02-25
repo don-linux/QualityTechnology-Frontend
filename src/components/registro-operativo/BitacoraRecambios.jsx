@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box,
   Card,
@@ -45,7 +46,7 @@ function BitacoraRecambiosContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/medellin/recambios");
+      const res = await axios.get(`${API_URL}/medellin/recambios`);
       setData(res.data);
     } catch (err) {
       console.error(err.message);
@@ -60,10 +61,10 @@ function BitacoraRecambiosContent() {
     try {
       if (editId)
         await axios.put(
-          `http://localhost:5000/medellin/recambios/${editId}`,
+          `${API_URL}/medellin/recambios/${editId}`,
           form
         );
-      else await axios.post("http://localhost:5000/medellin/recambios", form);
+      else await axios.post(`${API_URL}/medellin/recambios`, form);
 
       setEditId(null);
       setForm({
@@ -106,14 +107,14 @@ function BitacoraRecambiosContent() {
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/medellin/recambios/${id}`);
+    await axios.delete(`${API_URL}/medellin/recambios/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!window.confirm("⚠️ ¿Deseas eliminar todos los registros?")) return;
     try {
-      await axios.delete("http://localhost:5000/medellin/recambios");
+      await axios.delete(`${API_URL}/medellin/recambios`);
       cargarDatos();
       alert("Todos los registros fueron eliminados correctamente.");
     } catch (err) {

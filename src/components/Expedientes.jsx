@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Box,
   Card,
@@ -24,7 +25,7 @@ import axios from "axios";
 // =========================================================
 export default function Expedientes() {
   const usuario_id = localStorage.getItem("usuario_id");
-  const api = "http://localhost:5000/expedientes";
+  const api = `${API_URL}/expedientes`;
 
   const [form, setForm] = useState({
     fc_nombre: "",

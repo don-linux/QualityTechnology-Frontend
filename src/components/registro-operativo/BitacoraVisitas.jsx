@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
@@ -40,7 +41,7 @@ function BitacoraVisitasContent() {
 
   const cargarDatos = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/visitas?ubicacion=${form.ubicacion}&filtro=${busqueda}`);
+      const res = await axios.get(`${API_URL}/visitas?ubicacion=${form.ubicacion}&filtro=${busqueda}`);
       setData(res.data);
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
@@ -66,9 +67,9 @@ function BitacoraVisitasContent() {
       formData.append("ubicacion", form.ubicacion);
 
       if (editId) {
-        await axios.put(`http://localhost:5000/visitas/${editId}`, formData);
+        await axios.put(`${API_URL}/visitas/${editId}`, formData);
       } else {
-        await axios.post("http://localhost:5000/visitas", formData);
+        await axios.post(`${API_URL}/visitas`, formData);
       }
       setEditId(null);
       setForm({
@@ -97,13 +98,13 @@ function BitacoraVisitasContent() {
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/visitas/${id}`);
+    await axios.delete(`${API_URL}/visitas/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!window.confirm("⚠️ ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete("http://localhost:5000/visitas");
+    await axios.delete(`${API_URL}/visitas`);
     cargarDatos();
   };
 

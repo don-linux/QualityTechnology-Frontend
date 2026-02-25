@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Container,
   Card,
@@ -71,7 +72,7 @@ export default function AlevinesRegistro() {
 
   const obtenerAlevines = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/alevines");
+      const res = await axios.get(`${API_URL}/alevines`);
       setAlevines(res.data);
     } catch (error) {
       console.error("Error al obtener alevines", error);
@@ -80,7 +81,7 @@ export default function AlevinesRegistro() {
 
   const obtenerColectas = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/colectas");
+      const res = await axios.get(`${API_URL}/colectas`);
       setColectas(res.data);
     } catch (error) {
       console.error("Error al obtener colectas", error);
@@ -119,7 +120,7 @@ export default function AlevinesRegistro() {
     const fechaActual = dayjs().format("YYYY-MM-DD");
 
     try {
-      await axios.post("http://localhost:5000/alevines", {
+      await axios.post(`${API_URL}/alevines`, {
         fc_numero_lote: form.numero_lote,
         fn_peso_promedio: form.peso_promedio,
         fn_cantidad: form.cantidad_nacidos,
@@ -144,7 +145,7 @@ export default function AlevinesRegistro() {
 
     try {
       await axios.put(
-        `http://localhost:5000/alevines/${form.fi_alevines_id}`,
+        `${API_URL}/alevines/${form.fi_alevines_id}`,
         {
           fc_numero_lote: form.numero_lote,
           fn_peso_promedio: form.peso_promedio,
@@ -168,7 +169,7 @@ export default function AlevinesRegistro() {
 
     try {
       await axios.delete(
-        `http://localhost:5000/alevines/${form.fi_alevines_id}`
+        `${API_URL}/alevines/${form.fi_alevines_id}`
       );
       obtenerAlevines();
       limpiarFormulario();

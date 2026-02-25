@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Box,
   Typography,
@@ -36,7 +37,7 @@ export default function Nomina() {
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState({ nombre: "", fecha: "" });
 
-  const api = "http://localhost:5000/nomina";
+  const api = `${API_URL}/nomina`;
 
   const cargarDatos = async () => {
     const res = await axios.get(api);

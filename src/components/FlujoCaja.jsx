@@ -10,9 +10,10 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
+import { API_URL } from "../utils/api.js";
 
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
-const API = "http://localhost:5000";
+const API = API_URL;
 
 export default function FlujoCaja() {
   const [subTab, setSubTab] = useState(0);

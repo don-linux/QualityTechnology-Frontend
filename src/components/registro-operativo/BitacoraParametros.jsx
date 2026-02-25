@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
@@ -26,7 +27,7 @@ function BitacoraParametrosContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/medellin/parametros");
+      const res = await axios.get(`${API_URL}/medellin/parametros`);
       setData(res.data);
     } catch {
       alert("Error al cargar registros.");
@@ -37,8 +38,8 @@ function BitacoraParametrosContent() {
   const guardar = async () => {
     try {
       if (editId)
-        await axios.put(`http://localhost:5000/medellin/parametros/${editId}`, form);
-      else await axios.post("http://localhost:5000/medellin/parametros", form);
+        await axios.put(`${API_URL}/medellin/parametros/${editId}`, form);
+      else await axios.post(`${API_URL}/medellin/parametros`, form);
 
       setEditId(null);
       setForm({
@@ -67,14 +68,14 @@ function BitacoraParametrosContent() {
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/medellin/parametros/${id}`);
+    await axios.delete(`${API_URL}/medellin/parametros/${id}`);
     cargarDatos();
   };
 
   // 🗑️ Eliminar todos los registros
   const eliminarTodos = async () => {
     if (!window.confirm("⚠️ ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete("http://localhost:5000/medellin/parametros");
+    await axios.delete(`${API_URL}/medellin/parametros`);
     cargarDatos();
   };
 

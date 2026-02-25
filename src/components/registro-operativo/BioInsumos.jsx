@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box,
   Card,
@@ -38,7 +39,7 @@ function BioInsumosContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/ceiba/insumos");
+      const res = await axios.get(`${API_URL}/ceiba/insumos`);
       setData(res.data);
     } catch {
       alert("Error cargando registros.");
@@ -52,10 +53,10 @@ function BioInsumosContent() {
   const guardar = async () => {
     try {
       if (editId) {
-        await axios.put(`http://localhost:5000/ceiba/insumos/${editId}`, form);
+        await axios.put(`${API_URL}/ceiba/insumos/${editId}`, form);
         alert("Registro actualizado");
       } else {
-        await axios.post("http://localhost:5000/ceiba/insumos", form);
+        await axios.post(`${API_URL}/ceiba/insumos`, form);
         alert("Registro guardado");
       }
       setForm({
@@ -92,7 +93,7 @@ function BioInsumosContent() {
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/ceiba/insumos/${id}`);
+    await axios.delete(`${API_URL}/ceiba/insumos/${id}`);
     cargarDatos();
   };
 
@@ -102,7 +103,7 @@ function BioInsumosContent() {
         "⚠️ ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer."
       )
     ) {
-      await axios.delete("http://localhost:5000/ceiba/insumos");
+      await axios.delete(`${API_URL}/ceiba/insumos`);
       cargarDatos();
     }
   };

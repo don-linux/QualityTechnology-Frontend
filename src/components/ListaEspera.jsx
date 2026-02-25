@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Box,
   Paper,
@@ -67,14 +68,14 @@ function ListaEsperaContent() {
   const [lista, setLista] = useState([]);
 
   const cargarLista = async () => {
-    const res = await fetch("http://localhost:5000/lista-espera");
+    const res = await fetch(`${API_URL}/lista-espera`);
     const data = await res.json();
     setLista(data);
   };
 
   const cargarClientes = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/clientes");
+      const res = await axios.get(`${API_URL}/clientes`);
       setClientes(res.data);
     } catch (err) {
       console.error("Error al cargar clientes:", err);
@@ -96,7 +97,7 @@ function ListaEsperaContent() {
       return;
     }
 
-    const res = await fetch("http://localhost:5000/lista-espera", {
+    const res = await fetch(`${API_URL}/lista-espera`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -116,7 +117,7 @@ function ListaEsperaContent() {
 
   const actualizar = async () => {
     const res = await fetch(
-      `http://localhost:5000/lista-espera/${editId}`,
+      `${API_URL}/lista-espera/${editId}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -136,7 +137,7 @@ function ListaEsperaContent() {
     if (!window.confirm("¿Eliminar este registro?")) return;
 
     const res = await fetch(
-      `http://localhost:5000/lista-espera/${id}`,
+      `${API_URL}/lista-espera/${id}`,
       { method: "DELETE" }
     );
 
@@ -150,7 +151,7 @@ function ListaEsperaContent() {
     if (!window.confirm("¿Convertir a venta real?")) return;
 
     const res = await fetch(
-      `http://localhost:5000/lista-espera/convertir/${id}`,
+      `${API_URL}/lista-espera/convertir/${id}`,
       { method: "POST" }
     );
 
@@ -166,7 +167,7 @@ function ListaEsperaContent() {
 
   const registrarClienteRapido = async () => {
     try {
-      await axios.post("http://localhost:5000/clientes", nuevoCliente);
+      await axios.post(`${API_URL}/clientes`, nuevoCliente);
       await cargarClientes();
       setOpenCliente(false);
       setNuevoCliente({

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../utils/api.js";
 import { apiFetch } from "../utils/api.js";
 import axios from "axios";
 import {
@@ -46,7 +47,7 @@ export default function UsuariosRegistro() {
 
   const obtenerRoles = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/roles");
+      const res = await axios.get(`${API_URL}/roles`);
       setRoles(res.data);
     } catch (error) {
       console.error("Error al obtener roles:", error);
@@ -59,7 +60,7 @@ export default function UsuariosRegistro() {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("http://localhost:5000/usuarios", form);
+      await axios.post(`${API_URL}/usuarios`, form);
       alert("Usuario registrado correctamente ✅");
       limpiarFormulario();
       obtenerUsuarios();
@@ -72,7 +73,7 @@ export default function UsuariosRegistro() {
   const handleUpdate = async () => {
     if (!usuarioSeleccionado) return;
     try {
-      await axios.put(`http://localhost:5000/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
+      await axios.put(`${API_URL}/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
         nombre: form.nombre,
         contraseña: form.contraseña,
         rol_id: form.rol_id,
@@ -89,7 +90,7 @@ export default function UsuariosRegistro() {
   const handleDelete = async () => {
     if (!usuarioSeleccionado) return;
     try {
-      await axios.delete(`http://localhost:5000/usuarios/${usuarioSeleccionado.fi_usuario_id}`);
+      await axios.delete(`${API_URL}/usuarios/${usuarioSeleccionado.fi_usuario_id}`);
       alert("Usuario eliminado correctamente ✅");
       limpiarFormulario();
       obtenerUsuarios();

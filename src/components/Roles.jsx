@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from "../utils/api.js";
 import {
   Container,
   Card,
@@ -29,7 +30,7 @@ export default function Roles() {
 
   const obtenerRoles = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/roles');
+      const res = await axios.get(`${API_URL}/roles`);
       setRoles(res.data);
     } catch (error) {
       console.error('Error al obtener roles', error);
@@ -48,7 +49,7 @@ export default function Roles() {
   const registrarRol = async () => {
     if (form.nombre.trim() === '') return setMensaje('❌ El nombre no puede estar vacío');
     try {
-      await axios.post('http://localhost:5000/roles', { nombre: form.nombre });
+      await axios.post(`${API_URL}/roles`, { nombre: form.nombre });
       setMensaje('✅ Rol registrado correctamente');
       limpiarFormulario();
       obtenerRoles();
@@ -61,7 +62,7 @@ export default function Roles() {
   const actualizarRol = async () => {
     if (!form.rol_id) return setMensaje('❌ Selecciona un rol para actualizar');
     try {
-      await axios.put(`http://localhost:5000/roles/${form.rol_id}`, { nombre: form.nombre });
+      await axios.put(`${API_URL}/roles/${form.rol_id}`, { nombre: form.nombre });
       setMensaje('✅ Rol actualizado correctamente');
       limpiarFormulario();
       obtenerRoles();
@@ -74,7 +75,7 @@ export default function Roles() {
   const eliminarRol = async () => {
     if (!form.rol_id) return setMensaje('❌ Selecciona un rol para eliminar');
     try {
-      await axios.delete(`http://localhost:5000/roles/${form.rol_id}`);
+      await axios.delete(`${API_URL}/roles/${form.rol_id}`);
       setMensaje('✅ Rol eliminado correctamente');
       limpiarFormulario();
       obtenerRoles();

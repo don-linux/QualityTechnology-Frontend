@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Box,
   Typography,
@@ -22,7 +23,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const api = "http://localhost:5000/caja-ahorro";
+const api = `${API_URL}/caja-ahorro`;
 
 export default function CajaAhorro() {
   const [registros, setRegistros] = useState([]);
