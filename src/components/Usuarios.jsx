@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { apiFetch } from "../utils/api.js";
 import axios from "axios";
 import {
   Container,
@@ -36,10 +37,10 @@ export default function UsuariosRegistro() {
 
   const obtenerUsuarios = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/usuarios");
-      setUsuarios(res.data);
+      const data = await apiFetch("/usuarios");
+      setUsuarios(data);
     } catch (error) {
-      console.error("Error al obtener usuarios:", error);
+      console.error("Error al obtener usuarios:", error.message);
     }
   };
 
@@ -47,7 +48,6 @@ export default function UsuariosRegistro() {
     try {
       const res = await axios.get("http://localhost:5000/roles");
       setRoles(res.data);
-      console.log("Roles cargados:", res.data);
     } catch (error) {
       console.error("Error al obtener roles:", error);
     }

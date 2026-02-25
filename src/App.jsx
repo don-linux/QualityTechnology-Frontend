@@ -14,6 +14,7 @@ import Inicio from "./components/Inicio";
 import Usuarios from "./components/Usuarios";
 import Roles from "./components/Roles";
 import Cliente from "./components/Cliente";
+import Estado from "./components/Estado";
 
 // Inventarios
 import Pileta from "./components/Pileta";
@@ -79,49 +80,76 @@ function App() {
             {/* PANTALLA DE INICIO */}
             <Route index element={<Inicio />} />
 
-            {/* INVENTARIOS */}
-            <Route path="piletas" element={<Pileta />} />
-            <Route path="/instalaciones" element={<Instalaciones />} />
-            <Route path="reproductores" element={<Reproductores />} />
-            <Route path="alimentos" element={<Alimentos />} />
-            <Route path="engorda" element={<Engorda />} />
-            <Route path="lotes" element={<LotesRegistro />} />
-            <Route path="/registro-operativo/inventario" element={<Equipos />} />
-
-            {/* VENTAS */}
-            <Route path="venta" element={<Venta />} />
-            <Route path="/flujo-caja" element={<FlujoCaja />} />
-            <Route path="/tesoreria" element={<TesoreriaGeneral />} />
-            <Route path="lista-espera" element={<ListaEspera />} />
-
             {/* REGISTRO OPERATIVO */}
-            <Route path="registro-operativo">
+            
+          </Route>
+        </Route>
 
+        <Route element={<PrivateRoute modulo="Operaciones" />}>
+          <Route element={<CorporateLayout />}>
               {/* BITACORAS */}
-              <Route path="plagas" element={<BitacoraPlagas />} />
-              <Route path="recepcion-insumos" element={<BitacoraRecepcionInsumos />} />
-              <Route path="visitas" element={<BitacoraVisitas />} />
-              <Route path="limpieza-banos" element={<BitacoraBanos />} />
-              <Route path="parametros" element={<BitacoraParametros />} />
-              <Route path="medicamentos" element={<BitacoraMedicamentos />} />
-              <Route path="recambios" element={<BitacoraRecambios />} />
-              <Route path="inventario" element={<BitacoraInventario />} />
-              <Route path="biometrias" element={<BioBiometrias />} />
-              <Route path="alimentacion" element={<BioAlimentacion />} />
-              <Route path="insumos" element={<BioInsumos />} />
+              <Route path="registro-operativo">
+                <Route path="plagas" element={<BitacoraPlagas />} />
+                <Route path="recepcion-insumos" element={<BitacoraRecepcionInsumos />} />
+                <Route path="visitas" element={<BitacoraVisitas />} />
+                <Route path="limpieza-banos" element={<BitacoraBanos />} />
+                <Route path="parametros" element={<BitacoraParametros />} />
+                <Route path="medicamentos" element={<BitacoraMedicamentos />} />
+                <Route path="recambios" element={<BitacoraRecambios />} />
+                <Route path="inventario" element={<BitacoraInventario />} />
+                <Route path="biometrias" element={<BioBiometrias />} />
+                <Route path="alimentacion" element={<BioAlimentacion />} />
+                <Route path="insumos" element={<BioInsumos />} />
               </Route>
+          </Route>
+        </Route>
+        
+        <Route element={<PrivateRoute modulo="Finanzas" />}>
+          <Route element={<CorporateLayout />}>
+              {/* Finanzas} */}
+              <Route path="ventas/tesoreria" element={<TesoreriaGeneral />} />
+              <Route path="ventas/flujo-caja" element={<FlujoCaja />} />
+              <Route path="/proveedores" element={<Proveedores />} />   
+          </Route>
+        </Route>
 
+        <Route element={<PrivateRoute modulo="RRHH" />}>
+          <Route element={<CorporateLayout />}>
               {/* RRHH */}
               <Route path="expedientes" element={<Expedientes />} />
               <Route path="nomina" element={<Nomina />} />
               <Route path="vacaciones" element={<Vacaciones />} />
               <Route path="/caja-ahorro" element={<CajaAhorro />} />
-              <Route path="/proveedores" element={<Proveedores />} />   
+          </Route>
+        </Route>
 
+        <Route element={<PrivateRoute modulo="Catálogos" />}>
+          <Route element={<CorporateLayout />}>
             {/* CATÁLOGOS */}
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="roles" element={<Roles />} />
-            <Route path="cliente" element={<Cliente />} />
+            <Route path="estados" element={<Estado />} />
+          </Route>
+        </Route>
+
+        <Route element={<PrivateRoute modulo="Inventarios" />}>
+          <Route element={<CorporateLayout />}>
+            <Route path="inventarios/piletas" element={<Pileta />} />
+            <Route path="inventarios/instalaciones" element={<Instalaciones />} />
+            <Route path="inventarios/reproductores" element={<Reproductores />} />
+            <Route path="inventarios/alimentos" element={<Alimentos />} />
+            <Route path="inventarios/engorda" element={<Engorda />} />
+            <Route path="inventarios/lotes" element={<LotesRegistro />} />
+            <Route path="inventarios/registro-operativo" element={<Equipos />} />
+          </Route>
+        </Route>
+
+        <Route element={<PrivateRoute modulo="Ventas" />}>
+          <Route element={<CorporateLayout />}>
+            {/* VENTAS */}
+            <Route path="ventas/registro" element={<Venta />} />
+            <Route path="registro/cliente" element={<Cliente />} />
+            <Route path="ventas/lista-espera" element={<ListaEspera />} />
           </Route>
         </Route>
 
