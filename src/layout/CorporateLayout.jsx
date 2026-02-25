@@ -619,6 +619,32 @@ export default function CorporateLayout() {
             </ListItemButton>
           </>
         )}
+        {/* ===================== SEGURIDAD ===================== */}
+            {drawerOpen && (
+              <Typography
+                sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
+              >
+                SEGURIDAD
+              </Typography>
+            )}
+
+            <ListItemButton
+              component={Link}
+              to="/usuarios"
+              sx={{
+                borderRadius: 1,
+                mb: 0.5,
+                backgroundColor:
+                  location.pathname === "/usuarios" ? "#388E3C" : "transparent",
+                "&:hover": { backgroundColor: "#43A047" },
+                justifyContent: drawerOpen ? "flex-start" : "center",
+              }}
+            >
+              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
+                <People />
+              </ListItemIcon>
+              {drawerOpen && <ListItemText primary="Módulos por rol" />}
+            </ListItemButton>
       </Drawer>
       {/* ===================== CONTENIDO ===================== */}
       <Box
