@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
@@ -25,7 +26,7 @@ function BitacoraMedicamentosContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/medellin/medicamentos");
+      const res = await axios.get(`${API_URL}/medellin/medicamentos`);
       setData(res.data);
     } catch {
       alert("Error al cargar registros.");
@@ -38,8 +39,8 @@ function BitacoraMedicamentosContent() {
   const guardar = async () => {
     try {
       if (editId)
-        await axios.put(`http://localhost:5000/medellin/medicamentos/${editId}`, form);
-      else await axios.post("http://localhost:5000/medellin/medicamentos", form);
+        await axios.put(`${API_URL}/medellin/medicamentos/${editId}`, form);
+      else await axios.post(`${API_URL}/medellin/medicamentos`, form);
 
       setEditId(null);
       setForm({
@@ -73,14 +74,14 @@ function BitacoraMedicamentosContent() {
   // 🔹 Eliminar uno
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/medellin/medicamentos/${id}`);
+    await axios.delete(`${API_URL}/medellin/medicamentos/${id}`);
     cargarDatos();
   };
 
   // 🗑️ Eliminar todos
   const eliminarTodos = async () => {
     if (!window.confirm("⚠️ ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete("http://localhost:5000/medellin/medicamentos");
+    await axios.delete(`${API_URL}/medellin/medicamentos`);
     cargarDatos();
   };
 

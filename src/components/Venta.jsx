@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Box,
   Card,
@@ -16,7 +17,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 
-const API = "http://localhost:5000/ventas";
+const API = `${API_URL}/ventas`;
 
 export default function Venta() {
   return <VentaContent />;

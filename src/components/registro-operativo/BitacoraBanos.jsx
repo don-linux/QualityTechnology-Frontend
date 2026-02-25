@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box,
   Card,
@@ -40,7 +41,7 @@ function BitacoraBanosContent() {
   // 🔹 Cargar datos
   const cargarDatos = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/medellin/banos");
+      const res = await axios.get(`${API_URL}/medellin/banos`);
       setData(res.data);
     } catch {
       alert("Error al cargar registros.");
@@ -55,10 +56,10 @@ function BitacoraBanosContent() {
   const guardar = async () => {
     try {
       if (editId) {
-        await axios.put(`http://localhost:5000/medellin/banos/${editId}`, form);
+        await axios.put(`${API_URL}/medellin/banos/${editId}`, form);
         alert("Registro actualizado");
       } else {
-        await axios.post("http://localhost:5000/medellin/banos", form);
+        await axios.post(`${API_URL}/medellin/banos`, form);
         alert("Registro guardado");
       }
 
@@ -100,7 +101,7 @@ function BitacoraBanosContent() {
   // 🔹 Eliminar uno
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/medellin/banos/${id}`);
+    await axios.delete(`${API_URL}/medellin/banos/${id}`);
     cargarDatos();
   };
 
@@ -112,7 +113,7 @@ function BitacoraBanosContent() {
       )
     )
       return;
-    await axios.delete("http://localhost:5000/medellin/banos");
+    await axios.delete(`${API_URL}/medellin/banos`);
     cargarDatos();
   };
 

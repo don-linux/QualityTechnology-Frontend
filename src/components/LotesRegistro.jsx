@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Button,
   TextField,
@@ -56,7 +57,7 @@ const LotesRegistro = () => {
       /** 🚀 Obtener familia automáticamente */
       try {
         const fam = await axios.get(
-          `http://localhost:5000/lotes/familia-por-instalacion/${value}`
+          `${API_URL}/lotes/familia-por-instalacion/${value}`
         );
         setFormData((prev) => ({ ...prev, familia: fam.data.fc_familia || "" }));
       } catch (err) {
@@ -73,7 +74,7 @@ const LotesRegistro = () => {
 -------------------------------------------------------- */
 useEffect(() => {
   axios
-    .get(`http://localhost:5000/lotes/instalaciones/${granja}`)
+    .get(`${API_URL}/lotes/instalaciones/${granja}`)
     .then((res) => setInstalaciones(res.data))
     .catch((err) => console.log(err));
 }, [granja]);
@@ -83,7 +84,7 @@ useEffect(() => {
   -------------------------------------------------------- */
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/lotes/granja/${granja}`)
+      .get(`${API_URL}/lotes/granja/${granja}`)
       .then((res) => setLotes(res.data))
       .catch((err) => console.log(err));
   }, [granja]);
@@ -93,7 +94,7 @@ useEffect(() => {
   -------------------------------------------------------- */
   const registrarLote = async () => {
     try {
-      await axios.post("http://localhost:5000/lotes", {
+      await axios.post(`${API_URL}/lotes`, {
         fecha: formData.fecha,
         familia: formData.familia,
         fi_instalacion_id: formData.fi_instalacion,
@@ -138,7 +139,7 @@ useEffect(() => {
   const actualizarLote = async () => {
     try {
       await axios.put(
-        `http://localhost:5000/lotes/${loteSeleccionado.fi_lote_id}`,
+        `${API_URL}/lotes/${loteSeleccionado.fi_lote_id}`,
         {
           fecha: formData.fecha,
           familia: formData.familia,
@@ -168,7 +169,7 @@ useEffect(() => {
     if (!window.confirm("¿Seguro que deseas eliminar este lote?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/lotes/${id}`);
+      await axios.delete(`${API_URL}/lotes/${id}`);
       alert("Lote eliminado correctamente");
       actualizarTabla();
       resetEdicion();
@@ -183,7 +184,7 @@ useEffect(() => {
   -------------------------------------------------------- */
   const actualizarTabla = async () => {
     const update = await axios.get(
-      `http://localhost:5000/lotes/granja/${granja}`
+      `${API_URL}/lotes/granja/${granja}`
     );
     setLotes(update.data);
   };
@@ -306,7 +307,7 @@ useEffect(() => {
 
                 try {
                   const res = await axios.get(
-                    `http://localhost:5000/lotes/familia/${value}`
+                    `${API_URL}/lotes/familia/${value}`
                   );
 
                   setFormData((prev) => ({

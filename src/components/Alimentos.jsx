@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Container,
   Card,
@@ -53,7 +54,7 @@ function AlimentosContent() {
   // =======================================
   const obtenerRegistros = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/alimentos/${usuario_id}`);
+      const res = await axios.get(`${API_URL}/alimentos/${usuario_id}`);
       setRegistros(res.data);
     } catch (error) {
       console.error("Error al obtener alimentos:", error);
@@ -62,7 +63,7 @@ function AlimentosContent() {
 
   const obtenerReproductores = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/reproductores/${usuario_id}`);
+      const res = await axios.get(`${API_URL}/reproductores/${usuario_id}`);
       setReproductores(res.data);
     } catch (error) {
       console.error("Error al obtener reproductores:", error);
@@ -71,7 +72,7 @@ function AlimentosContent() {
 
   const obtenerPiletas = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/piletas/${usuario_id}`);
+      const res = await axios.get(`${API_URL}/piletas/${usuario_id}`);
       setPiletas(res.data);
     } catch (error) {
       console.error("Error al obtener piletas:", error);
@@ -80,7 +81,7 @@ function AlimentosContent() {
 
   const obtenerEngorda = useCallback(async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/engorda/${usuario_id}`);
+      const res = await axios.get(`${API_URL}/engorda/${usuario_id}`);
       setEngorda(res.data);
     } catch (error) {
       console.error("Error al obtener engorda:", error);
@@ -120,7 +121,7 @@ function AlimentosContent() {
     if (tab === "reproductores") payload.fi_reproductor_id = form.fi_reproductor_id || null;
 
     try {
-      await axios.post("http://localhost:5000/alimentos", payload);
+      await axios.post(`${API_URL}/alimentos`, payload);
       alert("Registro agregado ✅");
       obtenerRegistros();
       limpiarFormulario();
@@ -133,7 +134,7 @@ function AlimentosContent() {
   const eliminar = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este registro?")) return;
     try {
-      await axios.delete(`http://localhost:5000/alimentos/${id}`);
+      await axios.delete(`${API_URL}/alimentos/${id}`);
       obtenerRegistros();
     } catch (error) {
       console.error("Error al eliminar alimento:", error);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Container,
   Card,
@@ -39,7 +40,7 @@ export default function Cliente() {
 
   const obtenerClientes = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/clientes");
+      const res = await axios.get(`${API_URL}/clientes`);
       setClientes(res.data);
     } catch (error) {
       console.error("Error al obtener clientes", error);
@@ -65,7 +66,7 @@ export default function Cliente() {
   const registrarCliente = async () => {
     if (!form.fc_nombre.trim()) return alert("El nombre es obligatorio");
     try {
-      await axios.post("http://localhost:5000/clientes", form);
+      await axios.post(`${API_URL}/clientes`, form);
       obtenerClientes();
       limpiarFormulario();
     } catch (error) {
@@ -77,7 +78,7 @@ export default function Cliente() {
   const actualizarCliente = async () => {
     if (!form.fi_cliente_id) return alert("Selecciona un cliente para actualizar");
     try {
-      await axios.put(`http://localhost:5000/clientes/${form.fi_cliente_id}`, form);
+      await axios.put(`${API_URL}/clientes/${form.fi_cliente_id}`, form);
       obtenerClientes();
       limpiarFormulario();
     } catch (error) {
@@ -90,7 +91,7 @@ export default function Cliente() {
     if (!form.fi_cliente_id) return alert("Selecciona un cliente para eliminar");
     if (!window.confirm("¿Seguro que deseas eliminar este cliente?")) return;
     try {
-      await axios.delete(`http://localhost:5000/clientes/${form.fi_cliente_id}`);
+      await axios.delete(`${API_URL}/clientes/${form.fi_cliente_id}`);
       obtenerClientes();
       limpiarFormulario();
     } catch (error) {

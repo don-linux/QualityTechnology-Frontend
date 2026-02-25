@@ -1,5 +1,6 @@
 // src/components/Login.jsx
 import React, { useState } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Box,
   Button,
@@ -24,7 +25,7 @@ const Login = () => {
     setError("");
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/usuarios/login", {
+      const response = await fetch(`${API_URL}/usuarios/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre: usuario, contrasena: password }),

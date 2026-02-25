@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Button,
   TextField,
@@ -23,7 +24,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const api = "http://localhost:5000/vacaciones";
+const api = `${API_URL}/vacaciones`;
 
 export default function Vacaciones() {
   const [vacaciones, setVacaciones] = useState([]);

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { apiFetch } from "../utils/api.js";
-import axios from "axios";
 import {
   Container,
   Card,
@@ -46,10 +45,10 @@ export default function UsuariosRegistro() {
 
   const obtenerRoles = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/roles");
-      setRoles(res.data);
+      const data = await apiFetch("/roles");
+      setRoles(data);
     } catch (error) {
-      console.error("Error al obtener roles:", error);
+      console.error("Error al obtener roles:", error.message);
     }
   };
 
@@ -59,7 +58,10 @@ export default function UsuariosRegistro() {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("http://localhost:5000/usuarios", form);
+      await apiFetch("/usuarios", {
+        method: "POST",
+        body: JSON.stringify(form),
+      });
       alert("Usuario registrado correctamente ✅");
       limpiarFormulario();
       obtenerUsuarios();
@@ -72,10 +74,13 @@ export default function UsuariosRegistro() {
   const handleUpdate = async () => {
     if (!usuarioSeleccionado) return;
     try {
-      await axios.put(`http://localhost:5000/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
-        nombre: form.nombre,
-        contraseña: form.contraseña,
-        rol_id: form.rol_id,
+      await apiFetch(`/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          nombre: form.nombre,
+          contraseña: form.contraseña,
+          rol_id: form.rol_id,
+        }),
       });
       alert("Usuario actualizado correctamente ✅");
       limpiarFormulario();
@@ -89,7 +94,9 @@ export default function UsuariosRegistro() {
   const handleDelete = async () => {
     if (!usuarioSeleccionado) return;
     try {
-      await axios.delete(`http://localhost:5000/usuarios/${usuarioSeleccionado.fi_usuario_id}`);
+      await apiFetch(`/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
+        method: "DELETE",
+      });
       alert("Usuario eliminado correctamente ✅");
       limpiarFormulario();
       obtenerUsuarios();

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Container,
   Box,
@@ -18,7 +19,7 @@ import axios from "axios";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
-const API_TESORERIA = "http://localhost:5000/tesoreria";
+const API_TESORERIA = `${API_URL}/tesoreria`;
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
 
 export default function TesoreriaGeneral() {

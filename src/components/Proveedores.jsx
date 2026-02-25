@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Box,
   Typography,
@@ -31,7 +32,7 @@ import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const api = "http://localhost:5000/proveedores";
+const api = `${API_URL}/proveedores`;
 
 export default function Proveedores() {
   const [proveedores, setProveedores] = useState([]);

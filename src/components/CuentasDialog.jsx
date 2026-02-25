@@ -1,5 +1,6 @@
 // src/components/CuentasDialog.jsx
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Dialog,
   DialogTitle,
@@ -30,7 +31,7 @@ const CuentasDialog = ({ open, onClose }) => {
 
   const obtenerCuentas = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/cuentas");
+      const res = await axios.get(`${API_URL}/cuentas`);
       setCuentas(res.data);
     } catch (err) {
       console.error("❌ Error al obtener cuentas:", err);
@@ -44,7 +45,7 @@ const CuentasDialog = ({ open, onClose }) => {
     }
 
     try {
-      await axios.post("http://localhost:5000/cuentas", {
+      await axios.post(`${API_URL}/cuentas`, {
         nombre: nuevaCuenta.nombre,
         saldo: Number(nuevaCuenta.saldo) || 0,
       });
@@ -57,7 +58,7 @@ const CuentasDialog = ({ open, onClose }) => {
 
   const handleUpdateSaldo = async (cuenta) => {
     try {
-      await axios.put(`http://localhost:5000/cuentas/${cuenta.id}`, {
+      await axios.put(`${API_URL}/cuentas/${cuenta.id}`, {
         nombre: cuenta.nombre,
         saldo: Number(cuenta.saldo),
       });
@@ -70,7 +71,7 @@ const CuentasDialog = ({ open, onClose }) => {
   const handleDeleteCuenta = async (id) => {
     if (!window.confirm("¿Eliminar esta cuenta?")) return;
     try {
-      await axios.delete(`http://localhost:5000/cuentas/${id}`);
+      await axios.delete(`${API_URL}/cuentas/${id}`);
       obtenerCuentas();
     } catch (err) {
       console.error("❌ Error al eliminar cuenta:", err);

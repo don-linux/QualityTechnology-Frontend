@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box,
   Card,
@@ -57,20 +58,20 @@ function BioBiometriasContent() {
       Cargar datos iniciales
   ------------------------------*/
   const cargarDatos = useCallback(async () => {
-    const res = await axios.get(`http://localhost:5000/biometrias/${mapGranja(granja)}`);
+    const res = await axios.get(`${API_URL}/biometrias/${mapGranja(granja)}`);
     setData(res.data);
   }, [granja]);
 
   const cargarInstalaciones = useCallback(async () => {
     const res = await axios.get(
-      `http://localhost:5000/instalaciones/granja/${displayGranja[mapGranja(granja)]}`
+      `${API_URL}/instalaciones/granja/${displayGranja[mapGranja(granja)]}`
     );
     setInstalaciones(res.data);
   }, [granja]);
 
   const cargarLotes = async (instalacionId) => {
     const res = await axios.get(
-      `http://localhost:5000/lotes/instalacion/${instalacionId}`
+      `${API_URL}/lotes/instalacion/${instalacionId}`
     );
     setLotes(res.data);
   };
@@ -86,7 +87,7 @@ function BioBiometriasContent() {
   const cargarInfoInstalacion = async (instalacionId) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/biometrias/info/${mapGranja(granja)}/${instalacionId}`
+        `${API_URL}/biometrias/info/${mapGranja(granja)}/${instalacionId}`
       );
 
       const d = res.data;
@@ -173,10 +174,10 @@ function BioBiometriasContent() {
       };
 
       if (editId) {
-        await axios.put(`http://localhost:5000/biometrias/${editId}`, body);
+        await axios.put(`${API_URL}/biometrias/${editId}`, body);
         alert("Registro actualizado");
       } else {
-        await axios.post("http://localhost:5000/biometrias/", body);
+        await axios.post(`${API_URL}/biometrias/`, body);
         alert("Registro creado");
       }
 
@@ -215,7 +216,7 @@ function BioBiometriasContent() {
   ------------------------------*/
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/biometrias/${id}`);
+    await axios.delete(`${API_URL}/biometrias/${id}`);
     cargarDatos();
   };
 

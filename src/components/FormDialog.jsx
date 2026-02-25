@@ -1,5 +1,6 @@
 // src/components/FormDialog.jsx
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../utils/api.js";
 import {
   Dialog,
   DialogTitle,
@@ -24,9 +25,9 @@ const FormDialog = React.memo(
         const fetchDatos = async () => {
           try {
             const [resClientes, resProveedores, resCuentas] = await Promise.all([
-              axios.get("http://localhost:5000/flujo-caja/clientes"),
-              axios.get("http://localhost:5000/flujo-caja/proveedores"),
-              axios.get("http://localhost:5000/cuentas"),
+              axios.get(`${API_URL}/flujo-caja/clientes`),
+              axios.get(`${API_URL}/flujo-caja/proveedores`),
+              axios.get(`${API_URL}/cuentas`),
             ]);
             setClientes(resClientes.data);
             setProveedores(resProveedores.data);
@@ -51,7 +52,7 @@ const handleSave = async () => {
       if (formData[key]) form.append(key, formData[key]);
     }
 
-    await axios.post("http://localhost:5000/flujo-caja", form, {
+    await axios.post(`${API_URL}/flujo-caja`, form, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 

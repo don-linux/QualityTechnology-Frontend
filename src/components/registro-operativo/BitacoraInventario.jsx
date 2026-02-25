@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../utils/api.js";
 import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
@@ -26,7 +27,7 @@ function BitacoraInventarioContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/medellin/inventario");
+      const res = await axios.get(`${API_URL}/medellin/inventario`);
       setData(res.data);
     } catch (err) {
       console.error("Error al cargar inventario:", err.message);
@@ -41,11 +42,11 @@ function BitacoraInventarioContent() {
     try {
       if (editId)
         await axios.put(
-          `http://localhost:5000/medellin/inventario/${editId}`,
+          `${API_URL}/medellin/inventario/${editId}`,
           form
         );
       else
-        await axios.post("http://localhost:5000/medellin/inventario", form);
+        await axios.post(`${API_URL}/medellin/inventario`, form);
 
       setEditId(null);
       setForm({
@@ -76,7 +77,7 @@ function BitacoraInventarioContent() {
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`http://localhost:5000/medellin/inventario/${id}`);
+    await axios.delete(`${API_URL}/medellin/inventario/${id}`);
     cargarDatos();
   };
 
@@ -86,7 +87,7 @@ function BitacoraInventarioContent() {
       !window.confirm("⚠️ ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")
     ) return;
     try {
-      await axios.delete("http://localhost:5000/medellin/inventario");
+      await axios.delete(`${API_URL}/medellin/inventario`);
       cargarDatos();
       alert("Todos los registros fueron eliminados correctamente.");
     } catch (err) {
