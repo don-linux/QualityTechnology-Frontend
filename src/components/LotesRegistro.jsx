@@ -18,7 +18,9 @@ import {
   Divider,
 } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import axios from "axios";
+
+// *** IMPORTANTE: USAR AXIOS INSTANCE CON TOKEN ***
+import axios from "../utils/axiosInstance.js";
 
 const LotesRegistro = () => {
   const [granja, setGranja] = useState("Medellin");
@@ -31,11 +33,11 @@ const LotesRegistro = () => {
   const [formData, setFormData] = useState({
     fecha: "",
     familia: "",
-    fi_instalacion: "",
+    fi_instalacion_id: "",
     huevos_ml: "",
+    ovadas: "",
     no_lote: "",
     observacion: "",
-    mortalidad: "",
   });
 
   const validarNoLote = (value) => {
@@ -51,18 +53,18 @@ const LotesRegistro = () => {
       return;
     }
 
-    if (name === "fi_instalacion") {
-      setFormData({ ...formData, fi_instalacion: value });
+    if (name === "fi_instalacion_id") {
+      setFormData({ ...formData, fi_instalacion_id: value });
+      setInstalacionSeleccionada(value);
 
-      /** 🚀 Obtener familia automáticamente */
+      /** 🚀 FUTURO: Ruta para cargar familia si es necesaria */
       try {
-        const fam = await axios.get(
-          `${API_URL}/lotes/familia-por-instalacion/${value}`
-        );
+        const fam = await axios.get(`${API_URL}/lotes/familia-por-instalacion/${value}`);
         setFormData((prev) => ({ ...prev, familia: fam.data.fc_familia || "" }));
       } catch (err) {
         console.log("Error cargando familia:", err);
       }
+
       return;
     }
 
@@ -70,14 +72,14 @@ const LotesRegistro = () => {
   };
 
   /** --------------------------------------------------------
-    Cargar instalaciones (desde REPRODUCTORES)
--------------------------------------------------------- */
-useEffect(() => {
-  axios
-    .get(`${API_URL}/lotes/instalaciones/${granja}`)
-    .then((res) => setInstalaciones(res.data))
-    .catch((err) => console.log(err));
-}, [granja]);
+      Cargar instalaciones desde REPRODUCTORES
+  -------------------------------------------------------- */
+  useEffect(() => {
+    axios
+      .get(`${API_URL}/lotes/instalaciones/${granja}`)
+      .then((res) => setInstalaciones(res.data))
+      .catch((err) => console.log("Error cargando instalaciones:", err));
+  }, [granja]);
 
   /** --------------------------------------------------------
       Cargar lotes
@@ -97,12 +99,13 @@ useEffect(() => {
       await axios.post(`${API_URL}/lotes`, {
         fecha: formData.fecha,
         familia: formData.familia,
-        fi_instalacion_id: formData.fi_instalacion,
+        fi_instalacion_id: formData.fi_instalacion_id,
         huevos_ml: formData.huevos_ml,
+        ovadas: Number(formData.ovadas || 0),
         no_lote: formData.no_lote,
         observacion: formData.observacion,
         fc_granja: granja,
-        mortalidad: Number(formData.mortalidad || 0),
+        mortalidad: 0,
       });
 
       alert("Lote registrado correctamente");
@@ -123,11 +126,11 @@ useEffect(() => {
     setFormData({
       fecha: loteSeleccionado.fecha.split("T")[0],
       familia: loteSeleccionado.familia,
-      fi_instalacion: loteSeleccionado.fi_instalacion_id,
+      fi_instalacion_id: loteSeleccionado.fi_instalacion_id,
       huevos_ml: loteSeleccionado.huevos_ml,
+      ovadas: loteSeleccionado.ovadas,
       no_lote: loteSeleccionado.no_lote,
       observacion: loteSeleccionado.observacion,
-      mortalidad: loteSeleccionado.mortalidad || 0,
     });
 
     setModoEdicion(true);
@@ -138,19 +141,16 @@ useEffect(() => {
   -------------------------------------------------------- */
   const actualizarLote = async () => {
     try {
-      await axios.put(
-        `${API_URL}/lotes/${loteSeleccionado.fi_lote_id}`,
-        {
-          fecha: formData.fecha,
-          familia: formData.familia,
-          fi_instalacion_id: formData.fi_instalacion,
-          huevos_ml: formData.huevos_ml,
-          no_lote: formData.no_lote,
-          observacion: formData.observacion,
-          fc_granja: granja,
-          mortalidad: Number(formData.mortalidad || 0),
-        }
-      );
+      await axios.put(`${API_URL}/lotes/${loteSeleccionado.fi_lote_id}`, {
+        fecha: formData.fecha,
+        familia: formData.familia,
+        fi_instalacion_id: formData.fi_instalacion_id,
+        huevos_ml: formData.huevos_ml,
+        ovadas: Number(formData.ovadas || 0),
+        no_lote: formData.no_lote,
+        observacion: formData.observacion,
+        fc_granja: granja,
+      });
 
       alert("Lote actualizado correctamente");
 
@@ -183,9 +183,7 @@ useEffect(() => {
      Helpers
   -------------------------------------------------------- */
   const actualizarTabla = async () => {
-    const update = await axios.get(
-      `${API_URL}/lotes/granja/${granja}`
-    );
+    const update = await axios.get(`${API_URL}/lotes/granja/${granja}`);
     setLotes(update.data);
   };
 
@@ -193,11 +191,11 @@ useEffect(() => {
     setFormData({
       fecha: "",
       familia: "",
-      fi_instalacion: "",
+      fi_instalacion_id: "",
       huevos_ml: "",
+      ovadas: "",
       no_lote: "",
       observacion: "",
-      mortalidad: "",
     });
   };
 
@@ -213,8 +211,7 @@ useEffect(() => {
     return d.toLocaleDateString("es-MX");
   };
 
-  const formatNumber = (num) =>
-    new Intl.NumberFormat("en-US").format(num);
+  const formatNumber = (num) => new Intl.NumberFormat("en-US").format(num);
 
   return (
     <div style={{ padding: "25px" }}>
@@ -263,9 +260,8 @@ useEffect(() => {
           <Divider sx={{ mb: 3 }} />
 
           <Grid container spacing={2}>
-
             {/* FECHA */}
-            <Grid size={{ xs: 12, sm: 3 }}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 label="Fecha"
                 type="date"
@@ -278,58 +274,36 @@ useEffect(() => {
             </Grid>
 
             {/* FAMILIA */}
-            <Grid size={{ xs: 12, sm: 3 }}>
+            <Grid item xs={12} sm={3}>
               <TextField
-              label="Familia"
-              name="familia"
-              value={formData.familia}
-              onChange={handleChange}
-              fullWidth
-            />
+                label="Familia"
+                name="familia"
+                value={formData.familia}
+                onChange={handleChange}
+                fullWidth
+              />
             </Grid>
 
-            {/* INSTALACION */}
-            <Grid size={{ xs: 12, sm: 3 }}>
+            {/* INSTALACIÓN */}
+            <Grid item xs={12} sm={3}>
               <TextField
-              select
-              label="Instalación"
-              name="fi_instalacion"
-              value={formData.fi_instalacion || ""}  
-              onChange={async (e) => {
-                const value = e.target.value;
-
-                setFormData((prev) => ({
-                  ...prev,
-                  fi_instalacion: value,
-                }));
-
-                setInstalacionSeleccionada(value);
-
-                try {
-                  const res = await axios.get(
-                    `${API_URL}/lotes/familia/${value}`
-                  );
-
-                  setFormData((prev) => ({
-                    ...prev,
-                    familia: res.data.fc_familia || "",
-                  }));
-                } catch (err) {
-                  console.error("❌ Error obteniendo familia:", err);
-                }
-              }}
-              fullWidth
-            >
+                select
+                label="Instalación"
+                name="fi_instalacion_id"
+                value={formData.fi_instalacion_id || ""}
+                onChange={handleChange}
+                fullWidth
+              >
                 {instalaciones.map((i) => (
-                  <MenuItem key={i.nombre_instalacion} value={i.nombre_instalacion}>
-                  {i.nombre_instalacion}
-                </MenuItem>
+                  <MenuItem key={i.fi_instalacion_id} value={i.fi_instalacion_id}>
+                    {i.nombre_instalacion}
+                  </MenuItem>
                 ))}
               </TextField>
             </Grid>
 
             {/* HUEVOS ML */}
-            <Grid size={{ xs: 12, sm: 3 }}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 label="Huevos (ml)"
                 name="huevos_ml"
@@ -339,20 +313,20 @@ useEffect(() => {
               />
             </Grid>
 
-            {/* MORTALIDAD */}
-            <Grid size={{ xs: 12, sm: 3 }}>
+            {/* OVADAS */}
+            <Grid item xs={12} sm={3}>
               <TextField
-                label="Mortalidad"
-                name="mortalidad"
+                label="Ovadas"
+                name="ovadas"
                 type="number"
-                value={formData.mortalidad}
+                value={formData.ovadas}
                 onChange={handleChange}
                 fullWidth
               />
             </Grid>
 
             {/* NO LOTE */}
-            <Grid size={{ xs: 12, sm: 3 }}>
+            <Grid item xs={12} sm={3}>
               <TextField
                 label="No. Lote"
                 name="no_lote"
@@ -362,8 +336,8 @@ useEffect(() => {
               />
             </Grid>
 
-            {/* OBSERVACION */}
-            <Grid size={{ xs: 12, sm: 6 }}>
+            {/* OBSERVACIÓN */}
+            <Grid item xs={12} sm={6}>
               <TextField
                 label="Observación"
                 name="observacion"
@@ -374,8 +348,8 @@ useEffect(() => {
               />
             </Grid>
 
-            {/* BOTÓN REGISTRAR / ACTUALIZAR */}
-            <Grid size={12}>
+            {/* BOTÓN REGISTRAR */}
+            <Grid item xs={12}>
               <Button
                 variant="contained"
                 startIcon={<AddCircleIcon />}
@@ -403,6 +377,7 @@ useEffect(() => {
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Familia</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Instalación</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Huevos (ml)</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ovadas</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Alevines</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>No. Lote</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
@@ -414,7 +389,7 @@ useEffect(() => {
           <TableBody>
             {lotes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={10} align="center">
                   No hay registros.
                 </TableCell>
               </TableRow>
@@ -423,7 +398,7 @@ useEffect(() => {
                 <TableRow
                   key={l.fi_lote_id}
                   onClick={() => setLoteSeleccionado(l)}
-                  sx={{
+                  style={{
                     cursor: "pointer",
                     backgroundColor:
                       loteSeleccionado?.fi_lote_id === l.fi_lote_id ? "#e0f7fa" : "transparent",
@@ -433,11 +408,12 @@ useEffect(() => {
                   <TableCell>{l.familia}</TableCell>
                   <TableCell>{l.nombre_instalacion}</TableCell>
                   <TableCell>{l.huevos_ml}</TableCell>
-                  <TableCell>{formatNumber(l.alevines_inicial)}</TableCell>
+                  <TableCell>{l.ovadas}</TableCell>
+                  <TableCell>{formatNumber(l.alevines_inicial || 0)}</TableCell>
                   <TableCell>{l.no_lote}</TableCell>
                   <TableCell>{l.observacion}</TableCell>
                   <TableCell>{formatNumber(l.mortalidad || 0)}</TableCell>
-                 <TableCell>{Number(l.mortalidad_porcentaje || 0).toFixed(2)}%</TableCell>
+                  <TableCell>{Number(l.mortalidad_porcentaje || 0).toFixed(2)}%</TableCell>
                 </TableRow>
               ))
             )}
