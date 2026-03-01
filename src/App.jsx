@@ -51,6 +51,9 @@ import Vacaciones from "./components/Vacaciones";
 import CajaAhorro from "./components/CajaAhorro";
 import Proveedores from "./components/Proveedores";
 
+//Seguridad
+import RolesModulos from "./components/ModulosPorRol";
+
 // Layout principal
 import CorporateLayout from "./layout/CorporateLayout";
 
@@ -150,6 +153,12 @@ function App() {
             <Route path="ventas/registro" element={<Venta />} />
             <Route path="registro/cliente" element={<Cliente />} />
             <Route path="ventas/lista-espera" element={<ListaEspera />} />
+          </Route>
+        </Route>
+
+        <Route element={<PrivateRoute modulo="Seguridad" />}>
+          <Route element={<CorporateLayout />}>
+            <Route path="seguridad/roles-modulos" element={<RolesModulos />} />
           </Route>
         </Route>
 
