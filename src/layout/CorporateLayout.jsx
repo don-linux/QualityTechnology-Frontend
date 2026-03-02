@@ -620,6 +620,8 @@ export default function CorporateLayout() {
           </>
         )}
         {/* ===================== SEGURIDAD ===================== */}
+        {modulos.has("Catálogos") && (
+          <>
             {drawerOpen && (
               <Typography
                 sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
@@ -630,12 +632,12 @@ export default function CorporateLayout() {
 
             <ListItemButton
               component={Link}
-              to="/usuarios"
+              to="seguridad/roles-modulos"
               sx={{
                 borderRadius: 1,
                 mb: 0.5,
                 backgroundColor:
-                  location.pathname === "/usuarios" ? "#388E3C" : "transparent",
+                  location.pathname === "/seguridad/roles-modulos" ? "#388E3C" : "transparent",
                 "&:hover": { backgroundColor: "#43A047" },
                 justifyContent: drawerOpen ? "flex-start" : "center",
               }}
@@ -645,6 +647,9 @@ export default function CorporateLayout() {
               </ListItemIcon>
               {drawerOpen && <ListItemText primary="Módulos por rol" />}
             </ListItemButton>
+          </>
+        )}
+
       </Drawer>
       {/* ===================== CONTENIDO ===================== */}
       <Box
