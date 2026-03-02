@@ -1,4 +1,4 @@
-# CODING STYLE.md
+# COMMIT STYLE.md
 
 ---
 description: "Generate git commits using gitmoji, in English, max 50 characters"
