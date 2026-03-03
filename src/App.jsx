@@ -70,7 +70,7 @@ function App() {
         {/* LOGIN */}
         <Route path="/login" element={<Login />} />
 
-        {/* 🔒 RUTAS PROTEGIDAS */}
+        {/*  RUTAS PROTEGIDAS */}
         <Route
           element={
             <PrivateRoute

@@ -81,10 +81,10 @@ function BitacoraInventarioContent() {
     cargarDatos();
   };
 
-  // 🗑️ Eliminar todos
+  //  Eliminar todos
   const eliminarTodos = async () => {
     if (
-      !window.confirm("⚠️ ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")
+      !window.confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")
     ) return;
     try {
       await axios.delete(`${API_URL}/medellin/inventario`);
@@ -95,7 +95,7 @@ function BitacoraInventarioContent() {
     }
   };
 
-  // 📄 Exportar PDF
+  //  Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
     const logo = `${""}/images/medellin.png`;
@@ -145,7 +145,7 @@ function BitacoraInventarioContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        🟦 Medellín — Inventario de Alevines
+         Medellín — Inventario de Alevines
       </Typography>
 
       {/* FORMULARIO */}
@@ -235,7 +235,7 @@ function BitacoraInventarioContent() {
               sx={{ ml: 2 }}
               onClick={exportarPDF}
             >
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button
               variant="contained"
@@ -243,7 +243,7 @@ function BitacoraInventarioContent() {
               sx={{ ml: 2 }}
               onClick={eliminarTodos}
             >
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>

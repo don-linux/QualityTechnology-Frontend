@@ -210,7 +210,7 @@ const CirculoNumero = ({ color, value }) => (
 
   const registrarReproductor = async () => {
     if (!form.fc_instalacion || !form.fn_cantidad) {
-      return alert("⚠️ Selecciona destino y cantidad");
+      return alert(" Selecciona destino y cantidad");
     }
 
     await apiFetch("/reproductores", {
@@ -283,7 +283,7 @@ Pronto conectaremos este botón con traspasos internos.`);
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={2} color="#004C7D">
-        🧬 Control de Reproductores
+         Control de Reproductores
       </Typography>
       <Paper
           elevation={0}
@@ -648,7 +648,7 @@ Pronto conectaremos este botón con traspasos internos.`);
 
       {/* TRAZABILIDAD */}
       <Typography variant="h6" sx={{ color: "#E65100", mt: 5, mb: 2 }}>
-        🔁 Trazabilidad de Movimientos
+         Trazabilidad de Movimientos
       </Typography>
 
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>

@@ -122,12 +122,12 @@ function AlimentosContent() {
 
     try {
       await axios.post(`${API_URL}/alimentos`, payload);
-      alert("Registro agregado ✅");
+      alert("Registro agregado ");
       obtenerRegistros();
       limpiarFormulario();
     } catch (error) {
       console.error("Error al registrar alimento:", error);
-      alert("Error al registrar alimento ❌");
+      alert("Error al registrar alimento ");
     }
   };
 
@@ -176,7 +176,7 @@ function AlimentosContent() {
   return (
     <Container maxWidth="lg" sx={{ paddingTop: 3, paddingBottom: 5 }}>
       <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: "bold" }}>
-        🍲 Registro de Alimentación
+         Registro de Alimentación
       </Typography>
 
       {/* TABS SUPERIORES */}
@@ -189,9 +189,9 @@ function AlimentosContent() {
         centered
         sx={{ marginBottom: 3, backgroundColor: "#f3f3f3", borderRadius: 2 }}
       >
-        <Tab value="alevinaje" label="🐟 Alevines" />
-        <Tab value="engorda" label="🍖 Engorda" />
-        <Tab value="reproductores" label="🧬 Reproductores" />
+        <Tab value="alevinaje" label=" Alevines" />
+        <Tab value="engorda" label=" Engorda" />
+        <Tab value="reproductores" label=" Reproductores" />
       </Tabs>
 
       {/* FORMULARIO */}

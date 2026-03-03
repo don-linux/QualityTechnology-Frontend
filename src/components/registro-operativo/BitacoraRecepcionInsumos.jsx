@@ -29,13 +29,13 @@ function RecepcionInsumosContent() {
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
 
-  // 🔽 Opciones para selects
+  //  Opciones para selects
   const unidadesMedida = ["Kg", "Litros", "Piezas", "Bultos", "Otro"];
   const ubicaciones = ["medellin", "ceiba", "quality"]; // Opciones para la ubicación
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // 🔍 Cargar y filtrar registros
+  //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/recepcion_insumos?ubicacion=${form.ubicacion}`);
@@ -56,7 +56,7 @@ function RecepcionInsumosContent() {
     cargarDatos();
   }, [cargarDatos]);
 
-  // 💾 Guardar o actualizar
+  //  Guardar o actualizar
   const guardar = async () => {
     try {
       if (editId)
@@ -96,12 +96,12 @@ function RecepcionInsumosContent() {
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm("⚠️ ¿Eliminar todos los registros de esta ubicación?")) return;
+    if (!window.confirm("Advertencia: ¿Eliminar todos los registros de esta ubicación?")) return;
     await axios.delete(`${API_URL}/recepcion_insumos?ubicacion=${form.ubicacion}`);
     cargarDatos();
   };
 
-  // 🎨 Color PDF dinámico
+  //  Color PDF dinámico
   const getColorPorUbicacion = () => {
     switch (form.ubicacion) {
       case "ceiba":
@@ -113,7 +113,7 @@ function RecepcionInsumosContent() {
     }
   };
 
-  // 📄 Exportar PDF
+  //  Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
     const logo = `${""}/images/${form.ubicacion}.png`;
@@ -171,7 +171,7 @@ function RecepcionInsumosContent() {
   return (
     <Box>
       <Typography variant="h5" fontWeight="bold" mb={2}>
-        🧰 {form.ubicacion.charAt(0).toUpperCase() + form.ubicacion.slice(1)} — Recepción de Insumos
+         {form.ubicacion.charAt(0).toUpperCase() + form.ubicacion.slice(1)} — Recepción de Insumos
       </Typography>
 
       {/* Filtro compacto */}
@@ -325,10 +325,10 @@ function RecepcionInsumosContent() {
               {editId ? "Actualizar" : "Guardar"}
             </Button>
             <Button variant="outlined" size="small" onClick={exportarPDF}>
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button variant="contained" size="small" color="error" onClick={eliminarTodos}>
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>

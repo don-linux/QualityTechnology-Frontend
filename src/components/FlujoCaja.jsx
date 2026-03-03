@@ -1,10 +1,12 @@
 // src/components/FlujoCaja.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Container, Box, Typography, Tabs, Tab, Button,
+  Container, Box, Typography, Tabs, Tab, Button, IconButton,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   Snackbar, Alert
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
@@ -25,14 +27,14 @@ export default function FlujoCaja() {
   const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
 
   // =====================================================
-  // 🔁 Cargar datos
+  //  Cargar datos
   // =====================================================
   const obtenerMovimientos = useCallback(async () => {
     try {
       const res = await axios.get(`${API}/flujo-caja/${GRANJAS[subTab]}`);
       setMovimientos(res.data || []);
     } catch (err) {
-      console.error("❌ Error al obtener movimientos:", err);
+      console.error(" Error al obtener movimientos:", err);
       mostrarAlerta("Error al obtener los movimientos", "error");
     }
   }, [subTab]);
@@ -42,7 +44,7 @@ export default function FlujoCaja() {
   }, [obtenerMovimientos]);
 
   // =====================================================
-  // 📤 Exportar Excel
+  //  Exportar Excel
   // =====================================================
   const exportarExcel = async () => {
     const wb = new ExcelJS.Workbook();
@@ -56,7 +58,7 @@ export default function FlujoCaja() {
   };
 
   // =====================================================
-  // 🧾 CRUD
+  //  CRUD
   // =====================================================
   const handleOpen = (data = null) => {
     if (data) {
@@ -88,16 +90,16 @@ export default function FlujoCaja() {
       const payload = { ...data, fc_granja: GRANJAS[subTab] };
       if (editId) {
         await axios.put(`${API}/flujo-caja/${editId}`, payload);
-        mostrarAlerta("Movimiento actualizado correctamente ✅", "success");
+        mostrarAlerta("Movimiento actualizado correctamente ", "success");
       } else {
         await axios.post(`${API}/flujo-caja`, payload);
-        mostrarAlerta("Movimiento agregado correctamente ✅", "success");
+        mostrarAlerta("Movimiento agregado correctamente ", "success");
       }
       setOpen(false);
       obtenerMovimientos();
     } catch (err) {
-      console.error("❌ Error al guardar:", err);
-      mostrarAlerta("Error al guardar el movimiento ❌", "error");
+      console.error(" Error al guardar:", err);
+      mostrarAlerta("Error al guardar el movimiento ", "error");
     }
   };
 
@@ -106,16 +108,16 @@ export default function FlujoCaja() {
       try {
         await axios.delete(`${API}/flujo-caja/${id}`);
         obtenerMovimientos();
-        mostrarAlerta("Movimiento eliminado correctamente 🗑️", "success");
+        mostrarAlerta("Movimiento eliminado correctamente ", "success");
       } catch (err) {
-        console.error("❌ Error al eliminar:", err);
-        mostrarAlerta("Error al eliminar el movimiento ❌", "error");
+        console.error(" Error al eliminar:", err);
+        mostrarAlerta("Error al eliminar el movimiento ", "error");
       }
     }
   };
 
   // =====================================================
-  // 📢 Snackbar
+  //  Snackbar
   // =====================================================
   const mostrarAlerta = (message, severity) => {
     setSnack({ open: true, message, severity });
@@ -126,7 +128,7 @@ export default function FlujoCaja() {
   };
 
   // =====================================================
-  // 🧮 Tabla
+  //  Tabla
   // =====================================================
   const TablaMovimientos = () => (
     <TableContainer component={Paper}>
@@ -158,7 +160,7 @@ export default function FlujoCaja() {
                 })}
               </TableCell>
 
-              {/* 💵 Formato de dinero con símbolo y comas */}
+              {/*  Formato de dinero con símbolo y comas */}
               <TableCell align="right">
                 {new Intl.NumberFormat("es-MX", {
                   style: "currency",
@@ -193,7 +195,7 @@ export default function FlujoCaja() {
                       textDecoration: "none",
                     }}
                   >
-                    📎 Ver factura
+                     Ver factura
                   </a>
                 ) : row.fc_factura === "NO" ? (
                   "No aplica"
@@ -203,14 +205,17 @@ export default function FlujoCaja() {
               </TableCell>
               <TableCell>{row.fc_estatus}</TableCell>
               <TableCell align="center">
-                <Button size="small" onClick={() => handleOpen(row)}>✏️</Button>
-                <Button
+                <IconButton size="small" aria-label="Editar" onClick={() => handleOpen(row)}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton
                   size="small"
                   color="error"
+                  aria-label="Eliminar"
                   onClick={() => handleDelete(row.fi_movimiento_id)}
                 >
-                  🗑️
-                </Button>
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
               </TableCell>
             </TableRow>
           ))}
@@ -227,20 +232,20 @@ export default function FlujoCaja() {
   );
 
   // =====================================================
-  // 🧱 Render Principal
+  //  Render Principal
   // =====================================================
   return (
     <Container maxWidth="xl" sx={{ mt: 0, p: 0 }}>
       <Box sx={{ width: "100%", background: "#0D4D3A", padding: "20px 30px", mb: 2 }}>
         <Typography variant="h4" sx={{ color: "white", fontWeight: "bold" }}>
-          💵 Módulo de Flujo de Caja — Sistema Quality
+           Módulo de Flujo de Caja — Sistema Quality
         </Typography>
       </Box>
 
       <Tabs value={subTab} onChange={(e, v) => setSubTab(v)} variant="scrollable" scrollButtons="auto">
-        <Tab label="🟦 Medellín" />
-        <Tab label="🟩 La Ceiba" />
-        <Tab label="📘 Quality" />
+        <Tab label=" Medellín" />
+        <Tab label=" La Ceiba" />
+        <Tab label=" Quality" />
       </Tabs>
 
       <Box sx={{ p: 3 }}>
@@ -251,13 +256,13 @@ export default function FlujoCaja() {
           <Button variant="contained" sx={{ background: "#1D5C42" }} onClick={exportarExcel}>
             Exportar Excel
           </Button>
-          {/* ✅ Nuevo botón para abrir las cuentas */}
+          {/*  Nuevo botón para abrir las cuentas */}
           <Button
             variant="contained"
             sx={{ backgroundColor: "#00695c" }}
             onClick={() => setOpenCuentas(true)}
           >
-            💼 Ver Cuentas
+             Ver Cuentas
           </Button>
         </Box>
 
@@ -274,7 +279,7 @@ export default function FlujoCaja() {
         editId={editId}
       />
 
-      {/* ✅ Modal de cuentas */}
+      {/*  Modal de cuentas */}
       <CuentasDialog
         open={openCuentas}
         onClose={() => setOpenCuentas(false)}

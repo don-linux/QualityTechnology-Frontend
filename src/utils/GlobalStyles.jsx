@@ -6,7 +6,7 @@ export default function CustomGlobalStyles() {
     <GlobalStyles
       styles={{
         /* ==============================
-         🧱 ESTILOS BASE GLOBALES
+          ESTILOS BASE GLOBALES
         ============================== */
         body: {
           margin: 0,
@@ -23,7 +23,7 @@ export default function CustomGlobalStyles() {
         },
 
         /* ==============================
-         🖱️ SCROLLBARS PERSONALIZADOS
+          SCROLLBARS PERSONALIZADOS
         ============================== */
         "*::-webkit-scrollbar": {
           width: "8px",
@@ -38,7 +38,7 @@ export default function CustomGlobalStyles() {
         },
 
         /* ==============================
-         🧠 BOTONES Y TEXTOS MUI
+          BOTONES Y TEXTOS MUI
         ============================== */
         ".MuiButton-root": {
           textTransform: "none",
@@ -51,7 +51,7 @@ export default function CustomGlobalStyles() {
         },
 
         /* ==============================
-         🧾 FORMULARIOS Y CONTENEDORES
+          FORMULARIOS Y CONTENEDORES
         ============================== */
         ".MuiPaper-root": {
           borderRadius: "10px",

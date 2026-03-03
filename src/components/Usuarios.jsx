@@ -62,12 +62,12 @@ export default function UsuariosRegistro() {
         method: "POST",
         body: JSON.stringify(form),
       });
-      alert("Usuario registrado correctamente");
+      alert("Usuario registrado correctamente ");
       limpiarFormulario();
       obtenerUsuarios();
     } catch (error) {
       console.error("Error al registrar usuario:", error);
-      alert("Error al registrar usuario");
+      alert(" Error al registrar usuario");
     }
   };
 
@@ -82,12 +82,12 @@ export default function UsuariosRegistro() {
           rol_id: form.rol_id,
         }),
       });
-      alert("Usuario actualizado correctamente");
+      alert("Usuario actualizado correctamente ");
       limpiarFormulario();
       obtenerUsuarios();
     } catch (error) {
       console.error("Error al actualizar usuario:", error);
-      alert("Error al actualizar usuario");
+      alert(" Error al actualizar usuario");
     }
   };
 
@@ -97,12 +97,12 @@ export default function UsuariosRegistro() {
       await apiFetch(`/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
         method: "DELETE",
       });
-      alert("Usuario eliminado correctamente");
+      alert("Usuario eliminado correctamente ");
       limpiarFormulario();
       obtenerUsuarios();
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
-      alert("Error al eliminar usuario");
+      alert(" Error al eliminar usuario");
     }
   };
 
@@ -120,7 +120,7 @@ export default function UsuariosRegistro() {
     setUsuarioSeleccionado(null);
   };
 
-  // 🔁 Función para obtener el nombre del rol dado su ID
+  //  Función para obtener el nombre del rol dado su ID
   const obtenerNombreRol = (rolId) => {
     const rol = roles.find((r) => r.fi_rol_id === rolId);
     return rol ? rol.fc_nombre : rolId;

@@ -40,14 +40,14 @@ function EngordaContent() {
   };
 
   /* =========================================================
-      📦 OBTENER DATOS
+       OBTENER DATOS
   ========================================================= */
   const obtenerInstalaciones = useCallback(async () => {
     try {
       const data = await apiFetch(`/instalaciones/tipo/Engorda/${granjaActiva}`);
       setInstalaciones(data || []);
     } catch (err) {
-      console.error("❌ Error al obtener instalaciones:", err);
+      console.error(" Error al obtener instalaciones:", err);
     }
   }, [granjaActiva]);
 
@@ -56,7 +56,7 @@ function EngordaContent() {
       const data = await apiFetch(`/piletas/lotes/inventario/${granjaActiva}`);
       setLotes(data || []);
     } catch (err) {
-      console.error("❌ Error al obtener lotes:", err);
+      console.error(" Error al obtener lotes:", err);
     }
   }, [granjaActiva]);
 
@@ -104,11 +104,11 @@ function EngordaContent() {
   }, [limpiarFormulario, obtenerEngordas, obtenerMovimientos, obtenerInstalaciones, obtenerLotes]);
 
   /* =========================================================
-      ✏️ FORMULARIO Y CAMBIOS
+       FORMULARIO Y CAMBIOS
   ========================================================= */
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // ✅ Nueva función para manejar el cambio de origen (Lote)
+  //  Nueva función para manejar el cambio de origen (Lote)
   const handleOrigenLote = (loteId) => {
     const lote = lotes.find((l) => l.fi_lote_id === loteId);
     setForm({
@@ -122,10 +122,10 @@ function EngordaContent() {
   };
 
   /* =========================================================
-      ✅ CRUD
+       CRUD
   ========================================================= */
   const registrarEngorda = async () => {
-    if (!form.fi_instalacion_id) return alert("❌ Seleccione una instalación destino.");
+    if (!form.fi_instalacion_id) return alert(" Seleccione una instalación destino.");
 
     try {
       await apiFetch("/engorda", {
@@ -137,7 +137,7 @@ function EngordaContent() {
         }),
       });
 
-      alert("✅ Registro agregado correctamente");
+      alert(" Registro agregado correctamente");
       obtenerEngordas();
       obtenerLotes(); // Refrescar lotes por si cambió el inventario
       limpiarFormulario();
@@ -157,7 +157,7 @@ function EngordaContent() {
         }),
       });
 
-      alert("✅ Registro actualizado");
+      alert(" Registro actualizado");
       obtenerEngordas();
       limpiarFormulario();
     } catch (err) {
@@ -169,7 +169,7 @@ function EngordaContent() {
     if (!window.confirm("¿Eliminar este registro?")) return;
     try {
       await apiFetch(`/engorda/${seleccionado}`, { method: "DELETE" });
-      alert("🗑️ Eliminado");
+      alert(" Eliminado");
       obtenerEngordas();
       limpiarFormulario();
     } catch (err) {
@@ -218,10 +218,10 @@ function EngordaContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={2} color="#004C7D">
-        🐟 Módulo de Engorda — Sistema
+         Módulo de Engorda — Sistema
       </Typography>
 
-      {/* 🌿 Selección de granja */}
+      {/*  Selección de granja */}
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
         <Button variant={granjaActiva.includes("Medellín") ? "contained" : "outlined"} color="primary" onClick={() => setGranjaActiva("Granja Acuícola Medellín")}>
           MEDELLÍN
@@ -231,17 +231,17 @@ function EngordaContent() {
         </Button>
       </Box>
 
-      {/* 📊 Resumen */}
+      {/*  Resumen */}
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
         <Typography><b>Granja activa:</b> {granjaActiva.replace("Granja Acuícola ", "")}</Typography>
         <Typography><b>Registros en tina:</b> {engordas.length}</Typography>
         <Typography><b>Total organismos en engorda:</b> {totalCantidad.toLocaleString("es-MX")}</Typography>
       </Paper>
 
-      {/* 📋 Formulario */}
+      {/*  Formulario */}
       <Paper sx={{ borderRadius: 3, p: 3, backgroundColor: "#FAFAFA", boxShadow: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Typography variant="h6" color="#00796B" fontWeight="bold">✏️ Registro / Traslado de Engorda</Typography>
+          <Typography variant="h6" color="#00796B" fontWeight="bold"> Registro / Traslado de Engorda</Typography>
           <Button variant="contained" color="success" onClick={() => setMostrarFormulario(!mostrarFormulario)}>
             {mostrarFormulario ? "OCULTAR FORMULARIO" : "+ NUEVO REGISTRO"}
           </Button>
@@ -356,8 +356,8 @@ function EngordaContent() {
         </Table>
       </Paper>
 
-      {/* 🔁 TRAZABILIDAD */}
-      <Typography variant="h6" mt={5} mb={2} color="#E65100">🔁 Historial de Movimientos de Engorda</Typography>
+      {/*  TRAZABILIDAD */}
+      <Typography variant="h6" mt={5} mb={2} color="#E65100"> Historial de Movimientos de Engorda</Typography>
       <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
         <Table stickyHeader>
           <TableHead>

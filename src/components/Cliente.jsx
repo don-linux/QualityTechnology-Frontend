@@ -71,7 +71,7 @@ export default function Cliente() {
       limpiarFormulario();
     } catch (error) {
       console.error("Error al registrar cliente", error);
-      alert("❌ Error al registrar cliente");
+      alert(" Error al registrar cliente");
     }
   };
 
@@ -83,7 +83,7 @@ export default function Cliente() {
       limpiarFormulario();
     } catch (error) {
       console.error("Error al actualizar cliente", error);
-      alert("❌ Error al actualizar cliente");
+      alert(" Error al actualizar cliente");
     }
   };
 
@@ -96,7 +96,7 @@ export default function Cliente() {
       limpiarFormulario();
     } catch (error) {
       console.error("Error al eliminar cliente", error);
-      alert("❌ Error al eliminar cliente");
+      alert(" Error al eliminar cliente");
     }
   };
 
@@ -115,7 +115,7 @@ export default function Cliente() {
   return (
     <Container maxWidth="md" sx={{ paddingTop: 3, paddingBottom: 5 }}>
       <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }} align="center">
-        🧾 Registro de Clientes
+         Registro de Clientes
       </Typography>
 
       <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 3 }}>

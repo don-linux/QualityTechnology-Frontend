@@ -31,14 +31,14 @@ export default function CajaAhorro() {
   const [granja, setGranja] = useState("Ceiba");
 
   /* =========================================================
-     🟢 Obtener datos por granja
+      Obtener datos por granja
      ========================================================= */
   const obtenerDatos = useCallback(async () => {
     try {
       const res = await axios.get(`${api}/${granja}`);
       setRegistros(res.data);
     } catch (err) {
-      console.error("❌ Error al cargar caja de ahorro:", err);
+      console.error(" Error al cargar caja de ahorro:", err);
     }
   }, [granja]);
 
@@ -47,7 +47,7 @@ export default function CajaAhorro() {
   }, [obtenerDatos]);
 
   /* =========================================================
-     🔍 Buscar categoría
+      Buscar categoría
      ========================================================= */
   const buscarCategoria = () => {
     if (busqueda.trim() === "") obtenerDatos();
@@ -60,7 +60,7 @@ export default function CajaAhorro() {
   };
 
   /* =========================================================
-     ➕ Crear nueva categoría
+      Crear nueva categoría
      ========================================================= */
   const crearRegistro = async () => {
     const nombre = prompt("Nombre de la categoría:");
@@ -69,12 +69,12 @@ export default function CajaAhorro() {
       await axios.post(api, { categoria: nombre, granja });
       obtenerDatos();
     } catch (err) {
-      alert("❌ Error al crear categoría.");
+      alert(" Error al crear categoría.");
     }
   };
 
   /* =========================================================
-     ✏️ Actualizar campo
+      Actualizar campo
      ========================================================= */
   const actualizarCampo = async (id, campo, valor) => {
     try {
@@ -86,7 +86,7 @@ export default function CajaAhorro() {
   };
 
   /* =========================================================
-     🗑️ Eliminar registro
+      Eliminar registro
      ========================================================= */
   const eliminarRegistro = async (id) => {
     if (!window.confirm("¿Eliminar esta categoría?")) return;
@@ -95,16 +95,16 @@ export default function CajaAhorro() {
   };
 
   /* =========================================================
-     🧨 Eliminar todo por granja
+      Eliminar todo por granja
      ========================================================= */
   const eliminarTodo = async () => {
-    if (!window.confirm(`⚠️ Eliminar TODOS los registros de ${granja}?`)) return;
+    if (!window.confirm(` Eliminar TODOS los registros de ${granja}?`)) return;
     await axios.delete(`${api}?granja=${granja}`);
     obtenerDatos();
   };
 
   /* =========================================================
-     🧮 Meses
+      Meses
      ========================================================= */
   const meses = [
     "enero",
@@ -122,7 +122,7 @@ export default function CajaAhorro() {
   ];
 
   /* =========================================================
-     🧮 Calcular totales por mes y total general
+      Calcular totales por mes y total general
      ========================================================= */
   const totales = {};
   let totalGeneral = 0;
@@ -149,7 +149,7 @@ export default function CajaAhorro() {
         Control de Caja de Ahorro (Mensual)
       </Typography>
 
-      {/* 🔹 Selector de granja */}
+      {/*  Selector de granja */}
       <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
         <Button
           variant={granja === "Ceiba" ? "contained" : "outlined"}
@@ -167,7 +167,7 @@ export default function CajaAhorro() {
         </Button>
       </Box>
 
-      {/* 🔹 Barra de acciones */}
+      {/*  Barra de acciones */}
       <Paper sx={{ p: 2, mb: 3, background: "#f8f9fa" }}>
         <Grid container spacing={2} alignItems="center">
           <Grid>
@@ -221,7 +221,7 @@ export default function CajaAhorro() {
         </Grid>
       </Paper>
 
-      {/* 🔹 Tabla principal */}
+      {/*  Tabla principal */}
          <TableContainer
           component={Paper}
           sx={{
@@ -318,7 +318,7 @@ export default function CajaAhorro() {
               </TableRow>
             ))}
 
-            {/* 🔹 Fila de totales generales (sticky footer) */}
+            {/*  Fila de totales generales (sticky footer) */}
             <TableRow
               sx={{
                 position: "sticky",

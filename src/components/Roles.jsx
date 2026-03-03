@@ -47,41 +47,41 @@ export default function Roles() {
   };
 
   const registrarRol = async () => {
-    if (form.nombre.trim() === '') return setMensaje('❌ El nombre no puede estar vacío');
+    if (form.nombre.trim() === '') return setMensaje(' El nombre no puede estar vacío');
     try {
       await axios.post(`${API_URL}/roles`, { nombre: form.nombre });
-      setMensaje('✅ Rol registrado correctamente');
+      setMensaje(' Rol registrado correctamente');
       limpiarFormulario();
       obtenerRoles();
     } catch (error) {
       console.error('Error al registrar rol', error);
-      setMensaje('❌ Error al registrar rol');
+      setMensaje(' Error al registrar rol');
     }
   };
 
   const actualizarRol = async () => {
-    if (!form.rol_id) return setMensaje('❌ Selecciona un rol para actualizar');
+    if (!form.rol_id) return setMensaje(' Selecciona un rol para actualizar');
     try {
       await axios.put(`${API_URL}/roles/${form.rol_id}`, { nombre: form.nombre });
-      setMensaje('✅ Rol actualizado correctamente');
+      setMensaje(' Rol actualizado correctamente');
       limpiarFormulario();
       obtenerRoles();
     } catch (error) {
       console.error('Error al actualizar rol', error);
-      setMensaje('❌ Error al actualizar rol');
+      setMensaje(' Error al actualizar rol');
     }
   };
 
   const eliminarRol = async () => {
-    if (!form.rol_id) return setMensaje('❌ Selecciona un rol para eliminar');
+    if (!form.rol_id) return setMensaje(' Selecciona un rol para eliminar');
     try {
       await axios.delete(`${API_URL}/roles/${form.rol_id}`);
-      setMensaje('✅ Rol eliminado correctamente');
+      setMensaje(' Rol eliminado correctamente');
       limpiarFormulario();
       obtenerRoles();
     } catch (error) {
       console.error('Error al eliminar rol', error);
-      setMensaje('❌ Error al eliminar rol');
+      setMensaje(' Error al eliminar rol');
     }
   };
 
@@ -93,7 +93,7 @@ export default function Roles() {
   return (
     <Container maxWidth="sm" sx={{ pt: 2, pb: 4 }}>
       <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: "bold" }}>
-        📋 Registro de Roles
+         Registro de Roles
       </Typography>
 
       <Card sx={{ mb: 3, boxShadow: 3, borderRadius: 2 }}>
@@ -111,7 +111,7 @@ export default function Roles() {
 
             {mensaje && (
               <Grid size={12}>
-                <Typography color={mensaje.includes('✅') ? 'green' : 'error'}>{mensaje}</Typography>
+                <Typography color={mensaje.includes('correctamente') ? 'green' : 'error'}>{mensaje}</Typography>
               </Grid>
             )}
 

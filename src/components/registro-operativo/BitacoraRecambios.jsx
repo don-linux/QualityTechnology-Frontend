@@ -112,7 +112,7 @@ function BitacoraRecambiosContent() {
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm("⚠️ ¿Deseas eliminar todos los registros?")) return;
+    if (!window.confirm(" ¿Deseas eliminar todos los registros?")) return;
     try {
       await axios.delete(`${API_URL}/medellin/recambios`);
       cargarDatos();
@@ -122,7 +122,7 @@ function BitacoraRecambiosContent() {
     }
   };
 
-// 📄 Exportar PDF (formato institucional limpio)
+//  Exportar PDF (formato institucional limpio)
 const exportarPDF = () => {
   const doc = new jsPDF("l", "mm", "a4");
   const logo = `${""}/images/medellin.png`;
@@ -141,7 +141,7 @@ const exportarPDF = () => {
   doc.text("Mes:", 250, 35);
   doc.line(260, 35, 285, 35);
 
-  // 🟡 Mostrar el mes actual sobre la línea
+  //  Mostrar el mes actual sobre la línea
   if (form.fc_mes) {
     doc.text(form.fc_mes, 262, 35);
   }
@@ -226,7 +226,7 @@ const exportarPDF = () => {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        🔄 Medellín — Recambios de Trampas
+         Medellín — Recambios de Trampas
       </Typography>
 
       {/* FORMULARIO */}
@@ -299,7 +299,7 @@ const exportarPDF = () => {
               sx={{ ml: 2 }}
               onClick={exportarPDF}
             >
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button
               variant="contained"
@@ -307,7 +307,7 @@ const exportarPDF = () => {
               sx={{ ml: 2 }}
               onClick={eliminarTodos}
             >
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>

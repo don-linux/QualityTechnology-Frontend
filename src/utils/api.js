@@ -21,11 +21,11 @@ export async function apiFetch(endpoint, options = {}) {
     throw new Error(errorMessage);
   }
 
-  // ✅ Si la respuesta es vacía (DELETE 204, por ejemplo), no intentar parsear JSON
+  //  Si la respuesta es vacía (DELETE 204, por ejemplo), no intentar parsear JSON
   if (res.status === 204) {
     return null;
   }
 
-  // ✅ Si la respuesta sí tiene cuerpo, convertirla a JSON
+  //  Si la respuesta sí tiene cuerpo, convertirla a JSON
   return res.json();
 }

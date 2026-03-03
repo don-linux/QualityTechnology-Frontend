@@ -38,7 +38,7 @@ function BitacoraBanosContent() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // 🔹 Cargar datos
+  //  Cargar datos
   const cargarDatos = async () => {
     try {
       const res = await axios.get(`${API_URL}/medellin/banos`);
@@ -52,7 +52,7 @@ function BitacoraBanosContent() {
     cargarDatos();
   }, []);
 
-  // 🔹 Guardar / Actualizar
+  //  Guardar / Actualizar
   const guardar = async () => {
     try {
       if (editId) {
@@ -81,7 +81,7 @@ function BitacoraBanosContent() {
     }
   };
 
-  // 🔹 Editar
+  //  Editar
   const editar = (row) => {
     setEditId(row.fi_id);
     setForm({
@@ -98,18 +98,18 @@ function BitacoraBanosContent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 🔹 Eliminar uno
+  //  Eliminar uno
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/medellin/banos/${id}`);
     cargarDatos();
   };
 
-  // 🗑️ Eliminar todos
+  //  Eliminar todos
   const eliminarTodos = async () => {
     if (
       !window.confirm(
-        "⚠️ ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer."
+        " ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer."
       )
     )
       return;
@@ -117,7 +117,7 @@ function BitacoraBanosContent() {
     cargarDatos();
   };
 
-  // 📄 Exportar PDF
+  //  Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
     const logoMedellin = `${""}/images/medellin.png`;
@@ -172,7 +172,7 @@ function BitacoraBanosContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        🟦 Medellín — Baños
+         Medellín — Baños
       </Typography>
 
       {/* FORMULARIO */}
@@ -224,7 +224,7 @@ function BitacoraBanosContent() {
               sx={{ ml: 2 }}
               onClick={exportarPDF}
             >
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button
               variant="contained"
@@ -232,7 +232,7 @@ function BitacoraBanosContent() {
               sx={{ ml: 2 }}
               onClick={eliminarTodos}
             >
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>
