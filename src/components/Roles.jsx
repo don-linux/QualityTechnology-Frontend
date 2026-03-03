@@ -111,7 +111,7 @@ export default function Roles() {
 
             {mensaje && (
               <Grid size={12}>
-                <Typography color={mensaje.includes('') ? 'green' : 'error'}>{mensaje}</Typography>
+                <Typography color={mensaje.includes('correctamente') ? 'green' : 'error'}>{mensaje}</Typography>
               </Grid>
             )}
 
