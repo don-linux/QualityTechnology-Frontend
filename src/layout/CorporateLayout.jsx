@@ -372,32 +372,32 @@ export default function CorporateLayout() {
                 </Typography>
               )}
 
-              <ListItemButton component={Link} to="/inventarios/lotes">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/inventarios/lotes" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <EggAltIcon />
                 </ListItemIcon>
-                <ListItemText primary="Control Reproductivo" />
+                {drawerOpen && <ListItemText primary="Control Reproductivo" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/inventarios/piletas">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/inventarios/piletas" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <Science />
                 </ListItemIcon>
-                <ListItemText primary="Alevinaje" />
+                {drawerOpen && <ListItemText primary="Alevinaje" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/inventarios/reproductores">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/inventarios/reproductores" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <Biotech />
                 </ListItemIcon>
-                <ListItemText primary="Reproductores" />
+                {drawerOpen && <ListItemText primary="Reproductores" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/inventarios/engorda">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/inventarios/engorda" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <Grass />
                 </ListItemIcon>
-                <ListItemText primary="Engorda" />
+                {drawerOpen && <ListItemText primary="Engorda" />}
               </ListItemButton>
 
               {/*  OTROS INVENTARIOS */}
@@ -416,25 +416,25 @@ export default function CorporateLayout() {
                 </Typography>
               )}
 
-              <ListItemButton component={Link} to="/inventarios/instalaciones">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/inventarios/instalaciones" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <HomeWorkIcon />
                 </ListItemIcon>
-                <ListItemText primary="Instalaciones" />
+                {drawerOpen && <ListItemText primary="Instalaciones" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/inventarios/alimentos">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/inventarios/alimentos" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <LocalMall />
                 </ListItemIcon>
-                <ListItemText primary="Alimento e Insumos" />
+                {drawerOpen && <ListItemText primary="Alimento e Insumos" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/inventarios/registro-operativo">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/inventarios/registro-operativo" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <Handyman />
                 </ListItemIcon>
-                <ListItemText primary="Equipo y Herramientas" />
+                {drawerOpen && <ListItemText primary="Equipo y Herramientas" />}
               </ListItemButton>
             </>
           )}
@@ -449,25 +449,25 @@ export default function CorporateLayout() {
               </Typography>
             )}
 
-            <ListItemButton component={Link} to="/ventas/lista-espera">
-              <ListItemIcon sx={{ color: "white" }}>
+            <ListItemButton component={Link} to="/ventas/lista-espera" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                 <Store />
               </ListItemIcon>
-              <ListItemText primary="Próximas Ventas" />
+              {drawerOpen && <ListItemText primary="Próximas Ventas" />}
             </ListItemButton>
 
-            <ListItemButton component={Link} to="/ventas/registro">
-              <ListItemIcon sx={{ color: "white" }}>
+            <ListItemButton component={Link} to="/ventas/registro" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                 <LocalAtm />
               </ListItemIcon>
-              <ListItemText primary="Registro de Ventas" />
+              {drawerOpen && <ListItemText primary="Registro de Ventas" />}
             </ListItemButton>
 
-            <ListItemButton component={Link} to="registro/cliente">
-              <ListItemIcon sx={{ color: "white" }}>
+            <ListItemButton component={Link} to="registro/cliente" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                 <People />
               </ListItemIcon>
-              <ListItemText primary="Clientes" />
+              {drawerOpen && <ListItemText primary="Clientes" />}
             </ListItemButton>
             </>
           )}
@@ -482,25 +482,25 @@ export default function CorporateLayout() {
                 </Typography>
               )}
 
-              <ListItemButton component={Link} to="/ventas/flujo-caja">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/ventas/flujo-caja" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <AccountBalance />
                 </ListItemIcon>
-                <ListItemText primary="Flujo de Caja" />
+                {drawerOpen && <ListItemText primary="Flujo de Caja" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/ventas/tesoreria">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/ventas/tesoreria" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <AccountBalance />
                 </ListItemIcon>
-                <ListItemText primary="Tesorería General" />
+                {drawerOpen && <ListItemText primary="Tesorería General" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/proveedores">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/proveedores" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <Store />
                 </ListItemIcon>
-                <ListItemText primary="Proveedores" />
+                {drawerOpen && <ListItemText primary="Proveedores" />}
               </ListItemButton>
             </>
           )}
@@ -515,18 +515,18 @@ export default function CorporateLayout() {
                 </Typography>
               )}
 
-              <ListItemButton component={Link} to="/nomina">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/nomina" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <Person />
                 </ListItemIcon>
-                <ListItemText primary="Nómina" />
+                {drawerOpen && <ListItemText primary="Nómina" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/expedientes">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/expedientes" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <Folder />
                 </ListItemIcon>
-                <ListItemText primary="Expedientes" />
+                {drawerOpen && <ListItemText primary="Expedientes" />}
               </ListItemButton>
 
               <ListItemButton
@@ -538,19 +538,20 @@ export default function CorporateLayout() {
                   backgroundColor:
                     location.pathname === "/vacaciones" ? "#388E3C" : "transparent",
                   "&:hover": { backgroundColor: "#43A047" },
+                  justifyContent: drawerOpen ? "flex-start" : "center",
                 }}
               >
-                <ListItemIcon sx={{ color: "white" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <EventAvailableIcon />
                 </ListItemIcon>
-                <ListItemText primary="Vacaciones y Ausencias" />
+                {drawerOpen && <ListItemText primary="Vacaciones y Ausencias" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/caja-ahorro">
-                <ListItemIcon sx={{ color: "white" }}>
+              <ListItemButton component={Link} to="/caja-ahorro" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                   <Savings />
                 </ListItemIcon>
-                <ListItemText primary="Caja de Ahorro" />
+                {drawerOpen && <ListItemText primary="Caja de Ahorro" />}
               </ListItemButton>
             </>
           )}
