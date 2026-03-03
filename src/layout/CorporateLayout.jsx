@@ -651,15 +651,15 @@ export default function CorporateLayout() {
         component="main"
         sx={{
           flexGrow: 1,
+          minWidth: 0,
           p: 4,
-          ml: drawerOpen ? `${drawerWidth}px` : "10px",
           mt: "70px",
           minHeight: "100vh",
           backgroundColor: "#f4f6f8",
           display: "flex",
           justifyContent: "center",
           alignItems: "flex-start",
-          transition: "margin 0.3s ease",
+          overflow: "hidden",
         }}
       >
         <Box
