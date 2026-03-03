@@ -118,6 +118,8 @@ export default function CorporateLayout() {
           <Box display="flex" alignItems="center" gap={2}>
             <Button
               onClick={toggleDrawer}
+              aria-label={drawerOpen ? "Cerrar menú" : "Abrir menú"}
+              title={drawerOpen ? "Cerrar menú" : "Abrir menú"}
               sx={{
                 color: "white",
                 fontSize: 22,
