@@ -132,7 +132,7 @@ export default function CorporateLayout() {
             </Button>
 
             <Typography variant="h6" noWrap fontWeight="bold">
-              Seguimiento de Salud Animal — Sistema
+              Sistema Integral Quality
             </Typography>
           </Box>
 
