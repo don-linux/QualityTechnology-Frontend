@@ -38,6 +38,8 @@ import {
   Biotech,
   ReceiptLong,
   LocationOn,
+  Menu as MenuIcon,
+  MenuOpen as MenuOpenIcon,
 } from "@mui/icons-material";
 
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
@@ -126,7 +128,7 @@ export default function CorporateLayout() {
                 "&:hover": { backgroundColor: "rgba(255,255,255,0.25)" },
               }}
             >
-              {drawerOpen ? "" : ""}
+              {drawerOpen ? <MenuOpenIcon /> : <MenuIcon />}
             </Button>
 
             <Typography variant="h6" noWrap fontWeight="bold">
