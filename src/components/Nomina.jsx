@@ -99,7 +99,7 @@ export default function Nomina() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight="bold" mb={3}>💵 Nómina</Typography>
+      <Typography variant="h4" fontWeight="bold" mb={3}> Nómina</Typography>
 
       <Card sx={{ mb: 3 }}>
         <CardContent>

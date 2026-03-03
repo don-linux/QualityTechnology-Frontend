@@ -120,7 +120,7 @@ function BioAlimentacionContent() {
     cargarDatos();
   };
 
-  // 🧾 Exportar a PDF
+  //  Exportar a PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
     const logoCeiba = `${""}/images/ceiba.png`;
@@ -180,11 +180,11 @@ function BioAlimentacionContent() {
     doc.save(`Bitacora_Alimentacion_Ceiba_${fecha}.pdf`);
   };
 
-  // 🗑️ Eliminar todos los registros
+  //  Eliminar todos los registros
   const eliminarTodos = async () => {
     if (
       window.confirm(
-        "⚠️ ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer."
+        " ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer."
       )
     ) {
       await axios.delete(`${API_URL}/ceiba/alimentacion`);
@@ -195,7 +195,7 @@ function BioAlimentacionContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        🟩 La Ceiba — Alimentación
+         La Ceiba — Alimentación
       </Typography>
 
       <Card sx={{ mb: 4 }}>
@@ -355,7 +355,7 @@ function BioAlimentacionContent() {
               sx={{ ml: 2 }}
               onClick={exportarPDF}
             >
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button
               variant="contained"
@@ -363,7 +363,7 @@ function BioAlimentacionContent() {
               sx={{ ml: 2 }}
               onClick={eliminarTodos}
             >
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>

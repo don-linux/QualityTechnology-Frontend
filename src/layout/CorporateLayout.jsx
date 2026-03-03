@@ -126,7 +126,7 @@ export default function CorporateLayout() {
                 "&:hover": { backgroundColor: "rgba(255,255,255,0.25)" },
               }}
             >
-              {drawerOpen ? "☰" : "⮞"}
+              {drawerOpen ? "" : ""}
             </Button>
 
             <Typography variant="h6" noWrap fontWeight="bold">
@@ -354,7 +354,7 @@ export default function CorporateLayout() {
                 </Typography>
               )}
 
-              {/* 🐟 INVENTARIO DE ORGANISMOS */}
+              {/*  INVENTARIO DE ORGANISMOS */}
               {drawerOpen && (
                 <Typography
                   sx={{
@@ -398,7 +398,7 @@ export default function CorporateLayout() {
                 <ListItemText primary="Engorda" />
               </ListItemButton>
 
-              {/* ⚙️ OTROS INVENTARIOS */}
+              {/*  OTROS INVENTARIOS */}
               {drawerOpen && (
                 <Typography
                   sx={{

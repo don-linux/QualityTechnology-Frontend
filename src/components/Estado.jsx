@@ -62,7 +62,7 @@ export default function Estados() {
       limpiarFormulario();
     } catch (error) {
       console.error("Error al registrar estado", error);
-      alert("❌ Error al registrar estado");
+      alert(" Error al registrar estado");
     }
   };
 
@@ -79,7 +79,7 @@ export default function Estados() {
       limpiarFormulario();
     } catch (error) {
       console.error("Error al actualizar estado", error);
-      alert("❌ Error al actualizar estado");
+      alert(" Error al actualizar estado");
     }
   };
 
@@ -97,7 +97,7 @@ export default function Estados() {
       limpiarFormulario();
     } catch (error) {
       console.error("Error al eliminar estado", error);
-      alert("❌ Error al eliminar estado");
+      alert(" Error al eliminar estado");
     }
   };
 

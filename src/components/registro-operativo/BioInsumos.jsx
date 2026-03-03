@@ -100,7 +100,7 @@ function BioInsumosContent() {
   const eliminarTodos = async () => {
     if (
       window.confirm(
-        "⚠️ ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer."
+        " ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer."
       )
     ) {
       await axios.delete(`${API_URL}/ceiba/insumos`);
@@ -158,7 +158,7 @@ function BioInsumosContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        📥​ La Ceiba — Ingresos / Egresos de Insumos
+        ​ La Ceiba — Ingresos / Egresos de Insumos
       </Typography>
 
       <Card sx={{ mb: 4 }}>
@@ -249,7 +249,7 @@ function BioInsumosContent() {
               sx={{ ml: 2 }}
               onClick={exportarPDF}
             >
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button
               variant="contained"
@@ -257,7 +257,7 @@ function BioInsumosContent() {
               sx={{ ml: 2 }}
               onClick={eliminarTodos}
             >
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>

@@ -72,14 +72,14 @@ function BitacoraParametrosContent() {
     cargarDatos();
   };
 
-  // 🗑️ Eliminar todos los registros
+  //  Eliminar todos los registros
   const eliminarTodos = async () => {
-    if (!window.confirm("⚠️ ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
+    if (!window.confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
     await axios.delete(`${API_URL}/medellin/parametros`);
     cargarDatos();
   };
 
-  // 📄 Exportar PDF
+  //  Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
     const logoMedellin = `${""}/images/medellin.png`;
@@ -134,7 +134,7 @@ function BitacoraParametrosContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        🌡️​ Medellín — Parámetros
+        ​ Medellín — Parámetros
       </Typography>
 
       {/* FORMULARIO */}
@@ -237,7 +237,7 @@ function BitacoraParametrosContent() {
               sx={{ ml: 2 }}
               onClick={exportarPDF}
             >
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button
               variant="contained"
@@ -245,7 +245,7 @@ function BitacoraParametrosContent() {
               sx={{ ml: 2 }}
               onClick={eliminarTodos}
             >
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>

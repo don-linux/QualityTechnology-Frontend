@@ -439,7 +439,7 @@ function VentaContent() {
     Lista de Ventas – {empresa}
   </Typography>
 
-  {/* 🔽 CONTENEDOR CON SCROLL */}
+  {/*  CONTENEDOR CON SCROLL */}
   <Box sx={{ overflowX: "auto" }}>
     <Table sx={{ minWidth: 1300 }}>
       <TableHead>

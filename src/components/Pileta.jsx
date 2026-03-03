@@ -86,7 +86,7 @@ function PiletaContent() {
       const data = await apiFetch(`/piletas/inventario/${granja}`);
       setInventario(data || []);
     } catch (error) {
-      console.error("❌ Error inventario:", error);
+      console.error(" Error inventario:", error);
     }
   }, [granjaActiva]);
 
@@ -96,7 +96,7 @@ function PiletaContent() {
       const data = await apiFetch(`/piletas/lotes/${granja}`);
       setLotes(data || []);
     } catch (error) {
-      console.error("❌ Error lotes:", error);
+      console.error(" Error lotes:", error);
     }
   }, [granjaActiva]);
 
@@ -106,7 +106,7 @@ function PiletaContent() {
       const data = await apiFetch(`/piletas/origen/${granja}`);
       setInstalaciones(data || []);
     } catch (error) {
-      console.error("❌ Error instalaciones:", error);
+      console.error(" Error instalaciones:", error);
     }
   }, [granjaActiva]);
 
@@ -116,7 +116,7 @@ function PiletaContent() {
       const data = await apiFetch(`/piletas/movimientos/${usuario_id}/${granja}`);
       setRastreos(data || []);
     } catch (error) {
-      console.error("❌ Error trazabilidad:", error);
+      console.error(" Error trazabilidad:", error);
     }
   }, [granjaActiva, usuario_id]);
 
@@ -176,7 +176,7 @@ function PiletaContent() {
         no_lote: data?.no_lote || "",
       });
     } catch (error) {
-      console.error("❌ Error cargando lote:", error);
+      console.error(" Error cargando lote:", error);
     }
   };
 
@@ -221,7 +221,7 @@ function PiletaContent() {
 
       if (response.error) throw new Error(response.error);
 
-      alert("✅ Siembra registrada correctamente");
+      alert(" Siembra registrada correctamente");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -248,7 +248,7 @@ function PiletaContent() {
 
       if (response.error) throw new Error(response.error);
 
-      alert("✅ Registro actualizado");
+      alert(" Registro actualizado");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -265,7 +265,7 @@ function PiletaContent() {
 
     try {
       await apiFetch(`/piletas/${seleccionado}`, { method: "DELETE" });
-      alert("🗑️ Pileta eliminada");
+      alert(" Pileta eliminada");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -313,7 +313,7 @@ function PiletaContent() {
 
       setRastreos(data);
     } catch (error) {
-      console.error("❌ Error filtrado:", error);
+      console.error(" Error filtrado:", error);
     }
   };
 
@@ -364,7 +364,7 @@ function PiletaContent() {
     <Box>
 
       <Typography variant="h4" fontWeight="bold" mb={2} color="#004C7D">
-        🧬 Control de Alevinaje — Sistema
+         Control de Alevinaje — Sistema
       </Typography>
 
       {/* BOTONES DE GRANJA */}
@@ -560,7 +560,7 @@ function PiletaContent() {
 
       {/* INVENTARIO */}
       <Typography variant="h6" color="#00796B" fontWeight="bold" mb={2}>
-        📋 Inventario
+         Inventario
       </Typography>
 
       <Paper sx={{ borderRadius: 3, overflow: "hidden", mb: 4, p: 2 }}>
@@ -615,7 +615,7 @@ function PiletaContent() {
 
       {/* TRAZABILIDAD */}
       <Typography variant="h6" mt={5} mb={2} color="#E65100">
-        🔁 Trazabilidad
+         Trazabilidad
       </Typography>
 
       <Grid container spacing={2} mb={2}>

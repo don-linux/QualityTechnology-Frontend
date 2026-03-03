@@ -35,7 +35,7 @@ function BitacoraMedicamentosContent() {
 
   useEffect(() => { cargarDatos(); }, []);
 
-  // 🔹 Guardar / Actualizar
+  //  Guardar / Actualizar
   const guardar = async () => {
     try {
       if (editId)
@@ -60,7 +60,7 @@ function BitacoraMedicamentosContent() {
     }
   };
 
-  // 🔹 Editar
+  //  Editar
   const editar = (r) => {
     setEditId(r.fi_id);
     setForm({
@@ -71,21 +71,21 @@ function BitacoraMedicamentosContent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 🔹 Eliminar uno
+  //  Eliminar uno
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/medellin/medicamentos/${id}`);
     cargarDatos();
   };
 
-  // 🗑️ Eliminar todos
+  //  Eliminar todos
   const eliminarTodos = async () => {
-    if (!window.confirm("⚠️ ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
+    if (!window.confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
     await axios.delete(`${API_URL}/medellin/medicamentos`);
     cargarDatos();
   };
 
-  // 📄 Exportar PDF
+  //  Exportar PDF
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
     const logoMedellin = `${""}/images/medellin.png`;
@@ -137,7 +137,7 @@ function BitacoraMedicamentosContent() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight="bold" mb={3}>💉​ Medellín — Medicamentos</Typography>
+      <Typography variant="h4" fontWeight="bold" mb={3}>​ Medellín — Medicamentos</Typography>
 
       {/* FORMULARIO */}
       <Card sx={{ mb: 4 }}>
@@ -190,7 +190,7 @@ function BitacoraMedicamentosContent() {
               sx={{ ml: 2 }}
               onClick={exportarPDF}
             >
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button
               variant="contained"
@@ -198,7 +198,7 @@ function BitacoraMedicamentosContent() {
               sx={{ ml: 2 }}
               onClick={eliminarTodos}
             >
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>

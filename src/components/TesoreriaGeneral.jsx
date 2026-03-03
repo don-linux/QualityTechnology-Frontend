@@ -33,7 +33,7 @@ export default function TesoreriaGeneral() {
       const res = await axios.get(`${API_TESORERIA}?anio=${anioSeleccionado}&granja=${granjaActual}`);
       setDatos(res.data || []);
     } catch (err) {
-      console.error("❌ Error al obtener datos de tesoreria:", err);
+      console.error(" Error al obtener datos de tesoreria:", err);
     }
   }, [anioSeleccionado, tab]);
 
@@ -69,14 +69,14 @@ export default function TesoreriaGeneral() {
     <Container maxWidth="xl" sx={{ mt: 0, p: 0 }}>
       <Box sx={{ width: "100%", background: "#0D4D3A", padding: "20px 30px", mb: 2 }}>
         <Typography variant="h4" sx={{ color: "white", fontWeight: "bold" }}>
-          💰 Tesoreria General — Sistema Quality
+           Tesoreria General — Sistema Quality
         </Typography>
       </Box>
 
       <Tabs value={tab} onChange={(e, v) => setTab(v)} variant="scrollable" scrollButtons="auto">
-        <Tab label="🟦 Medellin" />
-        <Tab label="🟩 La Ceiba" />
-        <Tab label="📘 Quality" />
+        <Tab label=" Medellin" />
+        <Tab label=" La Ceiba" />
+        <Tab label=" Quality" />
       </Tabs>
 
       <Box sx={{ p: 3 }}>
@@ -185,7 +185,7 @@ export default function TesoreriaGeneral() {
           sx={{ mt: 3, background: "#1D5C42", "&:hover": { background: "#0a3829" } }}
           onClick={exportarExcel}
         >
-          📤 Exportar a Excel
+           Exportar a Excel
         </Button>
       </Box>
     </Container>

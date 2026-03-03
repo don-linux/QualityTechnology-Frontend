@@ -225,7 +225,7 @@ export default function EmpleadosRegistro() {
   return (
     <Container maxWidth="lg" sx={{ pt: 2, pb: 4 }}>
       <Typography variant="h4" gutterBottom textAlign="center">
-        👩‍💼 Registro de Empleados
+         Registro de Empleados
       </Typography>
 
       {loading ? (

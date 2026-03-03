@@ -103,7 +103,7 @@ function BitacoraVisitasContent() {
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm("⚠️ ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
+    if (!window.confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
     await axios.delete(`${API_URL}/visitas`);
     cargarDatos();
   };
@@ -250,7 +250,7 @@ function BitacoraVisitasContent() {
               />
             </Grid>
 
-            {/* 🔹 Fila final con carga de archivo y horas alineadas */}
+            {/*  Fila final con carga de archivo y horas alineadas */}
             <Grid size={12}>
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 4 }}>
@@ -266,7 +266,7 @@ function BitacoraVisitasContent() {
                         "&:hover": { backgroundColor: "rgba(25,118,210,0.08)" },
                       }}
                     >
-                      📎 Subir identificación
+                       Subir identificación
                       <input
                         type="file"
                         hidden
@@ -334,7 +334,7 @@ function BitacoraVisitasContent() {
               sx={{ ml: 2 }}
               onClick={exportarPDF}
             >
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button
               variant="contained"
@@ -342,7 +342,7 @@ function BitacoraVisitasContent() {
               sx={{ ml: 2 }}
               onClick={eliminarTodos}
             >
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>

@@ -57,7 +57,7 @@ const LotesRegistro = () => {
       setFormData({ ...formData, fi_instalacion_id: value });
       setInstalacionSeleccionada(value);
 
-      /** 🚀 FUTURO: Ruta para cargar familia si es necesaria */
+      /**  FUTURO: Ruta para cargar familia si es necesaria */
       try {
         const fam = await axios.get(`${API_URL}/lotes/familia-por-instalacion/${value}`);
         setFormData((prev) => ({ ...prev, familia: fam.data.fc_familia || "" }));
@@ -112,7 +112,7 @@ const LotesRegistro = () => {
       resetFormulario();
       actualizarTabla();
     } catch (err) {
-      console.error("❌ Error al registrar lote:", err);
+      console.error(" Error al registrar lote:", err);
       alert("Error al registrar el lote");
     }
   };
@@ -157,7 +157,7 @@ const LotesRegistro = () => {
       resetEdicion();
       actualizarTabla();
     } catch (err) {
-      console.error("❌ Error al actualizar lote:", err);
+      console.error(" Error al actualizar lote:", err);
       alert("No se pudo actualizar el lote");
     }
   };
@@ -174,7 +174,7 @@ const LotesRegistro = () => {
       actualizarTabla();
       resetEdicion();
     } catch (err) {
-      console.error("❌ Error al eliminar lote:", err);
+      console.error(" Error al eliminar lote:", err);
       alert("No se pudo eliminar");
     }
   };
@@ -216,7 +216,7 @@ const LotesRegistro = () => {
   return (
     <div style={{ padding: "25px" }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
-        🧬 Control Reproductivo — Lotes
+         Control Reproductivo — Lotes
       </Typography>
 
       {/* ----------------- BOTONES DE GRANJA ----------------- */}
@@ -231,7 +231,7 @@ const LotesRegistro = () => {
               borderColor: "#0077b6",
             }}
           >
-            🏠 Medellín
+             Medellín
           </Button>
         </Grid>
 
@@ -245,7 +245,7 @@ const LotesRegistro = () => {
               borderColor: "#2a9d8f",
             }}
           >
-            🌿 La Ceiba
+             La Ceiba
           </Button>
         </Grid>
       </Grid>
@@ -254,7 +254,7 @@ const LotesRegistro = () => {
       <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#005f73" }}>
-            {modoEdicion ? "✏️ Editar Lote" : "Registrar Nuevo Lote"}
+            {modoEdicion ? " Editar Lote" : "Registrar Nuevo Lote"}
           </Typography>
 
           <Divider sx={{ mb: 3 }} />
@@ -425,7 +425,7 @@ const LotesRegistro = () => {
       {loteSeleccionado && (
         <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>
           <Button variant="contained" color="warning" onClick={activarEdicion}>
-            ✏️ Editar Lote
+             Editar Lote
           </Button>
 
           <Button
@@ -433,11 +433,11 @@ const LotesRegistro = () => {
             color="error"
             onClick={() => eliminarLote(loteSeleccionado.fi_lote_id)}
           >
-            🗑️ Eliminar Lote
+             Eliminar Lote
           </Button>
 
           <Button variant="outlined" color="inherit" onClick={resetEdicion}>
-            ❌ Cerrar
+             Cerrar
           </Button>
         </div>
       )}

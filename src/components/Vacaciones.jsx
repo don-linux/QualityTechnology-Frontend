@@ -73,7 +73,7 @@ export default function Vacaciones() {
       });
       obtenerDatos();
     } catch (err) {
-      alert("❌ Error al crear registro.");
+      alert(" Error al crear registro.");
     }
   };
 
@@ -84,7 +84,7 @@ export default function Vacaciones() {
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm("⚠️ Eliminar TODOS los registros?")) return;
+    if (!window.confirm(" Eliminar TODOS los registros?")) return;
     await axios.delete(api);
     obtenerDatos();
   };
