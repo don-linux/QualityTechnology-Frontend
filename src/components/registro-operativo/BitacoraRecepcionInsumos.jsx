@@ -96,7 +96,7 @@ function RecepcionInsumosContent() {
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm(" ¿Eliminar todos los registros de esta ubicación?")) return;
+    if (!window.confirm("Advertencia: ¿Eliminar todos los registros de esta ubicación?")) return;
     await axios.delete(`${API_URL}/recepcion_insumos?ubicacion=${form.ubicacion}`);
     cargarDatos();
   };
