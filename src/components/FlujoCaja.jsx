@@ -1,10 +1,12 @@
 // src/components/FlujoCaja.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Container, Box, Typography, Tabs, Tab, Button,
+  Container, Box, Typography, Tabs, Tab, Button, IconButton,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   Snackbar, Alert
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
@@ -203,14 +205,17 @@ export default function FlujoCaja() {
               </TableCell>
               <TableCell>{row.fc_estatus}</TableCell>
               <TableCell align="center">
-                <Button size="small" onClick={() => handleOpen(row)}></Button>
-                <Button
+                <IconButton size="small" aria-label="Editar" onClick={() => handleOpen(row)}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton
                   size="small"
                   color="error"
+                  aria-label="Eliminar"
                   onClick={() => handleDelete(row.fi_movimiento_id)}
                 >
-                  
-                </Button>
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
               </TableCell>
             </TableRow>
           ))}
