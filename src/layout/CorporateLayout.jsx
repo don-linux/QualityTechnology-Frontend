@@ -655,29 +655,14 @@ export default function CorporateLayout() {
         sx={{
           flexGrow: 1,
           minWidth: 0,
-          p: 4,
+          p: 3,
           mt: "70px",
           minHeight: "100vh",
           backgroundColor: "#f4f6f8",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "flex-start",
           overflow: "hidden",
         }}
       >
-        <Box
-          sx={{
-            width: "95%",
-            maxWidth: "1400px",
-            backgroundColor: "#fff",
-            borderRadius: 3,
-            boxShadow: "0px 3px 10px rgba(0,0,0,0.1)",
-            p: 4,
-            mt: 2,
-          }}
-        >
-          <Outlet />
-        </Box>
+        <Outlet />
       </Box>
     </Box>
   );
