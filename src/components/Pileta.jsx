@@ -170,7 +170,7 @@ function PiletaContent() {
 
       setForm({
         ...form,
-        origen_instalacion: valor,
+        origen_instalacion: Number(valor),
         origen_externo: "",
         fi_lote_id: data?.fi_lote_id || "",
         no_lote: data?.no_lote || "",
@@ -184,7 +184,7 @@ function PiletaContent() {
      DESTINO = Instalación Alevinaje
   ============================================================ */
   const handleInstalacionDestino = (id) => {
-    setForm({ ...form, fi_instalacion_id: id });
+  setForm({ ...form, fi_instalacion_id: Number(id) });
   };
 
   const handleChange = (e) => {
@@ -415,7 +415,7 @@ function PiletaContent() {
                 label="Origen"
                 name="origen_instalacion"
                 value={form.origen_instalacion}
-                onChange={(e) => handleOrigenLote(String(e.target.value))}   
+                onChange={(e) => handleOrigenLote(Number(e.target.value))} 
                 fullWidth
               >
                 <MenuItem value="">Seleccione origen</MenuItem>
