@@ -21,7 +21,7 @@ import { Add, Edit, Delete, Search, CleaningServices } from "@mui/icons-material
 import axios from "axios";
 
 // =========================================================
-// ✅ COMPONENTE PRINCIPAL
+//  COMPONENTE PRINCIPAL
 // =========================================================
 export default function Expedientes() {
   const usuario_id = localStorage.getItem("usuario_id");
@@ -56,7 +56,7 @@ export default function Expedientes() {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   // =========================================================
-  // 🔄 CARGAR / BUSCAR
+  //  CARGAR / BUSCAR
   // =========================================================
   const cargarDatos = async (nombre = "") => {
     try {
@@ -73,7 +73,7 @@ export default function Expedientes() {
   }, []);
 
   // =========================================================
-  // 💾 GUARDAR / ACTUALIZAR
+  //  GUARDAR / ACTUALIZAR
   // =========================================================
   const guardar = async () => {
     try {
@@ -92,7 +92,7 @@ export default function Expedientes() {
   };
 
   // =========================================================
-  // ✏️ EDITAR / 🗑️ ELIMINAR / 🧹 LIMPIAR
+  //  EDITAR /  ELIMINAR /  LIMPIAR
   // =========================================================
   const editar = (row) => {
     setEditId(row.fi_expediente_id);
@@ -132,7 +132,7 @@ export default function Expedientes() {
   };
 
   // =========================================================
-  // 🎨 COLORES SEGÚN ESTADO
+  //  COLORES SEGÚN ESTADO
   // =========================================================
   const colorCelda = (valor) => {
     if (valor === "SI") return { background: "#53fa59ff" };
@@ -142,12 +142,12 @@ export default function Expedientes() {
   };
 
   // =========================================================
-  // 🧩 UI FINAL
+  //  UI FINAL
   // =========================================================
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        📁 Expedientes del Personal
+         Expedientes del Personal
       </Typography>
 
       {/* FORMULARIO */}

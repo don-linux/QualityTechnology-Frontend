@@ -42,7 +42,7 @@ export default function Proveedores() {
   const [formData, setFormData] = useState({});
 
   // ============================
-  // 🟢 Cargar datos
+  //  Cargar datos
   // ============================
   const obtenerDatos = async () => {
     try {
@@ -58,7 +58,7 @@ export default function Proveedores() {
   }, []);
 
   // ============================
-  // 🔍 Buscar proveedor
+  //  Buscar proveedor
   // ============================
   const buscar = () => {
     if (busqueda.trim() === "") obtenerDatos();
@@ -72,7 +72,7 @@ export default function Proveedores() {
   };
 
   // ============================
-  // ➕ Crear nuevo proveedor
+  //  Crear nuevo proveedor
   // ============================
   const crear = () => {
     setFormData({
@@ -93,7 +93,7 @@ export default function Proveedores() {
   };
 
   // ============================
-  // ✏️ Editar proveedor
+  //  Editar proveedor
   // ============================
   const editar = (p) => {
     setFormData(p);
@@ -101,17 +101,17 @@ export default function Proveedores() {
   };
 
   // ============================
-  // 💾 Guardar (crear o actualizar)
+  //  Guardar (crear o actualizar)
   // ============================
   const guardar = async () => {
     // Validaciones básicas
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.correo && !emailRegex.test(formData.correo)) {
-      alert("⚠️ El correo no tiene un formato válido.");
+      alert(" El correo no tiene un formato válido.");
       return;
     }
     if (formData.telefono && isNaN(formData.telefono)) {
-      alert("⚠️ El teléfono debe contener solo números.");
+      alert(" El teléfono debe contener solo números.");
       return;
     }
 
@@ -125,12 +125,12 @@ export default function Proveedores() {
       obtenerDatos();
     } catch (err) {
       console.error("Error al guardar:", err);
-      alert("❌ Error al guardar el proveedor.");
+      alert(" Error al guardar el proveedor.");
     }
   };
 
   // ============================
-  // 🗑️ Eliminar proveedor
+  //  Eliminar proveedor
   // ============================
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar proveedor?")) return;
@@ -139,7 +139,7 @@ export default function Proveedores() {
   };
 
   // ============================
-  // 🧾 Exportar PDF
+  //  Exportar PDF
   // ============================
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
@@ -200,7 +200,7 @@ export default function Proveedores() {
   };
 
   // ============================
-  // 🔧 Manejo de cambios
+  //  Manejo de cambios
   // ============================
   const handleChange = (e) => {
     const { name, value } = e.target;

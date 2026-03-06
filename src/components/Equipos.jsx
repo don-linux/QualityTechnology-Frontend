@@ -71,7 +71,7 @@ function EquiposContent() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // 📦 Cargar equipos
+  //  Cargar equipos
   const cargarDatos = useCallback(async () => {
     try {
       const res = await axios.get(`${api}/${usuario_id}`);
@@ -89,21 +89,21 @@ function EquiposContent() {
     if (usuario_id) cargarDatos();
   }, [usuario_id, cargarDatos]);
 
-  // 💾 Guardar / actualizar
+  //  Guardar / actualizar
   const guardar = async () => {
     try {
       if (editId) {
         await axios.put(`${api}/${editId}`, form);
         setSnackbar({
           open: true,
-          message: "✅ Equipo actualizado correctamente",
+          message: " Equipo actualizado correctamente",
           severity: "success",
         });
       } else {
         await axios.post(api, { ...form, fi_usuario_id: usuario_id });
         setSnackbar({
           open: true,
-          message: "✅ Equipo registrado correctamente",
+          message: " Equipo registrado correctamente",
           severity: "success",
         });
       }
@@ -112,7 +112,7 @@ function EquiposContent() {
     } catch {
       setSnackbar({
         open: true,
-        message: "❌ Error al guardar el registro",
+        message: " Error al guardar el registro",
         severity: "error",
       });
     }
@@ -142,18 +142,18 @@ function EquiposContent() {
     cargarDatos();
     setSnackbar({
       open: true,
-      message: "🗑️ Equipo eliminado correctamente",
+      message: " Equipo eliminado correctamente",
       severity: "info",
     });
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm("⚠️ ¿Eliminar todos los equipos?")) return;
+    if (!window.confirm(" ¿Eliminar todos los equipos?")) return;
     await Promise.all(data.map((r) => axios.delete(`${api}/${r.fi_equipo_id}`)));
     cargarDatos();
     setSnackbar({
       open: true,
-      message: "🧹 Todos los equipos fueron eliminados",
+      message: " Todos los equipos fueron eliminados",
       severity: "warning",
     });
   };
@@ -180,7 +180,7 @@ function EquiposContent() {
     });
   };
 
-  // 🧰 Mantenimientos
+  //  Mantenimientos
   const abrirMantenimientos = async (id) => {
     const res = await axios.get(`${api}/${id}/mantenimientos`);
     setMantenimientos(res.data);
@@ -195,7 +195,7 @@ function EquiposContent() {
       setMantenimientos(res.data);
       setSnackbar({
         open: true,
-        message: "✅ Mantenimiento registrado correctamente",
+        message: " Mantenimiento registrado correctamente",
         severity: "success",
       });
       setNuevoMantenimiento({
@@ -210,13 +210,13 @@ function EquiposContent() {
     } catch {
       setSnackbar({
         open: true,
-        message: "❌ Error al guardar mantenimiento",
+        message: " Error al guardar mantenimiento",
         severity: "error",
       });
     }
   };
 
-  // 🧾 Exportar PDF con logo dinámico
+  //  Exportar PDF con logo dinámico
   const exportarPDF = () => {
     const doc = new jsPDF("l", "mm", "a4");
 
@@ -273,7 +273,7 @@ function EquiposContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        🧰 Equipos y Herramientas
+         Equipos y Herramientas
       </Typography>
 
       {/* FORMULARIO */}
@@ -403,7 +403,7 @@ function EquiposContent() {
               sx={{ ml: 2 }}
               onClick={limpiar}
             >
-              🔄 Limpiar
+               Limpiar
             </Button>
             <Button
               variant="outlined"
@@ -411,7 +411,7 @@ function EquiposContent() {
               sx={{ ml: 2 }}
               onClick={exportarPDF}
             >
-              📄 Exportar PDF
+               Exportar PDF
             </Button>
             <Button
               variant="contained"
@@ -419,7 +419,7 @@ function EquiposContent() {
               sx={{ ml: 2 }}
               onClick={eliminarTodos}
             >
-              🗑️ Eliminar Todos
+               Eliminar Todos
             </Button>
           </Box>
         </CardContent>

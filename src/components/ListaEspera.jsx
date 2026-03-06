@@ -186,7 +186,7 @@ function ListaEsperaContent() {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
-        📋 Lista de Espera
+         Lista de Espera
       </Typography>
 
       <Paper sx={{ p: 3, mb: 4 }}>

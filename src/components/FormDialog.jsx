@@ -19,7 +19,7 @@ const FormDialog = React.memo(
     const [proveedores, setProveedores] = useState([]);
     const [cuentas, setCuentas] = useState([]);
 
-    // ✅ Cargar clientes, proveedores y cuentas al abrir el modal
+    //  Cargar clientes, proveedores y cuentas al abrir el modal
     useEffect(() => {
       if (open) {
         const fetchDatos = async () => {
@@ -33,7 +33,7 @@ const FormDialog = React.memo(
             setProveedores(resProveedores.data);
             setCuentas(resCuentas.data);
           } catch (err) {
-            console.error("❌ Error al obtener datos:", err);
+            console.error(" Error al obtener datos:", err);
           }
         };
         fetchDatos();
@@ -44,7 +44,7 @@ const FormDialog = React.memo(
       setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value ?? "" }));
     };
 
-    // ✅ Manejar guardar con validación de saldo y soporte de imagen
+    //  Manejar guardar con validación de saldo y soporte de imagen
 const handleSave = async () => {
   try {
     const form = new FormData();
@@ -59,7 +59,7 @@ const handleSave = async () => {
     onSubmit(formData);
     onClose();
   } catch (err) {
-    const mensaje = err.response?.data?.error || "❌ Error al guardar movimiento";
+    const mensaje = err.response?.data?.error || " Error al guardar movimiento";
     alert(mensaje);
   }
 };
@@ -81,7 +81,7 @@ const handleSave = async () => {
               />
             </Grid>
 
-            {/* ✅ Select de cuentas */}
+            {/*  Select de cuentas */}
             <Grid size={6}>
               <TextField
                 select
@@ -172,7 +172,7 @@ const handleSave = async () => {
               />
             </Grid>
 
-            {/* ✅ Beneficiario dinámico */}
+            {/*  Beneficiario dinámico */}
             <Grid size={12}>
               <TextField
                 select
@@ -224,7 +224,7 @@ const handleSave = async () => {
                 fullWidth
               />
             </Grid>
-{/* ✅ Menú de factura con 3 opciones */}
+{/*  Menú de factura con 3 opciones */}
 <Grid size={6}>
   <TextField
     select
@@ -253,7 +253,7 @@ const handleSave = async () => {
   </TextField>
 </Grid>
 
-    {/* ✅ Mostrar botón de carga solo si elige "Con factura" */}
+    {/*  Mostrar botón de carga solo si elige "Con factura" */}
     {formData.fc_factura_opcion === "APLICA" && (
       <Grid size={6}>
         <Button

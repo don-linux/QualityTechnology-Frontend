@@ -24,7 +24,7 @@ const CuentasDialog = ({ open, onClose }) => {
   const [cuentas, setCuentas] = useState([]);
   const [nuevaCuenta, setNuevaCuenta] = useState({ nombre: "", saldo: "" });
 
-  // 🔹 Cargar cuentas cuando se abre el modal
+  //  Cargar cuentas cuando se abre el modal
   useEffect(() => {
     if (open) obtenerCuentas();
   }, [open]);
@@ -34,13 +34,13 @@ const CuentasDialog = ({ open, onClose }) => {
       const res = await axios.get(`${API_URL}/cuentas`);
       setCuentas(res.data);
     } catch (err) {
-      console.error("❌ Error al obtener cuentas:", err);
+      console.error(" Error al obtener cuentas:", err);
     }
   };
 
   const handleAddCuenta = async () => {
     if (!nuevaCuenta.nombre.trim()) {
-      alert("⚠️ Ingresa un nombre para la cuenta");
+      alert(" Ingresa un nombre para la cuenta");
       return;
     }
 
@@ -52,7 +52,7 @@ const CuentasDialog = ({ open, onClose }) => {
       setNuevaCuenta({ nombre: "", saldo: "" });
       obtenerCuentas();
     } catch (err) {
-      console.error("❌ Error al agregar cuenta:", err);
+      console.error(" Error al agregar cuenta:", err);
     }
   };
 
@@ -64,7 +64,7 @@ const CuentasDialog = ({ open, onClose }) => {
       });
       obtenerCuentas();
     } catch (err) {
-      console.error("❌ Error al actualizar saldo:", err);
+      console.error(" Error al actualizar saldo:", err);
     }
   };
 
@@ -74,14 +74,14 @@ const CuentasDialog = ({ open, onClose }) => {
       await axios.delete(`${API_URL}/cuentas/${id}`);
       obtenerCuentas();
     } catch (err) {
-      console.error("❌ Error al eliminar cuenta:", err);
+      console.error(" Error al eliminar cuenta:", err);
     }
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle sx={{ background: "#0D4D3A", color: "white", fontWeight: "bold" }}>
-        💼 Administración de Cuentas
+         Administración de Cuentas
       </DialogTitle>
 
       <DialogContent sx={{ mt: 2 }}>
@@ -127,7 +127,7 @@ const CuentasDialog = ({ open, onClose }) => {
           </Grid>
         </Grid>
 
-        {/* 📋 Tabla de cuentas */}
+        {/*  Tabla de cuentas */}
         <Table>
           <TableHead sx={{ background: "#f5f5f5" }}>
             <TableRow>

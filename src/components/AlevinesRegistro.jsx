@@ -25,10 +25,10 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import dayjs from "dayjs";
-import "dayjs/locale/es"; // 🔹 Importar español
+import "dayjs/locale/es"; //  Importar español
 import { Add, Edit, Delete, Clear } from "@mui/icons-material";
 
-// 📊 Librerías para la gráfica
+//  Librerías para la gráfica
 import {
   LineChart,
   Line,
@@ -40,11 +40,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// 📦 Librerías para exportar a Excel
+//  Librerías para exportar a Excel
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
-// 🔹 Configurar dayjs en español
+//  Configurar dayjs en español
 dayjs.locale("es");
 
 export default function AlevinesRegistro() {
@@ -61,7 +61,7 @@ export default function AlevinesRegistro() {
   const [alevines, setAlevines] = useState([]);
   const [colectas, setColectas] = useState([]);
 
-  // 📌 filtros por año y mes
+  //  filtros por año y mes
   const [filtroAnio, setFiltroAnio] = useState("");
   const [filtroMes, setFiltroMes] = useState("");
 
@@ -197,7 +197,7 @@ export default function AlevinesRegistro() {
       : id;
   };
 
-  // 📊 Datos para la gráfica (ya filtrados)
+  //  Datos para la gráfica (ya filtrados)
   const alevinesFiltrados = alevines.filter((a) => {
     if (!a.fd_fecha_registro) return false;
     const fecha = dayjs(a.fd_fecha_registro);
@@ -216,7 +216,7 @@ export default function AlevinesRegistro() {
     cantidad: a.fn_cantidad,
   }));
 
-  // 📥 Función para exportar a Excel SOLO lo filtrado
+  //  Función para exportar a Excel SOLO lo filtrado
   const exportarYLimpiarPantalla = async () => {
     const datos = alevinesFiltrados.map((a) => ({
       "Número Lote": a.fc_numero_lote,
@@ -259,7 +259,7 @@ export default function AlevinesRegistro() {
     limpiarFormulario();
   };
 
-  // 📌 años disponibles según registros
+  //  años disponibles según registros
   const aniosDisponibles = [
     ...new Set(alevines.map((a) => dayjs(a.fd_fecha_registro).year().toString())),
   ];
@@ -267,7 +267,7 @@ export default function AlevinesRegistro() {
   return (
     <Container maxWidth="md" sx={{ paddingTop: 3, paddingBottom: 5 }}>
       <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: "bold" }}>
-        🐟 Registro de Alevines
+         Registro de Alevines
       </Typography>
 
       {/* FORMULARIO */}
@@ -404,7 +404,7 @@ export default function AlevinesRegistro() {
 
       <Divider sx={{ my: 2 }} />
 
-      {/* 📌 FILTROS */}
+      {/*  FILTROS */}
       <Typography variant="h6" gutterBottom>
         Filtros de búsqueda
       </Typography>
@@ -426,14 +426,14 @@ export default function AlevinesRegistro() {
             <MenuItem value="">Todos</MenuItem>
             {Array.from({ length: 12 }, (_, i) => (
               <MenuItem key={i + 1} value={(i + 1).toString()}>
-                {dayjs().month(i).format("MMMM")} {/* 🔹 Meses ahora en español */}
+                {dayjs().month(i).format("MMMM")} {/*  Meses ahora en español */}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
       </Stack>
 
-      {/* 📊 GRÁFICA */}
+      {/*  GRÁFICA */}
       <Typography variant="h5" gutterBottom>
         Gráfica de Nacimientos
       </Typography>

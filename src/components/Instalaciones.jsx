@@ -47,7 +47,7 @@ function InstalacionesContent() {
   const [filtroUso, setFiltroUso] = useState("");
 
   /* =========================================================
-     🔹 Obtener instalaciones por tipo y granja
+      Obtener instalaciones por tipo y granja
   ========================================================= */
   const obtenerInstalaciones = useCallback(async () => {
     try {
@@ -75,7 +75,7 @@ function InstalacionesContent() {
 
       setInstalaciones(filtradas);
       setMensaje(
-        `✅ ${filtradas.length} instalaciones cargadas (${tipo} - ${granja})`
+        ` ${filtradas.length} instalaciones cargadas (${tipo} - ${granja})`
       );
     } catch (error) {
       console.error(error);
@@ -89,7 +89,7 @@ function InstalacionesContent() {
   }, [obtenerInstalaciones]);
 
   /* =========================================================
-     🔹 CRUD
+      CRUD
   ========================================================= */
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -119,7 +119,7 @@ function InstalacionesContent() {
         }),
       });
 
-      setMensaje("✅ Instalación registrada");
+      setMensaje(" Instalación registrada");
       limpiarFormulario();
       obtenerInstalaciones();
     } catch (error) {
@@ -139,7 +139,7 @@ function InstalacionesContent() {
         }),
       });
 
-      setMensaje("✅ Actualizado correctamente");
+      setMensaje(" Actualizado correctamente");
       limpiarFormulario();
       obtenerInstalaciones();
     } catch (error) {
@@ -154,7 +154,7 @@ function InstalacionesContent() {
     try {
       await apiFetch(`/instalaciones/${seleccionado}`, { method: "DELETE" });
 
-      setMensaje("🗑️ Eliminado correctamente");
+      setMensaje(" Eliminado correctamente");
       limpiarFormulario();
       obtenerInstalaciones();
     } catch (error) {
@@ -164,7 +164,7 @@ function InstalacionesContent() {
   };
 
   /* =========================================================
-     🔹 Seleccionar instalación
+      Seleccionar instalación
   ========================================================= */
   const seleccionarInstalacion = (i) => {
     setSeleccionado(i.fi_instalacion_id);
@@ -181,7 +181,7 @@ function InstalacionesContent() {
   };
 
   /* =========================================================
-     🔹 Filtros funcionales
+      Filtros funcionales
   ========================================================= */
   const instalacionesFiltradas = instalaciones
     // FILTRO MATERIAL (buscador parcial)
@@ -197,12 +197,12 @@ function InstalacionesContent() {
   );
 
   /* =========================================================
-     🔹 Render
+      Render
   ========================================================= */
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3} color="#004C7D">
-        🧱 Registro de Instalaciones
+         Registro de Instalaciones
       </Typography>
 
       {/* Selección de granja */}
@@ -211,14 +211,14 @@ function InstalacionesContent() {
           variant={granja === "Medellin" ? "contained" : "outlined"}
           onClick={() => setGranja("Medellin")}
         >
-          🏠 Medellín
+           Medellín
         </Button>
         <Button
           variant={granja === "Ceiba" ? "contained" : "outlined"}
           color="secondary"
           onClick={() => setGranja("Ceiba")}
         >
-          🌿 La Ceiba
+           La Ceiba
         </Button>
       </Box>
 
@@ -228,21 +228,21 @@ function InstalacionesContent() {
           variant={tipo === "Alevinaje" ? "contained" : "outlined"}
           onClick={() => setTipo("Alevinaje")}
         >
-          🐣 Alevinaje
+           Alevinaje
         </Button>
 
         <Button
           variant={tipo === "Reproductores" ? "contained" : "outlined"}
           onClick={() => setTipo("Reproductores")}
         >
-          🧬 Reproductores
+           Reproductores
         </Button>
 
         <Button
           variant={tipo === "Engorda" ? "contained" : "outlined"}
           onClick={() => setTipo("Engorda")}
         >
-          🐟 Engorda
+           Engorda
         </Button>
       </Box>
 

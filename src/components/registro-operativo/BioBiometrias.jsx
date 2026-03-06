@@ -115,7 +115,7 @@ function BioBiometriasContent() {
         fn_peso_promedio: "",
       }));
     } catch (err) {
-      console.log("❌ Error cargando info de instalación:", err);
+      console.log(" Error cargando info de instalación:", err);
     }
   };
 
@@ -270,7 +270,7 @@ function BioBiometriasContent() {
       </Box>
 
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        🧪 {granja} — Biometrías
+         {granja} — Biometrías
       </Typography>
 
       {/* FORMULARIO */}
