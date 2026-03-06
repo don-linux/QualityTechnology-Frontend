@@ -46,31 +46,44 @@ const LotesRegistro = () => {
   };
 
   const handleChange = async (e) => {
-    const { name, value } = e.target;
 
-    if (name === "no_lote") {
-      setFormData({ ...formData, no_lote: validarNoLote(value) });
-      return;
-    }
+  const { name, value } = e.target;
 
-    if (name === "fi_instalacion_id") {
-      setFormData({ ...formData, fi_instalacion_id: value });
-      setInstalacionSeleccionada(value);
+  if (name === "no_lote") {
+    setFormData({ ...formData, no_lote: validarNoLote(value) });
+    return;
+  }
 
-      /**  FUTURO: Ruta para cargar familia si es necesaria */
-      try {
-        const fam = await axios.get(`${API_URL}/lotes/familia-por-instalacion/${value}`);
-        setFormData((prev) => ({ ...prev, familia: fam.data.fc_familia || "" }));
-      } catch (err) {
-        console.log("Error cargando familia:", err);
+  if (name === "fi_instalacion_id") {
+
+    setFormData({ ...formData, fi_instalacion_id: value });
+
+    setInstalacionSeleccionada(value);
+
+    try {
+
+      const fam = await axios.get(`/lotes/familia-por-instalacion/${value}`);
+
+      if (fam.data) {
+
+       setFormData((prev) => ({
+        ...prev,
+        familia: fam.data?.fc_familia || ""
+      }));
       }
 
-      return;
+    } catch (err) {
+
+      console.log("Error cargando familia:", err);
+
     }
 
-    setFormData({ ...formData, [name]: value });
-  };
+    return;
+  }
 
+  setFormData({ ...formData, [name]: value });
+
+};
   /** --------------------------------------------------------
       Cargar instalaciones desde REPRODUCTORES
   -------------------------------------------------------- */
@@ -99,7 +112,7 @@ const LotesRegistro = () => {
       await axios.post(`${API_URL}/lotes`, {
         fecha: formData.fecha,
         familia: formData.familia,
-        fi_instalacion_id: formData.fi_instalacion_id,
+        fc_instalacion_id: formData.fi_instalacion_id,
         huevos_ml: formData.huevos_ml,
         ovadas: Number(formData.ovadas || 0),
         no_lote: formData.no_lote,
@@ -144,7 +157,7 @@ const LotesRegistro = () => {
       await axios.put(`${API_URL}/lotes/${loteSeleccionado.fi_lote_id}`, {
         fecha: formData.fecha,
         familia: formData.familia,
-        fi_instalacion_id: formData.fi_instalacion_id,
+        fc_instalacion_id: formData.fi_instalacion_id,
         huevos_ml: formData.huevos_ml,
         ovadas: Number(formData.ovadas || 0),
         no_lote: formData.no_lote,
@@ -211,7 +224,20 @@ const LotesRegistro = () => {
     return d.toLocaleDateString("es-MX");
   };
 
-  const formatNumber = (num) => new Intl.NumberFormat("en-US").format(num);
+ const formatNumber = (num) => {
+  if (num === null || num === undefined) return "";
+
+  const n = Number(num);
+
+  if (Number.isInteger(n)) {
+    return n.toString(); // sin decimales
+  }
+
+  return n.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
 
   return (
     <div style={{ padding: "25px" }}>
@@ -407,7 +433,7 @@ const LotesRegistro = () => {
                   <TableCell>{formatearFecha(l.fecha)}</TableCell>
                   <TableCell>{l.familia}</TableCell>
                   <TableCell>{l.nombre_instalacion}</TableCell>
-                  <TableCell>{l.huevos_ml}</TableCell>
+                 <TableCell>{formatNumber(l.huevos_ml)}</TableCell>
                   <TableCell>{l.ovadas}</TableCell>
                   <TableCell>{formatNumber(l.alevines_inicial || 0)}</TableCell>
                   <TableCell>{l.no_lote}</TableCell>
