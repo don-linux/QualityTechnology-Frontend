@@ -42,6 +42,7 @@ function PiletaContent() {
   const usuario_id = localStorage.getItem("usuario_id");
 
   const [form, setForm] = useState({
+    tipo_origen: "INTERNO",
     fi_instalacion_id: "",
     origen_instalacion: "",
     origen_externo: "",
@@ -103,7 +104,7 @@ function PiletaContent() {
   const obtenerInstalaciones = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/piletas/origen/${granja}`);
+      const data = await apiFetch(`/piletas/destino/${granja}`);
       setInstalaciones(data || []);
     } catch (error) {
       console.error(" Error instalaciones:", error);
@@ -116,12 +117,13 @@ function PiletaContent() {
       const data = await apiFetch(`/piletas/movimientos/${usuario_id}/${granja}`);
       setRastreos(data || []);
     } catch (error) {
-      console.error(" Error trazabilidad:", error);
+      console.error("❌ Error trazabilidad:", error);
     }
   }, [granjaActiva, usuario_id]);
 
   const limpiarFormulario = useCallback(() => {
     setForm({
+      tipo_origen: "INTERNO",
       fi_instalacion_id: "",
       origen_instalacion: "",
       origen_externo: "",
@@ -168,15 +170,15 @@ function PiletaContent() {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
       const data = await apiFetch(`/piletas/lote-por-inst/${valor}/${granja}`);
 
-      setForm({
-        ...form,
-        origen_instalacion: valor,
-        origen_externo: "",
-        fi_lote_id: data?.fi_lote_id || "",
-        no_lote: data?.no_lote || "",
-      });
+      setForm((prev) => ({
+      ...prev,
+      origen_instalacion: Number(valor),
+      origen_externo: "",
+      fi_lote_id: data?.fi_lote_id || "",
+      no_lote: data?.no_lote || "",
+    }));
     } catch (error) {
-      console.error(" Error cargando lote:", error);
+      console.error("❌ Error cargando lote:", error);
     }
   };
 
@@ -184,7 +186,7 @@ function PiletaContent() {
      DESTINO = Instalación Alevinaje
   ============================================================ */
   const handleInstalacionDestino = (id) => {
-    setForm({ ...form, fi_instalacion_id: id });
+  setForm({ ...form, fi_instalacion_id: Number(id) });
   };
 
   const handleChange = (e) => {
@@ -210,18 +212,19 @@ function PiletaContent() {
   ============================================================ */
   const registrarPileta = async () => {
     try {
-      const response = await apiFetch("/piletas/siembra", {
+     const response = await apiFetch("/piletas/movimientos/registrar", {
         method: "POST",
-        body: JSON.stringify({
-          ...form,
-          fi_usuario_id: usuario_id,
-          fc_granja: granjaActiva,
-        }),
+       body: JSON.stringify({
+        ...form,
+        tipo_movimiento: form.fi_instalacion_id ? "TRASLADO" : "MORTALIDAD",
+        fi_usuario_id: usuario_id,
+        fc_granja: granjaActiva,
+      }),
       });
 
       if (response.error) throw new Error(response.error);
 
-      alert(" Siembra registrada correctamente");
+      alert("✅ Siembra registrada correctamente");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -248,7 +251,7 @@ function PiletaContent() {
 
       if (response.error) throw new Error(response.error);
 
-      alert(" Registro actualizado");
+      alert("✅ Registro actualizado");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -265,7 +268,7 @@ function PiletaContent() {
 
     try {
       await apiFetch(`/piletas/${seleccionado}`, { method: "DELETE" });
-      alert(" Pileta eliminada");
+      alert("🗑️ Pileta eliminada");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -313,7 +316,7 @@ function PiletaContent() {
 
       setRastreos(data);
     } catch (error) {
-      console.error(" Error filtrado:", error);
+      console.error("❌ Error filtrado:", error);
     }
   };
 
@@ -408,33 +411,52 @@ function PiletaContent() {
           <CardContent>
             <Grid container spacing={2}>
 
-              {/* ORIGEN */}
+             {/* TIPO ORIGEN */}
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                select
-                label="Origen"
-                name="origen_instalacion"
-                value={form.origen_instalacion}
-                onChange={(e) => handleOrigenLote(String(e.target.value))}   
-                fullWidth
-              >
-                <MenuItem value="">Seleccione origen</MenuItem>
-
-                {instalaciones.map((i) => (
-                  <MenuItem key={i.fi_instalacion_id} value={i.fi_instalacion_id}>
-                    {i.nombre_instalacion}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-                <TextField
-                  label="Origen externo (texto manual)"
-                  name="origen_externo"
-                  value={form.origen_externo}
+                  select
+                  label="Tipo de origen"
+                  name="tipo_origen"
+                  value={form.tipo_origen}
                   onChange={handleChange}
                   fullWidth
-                  sx={{ mt: 2 }}
-                />
+                >
+                  <MenuItem value="INTERNO">Interno</MenuItem>
+                  <MenuItem value="EXTERNO">Externo</MenuItem>
+                </TextField>
+
+                {/* ORIGEN INTERNO */}
+                {form.tipo_origen === "INTERNO" && (
+                  <TextField
+                    select
+                    label="Instalación origen"
+                    name="origen_instalacion"
+                    value={form.origen_instalacion}
+                    onChange={(e) => handleOrigenLote(Number(e.target.value))}
+                    fullWidth
+                    sx={{ mt: 2 }}
+                  >
+                    <MenuItem value="">Seleccione origen</MenuItem>
+
+                    {instalaciones.map((i) => (
+                      <MenuItem key={i.fi_instalacion_id} value={i.fi_instalacion_id}>
+                        {i.nombre_instalacion}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+
+                {/* ORIGEN EXTERNO */}
+                {form.tipo_origen === "EXTERNO" && (
+                  <TextField
+                    label="Origen externo"
+                    name="origen_externo"
+                    value={form.origen_externo}
+                    onChange={handleChange}
+                    fullWidth
+                    sx={{ mt: 2 }}
+                  />
+                )}
               </Grid>
 
               {/* DESTINO */}
@@ -560,7 +582,7 @@ function PiletaContent() {
 
       {/* INVENTARIO */}
       <Typography variant="h6" color="#00796B" fontWeight="bold" mb={2}>
-         Inventario
+        📋 Inventario
       </Typography>
 
       <Paper sx={{ borderRadius: 3, overflow: "hidden", mb: 4, p: 2 }}>
@@ -586,7 +608,7 @@ function PiletaContent() {
                 <TableCell>{formatNumber(p.cantidad)}</TableCell>
                 <TableCell>{formatNumber(p.talla_gr)}</TableCell>
                 <TableCell>{p.no_lote}</TableCell>
-                <TableCell>{p.observacion}</TableCell>
+               <TableCell>{p.etapa_hormonal || p.observacion}</TableCell>
                 <TableCell>
                   {p.fecha_siembra
                     ? new Date(p.fecha_siembra).toLocaleDateString("es-MX")
@@ -615,7 +637,7 @@ function PiletaContent() {
 
       {/* TRAZABILIDAD */}
       <Typography variant="h6" mt={5} mb={2} color="#E65100">
-         Trazabilidad
+        🔁 Trazabilidad
       </Typography>
 
       <Grid container spacing={2} mb={2}>
@@ -691,7 +713,7 @@ function PiletaContent() {
               <TableRow key={r.fi_movimiento_id}>
                 <TableCell>{r.origen_nombre || "—"}</TableCell>
                 <TableCell>{r.destino_nombre || "—"}</TableCell>
-                <TableCell>{r.cantidad_trasladada}</TableCell>
+                <TableCell>{r.cantidad}</TableCell>
                 <TableCell>
                   {r.fecha_movimiento
                     ? new Date(r.fecha_movimiento).toLocaleDateString("es-MX")
