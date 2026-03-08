@@ -19,7 +19,7 @@ import {
 
 /* ============================================================
    NORMALIZAR GRANJA PARA BACKEND (SIN ACENTOS Y CORRECTO)
-============================================================ */
+ ============================================================ */
 const normalizarGranja = (g) => {
   if (!g) return "Granja Acuícola Medellin";
 
@@ -58,8 +58,9 @@ function PiletaContent() {
 
   const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
   const [inventario, setInventario] = useState([]);
-  const [, setLotes] = useState([]);
+  const [lotes, setLotes] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
+  const [origenesDisponibles, setOrigenesDisponibles] = useState([]);
   const [rastreos, setRastreos] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -111,6 +112,16 @@ function PiletaContent() {
     }
   }, [granjaActiva]);
 
+  const obtenerOrigenes = useCallback(async () => {
+    try {
+      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const data = await apiFetch(`/piletas/origen/${granja}`);
+      setOrigenesDisponibles(data || []);
+    } catch (error) {
+      console.error(" Error origenes:", error);
+    }
+  }, [granjaActiva]);
+
   const obtenerRastreos = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
@@ -148,37 +159,35 @@ function PiletaContent() {
     obtenerInventario();
     obtenerLotes();
     obtenerInstalaciones();
+    obtenerOrigenes();
     obtenerRastreos();
-  }, [limpiarFormulario, obtenerInventario, obtenerLotes, obtenerInstalaciones, obtenerRastreos]);
+  }, [limpiarFormulario, obtenerInventario, obtenerLotes, obtenerInstalaciones, obtenerOrigenes, obtenerRastreos]);
 
   /* ============================================================
      ORIGEN = CARGAR LOTE REAL DESDE BACKEND
   ============================================================ */
-  const handleOrigenLote = async (valor) => {
+  const handleOrigenLote = (valor) => {
     if (!valor) {
-      setForm({
-        ...form,
+      setForm((prev) => ({
+        ...prev,
         origen_instalacion: "",
         origen_externo: "",
         fi_lote_id: "",
         no_lote: "",
-      });
+      }));
       return;
     }
 
-    try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/piletas/lote-por-inst/${valor}/${granja}`);
-
+    const instalacion = origenesDisponibles.find(i => i.fi_instalacion_id === Number(valor));
+    
+    if (instalacion) {
       setForm((prev) => ({
-      ...prev,
-      origen_instalacion: Number(valor),
-      origen_externo: "",
-      fi_lote_id: data?.fi_lote_id || "",
-      no_lote: data?.no_lote || "",
-    }));
-    } catch (error) {
-      console.error("❌ Error cargando lote:", error);
+        ...prev,
+        origen_instalacion: Number(valor),
+        origen_externo: "",
+        fi_lote_id: instalacion.fi_lote_id || "",
+        no_lote: instalacion.no_lote || "",
+      }));
     }
   };
 
@@ -212,14 +221,16 @@ function PiletaContent() {
   ============================================================ */
   const registrarPileta = async () => {
     try {
-     const response = await apiFetch("/piletas/movimientos/registrar", {
-        method: "POST",
-       body: JSON.stringify({
+      const dataPayload = {
         ...form,
         tipo_movimiento: form.fi_instalacion_id ? "TRASLADO" : "MORTALIDAD",
         fi_usuario_id: usuario_id,
         fc_granja: granjaActiva,
-      }),
+      };
+
+      const response = await apiFetch("/piletas/movimientos/registrar", {
+        method: "POST",
+        body: JSON.stringify(dataPayload)
       });
 
       if (response.error) throw new Error(response.error);
@@ -229,7 +240,7 @@ function PiletaContent() {
       obtenerInventario();
       obtenerRastreos();
     } catch (err) {
-      alert(err.message);
+      alert("❌ Error: " + err.message);
     }
   };
 
@@ -240,13 +251,15 @@ function PiletaContent() {
     if (!seleccionado) return alert("Seleccione un registro");
 
     try {
+      const dataPayload = {
+        ...form,
+        fi_pileta_id: seleccionado,
+        fi_usuario_id: usuario_id,
+      };
+
       const response = await apiFetch("/piletas/siembra", {
         method: "POST",
-        body: JSON.stringify({
-          ...form,
-          fi_pileta_id: seleccionado,
-          fi_usuario_id: usuario_id,
-        }),
+        body: JSON.stringify(dataPayload)
       });
 
       if (response.error) throw new Error(response.error);
@@ -326,9 +339,8 @@ function PiletaContent() {
     try {
       await apiFetch("/piletas/movimientos/eliminar", {
         method: "DELETE",
-        body: JSON.stringify({ movimiento_id: id }),
+        body: JSON.stringify({ movimiento_id: id })
       });
-
       filtrarRastreabilidad();
     } catch (err) {
       console.error(err);
@@ -345,7 +357,7 @@ function PiletaContent() {
         body: JSON.stringify({
           eliminar_todos: true,
           granja: granjaActiva,
-        }),
+        })
       });
 
       setRastreos([]);
@@ -432,13 +444,13 @@ function PiletaContent() {
                     label="Instalación origen"
                     name="origen_instalacion"
                     value={form.origen_instalacion}
-                    onChange={(e) => handleOrigenLote(Number(e.target.value))}
+                    onChange={(e) => handleOrigenLote(e.target.value)}
                     fullWidth
                     sx={{ mt: 2 }}
                   >
                     <MenuItem value="">Seleccione origen</MenuItem>
 
-                    {instalaciones.map((i) => (
+                    {origenesDisponibles.map((i) => (
                       <MenuItem key={i.fi_instalacion_id} value={i.fi_instalacion_id}>
                         {i.nombre_instalacion}
                       </MenuItem>
@@ -448,6 +460,7 @@ function PiletaContent() {
 
                 {/* ORIGEN EXTERNO */}
                 {form.tipo_origen === "EXTERNO" && (
+                  <>
                   <TextField
                     label="Origen externo"
                     name="origen_externo"
@@ -456,6 +469,7 @@ function PiletaContent() {
                     fullWidth
                     sx={{ mt: 2 }}
                   />
+                  </>
                 )}
               </Grid>
 
@@ -483,9 +497,11 @@ function PiletaContent() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Lote asignado"
+                  name="no_lote"
                   value={form.no_lote}
+                  onChange={handleChange}
                   fullWidth
-                  slotProps={{ input: { readOnly: true } }}
+                  slotProps={{ input: { readOnly: form.tipo_origen === "INTERNO" } }}
                 />
               </Grid>
 
@@ -726,7 +742,7 @@ function PiletaContent() {
                     color="error"
                     size="small"
                     onClick={() => eliminarUno(r.fi_movimiento_id)}
-                  >
+                   >
                     Eliminar
                   </Button>
                 </TableCell>
