@@ -38,6 +38,8 @@ const LotesRegistro = () => {
     ovadas: "",
     no_lote: "",
     observacion: "",
+    mortalidad: 0,
+    alevines_inicial: "",
   });
 
   const validarNoLote = (value) => {
@@ -68,7 +70,7 @@ const LotesRegistro = () => {
 
        setFormData((prev) => ({
         ...prev,
-        familia: fam.data?.fc_familia || ""
+        familia: fam.data?.familia || ""
       }));
       }
 
@@ -119,6 +121,7 @@ const LotesRegistro = () => {
         observacion: formData.observacion,
         fc_granja: granja,
         mortalidad: 0,
+        alevines_inicial: Number(formData.alevines_inicial || 0),
       });
 
       alert("Lote registrado correctamente");
@@ -139,11 +142,13 @@ const LotesRegistro = () => {
     setFormData({
       fecha: loteSeleccionado.fecha.split("T")[0],
       familia: loteSeleccionado.familia,
-      fi_instalacion_id: loteSeleccionado.fi_instalacion_id,
+      fi_instalacion_id: loteSeleccionado.fc_instalacion_id,
       huevos_ml: loteSeleccionado.huevos_ml,
       ovadas: loteSeleccionado.ovadas,
       no_lote: loteSeleccionado.no_lote,
-      observacion: loteSeleccionado.observacion,
+      observacion: loteSeleccionado.observacion || "",
+      mortalidad: loteSeleccionado.mortalidad || 0,
+      alevines_inicial: loteSeleccionado.alevines_inicial || "",
     });
 
     setModoEdicion(true);
@@ -163,6 +168,8 @@ const LotesRegistro = () => {
         no_lote: formData.no_lote,
         observacion: formData.observacion,
         fc_granja: granja,
+        mortalidad: Number(formData.mortalidad || 0),
+        alevines_inicial: Number(formData.alevines_inicial || 0),
       });
 
       alert("Lote actualizado correctamente");
@@ -209,6 +216,8 @@ const LotesRegistro = () => {
       ovadas: "",
       no_lote: "",
       observacion: "",
+      mortalidad: 0,
+      alevines_inicial: "",
     });
   };
 
@@ -362,6 +371,18 @@ const LotesRegistro = () => {
               />
             </Grid>
 
+            {/* ALEVINES INICIAL */}
+            <Grid item xs={12} sm={3}>
+              <TextField
+                label="Alevines Iniciales"
+                name="alevines_inicial"
+                type="number"
+                value={formData.alevines_inicial}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+
             {/* OBSERVACIÓN */}
             <Grid item xs={12} sm={6}>
               <TextField
@@ -371,6 +392,18 @@ const LotesRegistro = () => {
                 onChange={handleChange}
                 fullWidth
                 multiline
+              />
+            </Grid>
+
+            {/* MORTALIDAD */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Mortalidad (Alevines)"
+                name="mortalidad"
+                type="number"
+                value={formData.mortalidad}
+                onChange={handleChange}
+                fullWidth
               />
             </Grid>
 
