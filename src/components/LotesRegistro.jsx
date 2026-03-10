@@ -39,7 +39,7 @@ const LotesRegistro = () => {
     no_lote: "",
     observacion: "",
     mortalidad: 0,
-    alevines_inicial: "",
+    alevines_inicial: 0,
   });
 
   const validarNoLote = (value) => {
@@ -217,7 +217,7 @@ const LotesRegistro = () => {
       no_lote: "",
       observacion: "",
       mortalidad: 0,
-      alevines_inicial: "",
+      alevines_inicial: 0,
     });
   };
 
@@ -371,18 +371,6 @@ const LotesRegistro = () => {
               />
             </Grid>
 
-            {/* ALEVINES INICIAL */}
-            <Grid item xs={12} sm={3}>
-              <TextField
-                label="Alevines Iniciales"
-                name="alevines_inicial"
-                type="number"
-                value={formData.alevines_inicial}
-                onChange={handleChange}
-                fullWidth
-              />
-            </Grid>
-
             {/* OBSERVACIÓN */}
             <Grid item xs={12} sm={6}>
               <TextField
@@ -392,18 +380,6 @@ const LotesRegistro = () => {
                 onChange={handleChange}
                 fullWidth
                 multiline
-              />
-            </Grid>
-
-            {/* MORTALIDAD */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Mortalidad (Alevines)"
-                name="mortalidad"
-                type="number"
-                value={formData.mortalidad}
-                onChange={handleChange}
-                fullWidth
               />
             </Grid>
 
