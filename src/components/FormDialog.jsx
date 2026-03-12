@@ -44,25 +44,9 @@ const FormDialog = React.memo(
       setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value ?? "" }));
     };
 
-    //  Manejar guardar con validación de saldo y soporte de imagen
-const handleSave = async () => {
-  try {
-    const form = new FormData();
-    for (const key in formData) {
-      if (formData[key]) form.append(key, formData[key]);
-    }
-
-    await axios.post(`${API_URL}/flujo-caja`, form, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    onSubmit(formData);
-    onClose();
-  } catch (err) {
-    const mensaje = err.response?.data?.error || " Error al guardar movimiento";
-    alert(mensaje);
-  }
-};
+    const handleSave = () => {
+      onSubmit(formData);
+    };
 
     return (
       <Dialog open={open} onClose={onClose} fullWidth>
