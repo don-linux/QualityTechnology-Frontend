@@ -6,7 +6,7 @@ import {
   InputAdornment, MenuItem,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -40,7 +40,7 @@ function BitacoraPlagasContent() {
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/plagas?ubicacion=${form.ubicacion}`);
+      const res = await axiosInstance.get(`/plagas?ubicacion=${form.ubicacion}`);
       const filtrados = res.data.filter((r) => {
         if (!busqueda) return true;
         return (
@@ -62,8 +62,8 @@ function BitacoraPlagasContent() {
   const guardar = async () => {
     try {
       if (editId)
-        await axios.put(`${API_URL}/plagas/${editId}`, form);
-      else await axios.post(`${API_URL}/plagas`, form);
+        await axiosInstance.put(`/plagas/${editId}`, form);
+      else await axiosInstance.post(`/plagas`, form);
 
       setEditId(null);
       setForm({
@@ -93,13 +93,13 @@ function BitacoraPlagasContent() {
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/plagas/${id}`);
+    await axiosInstance.delete(`/plagas/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!window.confirm(" ¿Eliminar todos los registros de esta ubicación?")) return;
-    await axios.delete(`${API_URL}/plagas?ubicacion=${form.ubicacion}`);
+    await axiosInstance.delete(`/plagas?ubicacion=${form.ubicacion}`);
     cargarDatos();
   };
 
