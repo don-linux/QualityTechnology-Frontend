@@ -53,7 +53,7 @@ function EngordaContent() {
 
   const obtenerLotes = useCallback(async () => {
     try {
-      const data = await apiFetch(`/piletas/lotes/inventario/${granjaActiva}`);
+      const data = await apiFetch(`/piletas/inventario/${granjaActiva}`);
       setLotes(data || []);
     } catch (err) {
       console.error(" Error al obtener lotes:", err);

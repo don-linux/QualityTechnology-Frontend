@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import FormDialog from "./FormDialog"; 

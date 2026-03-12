@@ -18,7 +18,7 @@ import {
   Stack,
   Box,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 
 export default function Estados() {
   const [form, setForm] = useState({
@@ -136,7 +136,7 @@ export default function Estados() {
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <TextField
               name="fc_nombre"
               label="Nombre del Estado"
@@ -149,7 +149,7 @@ export default function Estados() {
 
         {/* BOTONES */}
           <Grid container spacing={2} mt={1}>
-            <Grid item xs={6} sm={3}>
+            <Grid size={{ xs: 6, sm: 3 }}>
               <Button fullWidth variant="contained" color="success"
                 onClick={registrarEstado}
                 disabled={!!form.fi_estado_id}>
@@ -157,7 +157,7 @@ export default function Estados() {
               </Button>
             </Grid>
 
-            <Grid item xs={6} sm={3}>
+            <Grid size={{ xs: 6, sm: 3 }}>
               <Button fullWidth variant="contained"
                 onClick={actualizarEstado}
                 disabled={!form.fi_estado_id}>
@@ -165,7 +165,7 @@ export default function Estados() {
               </Button>
             </Grid>
 
-            <Grid item xs={6} sm={3}>
+            <Grid size={{ xs: 6, sm: 3 }}>
               <Button fullWidth variant="contained" color="error"
                 onClick={eliminarEstado}
                 disabled={!form.fi_estado_id}>
@@ -173,7 +173,7 @@ export default function Estados() {
               </Button>
             </Grid>
 
-            <Grid item xs={6} sm={3}>
+            <Grid size={{ xs: 6, sm: 3 }}>
               <Button fullWidth variant="outlined" onClick={limpiarFormulario}>
                 Limpiar
               </Button>

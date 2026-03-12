@@ -17,7 +17,7 @@ import {
   Paper,
   Stack,
 } from '@mui/material';
-import axios from 'axios';
+import axios from "../utils/axiosInstance.js";
 
 export default function Roles() {
   const [form, setForm] = useState({ rol_id: '', nombre: '' });

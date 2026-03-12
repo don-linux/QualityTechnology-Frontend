@@ -28,7 +28,7 @@ import {
   Save,
   Close,
 } from "@mui/icons-material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 

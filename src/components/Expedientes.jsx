@@ -18,7 +18,7 @@ import {
   Stack,
 } from "@mui/material";
 import { Add, Edit, Delete, Search, CleaningServices } from "@mui/icons-material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 
 // =========================================================
 //  COMPONENTE PRINCIPAL

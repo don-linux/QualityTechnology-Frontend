@@ -15,7 +15,7 @@ import {
   Paper,
   Button,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 

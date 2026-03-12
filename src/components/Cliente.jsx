@@ -18,10 +18,11 @@ import {
   Stack,
   Box,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 import dayjs from "dayjs";
 
 export default function Cliente() {
+  const usuarioId = localStorage.getItem("usuario_id") || "";
   const [form, setForm] = useState({
     fi_cliente_id: null,
     fc_nombre: "",
@@ -29,7 +30,7 @@ export default function Cliente() {
     fc_correo: "",
     fc_localidad: "",
     fc_cp: "",
-    fi_usuario_id: "3",
+    fi_usuario_id: usuarioId,
   });
 
   const [clientes, setClientes] = useState([]);
@@ -59,7 +60,7 @@ export default function Cliente() {
       fc_correo: "",
       fc_localidad: "",
       fc_cp: "",
-      fi_usuario_id: "3",
+      fi_usuario_id: usuarioId,
     });
   };
 
@@ -108,7 +109,7 @@ export default function Cliente() {
       fc_correo: cliente.fc_correo || "",
       fc_localidad: cliente.fc_localidad || "",
       fc_cp: cliente.fc_cp || "",
-      fi_usuario_id: cliente.fi_usuario_id ? String(cliente.fi_usuario_id) : "3",
+      fi_usuario_id: cliente.fi_usuario_id ? String(cliente.fi_usuario_id) : usuarioId,
     });
   };
 

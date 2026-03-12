@@ -4,7 +4,7 @@ import {
   Box, Card, CardContent, Grid, Typography, TextField, Button,
   Table, TableHead, TableRow, TableCell, TableBody, Paper,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../../utils/axiosInstance.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 

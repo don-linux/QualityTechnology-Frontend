@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@mui/material";
 import { Add, Delete, Save } from "@mui/icons-material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 
 const CuentasDialog = ({ open, onClose }) => {
   const [cuentas, setCuentas] = useState([]);

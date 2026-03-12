@@ -24,7 +24,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 
 export default function ListaEspera() {
   return <ListaEsperaContent />;
@@ -33,6 +33,7 @@ export default function ListaEspera() {
 function ListaEsperaContent() {
   const rol = localStorage.getItem("rol") || "";
   const nombreUsuario = localStorage.getItem("nombre") || "";
+  const usuarioId = localStorage.getItem("usuario_id") || "";
 
   const granjaDefault =
     rol === "Jefe GAM" ? "Medellin" : rol === "Jefe GAC" ? "La Ceiba" : "";
@@ -46,7 +47,7 @@ function ListaEsperaContent() {
     fc_correo: "",
     fc_localidad: "",
     fc_cp: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
   });
 
   const emptyForm = {
@@ -68,9 +69,13 @@ function ListaEsperaContent() {
   const [lista, setLista] = useState([]);
 
   const cargarLista = async () => {
-    const res = await fetch(`${API_URL}/lista-espera`);
-    const data = await res.json();
-    setLista(data);
+    try {
+      const res = await axios.get(`${API_URL}/lista-espera`);
+      setLista(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error al cargar lista de espera:", err);
+      setLista([]);
+    }
   };
 
   const cargarClientes = async () => {
@@ -97,16 +102,13 @@ function ListaEsperaContent() {
       return;
     }
 
-    const res = await fetch(`${API_URL}/lista-espera`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-
-    if (res.ok) {
+    try {
+      await axios.post(`${API_URL}/lista-espera`, form);
       alert("Registrado en Lista de Espera");
       setForm(emptyForm);
       cargarLista();
+    } catch (err) {
+      console.error("Error al registrar en lista de espera:", err);
     }
   };
 
@@ -116,52 +118,39 @@ function ListaEsperaContent() {
   };
 
   const actualizar = async () => {
-    const res = await fetch(
-      `${API_URL}/lista-espera/${editId}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      }
-    );
-
-    if (res.ok) {
+    try {
+      await axios.put(`${API_URL}/lista-espera/${editId}`, form);
       alert("Actualizado correctamente");
       setEditId(null);
       setForm(emptyForm);
       cargarLista();
+    } catch (err) {
+      console.error("Error al actualizar en lista de espera:", err);
     }
   };
 
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar este registro?")) return;
 
-    const res = await fetch(
-      `${API_URL}/lista-espera/${id}`,
-      { method: "DELETE" }
-    );
-
-    if (res.ok) {
+    try {
+      await axios.delete(`${API_URL}/lista-espera/${id}`);
       alert("Eliminado");
       cargarLista();
+    } catch (err) {
+      console.error("Error al eliminar en lista de espera:", err);
     }
   };
 
   const convertir = async (id) => {
     if (!window.confirm("¿Convertir a venta real?")) return;
 
-    const res = await fetch(
-      `${API_URL}/lista-espera/convertir/${id}`,
-      { method: "POST" }
-    );
-
-    const data = await res.json();
-
-    if (res.ok) {
+    try {
+      await axios.post(`${API_URL}/lista-espera/convertir/${id}`);
       alert("Convertido a venta correctamente");
       cargarLista();
-    } else {
-      alert("Error al convertir: " + data.error);
+    } catch (err) {
+      const message = err?.response?.data?.error || err.message;
+      alert("Error al convertir: " + message);
     }
   };
 
@@ -176,7 +165,7 @@ function ListaEsperaContent() {
         fc_correo: "",
         fc_localidad: "",
         fc_cp: "",
-        fi_usuario_id: 1,
+        fi_usuario_id: usuarioId,
       });
     } catch (err) {
       alert("Error al registrar cliente");

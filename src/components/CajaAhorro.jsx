@@ -21,7 +21,7 @@ import {
   DeleteForever,
   EventAvailable,
 } from "@mui/icons-material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 
 const api = `${API_URL}/caja-ahorro`;
 

@@ -256,7 +256,7 @@ const LotesRegistro = () => {
 
       {/* ----------------- BOTONES DE GRANJA ----------------- */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid>
+        <Grid size="auto">
           <Button
             variant={granja === "Medellin" ? "contained" : "outlined"}
             onClick={() => setGranja("Medellin")}
@@ -270,7 +270,7 @@ const LotesRegistro = () => {
           </Button>
         </Grid>
 
-        <Grid>
+        <Grid size="auto">
           <Button
             variant={granja === "La Ceiba" ? "contained" : "outlined"}
             onClick={() => setGranja("La Ceiba")}
@@ -296,7 +296,7 @@ const LotesRegistro = () => {
 
           <Grid container spacing={2}>
             {/* FECHA */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Fecha"
                 type="date"
@@ -309,7 +309,7 @@ const LotesRegistro = () => {
             </Grid>
 
             {/* FAMILIA */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Familia"
                 name="familia"
@@ -320,7 +320,7 @@ const LotesRegistro = () => {
             </Grid>
 
             {/* INSTALACIÓN */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 select
                 label="Instalación"
@@ -338,7 +338,7 @@ const LotesRegistro = () => {
             </Grid>
 
             {/* HUEVOS ML */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Huevos (ml)"
                 name="huevos_ml"
@@ -349,7 +349,7 @@ const LotesRegistro = () => {
             </Grid>
 
             {/* OVADAS */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Ovadas"
                 name="ovadas"
@@ -361,7 +361,7 @@ const LotesRegistro = () => {
             </Grid>
 
             {/* NO LOTE */}
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="No. Lote"
                 name="no_lote"
@@ -372,7 +372,7 @@ const LotesRegistro = () => {
             </Grid>
 
             {/* OBSERVACIÓN */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 label="Observación"
                 name="observacion"
@@ -384,7 +384,7 @@ const LotesRegistro = () => {
             </Grid>
 
             {/* BOTÓN REGISTRAR */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Button
                 variant="contained"
                 startIcon={<AddCircleIcon />}

@@ -16,7 +16,7 @@ import {
   TableBody,
   Paper,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../../utils/axiosInstance.js";
 
 const mapGranja = (g) => (g === "Medellin" ? "med" : "ceiba");
 
@@ -106,14 +106,14 @@ function BioBiometriasContent() {
       }
 
       // Sí hay datos → autorrellenar
-      setForm((prev) => ({
-        ...prev,
-        tipo: d.tipo.toLowerCase(),
-        fi_lote_id: d.fi_lote_id,
-        fn_organismos_muestreados: d.organismos,
-        fn_peso_total_gramos: "",
-        fn_peso_promedio: "",
-      }));
+        setForm((prev) => ({
+          ...prev,
+          tipo: d.tipo.toLowerCase(),
+          fi_lote_id: d.fi_lote_id ?? "",
+          fn_organismos_muestreados: d.organismos,
+          fn_peso_total_gramos: "",
+          fn_peso_promedio: "",
+        }));
     } catch (err) {
       console.log(" Error cargando info de instalación:", err);
     }
@@ -202,7 +202,7 @@ function BioBiometriasContent() {
       fc_observaciones: row.fc_observaciones,
       fc_encargado: row.fc_encargado,
       fi_instalacion_id: row.fi_instalacion_id,
-      fi_lote_id: row.fi_lote_id,
+      fi_lote_id: row.fi_lote_id ?? "",
       tipo: row.tipo?.toLowerCase(),
       fc_granja: granja,
       fi_usuario_id: usuario_id,

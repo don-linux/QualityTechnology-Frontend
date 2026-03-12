@@ -15,7 +15,7 @@ import {
   TableBody,
   Autocomplete,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 
 const API = `${API_URL}/ventas`;
 

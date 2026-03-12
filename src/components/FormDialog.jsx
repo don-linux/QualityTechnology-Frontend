@@ -11,7 +11,7 @@ import {
   Button,
   MenuItem,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 
 const FormDialog = React.memo(
   ({ open, onClose, onSubmit, formData, setFormData, editId }) => {

@@ -23,7 +23,7 @@ import {
   Box,
   Stack,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 import dayjs from "dayjs";
 import "dayjs/locale/es"; //  Importar español
 import { Add, Edit, Delete, Clear } from "@mui/icons-material";

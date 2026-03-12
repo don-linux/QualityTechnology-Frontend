@@ -635,12 +635,12 @@ export default function CorporateLayout() {
 
             <ListItemButton
               component={Link}
-              to="/usuarios"
+              to="/seguridad/roles-modulos"
               sx={{
                 borderRadius: 1,
                 mb: 0.5,
                 backgroundColor:
-                  location.pathname === "/usuarios" ? "#388E3C" : "transparent",
+                  location.pathname === "/seguridad/roles-modulos" ? "#388E3C" : "transparent",
                 "&:hover": { backgroundColor: "#43A047" },
                 justifyContent: drawerOpen ? "flex-start" : "center",
               }}

@@ -23,7 +23,7 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../utils/axiosInstance.js";
 import { Add, Delete, Clear } from "@mui/icons-material";
 
 export default function Alimentos() {
@@ -33,6 +33,7 @@ export default function Alimentos() {
 function AlimentosContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const [tab, setTab] = useState("alevinaje");
+  const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
 
   const [form, setForm] = useState({
     fi_alimento_id: null,
@@ -54,39 +55,42 @@ function AlimentosContent() {
   // =======================================
   const obtenerRegistros = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/alimentos/${usuario_id}`);
+      const res = await axios.get(`${API_URL}/alimentos`);
       setRegistros(res.data);
     } catch (error) {
       console.error("Error al obtener alimentos:", error);
     }
-  }, [usuario_id]);
+  }, []);
 
   const obtenerReproductores = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/reproductores/${usuario_id}`);
+      const granja = encodeURIComponent(granjaActiva);
+      const res = await axios.get(`${API_URL}/reproductores/granja/${granja}`);
       setReproductores(res.data);
     } catch (error) {
       console.error("Error al obtener reproductores:", error);
     }
-  }, [usuario_id]);
+  }, [granjaActiva]);
 
   const obtenerPiletas = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/piletas/${usuario_id}`);
+      const granja = encodeURIComponent(granjaActiva);
+      const res = await axios.get(`${API_URL}/piletas/inventario/${granja}`);
       setPiletas(res.data);
     } catch (error) {
       console.error("Error al obtener piletas:", error);
     }
-  }, [usuario_id]);
+  }, [granjaActiva]);
 
   const obtenerEngorda = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/engorda/${usuario_id}`);
+      const granja = encodeURIComponent(granjaActiva);
+      const res = await axios.get(`${API_URL}/engorda/granja/${granja}`);
       setEngorda(res.data);
     } catch (error) {
       console.error("Error al obtener engorda:", error);
     }
-  }, [usuario_id]);
+  }, [granjaActiva]);
 
   useEffect(() => {
     if (usuario_id) {
@@ -178,6 +182,23 @@ function AlimentosContent() {
       <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: "bold" }}>
          Registro de Alimentación
       </Typography>
+
+      <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 2 }}>
+        <Button
+          variant={granjaActiva.includes("Medellin") ? "contained" : "outlined"}
+          color="primary"
+          onClick={() => setGranjaActiva("Granja Acuícola Medellin")}
+        >
+          Medellín
+        </Button>
+        <Button
+          variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"}
+          color="secondary"
+          onClick={() => setGranjaActiva("Granja Acuícola La Ceiba")}
+        >
+          La Ceiba
+        </Button>
+      </Stack>
 
       {/* TABS SUPERIORES */}
       <Tabs
