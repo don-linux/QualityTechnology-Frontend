@@ -46,11 +46,45 @@ export default function Nomina() {
 
   useEffect(() => { cargarDatos(); }, []);
 
+  const prepararPayload = () => {
+    if (!form.fc_nombre_empleado?.trim()) {
+      alert(" El nombre del empleado es obligatorio.");
+      return null;
+    }
+    if (!form.fd_fecha_pago) {
+      alert(" La fecha de pago es obligatoria.");
+      return null;
+    }
+
+    const empleadoId = form.fi_empleado_id ? Number(form.fi_empleado_id) : null;
+    if (form.fi_empleado_id && Number.isNaN(empleadoId)) {
+      alert(" El ID del empleado debe ser numérico.");
+      return null;
+    }
+
+    const aNumero = (valor) => (valor === "" || valor === null ? 0 : Number(valor));
+
+    return {
+      fc_nombre_empleado: form.fc_nombre_empleado.trim(),
+      fi_empleado_id: empleadoId,
+      fd_fecha_pago: form.fd_fecha_pago,
+      fn_total: aNumero(form.fn_total),
+      fn_bono: aNumero(form.fn_bono),
+      fn_deuda: aNumero(form.fn_deuda),
+      fn_descuento: aNumero(form.fn_descuento),
+      fn_anticipo: aNumero(form.fn_anticipo),
+      fi_usuario_id: Number(form.fi_usuario_id) || 1,
+    };
+  };
+
   const guardar = async () => {
+    const payload = prepararPayload();
+    if (!payload) return;
+
     if (editId) {
-      await axios.put(`${api}/${editId}`, form);
+      await axios.put(`${api}/${editId}`, payload);
     } else {
-      await axios.post(api, form);
+      await axios.post(api, payload);
     }
     limpiar();
     cargarDatos();
@@ -108,7 +142,7 @@ export default function Nomina() {
               <TextField label="Nombre del empleado" name="fc_nombre_empleado" value={form.fc_nombre_empleado} onChange={(e) => setForm({ ...form, fc_nombre_empleado: e.target.value })} fullWidth />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="ID" name="fi_empleado_id" value={form.fi_empleado_id} onChange={(e) => setForm({ ...form, fi_empleado_id: e.target.value })} fullWidth />
+              <TextField label="ID" type="number" name="fi_empleado_id" value={form.fi_empleado_id} onChange={(e) => setForm({ ...form, fi_empleado_id: e.target.value })} fullWidth />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Fecha de Pago" type="date" name="fd_fecha_pago" InputLabelProps={{ shrink: true }} value={form.fd_fecha_pago} onChange={(e) => setForm({ ...form, fd_fecha_pago: e.target.value })} fullWidth />
