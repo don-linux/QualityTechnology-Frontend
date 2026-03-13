@@ -13,7 +13,7 @@ import autoTable from "jspdf-autotable";
 function BitacoraPlagasContent() {
   const [form, setForm] = useState({
     fd_fecha: "",
-    fn_num_trampa: "",
+    fc_num_trampa: "",
     tipo_trampa: "",
     fc_hallazgo: "",
     fc_malla: "",
@@ -45,7 +45,7 @@ function BitacoraPlagasContent() {
         if (!busqueda) return true;
         return (
           r.tipo_trampa?.toLowerCase().includes(busqueda.toLowerCase()) ||
-          r.fn_num_trampa?.toString().includes(busqueda)
+          r.fc_num_trampa?.toString().includes(busqueda)
         );
       });
       setData(filtrados);
@@ -68,7 +68,7 @@ function BitacoraPlagasContent() {
       setEditId(null);
       setForm({
         fd_fecha: "",
-        fn_num_trampa: "",
+        fc_num_trampa: "",
         tipo_trampa: "",
         fc_hallazgo: "",
         fc_malla: "",
@@ -147,7 +147,7 @@ function BitacoraPlagasContent() {
     ];
     const filas = data.map((r) => [
       r.fd_fecha?.split("T")[0],
-      r.fn_num_trampa,
+      r.fc_num_trampa,
       r.tipo_trampa,
       r.unidad_produccion,
       r.fc_hallazgo,
@@ -230,8 +230,8 @@ function BitacoraPlagasContent() {
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="No. Trampa"
-                name="fn_num_trampa"
-                value={form.fn_num_trampa}
+                name="fc_num_trampa"
+                value={form.fc_num_trampa}
                 onChange={handleChange}
                 fullWidth
                 size="small"
@@ -370,7 +370,7 @@ function BitacoraPlagasContent() {
             {data.map((r) => (
               <TableRow key={r.fi_id}>
                 <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
-                <TableCell>{r.fn_num_trampa}</TableCell>
+                <TableCell>{r.fc_num_trampa}</TableCell>
                 <TableCell>{r.tipo_trampa}</TableCell>
                 <TableCell>{r.unidad_produccion}</TableCell>
                 <TableCell>{r.fc_hallazgo}</TableCell>

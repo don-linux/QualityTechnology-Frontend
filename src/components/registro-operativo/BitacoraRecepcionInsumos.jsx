@@ -16,7 +16,7 @@ function RecepcionInsumosContent() {
     fc_proveedor: "",
     fc_producto: "",
     fc_lote: "",
-    fn_cantidad: "",
+    fc_cantidad: "",
     fc_unidad_medida: "",
     fc_condiciones_entrega: "",
     fc_verifico: "",
@@ -69,7 +69,7 @@ function RecepcionInsumosContent() {
         fc_proveedor: "",
         fc_producto: "",
         fc_lote: "",
-        fn_cantidad: "",
+        fc_cantidad: "",
         fc_unidad_medida: "",
         fc_condiciones_entrega: "",
         fc_verifico: "",
@@ -148,7 +148,7 @@ function RecepcionInsumosContent() {
       r.fc_proveedor,
       r.fc_producto,
       r.fc_lote,
-      r.fn_cantidad,
+      r.fc_cantidad,
       r.fc_unidad_medida,
       r.fc_condiciones_entrega,
       r.fc_verifico,
@@ -259,8 +259,8 @@ function RecepcionInsumosContent() {
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Cantidad"
-                name="fn_cantidad"
-                value={form.fn_cantidad}
+                name="fc_cantidad"
+                value={form.fc_cantidad}
                 onChange={handleChange}
                 fullWidth
                 size="small"
@@ -358,7 +358,7 @@ function RecepcionInsumosContent() {
                 <TableCell>{r.fc_proveedor}</TableCell>
                 <TableCell>{r.fc_producto}</TableCell>
                 <TableCell>{r.fc_lote}</TableCell>
-                <TableCell>{r.fn_cantidad}</TableCell>
+                <TableCell>{r.fc_cantidad}</TableCell>
                 <TableCell>{r.fc_unidad_medida}</TableCell>
                 <TableCell>{r.fc_condiciones_entrega}</TableCell>
                 <TableCell>{r.fc_verifico}</TableCell>

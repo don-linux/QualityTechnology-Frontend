@@ -55,16 +55,24 @@ function BitacoraVisitasContent() {
   const guardar = async () => {
     try {
       const formData = new FormData();
-      formData.append("fd_fecha", form.fd_fecha);
-      formData.append("fc_nombre_completo", form.fc_nombre_completo);
-      formData.append("fc_origen", form.fc_origen);
-      formData.append("fc_motivo", form.fc_motivo);
-      formData.append("fc_observaciones", form.fc_observaciones);
-      formData.append("fc_foto_identificacion", form.fc_foto_identificacion);
-      formData.append("fd_entrada", form.fd_entrada);
-      formData.append("fd_salida", form.fd_salida);
-      formData.append("fi_usuario_id", form.fi_usuario_id);
-      formData.append("ubicacion", form.ubicacion);
+      const appendIfValue = (key, value) => {
+        if (value !== undefined && value !== null && value !== "") {
+          formData.append(key, value);
+        }
+      };
+
+      appendIfValue("fd_fecha", form.fd_fecha);
+      appendIfValue("fc_nombre_completo", form.fc_nombre_completo);
+      appendIfValue("fc_origen", form.fc_origen);
+      appendIfValue("fc_motivo", form.fc_motivo);
+      appendIfValue("fc_observaciones", form.fc_observaciones);
+      if (form.fc_foto_identificacion instanceof File) {
+        formData.append("fc_foto_identificacion", form.fc_foto_identificacion);
+      }
+      appendIfValue("fd_entrada", form.fd_entrada);
+      appendIfValue("fd_salida", form.fd_salida);
+      appendIfValue("fi_usuario_id", form.fi_usuario_id);
+      appendIfValue("ubicacion", form.ubicacion);
 
       if (editId) {
         await axios.put(`${API_URL}/visitas/${editId}`, formData);
