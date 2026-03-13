@@ -13,6 +13,10 @@ import {
   TableHead,
   TableRow,
   Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   CleaningServices,
@@ -31,6 +35,14 @@ export default function Vacaciones() {
   const [busqueda, setBusqueda] = useState("");
   const [editandoId, setEditandoId] = useState(null);
   const [tempData, setTempData] = useState({});
+  const [openNuevo, setOpenNuevo] = useState(false);
+  const [nuevoForm, setNuevoForm] = useState({
+    nombre: "",
+    idEmpleado: "",
+    departamento: "General",
+    inicio: "2025-01-01",
+    fin: "2025-12-31",
+  });
 
   const obtenerDatos = async () => {
     try {
@@ -55,22 +67,41 @@ export default function Vacaciones() {
     }
   };
 
-  const crearRegistro = async () => {
-    const nombre = prompt("Nombre del empleado:");
-    if (!nombre) return;
-    const idEmpleado = parseInt(prompt("ID del empleado (número):"), 10);
-    const depto = prompt("Departamento:") || "General";
-    const inicio = prompt("Fecha inicio (YYYY-MM-DD):", "2025-01-01");
-    const fin = prompt("Fecha fin (YYYY-MM-DD):", "2025-12-31");
+  const crearRegistro = () => {
+    setNuevoForm({
+      nombre: "",
+      idEmpleado: "",
+      departamento: "General",
+      inicio: "2025-01-01",
+      fin: "2025-12-31",
+    });
+    setOpenNuevo(true);
+  };
+
+  const guardarNuevo = async () => {
+    if (!nuevoForm.nombre.trim()) {
+      alert(" El nombre del empleado es obligatorio.");
+      return;
+    }
+    const idEmpleado = Number(nuevoForm.idEmpleado);
+    if (!nuevoForm.idEmpleado || Number.isNaN(idEmpleado)) {
+      alert(" El ID del empleado debe ser numérico.");
+      return;
+    }
+    if (!nuevoForm.inicio || !nuevoForm.fin) {
+      alert(" Las fechas de inicio y fin son obligatorias.");
+      return;
+    }
 
     try {
       await axios.post(api, {
-        fc_nombre_empleado: nombre,
+        fc_nombre_empleado: nuevoForm.nombre.trim(),
         fi_empleado_id: idEmpleado,
-        fc_departamento: depto,
-        fd_inicio_periodo: inicio,
-        fd_fin_periodo: fin,
+        fc_departamento: nuevoForm.departamento || "General",
+        fd_inicio_periodo: nuevoForm.inicio,
+        fd_fin_periodo: nuevoForm.fin,
       });
+      setOpenNuevo(false);
       obtenerDatos();
     } catch (err) {
       alert(" Error al crear registro.");
@@ -179,6 +210,67 @@ export default function Vacaciones() {
       </Paper>
 
       {/* ======= Tabla tipo Excel ======= */}
+      <Dialog open={openNuevo} onClose={() => setOpenNuevo(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Nuevo registro</DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2} sx={{ mt: 0 }}>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label="Nombre del empleado"
+                value={nuevoForm.nombre}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, nombre: e.target.value })}
+                fullWidth
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="ID del empleado"
+                type="number"
+                value={nuevoForm.idEmpleado}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, idEmpleado: e.target.value })}
+                fullWidth
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Departamento"
+                value={nuevoForm.departamento}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, departamento: e.target.value })}
+                fullWidth
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Fecha inicio"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={nuevoForm.inicio}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, inicio: e.target.value })}
+                fullWidth
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Fecha fin"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={nuevoForm.fin}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, fin: e.target.value })}
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="outlined" onClick={() => setOpenNuevo(false)}>
+            Cancelar
+          </Button>
+          <Button variant="contained" onClick={guardarNuevo}>
+            Guardar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <TableContainer component={Paper} sx={{ border: "1px solid #ccc" }}>
         <Table size="small">
           <TableHead>
