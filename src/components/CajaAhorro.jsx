@@ -13,6 +13,10 @@ import {
   Button,
   TextField,
   Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   CleaningServices,
@@ -29,6 +33,8 @@ export default function CajaAhorro() {
   const [registros, setRegistros] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [granja, setGranja] = useState("Ceiba");
+  const [openNuevo, setOpenNuevo] = useState(false);
+  const [nuevaCategoria, setNuevaCategoria] = useState("");
 
   /* =========================================================
       Obtener datos por granja
@@ -63,10 +69,18 @@ export default function CajaAhorro() {
       Crear nueva categoría
      ========================================================= */
   const crearRegistro = async () => {
-    const nombre = prompt("Nombre de la categoría:");
-    if (!nombre) return;
+    setNuevaCategoria("");
+    setOpenNuevo(true);
+  };
+
+  const guardarNuevaCategoria = async () => {
+    if (!nuevaCategoria.trim()) {
+      alert(" El nombre de la categoría es obligatorio.");
+      return;
+    }
     try {
-      await axios.post(api, { categoria: nombre, granja });
+      await axios.post(api, { categoria: nuevaCategoria.trim(), granja });
+      setOpenNuevo(false);
       obtenerDatos();
     } catch (err) {
       alert(" Error al crear categoría.");
@@ -221,6 +235,27 @@ export default function CajaAhorro() {
         </Grid>
       </Paper>
 
+      <Dialog open={openNuevo} onClose={() => setOpenNuevo(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Nueva categoría</DialogTitle>
+        <DialogContent dividers>
+          <TextField
+            label="Nombre de la categoría"
+            value={nuevaCategoria}
+            onChange={(e) => setNuevaCategoria(e.target.value)}
+            fullWidth
+            autoFocus
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button variant="outlined" onClick={() => setOpenNuevo(false)}>
+            Cancelar
+          </Button>
+          <Button variant="contained" onClick={guardarNuevaCategoria}>
+            Guardar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/*  Tabla principal */}
          <TableContainer
           component={Paper}
@@ -282,7 +317,15 @@ export default function CajaAhorro() {
                       type="number"
                       variant="standard"
                       value={r[mes] ?? 0}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const valor = e.target.value;
+                        setRegistros((prev) =>
+                          prev.map((item) =>
+                            item.id === r.id ? { ...item, [mes]: valor } : item
+                          )
+                        );
+                      }}
+                      onBlur={(e) =>
                         actualizarCampo(r.id, mes, parseFloat(e.target.value) || 0)
                       }
                       inputProps={{

@@ -41,6 +41,16 @@ export default function Proveedores() {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({});
 
+  const normalizarFechaInput = (valor) => {
+    if (!valor) return "";
+    if (typeof valor === "string" && /^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+      return valor;
+    }
+    const fecha = new Date(valor);
+    if (Number.isNaN(fecha.getTime())) return "";
+    return fecha.toISOString().split("T")[0];
+  };
+
   // ============================
   //  Cargar datos
   // ============================
@@ -96,7 +106,10 @@ export default function Proveedores() {
   //  Editar proveedor
   // ============================
   const editar = (p) => {
-    setFormData(p);
+    setFormData({
+      ...p,
+      ultima_compra: normalizarFechaInput(p.ultima_compra),
+    });
     setOpen(true);
   };
 
