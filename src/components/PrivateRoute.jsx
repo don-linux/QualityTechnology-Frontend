@@ -10,7 +10,18 @@ const PrivateRoute = ({ rolesPermitidos, modulo }) => {
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
   
-  const modulos = JSON.parse(localStorage.getItem("modulos") || "[]");
+  let modulos = [];
+  const rawModulos = localStorage.getItem("modulos");
+  if (rawModulos) {
+    try {
+      const parsed = JSON.parse(rawModulos);
+      if (Array.isArray(parsed)) {
+        modulos = parsed;
+      }
+    } catch (e) {
+      modulos = [];
+    }
+  }
 
   // Si no está autenticado → redirige a login
   if (!auth) {
@@ -24,9 +35,25 @@ const PrivateRoute = ({ rolesPermitidos, modulo }) => {
 
   // Validación por módulo
   if (modulo) {
-    const tieneModulo = modulos.some(
-      (m) => m.fc_nombre.trim() === modulo
-    );
+    const normalizedModulo = modulo
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase();
+
+    const tieneModulo =
+      Array.isArray(modulos) &&
+      modulos.some((m) => {
+        if (!m || typeof m.fc_nombre !== "string") {
+          return false;
+        }
+        const nombreNormalizado = m.fc_nombre
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .trim()
+          .toLowerCase();
+        return nombreNormalizado === normalizedModulo;
+      });
 
     if (!tieneModulo) {
       return <Navigate to="/sin-acceso" replace />;

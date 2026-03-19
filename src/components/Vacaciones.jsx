@@ -214,7 +214,7 @@ export default function Vacaciones() {
         <DialogTitle>Nuevo registro</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2} sx={{ mt: 0 }}>
-            <Grid size={{ xs: 12 }}>
+            <Grid item xs={12}>
               <TextField
                 label="Nombre del empleado"
                 value={nuevoForm.nombre}
@@ -222,7 +222,7 @@ export default function Vacaciones() {
                 fullWidth
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid item xs={12} md={6}>
               <TextField
                 label="ID del empleado"
                 type="number"
@@ -231,7 +231,7 @@ export default function Vacaciones() {
                 fullWidth
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid item xs={12} md={6}>
               <TextField
                 label="Departamento"
                 value={nuevoForm.departamento}
@@ -239,7 +239,7 @@ export default function Vacaciones() {
                 fullWidth
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid item xs={12} md={6}>
               <TextField
                 label="Fecha inicio"
                 type="date"
@@ -249,7 +249,7 @@ export default function Vacaciones() {
                 fullWidth
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid item xs={12} md={6}>
               <TextField
                 label="Fecha fin"
                 type="date"

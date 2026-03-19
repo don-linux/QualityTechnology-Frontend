@@ -73,9 +73,7 @@ function App() {
         {/*  RUTAS PROTEGIDAS */}
         <Route
           element={
-            <PrivateRoute
-              rolesPermitidos={["Administrador", "Jefe de Empresa", "Biologa"]}
-            />
+            <PrivateRoute />
           }
         >
           {/* LAYOUT GENERAL */}

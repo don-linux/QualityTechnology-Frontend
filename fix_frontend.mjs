@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const basePath = '/home/crivera/proyectos/private/QualityTechnology-Frontend/src/components';
-const utilsPath = '/home/crivera/proyectos/private/QualityTechnology-Frontend/src/utils/axiosInstance.js';
+const basePath = path.join(process.cwd(), 'src', 'components');
+const utilsPath = path.join(process.cwd(), 'src', 'utils', 'axiosInstance.js');
 
 function processDirectory(dir) {
   const files = fs.readdirSync(dir);
@@ -29,7 +29,7 @@ function processDirectory(dir) {
 processDirectory(basePath);
 
 // App.jsx needs to import from utils too if it uses axios, but it doesn't.
-let layoutPath = '/home/crivera/proyectos/private/QualityTechnology-Frontend/src/layout/CorporateLayout.jsx';
+let layoutPath = path.join(process.cwd(), 'src', 'layout', 'CorporateLayout.jsx');
 let layoutContent = fs.readFileSync(layoutPath, 'utf8');
 layoutContent = layoutContent.replace(/to="\/usuarios"/g, (match, offset, str) => {
   // We know there are two. 1st is for Usuarios, 2nd is Módulos por rol.

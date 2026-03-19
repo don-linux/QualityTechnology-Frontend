@@ -625,6 +625,8 @@ export default function CorporateLayout() {
           </>
         )}
         {/* ===================== SEGURIDAD ===================== */}
+        {modulos.has("Seguridad") && (
+          <>
             {drawerOpen && (
               <Typography
                 sx={{ fontWeight: "bold", color: "#C8E6C9", ml: 1, mt: 2, mb: 1 }}
@@ -650,6 +652,8 @@ export default function CorporateLayout() {
               </ListItemIcon>
               {drawerOpen && <ListItemText primary="Módulos por rol" />}
             </ListItemButton>
+          </>
+        )}
       </Drawer>
       {/* ===================== CONTENIDO ===================== */}
       <Box
