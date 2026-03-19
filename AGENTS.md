@@ -1,193 +1,148 @@
 # AGENTS.md - Quality Technology Frontend
 
-Agentic coding guidelines for this React 19 + Vite 6 frontend.
+Operational guide for agentic coding assistants working in this repository.
+Use this file as the default policy unless the user gives explicit instructions.
 
-## Commands
+## Rule Sources (Checked)
+
+- `.cursorrules`: not present
+- `.cursor/rules/`: not present
+- `.github/copilot-instructions.md`: present but empty (0 lines)
+- `CONTRIBUTING.md`: defines branch and PR flow (`dev` is integration branch)
+
+Because Copilot/Cursor rule files do not add constraints here, follow this AGENTS.md and existing code conventions.
+
+## Build, Lint, and Test Commands
 
 ```bash
-npm start                          # Dev server (port 3000)
-npm run build                      # Production build → /dist
-npm test                           # Run all tests once (CI)
-npm run test:watch                 # Run tests in watch mode
-npx vitest run src/App.test.jsx    # Run a single test file
-npx vitest run -t "test name"      # Run a single test by name
-npx vitest run --coverage          # Tests with coverage report
+# Install
+npm install
+
+# Local dev server (Vite, port 3000)
+npm start
+
+# Production build
+npm run build
+
+# Preview built app
+npm run preview
+
+# Tests (single run, CI style)
+npm test
+
+# Tests in watch mode
+npm run test:watch
+
+# Run one test file (preferred)
+npm test -- src/App.test.jsx
+
+# Equivalent direct Vitest command
+npx vitest run src/App.test.jsx
+
+# Run a single test by name
+npx vitest run -t "renders without crashing"
+
+# Run a single test file in watch mode
+npx vitest src/App.test.jsx
+
+# Coverage
+npx vitest run --coverage
 ```
 
-## Project Structure
+Lint/format status:
 
-```
-src/
-├── App.jsx                    # BrowserRouter + all routes
-├── index.jsx                  # ReactDOM.createRoot entry
-├── setupTests.js              # imports @testing-library/jest-dom
-├── components/                # PascalCase.jsx — one component per file
-│   ├── PrivateRoute.jsx
-│   ├── PageHeader.jsx
-│   └── registro-operativo/    # Operational log sub-module
-├── layout/
-│   └── CorporateLayout.jsx    # Sidebar + AppBar, renders <Outlet />
-└── utils/
-    ├── api.js                 # API_URL constant + apiFetch()
-    ├── auth.js                # isAuthenticated, getUserRole, logout
-    ├── axiosInstance.js       # Axios with Bearer token interceptor
-    └── GlobalStyles.jsx       # MUI GlobalStyles component
-```
+- There is currently no `npm run lint` script.
+- There is no ESLint config and no Prettier config in repo root.
+- Do not invent lint tooling in feature PRs unless user asks.
 
-## Technology Stack
+## Code Style and Architecture Guidelines
 
-- **Framework**: React 19 + Vite 6 — pure JavaScript, no TypeScript
-- **UI**: MUI v7 (`@mui/material`, `@mui/icons-material`, `@mui/lab`, `@mui/x-charts`, `@mui/x-date-pickers`)
-- **Routing**: React Router v7
-- **HTTP**: `apiFetch` (fetch-based) or `axiosInstance` / `axios` directly
-- **Animation**: framer-motion
-- **Charts**: recharts, `@mui/x-charts`, react-heatmap-grid
-- **Exports**: jspdf v4 + jspdf-autotable, html2canvas, html-to-image, exceljs + file-saver
-- **Dates**: dayjs | **Testing**: Vitest + `@testing-library/react` v16 + jsdom
+### Imports
 
-**Tooling**: No ESLint config, no Prettier config, no TypeScript. All JSX files use `.jsx` extension.
+- Keep import groups in this order: 1) React, 2) third-party packages, 3) app utilities/hooks/constants, 4) relative components/files.
+- Prefer one blank line between groups.
+- Prefer existing import style in each file; do not churn unrelated imports for style-only changes.
 
-## File Conventions
+### Formatting
 
-- First line comment: `// src/components/ComponentName.jsx`
-- Components: `PascalCase.jsx` | Utilities: `camelCase.js`
-- One component per file; no barrel `index.js` files
+- Use double quotes for strings.
+- Use semicolons.
+- Use 2-space indentation.
+- Keep lines readable; split long JSX props/objects across lines.
+- Prefer `const` by default and `let` only when reassignment is required.
 
-## Import Order
+### Types and Data Shapes
 
-```jsx
-import React, { useState, useEffect, useCallback } from "react";  // 1. React
-import { Box, Button } from "@mui/material";                       // 2. Third-party
-import { useNavigate } from "react-router-dom";
-import { apiFetch } from "../utils/api";                           // 3. Internal utils
-import PageHeader from "./PageHeader";                             // 4. Relative components
-```
+- This repo is JavaScript-first; do not introduce TypeScript unless requested.
+- When adding complex payload handling, document shape with JSDoc typedefs if needed.
+- Normalize numeric input before sending (`Number(...)`, `parseFloat(...)`) when backend expects numbers.
+- Guard nullable fields from API responses before rendering.
 
-## Component Pattern
+### Naming Conventions
 
-```jsx
-// src/components/Example.jsx
-import React, { useState, useEffect, useCallback } from "react";
-import { apiFetch } from "../utils/api";
+- Components: PascalCase file names and component names (`Usuarios.jsx`, `PrivateRoute.jsx`).
+- Utilities/helpers: camelCase (`apiFetch`, `isAuthenticated`).
+- Route paths: kebab-case segments (`registro-operativo/recepcion-insumos`).
+- Domain naming is mostly Spanish; keep existing domain terms consistent in touched files.
 
-export default function Example({ id }) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+### React Patterns
 
-  const cargarDatos = useCallback(async () => {
-    try {
-      setLoading(true);
-      const result = await apiFetch(`/recurso/${id}`);
-      setData(result);
-    } catch (err) {
-      console.error("Error al cargar datos:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+- Use functional components and hooks.
+- Keep side effects in `useEffect`; include complete dependency arrays.
+- For async loaders reused by effects, prefer `useCallback` + `useEffect`.
+- Prefer early returns for guard clauses (auth checks, missing selection, invalid form).
 
-  useEffect(() => { cargarDatos(); }, [cargarDatos]);
-}
-```
+### MUI and UI Patterns
 
-- `window.confirm()` before destructive API calls
-- `Intl.NumberFormat` for numeric display
+- Prefer `sx` for component-level styling.
+- Use MUI v7 Grid API (`size={{ xs: 12, sm: 6 }}`), not legacy `item xs={...}`.
+- For TextField adornments, prefer `slotProps.input.startAdornment`.
+- Keep responsive behavior for forms/tables using MUI breakpoints.
+- Static images should use absolute `/images/...` paths from `public/`.
 
-## HTTP Utilities
+### API Access Rules
 
-**`apiFetch`** — preferred; handles 204, injects Bearer token, throws on error:
-```js
-import { apiFetch } from "../utils/api";
-const data = await apiFetch("/usuarios");
-await apiFetch("/usuarios", { method: "POST", body: JSON.stringify(payload) });
-```
+- Prefer `apiFetch` for straightforward JSON CRUD endpoints.
+- Use `axiosInstance` when endpoint code already depends on axios behavior.
+- Avoid importing raw `axios` directly in new code; use the shared instance.
+- Reuse `API_URL` from `src/utils/api.js` for absolute endpoint composition.
 
-**`axiosInstance`** — auto Bearer token via interceptor:
-```js
-import axiosInstance from "../utils/axiosInstance";
-const { data } = await axiosInstance.get("/usuarios");
-```
+### Error Handling and User Feedback
 
-## Authentication & Route Protection
+- Wrap network operations in `try/catch`.
+- Log failures with `console.error(...)` and avoid `console.log` for errors.
+- Show user-facing feedback for failures (`alert`, inline error text, or existing pattern in file).
+- Confirm destructive operations with `window.confirm(...)` before delete or bulk delete.
+- Preserve backend error details when available (`err.message`, response error payload).
 
-localStorage keys: `token`, `rol`, `nombre`, `usuario_id`, `granja`, `modulos` (JSON array of `{fc_nombre}`).
+### Auth and Route Protection
 
-```jsx
-<Route element={<PrivateRoute rolesPermitidos={["Administrador", "Jefe de Empresa"]} />}>
-<Route element={<PrivateRoute modulo="Operaciones" />}>
-  <Route element={<CorporateLayout />}>
-    <Route path="registro-operativo/plagas" element={<BitacoraPlagas />} />
-  </Route>
-</Route>
-```
+- Current auth state is localStorage-based.
+- Common keys: `token`, `rol`, `nombre`, `usuario_id`, `granja`, `modulos`.
+- Role/module checks happen in `PrivateRoute`; keep normalization behavior when extending.
 
-Role strings are accent-normalized: `.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim()`
+## Testing Guidelines
 
-## MUI v7 Patterns
+- Test runner config is in `vite.config.js` (`globals: true`, `environment: "jsdom"`).
+- `@testing-library/jest-dom` is loaded in `src/setupTests.js`.
+- Prefer Testing Library queries by role/text over implementation details.
+- For routed components, render under `MemoryRouter` when route context is required.
+- Keep tests deterministic; mock network calls as needed for new component tests.
 
-**Grid** — use `size` prop, not `item xs`:
-```jsx
-<Grid size={{ xs: 12, md: 4 }}>   // correct v7
-<Grid item xs={12} md={4}>        // WRONG — v5/v6 only
-```
+## Git and Collaboration Conventions
 
-**TextField adornments** — use `slotProps`, not `InputProps`:
-```jsx
-slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> } }}
-```
+- Branch from `dev`; open PRs into `dev`.
+- Branch names from `CONTRIBUTING.md`: `feature/*`, `fix/*`, `chore/*`, `docs/*`, `refactor/*`.
+- Do not commit generated output or local artifacts (`dist/`, `node_modules/`, `.env`).
+- Before handoff, run at least `npm test` and ideally `npm run build` for risky UI changes.
 
-**Styling** — `sx` prop only. Never `makeStyles`, `styled()`, or plain `className` for layout.
+## Agent Completion Checklist
 
-**Color palette**: primary green `#2E7D32` / `#1B5E20`, secondary blue `#0D47A1`, background `#f4f6f8`.
+- Confirm touched files follow local conventions (imports, hooks, naming).
+- Confirm no accidental raw `axios` usage in new code.
+- Confirm destructive actions still require confirmation prompts.
+- Run relevant tests (single test for focused changes, full suite when broad).
+- Run build when route/layout/shared components were changed.
+- Keep diffs minimal and avoid unrelated refactors.
 
-## Static Images
-
-Images in `/public/images/`. Always use absolute paths — relative paths break on sub-routes:
-```jsx
-<img src="/images/quality.png" />   // correct
-<img src="images/quality.png" />    // WRONG
-```
-
-## Environment Variables
-
-`API_URL` is hardcoded to `"http://localhost:5000"` in `src/utils/api.js`. To override, add `.env` and update `api.js` to use `import.meta.env.VITE_API_URL`. Use `VITE_*` prefix — `process.env.REACT_APP_*` is CRA-only.
-
-## Testing
-
-```jsx
-import { render, screen } from "@testing-library/react";
-
-test("renders title", () => {
-  render(<Example />);
-  expect(screen.getByText(/titulo/i)).toBeInTheDocument();
-});
-```
-
-- Vitest `globals: true` — `describe`/`test`/`expect` available without imports
-- `@testing-library/jest-dom` matchers loaded via `src/setupTests.js`
-- Wrap routed components with `<MemoryRouter>` when needed
-- Prefer `screen.getByRole` / `screen.getByText` over test IDs
-
-## Code Style Rules
-
-- **No emojis** in code comments, documentation, or inline strings
-- **No `console.log`** in committed code; use `console.error` only inside catch blocks
-- Spanish is used for variable names, function names, and UI strings — follow this convention
-- Strings use double quotes `"` consistently
-
-## Git Workflow
-
-- Branch from `dev`, main is only used for production releases; never commit `.env`, `node_modules/`, or `dist/`
-- Run `npm test` before committing
-
-**Commit format** — gitmoji + short English imperative, 50 characters max (gitmoji.dev):
-```
-✨ Add new feature
-🐛 Fix bug causing crash on startup
-📝 Update documentation for API changes
-🔥 Remove deprecated code
-♻️ Refactor for better readability
-```
-Use the commit body for additional context.
+If you find conflicting conventions in legacy code, prioritize consistency within edited files and avoid broad style rewrites.
