@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "../../utils/api.js";
 import {
   Box,
   Card,
@@ -41,7 +40,7 @@ function BitacoraBanosContent() {
   //  Cargar datos
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/medellin/banos`);
+      const res = await axios.get("/medellin/banos");
       setData(res.data);
     } catch {
       alert("Error al cargar registros.");
@@ -56,10 +55,10 @@ function BitacoraBanosContent() {
   const guardar = async () => {
     try {
       if (editId) {
-        await axios.put(`${API_URL}/medellin/banos/${editId}`, form);
+        await axios.put(`/medellin/banos/${editId}`, form);
         alert("Registro actualizado");
       } else {
-        await axios.post(`${API_URL}/medellin/banos`, form);
+        await axios.post("/medellin/banos", form);
         alert("Registro guardado");
       }
 
