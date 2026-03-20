@@ -194,7 +194,7 @@ export default function CorporateLayout() {
             src={`${""}/images/quality.png`}
             alt="Logo"
             width={drawerOpen ? "110" : "40"}
-            style={{ marginTop: "10px", transition: "all 0.3s ease" }}
+            style={{ marginTop: "10px", transition: "width 0.3s ease" }}
           />
         </Box>
 

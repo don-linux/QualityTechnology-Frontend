@@ -11,7 +11,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Person, Lock } from "@mui/icons-material";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -104,7 +104,8 @@ const Login = () => {
       </Box>
 
       {/* Formulario con animación */}
-      <motion.div
+      <LazyMotion features={domAnimation}>
+      <m.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -211,7 +212,8 @@ const Login = () => {
             </>
           )}
         </Paper>
-      </motion.div>
+      </m.div>
+      </LazyMotion>
     </Box>
   );
 };

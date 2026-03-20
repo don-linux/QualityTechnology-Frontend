@@ -25,7 +25,7 @@ const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
 export default function TesoreriaGeneral() {
   const [tab, setTab] = useState(0);
   const [datos, setDatos] = useState([]);
-  const [anioSeleccionado] = useState(new Date().getFullYear());
+  const [anioSeleccionado] = useState(() => new Date().getFullYear());
 
   const obtenerDatos = useCallback(async () => {
     try {

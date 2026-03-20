@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { API_URL } from "../utils/api.js";
 import {
   Container,
@@ -28,17 +28,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/es"; //  Importar español
 import { Add, Edit, Delete, Clear } from "@mui/icons-material";
 
-//  Librerías para la gráfica
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+const AlevinesChart = lazy(() => import("./AlevinesChart"));
 
 //  Librerías para exportar a Excel
 import ExcelJS from "exceljs";
@@ -438,16 +428,9 @@ export default function AlevinesRegistro() {
         Gráfica de Nacimientos
       </Typography>
       <Box sx={{ width: "100%", height: 400, mb: 4 }}>
-        <ResponsiveContainer>
-          <LineChart data={graficaData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="fecha" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="cantidad" stroke="#2196f3" activeDot={{ r: 8 }} />
-          </LineChart>
-        </ResponsiveContainer>
+        <Suspense fallback={<Typography>Cargando grafica...</Typography>}>
+          <AlevinesChart data={graficaData} />
+        </Suspense>
       </Box>
 
       {/* TABLA */}
