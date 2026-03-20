@@ -1,5 +1,5 @@
 // src/components/FormDialog.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { API_URL } from "../utils/api.js";
 import {
   Dialog,
@@ -19,26 +19,20 @@ const FormDialog = React.memo(
     const [proveedores, setProveedores] = useState([]);
     const [cuentas, setCuentas] = useState([]);
 
-    //  Cargar clientes, proveedores y cuentas al abrir el modal
-    useEffect(() => {
-      if (open) {
-        const fetchDatos = async () => {
-          try {
-            const [resClientes, resProveedores, resCuentas] = await Promise.all([
-              axios.get(`${API_URL}/flujo-caja/clientes`),
-              axios.get(`${API_URL}/flujo-caja/proveedores`),
-              axios.get(`${API_URL}/cuentas`),
-            ]);
-            setClientes(resClientes.data);
-            setProveedores(resProveedores.data);
-            setCuentas(resCuentas.data);
-          } catch (err) {
-            console.error(" Error al obtener datos:", err);
-          }
-        };
-        fetchDatos();
+    const fetchDatos = useCallback(async () => {
+      try {
+        const [resClientes, resProveedores, resCuentas] = await Promise.all([
+          axios.get(`${API_URL}/flujo-caja/clientes`),
+          axios.get(`${API_URL}/flujo-caja/proveedores`),
+          axios.get(`${API_URL}/cuentas`),
+        ]);
+        setClientes(resClientes.data);
+        setProveedores(resProveedores.data);
+        setCuentas(resCuentas.data);
+      } catch (err) {
+        console.error("Error al obtener datos:", err);
       }
-    }, [open]);
+    }, []);
 
     const handleChange = (e) => {
       setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value ?? "" }));
@@ -49,7 +43,7 @@ const FormDialog = React.memo(
     };
 
     return (
-      <Dialog open={open} onClose={onClose} fullWidth>
+      <Dialog open={open} onClose={onClose} fullWidth TransitionProps={{ onEnter: () => fetchDatos() }}>
         <DialogTitle>{editId ? "Editar Movimiento" : "Nuevo Movimiento"}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>

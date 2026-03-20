@@ -1,5 +1,5 @@
 // src/components/CuentasDialog.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { API_URL } from "../utils/api.js";
 import {
   Dialog,
@@ -23,11 +23,6 @@ import axios from "../utils/axiosInstance.js";
 const CuentasDialog = ({ open, onClose }) => {
   const [cuentas, setCuentas] = useState([]);
   const [nuevaCuenta, setNuevaCuenta] = useState({ nombre: "", saldo: "" });
-
-  //  Cargar cuentas cuando se abre el modal
-  useEffect(() => {
-    if (open) obtenerCuentas();
-  }, [open]);
 
   const obtenerCuentas = async () => {
     try {
@@ -79,7 +74,7 @@ const CuentasDialog = ({ open, onClose }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" TransitionProps={{ onEnter: () => obtenerCuentas() }}>
       <DialogTitle sx={{ background: "#0D4D3A", color: "white", fontWeight: "bold" }}>
          Administración de Cuentas
       </DialogTitle>

@@ -93,13 +93,11 @@ function AlimentosContent() {
   }, [granjaActiva]);
 
   useEffect(() => {
-    if (usuario_id) {
-      obtenerRegistros();
-      obtenerPiletas();
-      obtenerReproductores();
-      obtenerEngorda();
-    }
-  }, [usuario_id, obtenerRegistros, obtenerPiletas, obtenerReproductores, obtenerEngorda]);
+    obtenerRegistros();
+    obtenerPiletas();
+    obtenerReproductores();
+    obtenerEngorda();
+  }, [obtenerRegistros, obtenerPiletas, obtenerReproductores, obtenerEngorda]);
 
   // =======================================
   // Registro y acciones

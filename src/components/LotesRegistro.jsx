@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { API_URL } from "../utils/api.js";
 import {
   Button,
@@ -89,22 +89,34 @@ const LotesRegistro = () => {
   /** --------------------------------------------------------
       Cargar instalaciones desde REPRODUCTORES
   -------------------------------------------------------- */
-  useEffect(() => {
-    axios
-      .get(`${API_URL}/lotes/instalaciones/${granja}`)
-      .then((res) => setInstalaciones(res.data))
-      .catch((err) => console.log("Error cargando instalaciones:", err));
+  const cargarInstalaciones = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_URL}/lotes/instalaciones/${granja}`);
+      setInstalaciones(res.data);
+    } catch (err) {
+      console.error("Error cargando instalaciones:", err);
+    }
   }, [granja]);
 
   /** --------------------------------------------------------
       Cargar lotes
   -------------------------------------------------------- */
-  useEffect(() => {
-    axios
-      .get(`${API_URL}/lotes/granja/${granja}`)
-      .then((res) => setLotes(res.data))
-      .catch((err) => console.log(err));
+  const cargarLotes = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_URL}/lotes/granja/${granja}`);
+      setLotes(res.data);
+    } catch (err) {
+      console.error("Error cargando lotes:", err);
+    }
   }, [granja]);
+
+  useEffect(() => {
+    cargarInstalaciones();
+  }, [cargarInstalaciones]);
+
+  useEffect(() => {
+    cargarLotes();
+  }, [cargarLotes]);
 
   /* --------------------------------------------------------
      Registrar lote
@@ -202,9 +214,8 @@ const LotesRegistro = () => {
   /* --------------------------------------------------------
      Helpers
   -------------------------------------------------------- */
-  const actualizarTabla = async () => {
-    const update = await axios.get(`${API_URL}/lotes/granja/${granja}`);
-    setLotes(update.data);
+  const actualizarTabla = () => {
+    cargarLotes();
   };
 
   const resetFormulario = () => {

@@ -73,6 +73,7 @@ function EquiposContent() {
 
   //  Cargar equipos
   const cargarDatos = useCallback(async () => {
+    if (!usuario_id) return;
     try {
       const res = await axios.get(`${api}/${usuario_id}`);
       setData(res.data);
@@ -86,8 +87,8 @@ function EquiposContent() {
   }, [usuario_id]);
 
   useEffect(() => {
-    if (usuario_id) cargarDatos();
-  }, [usuario_id, cargarDatos]);
+    cargarDatos();
+  }, [cargarDatos]);
 
   //  Guardar / actualizar
   const guardar = async () => {

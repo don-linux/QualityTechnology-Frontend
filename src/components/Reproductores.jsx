@@ -22,6 +22,27 @@ import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 
+const CirculoNumero = ({ color, value }) => (
+  <Box
+    component="span"
+    sx={{
+      width: 28,
+      height: 28,
+      borderRadius: "50%",
+      bgcolor: color,
+      color: "white",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontWeight: "bold",
+      fontSize: 14,
+      m: "0 auto",
+    }}
+  >
+    {value}
+  </Box>
+);
+
 export default function Reproductores() {
   return <ReproductoresContent />;
 }
@@ -88,26 +109,6 @@ const colorDias = (dias) => {
   return "#c62828";
 };
 
-const CirculoNumero = ({ color, value }) => (
-  <Box
-    component="span"
-    sx={{
-      width: 28,
-      height: 28,
-      borderRadius: "50%",
-      bgcolor: color,
-      color: "white",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontWeight: "bold",
-      fontSize: 14,
-      m: "0 auto",
-    }}
-  >
-    {value}
-  </Box>
-);
   /* ===================== CARGA DE DATOS ===================== */
 
   const obtenerReproductores = useCallback(async () => {
