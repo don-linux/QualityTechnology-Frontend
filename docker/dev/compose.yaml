@@ -9,5 +9,5 @@ services:
       - ../../:/app
     ports:
       - '${DOCKER_DEV_REACT_PORT}:3000'
-    command: bash -c "bun install && bun run start"
+    command: bash -c "bun install && bun run dev"
     init: true
