@@ -243,7 +243,6 @@ export default function CajaAhorro() {
             value={nuevaCategoria}
             onChange={(e) => setNuevaCategoria(e.target.value)}
             fullWidth
-            autoFocus
           />
         </DialogContent>
         <DialogActions>

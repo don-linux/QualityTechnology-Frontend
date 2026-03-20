@@ -99,14 +99,14 @@ export default function TesoreriaGeneral() {
             </TableHead>
 
             <TableBody>
-              {Object.entries(agrupados).map(([key, registros], i) => {
+              {Object.entries(agrupados).map(([key, registros]) => {
                 const [grupo, subgrupo] = key.split("||");
                 const totalIngreso = registros.reduce((s, r) => s + Number(r.total_ingreso || 0), 0);
                 const totalEgreso = registros.reduce((s, r) => s + Number(r.total_egreso || 0), 0);
                 const saldo = registros.reduce((s, r) => s + Number(r.saldo_neto || 0), 0);
 
                 return (
-                  <React.Fragment key={i}>
+                  <React.Fragment key={key}>
                     <TableRow sx={{ background: "#e0f7fa" }}>
                       <TableCell colSpan={7} sx={{ fontWeight: "bold", color: "#004d40" }}>
                         {grupo.toUpperCase()}

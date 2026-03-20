@@ -178,15 +178,15 @@ const FormDialog = React.memo(
                 }}
               >
                 {Number(formData.fn_ingreso) > 0 &&
-                  clientes.map((cli, i) => (
-                    <MenuItem key={i} value={cli.nombre}>
+                  clientes.map((cli) => (
+                    <MenuItem key={cli.nombre} value={cli.nombre}>
                       {cli.nombre}
                     </MenuItem>
                   ))}
 
                 {Number(formData.fn_egreso) > 0 &&
-                  proveedores.map((prov, i) => (
-                    <MenuItem key={i} value={prov.nombre}>
+                  proveedores.map((prov) => (
+                    <MenuItem key={prov.nombre} value={prov.nombre}>
                       {prov.nombre}
                     </MenuItem>
                   ))}

@@ -293,9 +293,9 @@ export default function Vacaciones() {
                 "Disponibles",
                 "Disfrutadas",
                 "Acciones",
-              ].map((col, i) => (
+              ].map((col) => (
                 <TableCell
-                  key={i}
+                  key={col}
                   sx={{
                     color: "white",
                     fontWeight: "bold",
@@ -356,9 +356,9 @@ export default function Vacaciones() {
                     "fn_vacaciones_anio",
                     "fn_dias_previos",
                     "fn_vacaciones_disfrutadas",
-                  ].map((campo, idx) => (
+                  ].map((campo) => (
                     <TableCell
-                      key={idx}
+                      key={campo}
                       align="center"
                       sx={
                         ["fn_vacaciones_anio", "fn_dias_previos"].includes(campo)
