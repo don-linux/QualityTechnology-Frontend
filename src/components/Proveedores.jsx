@@ -1,36 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Box,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Button,
-  TextField,
-  Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from "@mui/material";
-import {
-  Add,
-  Delete,
-  Edit,
-  CleaningServices,
-  Business,
-  PictureAsPdf,
-  Save,
-  Close,
-} from "@mui/icons-material";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Grid from "@mui/material/Grid";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Add from "@mui/icons-material/Add";
+import Delete from "@mui/icons-material/Delete";
+import Edit from "@mui/icons-material/Edit";
+import CleaningServices from "@mui/icons-material/CleaningServices";
+import Business from "@mui/icons-material/Business";
+import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
+import Save from "@mui/icons-material/Save";
+import Close from "@mui/icons-material/Close";
 import axios from "../utils/axiosInstance.js";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 const api = `${API_URL}/proveedores`;
 
@@ -154,7 +148,9 @@ export default function Proveedores() {
   // ============================
   //  Exportar PDF
   // ============================
-  const exportarPDF = () => {
+  const exportarPDF = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
     const logo = `${""}/images/quality.png`;
 

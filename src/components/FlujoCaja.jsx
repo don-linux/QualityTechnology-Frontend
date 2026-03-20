@@ -1,15 +1,24 @@
 // src/components/FlujoCaja.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  Container, Box, Typography, Tabs, Tab, Button, IconButton,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Snackbar, Alert
-} from "@mui/material";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "../utils/axiosInstance.js";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
 import { API_URL } from "../utils/api.js";
@@ -146,6 +155,8 @@ export default function FlujoCaja() {
   //  Exportar Excel
   // =====================================================
   const exportarExcel = async () => {
+    const { default: ExcelJS } = await import("exceljs");
+    const { saveAs } = await import("file-saver");
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet("FlujoCaja");
     if (movimientos.length > 0) {

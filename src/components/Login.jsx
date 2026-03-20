@@ -1,16 +1,15 @@
 // src/components/Login.jsx
 import React, { useState } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Paper,
-  CircularProgress,
-  InputAdornment,
-} from "@mui/material";
-import { Person, Lock } from "@mui/icons-material";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import CircularProgress from "@mui/material/CircularProgress";
+import InputAdornment from "@mui/material/InputAdornment";
+import Person from "@mui/icons-material/Person";
+import Lock from "@mui/icons-material/Lock";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 

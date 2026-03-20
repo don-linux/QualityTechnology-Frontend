@@ -1,30 +1,30 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Container,
-  Card,
-  CardContent,
-  Grid,
-  Button,
-  Typography,
-  TableContainer,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  Stack,
-  Tabs,
-  Tab,
-} from "@mui/material";
+import Container from "@mui/material/Container";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import TableContainer from "@mui/material/TableContainer";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 import axios from "../utils/axiosInstance.js";
-import { Add, Delete, Clear } from "@mui/icons-material";
+import Add from "@mui/icons-material/Add";
+import Delete from "@mui/icons-material/Delete";
+import Clear from "@mui/icons-material/Clear";
 
 export default function Alimentos() {
   return <AlimentosContent />;

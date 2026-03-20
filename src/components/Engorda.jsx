@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Paper,
-  Grid,
-  Card,
-  CardContent,
-  MenuItem,
-} from "@mui/material";
-import { Delete, Clear } from "@mui/icons-material";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import Paper from "@mui/material/Paper";
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import MenuItem from "@mui/material/MenuItem";
+import Delete from "@mui/icons-material/Delete";
+import Clear from "@mui/icons-material/Clear";
 import { apiFetch } from "../utils/api";
 
 export default function Engorda() {

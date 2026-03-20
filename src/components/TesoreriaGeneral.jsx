@@ -1,23 +1,19 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Container,
-  Box,
-  Typography,
-  Tabs,
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-} from "@mui/material";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Button from "@mui/material/Button";
 import axios from "../utils/axiosInstance.js";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
 
 const API_TESORERIA = `${API_URL}/tesoreria`;
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
@@ -42,6 +38,8 @@ export default function TesoreriaGeneral() {
   }, [obtenerDatos]);
 
   const exportarExcel = async () => {
+    const { default: ExcelJS } = await import("exceljs");
+    const { saveAs } = await import("file-saver");
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet(`Tesoreria_${anioSeleccionado}`);
     if (datos.length > 0) {

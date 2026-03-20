@@ -1,14 +1,25 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { API_URL } from "../../utils/api.js";
-import {
-  Box, Card, CardContent, Grid, Typography, TextField, Button,
-  Table, TableHead, TableRow, TableCell, TableBody, Paper,
-  InputAdornment, MenuItem, Select, FormControl, InputLabel
-} from "@mui/material";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import Paper from "@mui/material/Paper";
+import InputAdornment from "@mui/material/InputAdornment";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "../../utils/axiosInstance.js";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 function RecepcionInsumosContent() {
   const [form, setForm] = useState({
@@ -114,7 +125,9 @@ function RecepcionInsumosContent() {
   };
 
   //  Exportar PDF
-  const exportarPDF = () => {
+  const exportarPDF = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
     const logo = `${""}/images/${form.ubicacion}.png`;
     const color = getColorPorUbicacion();

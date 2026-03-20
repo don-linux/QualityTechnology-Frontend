@@ -1,5 +1,7 @@
-import { Stack, Button } from "@mui/material";
-import { Home, ArrowBack } from "@mui/icons-material";
+import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
+import Home from "@mui/icons-material/Home";
+import ArrowBack from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 
 export default function PageHeader() {

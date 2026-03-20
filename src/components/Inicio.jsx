@@ -1,6 +1,11 @@
 import React from "react";
-import { Box, Typography, Paper, Avatar } from "@mui/material";
-import { EmojiPeople, AdminPanelSettings, Business } from "@mui/icons-material";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Avatar from "@mui/material/Avatar";
+import EmojiPeople from "@mui/icons-material/EmojiPeople";
+import AdminPanelSettings from "@mui/icons-material/AdminPanelSettings";
+import Business from "@mui/icons-material/Business";
 
 export default function Inicio() {
   const nombre = (localStorage.getItem("nombre") || "Usuario").trim();

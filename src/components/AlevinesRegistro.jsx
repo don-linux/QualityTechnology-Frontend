@@ -1,38 +1,36 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Container,
-  Card,
-  CardContent,
-  Grid,
-  TextField,
-  Button,
-  Typography,
-  TableContainer,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  Divider,
-  Box,
-  Stack,
-} from "@mui/material";
+import Container from "@mui/material/Container";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import TableContainer from "@mui/material/TableContainer";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
+import FormControl from "@mui/material/FormControl";
+import Divider from "@mui/material/Divider";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
 import axios from "../utils/axiosInstance.js";
 import dayjs from "dayjs";
 import "dayjs/locale/es"; //  Importar español
-import { Add, Edit, Delete, Clear } from "@mui/icons-material";
+import Add from "@mui/icons-material/Add";
+import Edit from "@mui/icons-material/Edit";
+import Delete from "@mui/icons-material/Delete";
+import Clear from "@mui/icons-material/Clear";
 
 const AlevinesChart = lazy(() => import("./AlevinesChart"));
 
-//  Librerías para exportar a Excel
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
 
 //  Configurar dayjs en español
 dayjs.locale("es");
@@ -228,6 +226,8 @@ export default function AlevinesRegistro() {
       Cantidad: d.cantidad,
     }));
 
+    const { default: ExcelJS } = await import("exceljs");
+    const { saveAs } = await import("file-saver");
     const wb = new ExcelJS.Workbook();
 
     const wsTabla = wb.addWorksheet("Registros");

@@ -1,16 +1,14 @@
 // src/components/FormDialog.jsx
 import React, { useState, useCallback } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Grid,
-  TextField,
-  Button,
-  MenuItem,
-} from "@mui/material";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
 import axios from "../utils/axiosInstance.js";
 
 const FormDialog = React.memo(
