@@ -1,7 +1,7 @@
 # BUN ENVIRONMENT.md
 
 ---
-description: "Use bun and bunx for the execution environment, and ensure all commands are compatible with bun's ecosystem."
+description: "Use bun and bunx when running npm or node commands and scripts and ensure all commands are compatible with bun's ecosystem."
 
 alwaysApply: true
 ---
