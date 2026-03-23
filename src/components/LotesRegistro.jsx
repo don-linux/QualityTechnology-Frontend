@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Button,
-  TextField,
-  Grid,
-  MenuItem,
-  Card,
-  CardContent,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TableContainer,
-  Paper,
-  Divider,
-} from "@mui/material";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Grid from "@mui/material/Grid";
+import MenuItem from "@mui/material/MenuItem";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableContainer from "@mui/material/TableContainer";
+import Paper from "@mui/material/Paper";
+import Divider from "@mui/material/Divider";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 
 // *** IMPORTANTE: USAR AXIOS INSTANCE CON TOKEN ***
@@ -89,22 +87,34 @@ const LotesRegistro = () => {
   /** --------------------------------------------------------
       Cargar instalaciones desde REPRODUCTORES
   -------------------------------------------------------- */
-  useEffect(() => {
-    axios
-      .get(`${API_URL}/lotes/instalaciones/${granja}`)
-      .then((res) => setInstalaciones(res.data))
-      .catch((err) => console.log("Error cargando instalaciones:", err));
+  const cargarInstalaciones = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_URL}/lotes/instalaciones/${granja}`);
+      setInstalaciones(res.data);
+    } catch (err) {
+      console.error("Error cargando instalaciones:", err);
+    }
   }, [granja]);
 
   /** --------------------------------------------------------
       Cargar lotes
   -------------------------------------------------------- */
-  useEffect(() => {
-    axios
-      .get(`${API_URL}/lotes/granja/${granja}`)
-      .then((res) => setLotes(res.data))
-      .catch((err) => console.log(err));
+  const cargarLotes = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_URL}/lotes/granja/${granja}`);
+      setLotes(res.data);
+    } catch (err) {
+      console.error("Error cargando lotes:", err);
+    }
   }, [granja]);
+
+  useEffect(() => {
+    cargarInstalaciones();
+  }, [cargarInstalaciones]);
+
+  useEffect(() => {
+    cargarLotes();
+  }, [cargarLotes]);
 
   /* --------------------------------------------------------
      Registrar lote
@@ -202,9 +212,8 @@ const LotesRegistro = () => {
   /* --------------------------------------------------------
      Helpers
   -------------------------------------------------------- */
-  const actualizarTabla = async () => {
-    const update = await axios.get(`${API_URL}/lotes/granja/${granja}`);
-    setLotes(update.data);
+  const actualizarTabla = () => {
+    cargarLotes();
   };
 
   const resetFormulario = () => {

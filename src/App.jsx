@@ -1,64 +1,68 @@
 // src/App.js
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { CssBaseline } from "@mui/material";
+import CssBaseline from "@mui/material/CssBaseline";
+import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
 import CustomGlobalStyles from "./utils/GlobalStyles";
 
-// Login
+// Login, layout y ruta protegida (carga inmediata)
 import Login from "./components/Login";
+import CorporateLayout from "./layout/CorporateLayout";
+import PrivateRoute from "./components/PrivateRoute";
 
 // Pantalla bienvenida
-import Inicio from "./components/Inicio";
+const Inicio = lazy(() => import("./components/Inicio"));
 
-// Catálogos
-import Usuarios from "./components/Usuarios";
-import Roles from "./components/Roles";
-import Cliente from "./components/Cliente";
-import Estado from "./components/Estado";
+// Catalogos
+const Usuarios = lazy(() => import("./components/Usuarios"));
+const Roles = lazy(() => import("./components/Roles"));
+const Cliente = lazy(() => import("./components/Cliente"));
+const Estado = lazy(() => import("./components/Estado"));
 
 // Inventarios
-import Pileta from "./components/Pileta";
-import Instalaciones from "./components/Instalaciones";
-import Reproductores from "./components/Reproductores";
-import Alimentos from "./components/Alimentos";
-import Engorda from "./components/Engorda";
-import Equipos from "./components/Equipos";
-import LotesRegistro from "./components/LotesRegistro";
+const Pileta = lazy(() => import("./components/Pileta"));
+const Instalaciones = lazy(() => import("./components/Instalaciones"));
+const Reproductores = lazy(() => import("./components/Reproductores"));
+const Alimentos = lazy(() => import("./components/Alimentos"));
+const Engorda = lazy(() => import("./components/Engorda"));
+const Equipos = lazy(() => import("./components/Equipos"));
+const LotesRegistro = lazy(() => import("./components/LotesRegistro"));
 
 // Ventas
-import Venta from "./components/Venta";
-import FlujoCaja from "./components/FlujoCaja";
-import ListaEspera from "./components/ListaEspera";
-import TesoreriaGeneral from "./components/TesoreriaGeneral";
+const Venta = lazy(() => import("./components/Venta"));
+const FlujoCaja = lazy(() => import("./components/FlujoCaja"));
+const ListaEspera = lazy(() => import("./components/ListaEspera"));
+const TesoreriaGeneral = lazy(() => import("./components/TesoreriaGeneral"));
 
 // Registro Operativos
-import BitacoraPlagas from "./components/registro-operativo/BitacoraPlagas";
-import BitacoraRecepcionInsumos from "./components/registro-operativo/BitacoraRecepcionInsumos";
-import BitacoraVisitas from "./components/registro-operativo/BitacoraVisitas";
-import BitacoraBanos from "./components/registro-operativo/BitacoraBanos";
-import BitacoraParametros from "./components/registro-operativo/BitacoraParametros";
-import BitacoraMedicamentos from "./components/registro-operativo/BitacoraMedicamentos";
-import BitacoraRecambios from "./components/registro-operativo/BitacoraRecambios";
-import BitacoraInventario from "./components/registro-operativo/BitacoraInventario";
-import BioBiometrias from "./components/registro-operativo/BioBiometrias";
-import BioAlimentacion from "./components/registro-operativo/BioAlimentacion";
-import BioInsumos from "./components/registro-operativo/BioInsumos";
+const BitacoraPlagas = lazy(() => import("./components/registro-operativo/BitacoraPlagas"));
+const BitacoraRecepcionInsumos = lazy(() => import("./components/registro-operativo/BitacoraRecepcionInsumos"));
+const BitacoraVisitas = lazy(() => import("./components/registro-operativo/BitacoraVisitas"));
+const BitacoraBanos = lazy(() => import("./components/registro-operativo/BitacoraBanos"));
+const BitacoraParametros = lazy(() => import("./components/registro-operativo/BitacoraParametros"));
+const BitacoraMedicamentos = lazy(() => import("./components/registro-operativo/BitacoraMedicamentos"));
+const BitacoraRecambios = lazy(() => import("./components/registro-operativo/BitacoraRecambios"));
+const BitacoraInventario = lazy(() => import("./components/registro-operativo/BitacoraInventario"));
+const BioBiometrias = lazy(() => import("./components/registro-operativo/BioBiometrias"));
+const BioAlimentacion = lazy(() => import("./components/registro-operativo/BioAlimentacion"));
+const BioInsumos = lazy(() => import("./components/registro-operativo/BioInsumos"));
 
-//RRHH
-import Expedientes from "./components/Expedientes";
-import Nomina from "./components/Nomina";
-import Vacaciones from "./components/Vacaciones";
-import CajaAhorro from "./components/CajaAhorro";
-import Proveedores from "./components/Proveedores";
+// RRHH
+const Expedientes = lazy(() => import("./components/Expedientes"));
+const Nomina = lazy(() => import("./components/Nomina"));
+const Vacaciones = lazy(() => import("./components/Vacaciones"));
+const CajaAhorro = lazy(() => import("./components/CajaAhorro"));
+const Proveedores = lazy(() => import("./components/Proveedores"));
 
-//Seguridad
-import RolesModulos from "./components/ModulosPorRol";
+// Seguridad
+const RolesModulos = lazy(() => import("./components/ModulosPorRol"));
 
-// Layout principal
-import CorporateLayout from "./layout/CorporateLayout";
-
-// Ruta protegida
-import PrivateRoute from "./components/PrivateRoute";
+const LazyFallback = () => (
+  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh" }}>
+    <CircularProgress />
+  </Box>
+);
 
 
 function App() {
@@ -66,6 +70,7 @@ function App() {
     <Router>
       <CssBaseline />
       <CustomGlobalStyles />
+      <Suspense fallback={<LazyFallback />}>
       <Routes>
         {/* LOGIN */}
         <Route path="/login" element={<Login />} />
@@ -163,6 +168,7 @@ function App() {
         {/* CUALQUIER RUTA DESCONOCIDA */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
+      </Suspense>
     </Router>
   );
 }

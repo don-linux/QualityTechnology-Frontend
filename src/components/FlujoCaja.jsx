@@ -1,21 +1,129 @@
 // src/components/FlujoCaja.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  Container, Box, Typography, Tabs, Tab, Button, IconButton,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Snackbar, Alert
-} from "@mui/material";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "../utils/axiosInstance.js";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
 import { API_URL } from "../utils/api.js";
 
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
 const API = API_URL;
+
+function TablaMovimientos({ movimientos, onEdit, onDelete }) {
+  return (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead sx={{ background: "#f0f0f0" }}>
+          <TableRow>
+            <TableCell><b>Fecha</b></TableCell>
+            <TableCell align="right"><b>Ingreso</b></TableCell>
+            <TableCell align="right"><b>Egreso</b></TableCell>
+            <TableCell><b>Descripcion</b></TableCell>
+            <TableCell><b>Cuenta</b></TableCell>
+            <TableCell><b>Categoria</b></TableCell>
+            <TableCell><b>Subcategoria</b></TableCell>
+            <TableCell><b>Beneficiario</b></TableCell>
+            <TableCell><b>Proyecto</b></TableCell>
+            <TableCell><b>Factura</b></TableCell>
+            <TableCell><b>Estatus</b></TableCell>
+            <TableCell align="center"><b>Acciones</b></TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {movimientos.map((row) => (
+            <TableRow key={row.fi_movimiento_id}>
+              <TableCell>
+                {new Date(row.fd_fecha).toLocaleDateString("es-MX", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}
+              </TableCell>
+              <TableCell align="right">
+                {new Intl.NumberFormat("es-MX", {
+                  style: "currency",
+                  currency: "MXN",
+                  minimumFractionDigits: 2,
+                }).format(row.fn_ingreso || 0)}
+              </TableCell>
+              <TableCell align="right">
+                {new Intl.NumberFormat("es-MX", {
+                  style: "currency",
+                  currency: "MXN",
+                  minimumFractionDigits: 2,
+                }).format(row.fn_egreso || 0)}
+              </TableCell>
+              <TableCell>{row.fc_descripcion}</TableCell>
+              <TableCell>{row.fc_cuenta}</TableCell>
+              <TableCell>{row.fc_categoria}</TableCell>
+              <TableCell>{row.fc_subcategoria}</TableCell>
+              <TableCell>{row.fc_beneficiario}</TableCell>
+              <TableCell>{row.fc_noproyecto}</TableCell>
+              <TableCell>
+                {row.fc_factura && row.fc_factura !== "NO" ? (
+                  <a
+                    href={`http://localhost:5000${row.fc_factura}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: "#1D5C42",
+                      fontWeight: "bold",
+                      textDecoration: "none",
+                    }}
+                  >
+                     Ver factura
+                  </a>
+                ) : row.fc_factura === "NO" ? (
+                  "No aplica"
+                ) : (
+                  "Pendiente"
+                )}
+              </TableCell>
+              <TableCell>{row.fc_estatus}</TableCell>
+              <TableCell align="center">
+                <IconButton size="small" aria-label="Editar" onClick={() => onEdit(row)}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="error"
+                  aria-label="Eliminar"
+                  onClick={() => onDelete(row.fi_movimiento_id)}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          ))}
+          {movimientos.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={12} align="center">
+                No hay movimientos registrados para esta granja.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
 
 export default function FlujoCaja() {
   const [subTab, setSubTab] = useState(0);
@@ -47,6 +155,8 @@ export default function FlujoCaja() {
   //  Exportar Excel
   // =====================================================
   const exportarExcel = async () => {
+    const { default: ExcelJS } = await import("exceljs");
+    const { saveAs } = await import("file-saver");
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet("FlujoCaja");
     if (movimientos.length > 0) {
@@ -127,109 +237,6 @@ export default function FlujoCaja() {
     setSnack((prev) => ({ ...prev, open: false }));
   };
 
-  // =====================================================
-  //  Tabla
-  // =====================================================
-  const TablaMovimientos = () => (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead sx={{ background: "#f0f0f0" }}>
-          <TableRow>
-            <TableCell><b>Fecha</b></TableCell>
-            <TableCell align="right"><b>Ingreso</b></TableCell>
-            <TableCell align="right"><b>Egreso</b></TableCell>
-            <TableCell><b>Descripción</b></TableCell>
-            <TableCell><b>Cuenta</b></TableCell>
-            <TableCell><b>Categoría</b></TableCell>
-            <TableCell><b>Subcategoría</b></TableCell>
-            <TableCell><b>Beneficiario</b></TableCell>
-            <TableCell><b>Proyecto</b></TableCell>
-            <TableCell><b>Factura</b></TableCell>
-            <TableCell><b>Estatus</b></TableCell>
-            <TableCell align="center"><b>Acciones</b></TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {movimientos.map((row) => (
-            <TableRow key={row.fi_movimiento_id}>
-              <TableCell>
-                {new Date(row.fd_fecha).toLocaleDateString("es-MX", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
-              </TableCell>
-
-              {/*  Formato de dinero con símbolo y comas */}
-              <TableCell align="right">
-                {new Intl.NumberFormat("es-MX", {
-                  style: "currency",
-                  currency: "MXN",
-                  minimumFractionDigits: 2,
-                }).format(row.fn_ingreso || 0)}
-              </TableCell>
-
-              <TableCell align="right">
-                {new Intl.NumberFormat("es-MX", {
-                  style: "currency",
-                  currency: "MXN",
-                  minimumFractionDigits: 2,
-                }).format(row.fn_egreso || 0)}
-              </TableCell>
-
-              <TableCell>{row.fc_descripcion}</TableCell>
-              <TableCell>{row.fc_cuenta}</TableCell>
-              <TableCell>{row.fc_categoria}</TableCell>
-              <TableCell>{row.fc_subcategoria}</TableCell>
-              <TableCell>{row.fc_beneficiario}</TableCell>
-              <TableCell>{row.fc_noproyecto}</TableCell>
-              <TableCell>
-                {row.fc_factura && row.fc_factura !== "NO" ? (
-                  <a
-                    href={`http://localhost:5000${row.fc_factura}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      color: "#1D5C42",
-                      fontWeight: "bold",
-                      textDecoration: "none",
-                    }}
-                  >
-                     Ver factura
-                  </a>
-                ) : row.fc_factura === "NO" ? (
-                  "No aplica"
-                ) : (
-                  "Pendiente"
-                )}
-              </TableCell>
-              <TableCell>{row.fc_estatus}</TableCell>
-              <TableCell align="center">
-                <IconButton size="small" aria-label="Editar" onClick={() => handleOpen(row)}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  color="error"
-                  aria-label="Eliminar"
-                  onClick={() => handleDelete(row.fi_movimiento_id)}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
-          {movimientos.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={12} align="center">
-                No hay movimientos registrados para esta granja.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
 
   // =====================================================
   //  Render Principal
@@ -266,7 +273,7 @@ export default function FlujoCaja() {
           </Button>
         </Box>
 
-        <TablaMovimientos />
+        <TablaMovimientos movimientos={movimientos} onEdit={handleOpen} onDelete={handleDelete} />
       </Box>
 
       {/* Formularios y Modales */}

@@ -1,26 +1,45 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "../utils/api";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Card,
-  CardContent,
-  Grid,
-  Paper,
-  MenuItem,
-} from "@mui/material";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import MenuItem from "@mui/material/MenuItem";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
+
+const CirculoNumero = ({ color, value }) => (
+  <Box
+    component="span"
+    sx={{
+      width: 28,
+      height: 28,
+      borderRadius: "50%",
+      bgcolor: color,
+      color: "white",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontWeight: "bold",
+      fontSize: 14,
+      m: "0 auto",
+    }}
+  >
+    {value}
+  </Box>
+);
 
 export default function Reproductores() {
   return <ReproductoresContent />;
@@ -88,26 +107,6 @@ const colorDias = (dias) => {
   return "#c62828";
 };
 
-const CirculoNumero = ({ color, value }) => (
-  <Box
-    component="span"
-    sx={{
-      width: 28,
-      height: 28,
-      borderRadius: "50%",
-      bgcolor: color,
-      color: "white",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontWeight: "bold",
-      fontSize: 14,
-      m: "0 auto",
-    }}
-  >
-    {value}
-  </Box>
-);
   /* ===================== CARGA DE DATOS ===================== */
 
   const obtenerReproductores = useCallback(async () => {

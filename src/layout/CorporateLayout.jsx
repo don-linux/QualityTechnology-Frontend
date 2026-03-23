@@ -1,46 +1,42 @@
 // src/layout/CorporateLayout.jsx
 import React from "react";
-import {
-  Box,
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemText,
-  Toolbar,
-  AppBar,
-  Typography,
-  Avatar,
-  Button,
-  Collapse,
-  ListItemIcon,
-} from "@mui/material";
-import {
-  Dashboard,
-  Assignment,
-  Inventory,
-  Store,
-  AccountBalance,
-  People,
-  ExpandLess,
-  ExpandMore,
-  Handyman,
-  Science,
-  LocalMall,
-  LocalAtm,
-  Person,
-  Folder,
-  Savings,
-  BugReport,
-  ScienceOutlined,
-  LocalHospital,
-  CleaningServices,
-  Grass,
-  Biotech,
-  ReceiptLong,
-  LocationOn,
-  Menu as MenuIcon,
-  MenuOpen as MenuOpenIcon,
-} from "@mui/icons-material";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Toolbar from "@mui/material/Toolbar";
+import AppBar from "@mui/material/AppBar";
+import Typography from "@mui/material/Typography";
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import Collapse from "@mui/material/Collapse";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Dashboard from "@mui/icons-material/Dashboard";
+import Assignment from "@mui/icons-material/Assignment";
+import Inventory from "@mui/icons-material/Inventory";
+import Store from "@mui/icons-material/Store";
+import AccountBalance from "@mui/icons-material/AccountBalance";
+import People from "@mui/icons-material/People";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import Handyman from "@mui/icons-material/Handyman";
+import Science from "@mui/icons-material/Science";
+import LocalMall from "@mui/icons-material/LocalMall";
+import LocalAtm from "@mui/icons-material/LocalAtm";
+import Person from "@mui/icons-material/Person";
+import Folder from "@mui/icons-material/Folder";
+import Savings from "@mui/icons-material/Savings";
+import BugReport from "@mui/icons-material/BugReport";
+import ScienceOutlined from "@mui/icons-material/ScienceOutlined";
+import LocalHospital from "@mui/icons-material/LocalHospital";
+import CleaningServices from "@mui/icons-material/CleaningServices";
+import Grass from "@mui/icons-material/Grass";
+import Biotech from "@mui/icons-material/Biotech";
+import ReceiptLong from "@mui/icons-material/ReceiptLong";
+import LocationOn from "@mui/icons-material/LocationOn";
+import MenuIcon from "@mui/icons-material/Menu";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
@@ -194,7 +190,7 @@ export default function CorporateLayout() {
             src={`${""}/images/quality.png`}
             alt="Logo"
             width={drawerOpen ? "110" : "40"}
-            style={{ marginTop: "10px", transition: "all 0.3s ease" }}
+            style={{ marginTop: "10px", transition: "width 0.3s ease" }}
           />
         </Box>
 

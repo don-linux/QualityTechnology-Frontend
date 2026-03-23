@@ -1,24 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Grid,
-  TextField,
-  Button,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Paper,
-} from "@mui/material";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableBody from "@mui/material/TableBody";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import Paper from "@mui/material/Paper";
 import axios from "../utils/axiosInstance.js";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { Edit, PictureAsPdf } from "@mui/icons-material";
+import Edit from "@mui/icons-material/Edit";
+import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
 
 export default function Nomina() {
   const [form, setForm] = useState({
@@ -113,7 +110,9 @@ export default function Nomina() {
     setData(res.data);
   };
 
-  const exportarPDF = () => {
+  const exportarPDF = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
     doc.text("Reporte de Nómina", 14, 15);
     autoTable(doc, {

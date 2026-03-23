@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Button } from "@mui/material";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
 
 const PanelEmpresa = () => {
   const [nombreGranja, setNombreGranja] = useState("");

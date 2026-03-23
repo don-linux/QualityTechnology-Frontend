@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Box,
-  Card,
-  Grid,
-  Button,
-  Typography,
-  TextField,
-  MenuItem,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Autocomplete,
-} from "@mui/material";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import Grid from "@mui/material/Grid";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import Autocomplete from "@mui/material/Autocomplete";
 import axios from "../utils/axiosInstance.js";
 
 const API = `${API_URL}/ventas`;

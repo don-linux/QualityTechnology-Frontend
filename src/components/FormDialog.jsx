@@ -1,16 +1,14 @@
 // src/components/FormDialog.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Grid,
-  TextField,
-  Button,
-  MenuItem,
-} from "@mui/material";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
 import axios from "../utils/axiosInstance.js";
 
 const FormDialog = React.memo(
@@ -19,26 +17,20 @@ const FormDialog = React.memo(
     const [proveedores, setProveedores] = useState([]);
     const [cuentas, setCuentas] = useState([]);
 
-    //  Cargar clientes, proveedores y cuentas al abrir el modal
-    useEffect(() => {
-      if (open) {
-        const fetchDatos = async () => {
-          try {
-            const [resClientes, resProveedores, resCuentas] = await Promise.all([
-              axios.get(`${API_URL}/flujo-caja/clientes`),
-              axios.get(`${API_URL}/flujo-caja/proveedores`),
-              axios.get(`${API_URL}/cuentas`),
-            ]);
-            setClientes(resClientes.data);
-            setProveedores(resProveedores.data);
-            setCuentas(resCuentas.data);
-          } catch (err) {
-            console.error(" Error al obtener datos:", err);
-          }
-        };
-        fetchDatos();
+    const fetchDatos = useCallback(async () => {
+      try {
+        const [resClientes, resProveedores, resCuentas] = await Promise.all([
+          axios.get(`${API_URL}/flujo-caja/clientes`),
+          axios.get(`${API_URL}/flujo-caja/proveedores`),
+          axios.get(`${API_URL}/cuentas`),
+        ]);
+        setClientes(resClientes.data);
+        setProveedores(resProveedores.data);
+        setCuentas(resCuentas.data);
+      } catch (err) {
+        console.error("Error al obtener datos:", err);
       }
-    }, [open]);
+    }, []);
 
     const handleChange = (e) => {
       setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value ?? "" }));
@@ -49,7 +41,7 @@ const FormDialog = React.memo(
     };
 
     return (
-      <Dialog open={open} onClose={onClose} fullWidth>
+      <Dialog open={open} onClose={onClose} fullWidth TransitionProps={{ onEnter: () => fetchDatos() }}>
         <DialogTitle>{editId ? "Editar Movimiento" : "Nuevo Movimiento"}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -184,15 +176,15 @@ const FormDialog = React.memo(
                 }}
               >
                 {Number(formData.fn_ingreso) > 0 &&
-                  clientes.map((cli, i) => (
-                    <MenuItem key={i} value={cli.nombre}>
+                  clientes.map((cli) => (
+                    <MenuItem key={cli.nombre} value={cli.nombre}>
                       {cli.nombre}
                     </MenuItem>
                   ))}
 
                 {Number(formData.fn_egreso) > 0 &&
-                  proveedores.map((prov, i) => (
-                    <MenuItem key={i} value={prov.nombre}>
+                  proveedores.map((prov) => (
+                    <MenuItem key={prov.nombre} value={prov.nombre}>
                       {prov.nombre}
                     </MenuItem>
                   ))}

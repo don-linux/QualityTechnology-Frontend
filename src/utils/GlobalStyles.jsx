@@ -1,5 +1,5 @@
 // src/utils/GlobalStyles.jsx
-import { GlobalStyles } from "@mui/material";
+import GlobalStyles from "@mui/material/GlobalStyles";
 
 export default function CustomGlobalStyles() {
   return (

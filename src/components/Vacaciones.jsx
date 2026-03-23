@@ -1,31 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { API_URL } from "../utils/api.js";
-import {
-  Button,
-  TextField,
-  Box,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from "@mui/material";
-import {
-  CleaningServices,
-  EventAvailable,
-  Delete,
-  Add,
-  DeleteForever,
-  Edit,
-} from "@mui/icons-material";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Grid from "@mui/material/Grid";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import CleaningServices from "@mui/icons-material/CleaningServices";
+import EventAvailable from "@mui/icons-material/EventAvailable";
+import Delete from "@mui/icons-material/Delete";
+import Add from "@mui/icons-material/Add";
+import DeleteForever from "@mui/icons-material/DeleteForever";
+import Edit from "@mui/icons-material/Edit";
 import axios from "../utils/axiosInstance.js";
 
 const api = `${API_URL}/vacaciones`;
@@ -293,9 +289,9 @@ export default function Vacaciones() {
                 "Disponibles",
                 "Disfrutadas",
                 "Acciones",
-              ].map((col, i) => (
+              ].map((col) => (
                 <TableCell
-                  key={i}
+                  key={col}
                   sx={{
                     color: "white",
                     fontWeight: "bold",
@@ -356,9 +352,9 @@ export default function Vacaciones() {
                     "fn_vacaciones_anio",
                     "fn_dias_previos",
                     "fn_vacaciones_disfrutadas",
-                  ].map((campo, idx) => (
+                  ].map((campo) => (
                     <TableCell
-                      key={idx}
+                      key={campo}
                       align="center"
                       sx={
                         ["fn_vacaciones_anio", "fn_dias_previos"].includes(campo)
