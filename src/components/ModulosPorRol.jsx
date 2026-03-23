@@ -22,6 +22,16 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 
+const MENUS_PRINCIPALES = new Set([
+  "Operaciones",
+  "Inventarios",
+  "Ventas",
+  "Finanzas",
+  "RRHH",
+  "Catálogos",
+  "Seguridad",
+]);
+
 export default function RolesModulos() {
   const [roles, setRoles] = useState([]);
   const [modulos, setModulos] = useState([]);
@@ -90,7 +100,8 @@ export default function RolesModulos() {
   // ================================
   const abrirEdicion = (rol) => {
     setRolEditando(rol);
-    setModulosSeleccionados(rolesModulos[rol.fi_rol_id] || []);
+    const ids = rolesModulos[rol.fi_rol_id] || [];
+    setModulosSeleccionados(ids.filter((id) => idsPrincipales.has(id)));
     setDrawerOpen(true);
   };
 
@@ -103,17 +114,18 @@ export default function RolesModulos() {
     setModulosSeleccionados([]);
   };
 
-  // ================================
-  // Manejar selección checkbox
-  // ================================
+  const modulosPrincipales = modulos.filter(
+    (m) => MENUS_PRINCIPALES.has(m.fc_nombre?.trim())
+  );
+
+  const idsPrincipales = new Set(modulosPrincipales.map((m) => m.fi_modulo_id));
+
   const handleCheckbox = (moduloId) => {
-    if (modulosSeleccionados.includes(moduloId)) {
-      setModulosSeleccionados(
-        modulosSeleccionados.filter((id) => id !== moduloId)
-      );
-    } else {
-      setModulosSeleccionados([...modulosSeleccionados, moduloId]);
-    }
+    setModulosSeleccionados((prev) =>
+      prev.includes(moduloId)
+        ? prev.filter((id) => id !== moduloId)
+        : [...prev, moduloId]
+    );
   };
 
   // ================================
@@ -144,11 +156,9 @@ export default function RolesModulos() {
     }
   };
 
-  // ================================
-  // Contar módulos activos
-  // ================================
   const contarModulosActivos = (rolId) => {
-    return rolesModulos[rolId]?.length || 0;
+    const ids = rolesModulos[rolId] || [];
+    return ids.filter((id) => idsPrincipales.has(id)).length;
   };
 
   return (
@@ -180,7 +190,7 @@ export default function RolesModulos() {
 
                 <TableCell align="center">
                   <Chip
-                    label={`${contarModulosActivos(rol.fi_rol_id)} / ${modulos.length}`}
+                    label={`${contarModulosActivos(rol.fi_rol_id)} / ${modulosPrincipales.length}`}
                     color={contarModulosActivos(rol.fi_rol_id) > 0 ? "primary" : "default"}
                     size="small"
                   />
@@ -241,7 +251,7 @@ export default function RolesModulos() {
             </Typography>
 
             <FormGroup>
-              {modulos.map((modulo) => (
+              {modulosPrincipales.map((modulo) => (
                 <FormControlLabel
                   key={modulo.fi_modulo_id}
                   control={
