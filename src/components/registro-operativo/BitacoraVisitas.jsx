@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { API_URL } from "../../utils/api.js";
+import { API_URL, getUploadUrl } from "../../utils/api.js";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -392,7 +392,20 @@ function BitacoraVisitasContent() {
                 <TableCell>{r.fc_nombre_completo}</TableCell>
                 <TableCell>{r.fc_origen}</TableCell>
                 <TableCell>{r.fc_motivo}</TableCell>
-                <TableCell>{r.fc_foto_identificacion}</TableCell>
+                <TableCell>
+                  {r.fc_foto_identificacion ? (
+                    <a
+                      href={getUploadUrl(r.fc_foto_identificacion)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
+                    >
+                      Ver foto
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </TableCell>
                 <TableCell>{r.fd_entrada}</TableCell>
                 <TableCell>{r.fd_salida}</TableCell>
                 <TableCell>{r.fc_observaciones}</TableCell>

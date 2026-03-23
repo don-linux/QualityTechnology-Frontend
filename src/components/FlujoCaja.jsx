@@ -21,7 +21,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "../utils/axiosInstance.js";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
-import { API_URL } from "../utils/api.js";
+import { API_URL, getUploadUrl } from "../utils/api.js";
 
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
 const API = API_URL;
@@ -79,7 +79,7 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
               <TableCell>
                 {row.fc_factura && row.fc_factura !== "NO" ? (
                   <a
-                    href={`http://localhost:5000${row.fc_factura}`}
+                    href={getUploadUrl(row.fc_factura)}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{

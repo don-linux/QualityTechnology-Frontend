@@ -51,6 +51,7 @@ const Login = () => {
 
       localStorage.setItem("auth", "true");
       localStorage.setItem("token", data.token || "");
+      localStorage.setItem("refreshToken", data.refreshToken || "");
       localStorage.setItem("rol", rolNormalizado);
       localStorage.setItem("nombre", data.usuario.nombre || "Usuario");
       localStorage.setItem("usuario_id", usuarioId.toString());

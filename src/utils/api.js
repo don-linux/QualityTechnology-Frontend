@@ -4,6 +4,13 @@ export const API_URL =
     import.meta.env.VITE_API_URL) ||
   "http://localhost:5000";
 
+export function getUploadUrl(path) {
+  if (!path) return null;
+  const token = localStorage.getItem("token");
+  const url = path.startsWith("http") ? path : `${API_URL}${path}`;
+  return token ? `${url}?token=${token}` : url;
+}
+
 export async function apiFetch(endpoint, options = {}) {
   const token = localStorage.getItem("token");
 
