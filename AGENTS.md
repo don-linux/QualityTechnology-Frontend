@@ -79,7 +79,6 @@
 - Branch from `dev`; open PRs into `dev`.
 - Branch names from `CONTRIBUTING.md`: `feature/*`, `fix/*`, `chore/*`, `docs/*`, `refactor/*`.
 - Do not commit generated output or local artifacts (`dist/`, `node_modules/`, `.env`).
-- Before handoff, run at least `npm test` and ideally `npm run build` for risky UI changes.
 
 ## Agent Completion Checklist
 

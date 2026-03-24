@@ -1,47 +1,31 @@
-# BUN ENVIRONMENT.md
-
 ---
-description: "Use bun and bunx when running npm or node commands and scripts and ensure all commands are compatible with bun's ecosystem."
-
+description: "This container does NOT have Node or npm installed. Always use bun and bunx to run scripts, install dependencies, and execute commands."
 alwaysApply: true
 ---
 
-## Guidelines for using bun as the primary runtime environment for JavaScript and TypeScript projects:
+# Bun Environment
 
-- Use `bun` as the primary runtime for executing JavaScript and TypeScript code.
+This project runs in a container where **only Bun is installed**. The `node`, `npm`, `npx`, and `yarn` binaries **do not exist** and any command using them will fail.
 
-- Avoid the use of `node` for running scripts and commands like as it may not be fully compatible with bun's environment and features
+## Main rule
 
-## Good examples of bun commands
+NEVER run `npm`, `npx`, `node`, or `yarn` in the terminal. Always use the Bun equivalent.
 
-bun run start
-bun run dev
-bun run build
-bunx some-node-specific-command
+## Substitution table
 
-## Bad examples (Running commands that are not compatible with bun)
+| Forbidden                | Use instead                |
+|--------------------------|----------------------------|
+| `npm install`            | `bun install`              |
+| `npm ci`                 | `bun install --frozen-lockfile` |
+| `npm run <script>`       | `bun run <script>`         |
+| `npm test`               | `bun test`                 |
+| `npx <package>`          | `bunx <package>`           |
+| `node <file>`            | `bun <file>`               |
+| `yarn add <package>`     | `bun add <package>`        |
 
-npm start
-npm run dev
-npm run build
-node some-node-specific-command
-yarn start
-yarn run dev
-yarn run build
+## Notes
 
-## Additional guidelines
-
-- Stay updated with bun's documentation and community resources to keep up with any changes or updates to the bun environment and ecosystem for that you can use Context7 MCP (See the rule context7.md)
-
-- Avoid using npm or yarn for package management, and instead use bun's built-in package manager for installing 
-dependencies and managing packages.
-
-- Use `bunx` for running scripts and commands that are not natively supported by bun, such as those that require node-specific features or dependencies.
-
-- Ensure that all commands and scripts are compatible with bun's ecosystem, and avoid using features or dependencies that are not supported by bun.
-
-- When writing scripts, prefer using bun's built-in features and APIs to ensure optimal performance and compatibility.
-
-- If you need to use a package that is not available in bun's ecosystem, consider finding an alternative package that is compatible with bun, or contribute to the bun ecosystem by creating a compatible version of the package.
-
-- Regularly test your code and scripts in the bun environment to ensure they work as expected and are compatible with bun's features and limitations.
+- `package.json` and its scripts remain valid; only the executable that invokes them changes.
+- To add dependencies: `bun add <package>` (dev: `bun add -d <package>`).
+- To remove dependencies: `bun remove <package>`.
+- The project lockfile is `bun.lock`; do not generate `package-lock.json` or `yarn.lock`.

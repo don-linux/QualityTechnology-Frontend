@@ -1,5 +1,3 @@
-# CONTEXT7.md
-
 ---
 description: "Useful context mcp for the project, including guidelines and best practices."
 
