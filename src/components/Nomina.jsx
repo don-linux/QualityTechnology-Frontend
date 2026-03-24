@@ -16,6 +16,7 @@ import Paper from "@mui/material/Paper";
 import axios from "../utils/axiosInstance.js";
 import Edit from "@mui/icons-material/Edit";
 import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
+import useFormValidation from "../hooks/useFormValidation";
 
 export default function Nomina() {
   const [form, setForm] = useState({
@@ -35,6 +36,24 @@ export default function Nomina() {
   const [busqueda, setBusqueda] = useState({ nombre: "", fecha: "" });
 
   const api = `${API_URL}/nomina`;
+
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fc_nombre_empleado",
+    "fi_empleado_id",
+    "fd_fecha_pago",
+    "fn_total",
+    "fn_bono",
+    "fn_deuda",
+    "fn_descuento",
+    "fn_anticipo",
+  ];
+
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const cargarDatos = async () => {
     const res = await axios.get(api);
@@ -75,6 +94,7 @@ export default function Nomina() {
   };
 
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     const payload = prepararPayload();
     if (!payload) return;
 
@@ -100,6 +120,7 @@ export default function Nomina() {
       fi_usuario_id: 1,
     });
     setEditId(null);
+    clearErrors();
   };
 
   const buscar = async () => {
@@ -138,28 +159,28 @@ export default function Nomina() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField label="Nombre del empleado" name="fc_nombre_empleado" value={form.fc_nombre_empleado} onChange={(e) => setForm({ ...form, fc_nombre_empleado: e.target.value })} fullWidth />
+              <TextField label="Nombre del empleado" name="fc_nombre_empleado" value={form.fc_nombre_empleado} onChange={handleChange} fullWidth error={!!errors.fc_nombre_empleado} helperText={errors.fc_nombre_empleado} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="ID" type="number" name="fi_empleado_id" value={form.fi_empleado_id} onChange={(e) => setForm({ ...form, fi_empleado_id: e.target.value })} fullWidth />
+              <TextField label="ID" type="number" name="fi_empleado_id" value={form.fi_empleado_id} onChange={handleChange} fullWidth error={!!errors.fi_empleado_id} helperText={errors.fi_empleado_id} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Fecha de Pago" type="date" name="fd_fecha_pago" InputLabelProps={{ shrink: true }} value={form.fd_fecha_pago} onChange={(e) => setForm({ ...form, fd_fecha_pago: e.target.value })} fullWidth />
+              <TextField label="Fecha de Pago" type="date" name="fd_fecha_pago" InputLabelProps={{ shrink: true }} value={form.fd_fecha_pago} onChange={handleChange} fullWidth error={!!errors.fd_fecha_pago} helperText={errors.fd_fecha_pago} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Total" type="number" name="fn_total" value={form.fn_total} onChange={(e) => setForm({ ...form, fn_total: e.target.value })} fullWidth />
+              <TextField label="Total" type="number" name="fn_total" value={form.fn_total} onChange={handleChange} fullWidth error={!!errors.fn_total} helperText={errors.fn_total} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="Bono" type="number" name="fn_bono" value={form.fn_bono} onChange={(e) => setForm({ ...form, fn_bono: e.target.value })} fullWidth />
+              <TextField label="Bono" type="number" name="fn_bono" value={form.fn_bono} onChange={handleChange} fullWidth error={!!errors.fn_bono} helperText={errors.fn_bono} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="Deuda" type="number" name="fn_deuda" value={form.fn_deuda} onChange={(e) => setForm({ ...form, fn_deuda: e.target.value })} fullWidth />
+              <TextField label="Deuda" type="number" name="fn_deuda" value={form.fn_deuda} onChange={handleChange} fullWidth error={!!errors.fn_deuda} helperText={errors.fn_deuda} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="Descuento" type="number" name="fn_descuento" value={form.fn_descuento} onChange={(e) => setForm({ ...form, fn_descuento: e.target.value })} fullWidth />
+              <TextField label="Descuento" type="number" name="fn_descuento" value={form.fn_descuento} onChange={handleChange} fullWidth error={!!errors.fn_descuento} helperText={errors.fn_descuento} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="Anticipo" type="number" name="fn_anticipo" value={form.fn_anticipo} onChange={(e) => setForm({ ...form, fn_anticipo: e.target.value })} fullWidth />
+              <TextField label="Anticipo" type="number" name="fn_anticipo" value={form.fn_anticipo} onChange={handleChange} fullWidth error={!!errors.fn_anticipo} helperText={errors.fn_anticipo} />
             </Grid>
           </Grid>
 
@@ -214,7 +235,7 @@ export default function Nomina() {
                 <TableCell>${r.fn_anticipo}</TableCell>
                 <TableCell>{r.fd_fecha_pago?.split("T")[0]}</TableCell>
                 <TableCell>
-                  <Button size="small" color="warning" variant="contained" onClick={() => setForm(r)}>
+                  <Button size="small" color="warning" variant="contained" onClick={() => { clearErrors(); setForm(r); }}>
                     <Edit fontSize="small" />
                   </Button>
                 </TableCell>

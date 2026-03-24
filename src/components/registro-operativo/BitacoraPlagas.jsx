@@ -17,6 +17,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
 import SearchIcon from "@mui/icons-material/Search";
 import axiosInstance from "../../utils/axiosInstance";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function BitacoraPlagasContent() {
   const [form, setForm] = useState({
@@ -36,6 +37,13 @@ function BitacoraPlagasContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fd_fecha", "fc_num_trampa", "tipo_trampa", "fc_hallazgo",
+    "fc_malla", "fc_veneno", "fc_observaciones", "fc_verifico",
+    "unidad_produccion",
+  ];
 
   //  Opciones para selects
   const tiposTrampa = ["Adhesiva", "Cebadera", "Mecánica", "Luz UV", "Otro"];
@@ -43,7 +51,10 @@ function BitacoraPlagasContent() {
   const tiposVeneno = ["Rodenticida", "Gel", "Granulado", "Líquido", "Ninguno"];
   const unidadesProduccion = ["Engorda", "Alevinaje", "Reproductores"];
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
@@ -68,6 +79,7 @@ function BitacoraPlagasContent() {
 
   //  Guardar o actualizar
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId)
         await axiosInstance.put(`/plagas/${editId}`, form);
@@ -94,6 +106,7 @@ function BitacoraPlagasContent() {
   };
 
   const editar = (r) => {
+    clearErrors();
     setEditId(r.fi_id);
     setForm({ ...r, fd_fecha: r.fd_fecha?.split("T")[0] });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -235,6 +248,8 @@ function BitacoraPlagasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fd_fecha}
+                helperText={errors.fd_fecha}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
@@ -245,6 +260,8 @@ function BitacoraPlagasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_num_trampa}
+                helperText={errors.fc_num_trampa}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
@@ -256,6 +273,8 @@ function BitacoraPlagasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.tipo_trampa}
+                helperText={errors.tipo_trampa}
               >
                 {tiposTrampa.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
@@ -271,6 +290,8 @@ function BitacoraPlagasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.unidad_produccion}
+                helperText={errors.unidad_produccion}
               >
                 {unidadesProduccion.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
@@ -287,6 +308,8 @@ function BitacoraPlagasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_malla}
+                helperText={errors.fc_malla}
               >
                 {tiposMalla.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
@@ -302,6 +325,8 @@ function BitacoraPlagasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_veneno}
+                helperText={errors.fc_veneno}
               >
                 {tiposVeneno.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
@@ -316,6 +341,8 @@ function BitacoraPlagasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_verifico}
+                helperText={errors.fc_verifico}
               />
             </Grid>
 
@@ -327,6 +354,8 @@ function BitacoraPlagasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_hallazgo}
+                helperText={errors.fc_hallazgo}
               />
             </Grid>
 
@@ -340,6 +369,8 @@ function BitacoraPlagasContent() {
                 multiline
                 rows={2}
                 size="small"
+                error={!!errors.fc_observaciones}
+                helperText={errors.fc_observaciones}
               />
             </Grid>
           </Grid>

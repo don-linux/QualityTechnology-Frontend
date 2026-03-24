@@ -19,6 +19,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
+import useFormValidation from "../hooks/useFormValidation";
 
 const CirculoNumero = ({ color, value }) => (
   <Box
@@ -47,6 +48,14 @@ export default function Reproductores() {
 
 function ReproductoresContent() {
   const usuario_id = localStorage.getItem("usuario_id");
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "origen_instalacion", "origen_texto", "fc_instalacion",
+    "fn_machos", "fn_hembras", "fn_talla", "fc_linea",
+    "fc_familia", "fc_observacion", "fd_fecha_siembra",
+    "fd_fecha_biometria",
+  ];
 
   const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
   const [reproductores, setReproductores] = useState([]);
@@ -180,6 +189,7 @@ const colorDias = (dias) => {
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
+    clearErrors();
   };
 
   const handleChange = (e) => {
@@ -203,14 +213,13 @@ const colorDias = (dias) => {
     }
 
     setForm(updated);
+    clearFieldError(name);
   };
 
   /* ===================== ACCIONES ===================== */
 
   const registrarReproductor = async () => {
-    if (!form.fc_instalacion || !form.fn_cantidad) {
-      return alert(" Selecciona destino y cantidad");
-    }
+    if (!validate(form, requiredFields)) return;
 
     await apiFetch("/reproductores", {
       method: "POST",
@@ -228,6 +237,7 @@ const colorDias = (dias) => {
   };
 
   const editarReproductor = (r) => {
+    clearErrors();
     setSeleccionado(r);
 
     setForm({
@@ -250,6 +260,7 @@ const colorDias = (dias) => {
   };
 
   const guardarEdicion = async () => {
+    if (!validate(form, requiredFields)) return;
     await apiFetch(`/reproductores/${seleccionado.fi_reproductor_id}`, {
       method: "PUT",
       body: JSON.stringify({
@@ -372,6 +383,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                   value={form.origen_instalacion}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.origen_instalacion}
+                  helperText={errors.origen_instalacion}
                 >
                   <MenuItem value="">Seleccione</MenuItem>
                   {instalaciones.map((i) => (
@@ -393,6 +406,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                   value={form.origen_texto}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.origen_texto}
+                  helperText={errors.origen_texto}
                 />
               </Grid>
             )}
@@ -406,6 +421,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     value={form.fc_instalacion}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors.fc_instalacion}
+                    helperText={errors.fc_instalacion}
                   >
                     <MenuItem value="">Seleccione</MenuItem>
                     {instalaciones.map((i) => (
@@ -428,6 +445,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     value={form.fn_machos}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors.fn_machos}
+                    helperText={errors.fn_machos}
                   />
                 </Grid>
                 <Grid size={4}>
@@ -438,6 +457,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     value={form.fn_hembras}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors.fn_hembras}
+                    helperText={errors.fn_hembras}
                   />
                 </Grid>
                 <Grid size={4}>
@@ -459,6 +480,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     value={form.fn_talla}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors.fn_talla}
+                    helperText={errors.fn_talla}
                   />
                 </Grid>
 
@@ -471,6 +494,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     value={form.fc_linea}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors.fc_linea}
+                    helperText={errors.fc_linea}
                   />
                 </Grid>
 
@@ -482,6 +507,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     value={form.fc_familia}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors.fc_familia}
+                    helperText={errors.fc_familia}
                   />
                 </Grid>
 
@@ -506,6 +533,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     onChange={handleChange}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
+                    error={!!errors.fd_fecha_siembra}
+                    helperText={errors.fd_fecha_siembra}
                   />
                 </Grid>
 
@@ -519,6 +548,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     onChange={handleChange}
                     fullWidth
                     InputLabelProps={{ shrink: true }}
+                    error={!!errors.fd_fecha_biometria}
+                    helperText={errors.fd_fecha_biometria}
                   />
                 </Grid>
 
@@ -531,6 +562,8 @@ Pronto conectaremos este botón con traspasos internos.`);
                     value={form.fc_observacion}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors.fc_observacion}
+                    helperText={errors.fc_observacion}
                   />
                 </Grid>
               </Grid>

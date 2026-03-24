@@ -26,6 +26,7 @@ import Delete from "@mui/icons-material/Delete";
 import Build from "@mui/icons-material/Build";
 import Close from "@mui/icons-material/Close";
 import axios from "../utils/axiosInstance.js";
+import useFormValidation from "../hooks/useFormValidation";
 
 function EquiposContent() {
   const usuario_id = localStorage.getItem("usuario_id");
@@ -66,10 +67,30 @@ function EquiposContent() {
     fd_proximo_mantenimiento: "",
   });
 
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const requiredFields = [
+    "fc_nombre", "fc_marca", "fc_modelo", "fc_tipo",
+    "fd_fecha_compra", "fn_costo", "fc_estado", "fc_ubicacion",
+    "fc_responsable", "fd_proximo_mantenimiento", "fc_notas",
+  ];
+
+  const {
+    errors: mantErrors,
+    validate: validateMant,
+    clearFieldError: clearMantFieldError,
+    clearErrors: clearMantErrors,
+  } = useFormValidation();
+  const mantRequiredFields = [
+    "fd_fecha", "fc_tipo", "fc_responsable", "fc_descripcion",
+    "fn_costo", "fc_estado_post", "fd_proximo_mantenimiento",
+  ];
+
   const api = `${API_URL}/equipos`;
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
+  };
 
   //  Cargar equipos
   const cargarDatos = useCallback(async () => {
@@ -92,6 +113,7 @@ function EquiposContent() {
 
   //  Guardar / actualizar
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
         await axios.put(`${api}/${editId}`, form);
@@ -120,6 +142,7 @@ function EquiposContent() {
   };
 
   const editar = (row) => {
+    clearErrors();
     setEditId(row.fi_equipo_id);
     setForm({
       fc_nombre: row.fc_nombre,
@@ -174,6 +197,7 @@ function EquiposContent() {
       fc_notas: "",
     });
     setEditId(null);
+    clearErrors();
     setSnackbar({
       open: true,
       message: "Formulario limpiado correctamente",
@@ -190,6 +214,7 @@ function EquiposContent() {
   };
 
   const agregarMantenimiento = async () => {
+    if (!validateMant(nuevoMantenimiento, mantRequiredFields)) return;
     try {
       await axios.post(`${api}/${editId}/mantenimientos`, nuevoMantenimiento);
       const res = await axios.get(`${api}/${editId}/mantenimientos`);
@@ -199,6 +224,7 @@ function EquiposContent() {
         message: " Mantenimiento registrado correctamente",
         severity: "success",
       });
+      clearMantErrors();
       setNuevoMantenimiento({
         fd_fecha: "",
         fc_tipo: "Preventivo",
@@ -290,6 +316,8 @@ function EquiposContent() {
                 value={form.fc_nombre}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_nombre}
+                helperText={errors.fc_nombre}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -299,6 +327,8 @@ function EquiposContent() {
                 value={form.fc_marca}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_marca}
+                helperText={errors.fc_marca}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -308,6 +338,8 @@ function EquiposContent() {
                 value={form.fc_modelo}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_modelo}
+                helperText={errors.fc_modelo}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -317,6 +349,8 @@ function EquiposContent() {
                 value={form.fc_tipo}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_tipo}
+                helperText={errors.fc_tipo}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -328,6 +362,8 @@ function EquiposContent() {
                 value={form.fd_fecha_compra}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fd_fecha_compra}
+                helperText={errors.fd_fecha_compra}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -338,6 +374,8 @@ function EquiposContent() {
                 value={form.fn_costo}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_costo}
+                helperText={errors.fn_costo}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -348,6 +386,8 @@ function EquiposContent() {
                 value={form.fc_estado}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_estado}
+                helperText={errors.fc_estado}
               >
                 <MenuItem value="Operativo">Operativo</MenuItem>
                 <MenuItem value="En mantenimiento">En mantenimiento</MenuItem>
@@ -361,6 +401,8 @@ function EquiposContent() {
                 value={form.fc_ubicacion}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_ubicacion}
+                helperText={errors.fc_ubicacion}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -370,6 +412,8 @@ function EquiposContent() {
                 value={form.fc_responsable}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_responsable}
+                helperText={errors.fc_responsable}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -381,6 +425,8 @@ function EquiposContent() {
                 value={form.fd_proximo_mantenimiento}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fd_proximo_mantenimiento}
+                helperText={errors.fd_proximo_mantenimiento}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -392,6 +438,8 @@ function EquiposContent() {
                 fullWidth
                 multiline
                 rows={2}
+                error={!!errors.fc_notas}
+                helperText={errors.fc_notas}
               />
             </Grid>
           </Grid>
@@ -504,13 +552,16 @@ function EquiposContent() {
                 name="fd_fecha"
                 InputLabelProps={{ shrink: true }}
                 value={nuevoMantenimiento.fd_fecha}
-                onChange={(e) =>
+                onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
                     fd_fecha: e.target.value,
-                  })
-                }
+                  });
+                  clearMantFieldError("fd_fecha");
+                }}
                 fullWidth
+                error={!!mantErrors.fd_fecha}
+                helperText={mantErrors.fd_fecha}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -519,13 +570,16 @@ function EquiposContent() {
                 label="Tipo"
                 name="fc_tipo"
                 value={nuevoMantenimiento.fc_tipo}
-                onChange={(e) =>
+                onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
                     fc_tipo: e.target.value,
-                  })
-                }
+                  });
+                  clearMantFieldError("fc_tipo");
+                }}
                 fullWidth
+                error={!!mantErrors.fc_tipo}
+                helperText={mantErrors.fc_tipo}
               >
                 <MenuItem value="Preventivo">Preventivo</MenuItem>
                 <MenuItem value="Correctivo">Correctivo</MenuItem>
@@ -536,13 +590,16 @@ function EquiposContent() {
                 label="Responsable"
                 name="fc_responsable"
                 value={nuevoMantenimiento.fc_responsable}
-                onChange={(e) =>
+                onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
                     fc_responsable: e.target.value,
-                  })
-                }
+                  });
+                  clearMantFieldError("fc_responsable");
+                }}
                 fullWidth
+                error={!!mantErrors.fc_responsable}
+                helperText={mantErrors.fc_responsable}
               />
             </Grid>
             <Grid size={12}>
@@ -550,15 +607,18 @@ function EquiposContent() {
                 label="Descripción"
                 name="fc_descripcion"
                 value={nuevoMantenimiento.fc_descripcion}
-                onChange={(e) =>
+                onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
                     fc_descripcion: e.target.value,
-                  })
-                }
+                  });
+                  clearMantFieldError("fc_descripcion");
+                }}
                 multiline
                 rows={2}
                 fullWidth
+                error={!!mantErrors.fc_descripcion}
+                helperText={mantErrors.fc_descripcion}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -567,13 +627,16 @@ function EquiposContent() {
                 type="number"
                 name="fn_costo"
                 value={nuevoMantenimiento.fn_costo}
-                onChange={(e) =>
+                onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
                     fn_costo: e.target.value,
-                  })
-                }
+                  });
+                  clearMantFieldError("fn_costo");
+                }}
                 fullWidth
+                error={!!mantErrors.fn_costo}
+                helperText={mantErrors.fn_costo}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -581,13 +644,16 @@ function EquiposContent() {
                 label="Estado Posterior"
                 name="fc_estado_post"
                 value={nuevoMantenimiento.fc_estado_post}
-                onChange={(e) =>
+                onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
                     fc_estado_post: e.target.value,
-                  })
-                }
+                  });
+                  clearMantFieldError("fc_estado_post");
+                }}
                 fullWidth
+                error={!!mantErrors.fc_estado_post}
+                helperText={mantErrors.fc_estado_post}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -597,13 +663,16 @@ function EquiposContent() {
                 name="fd_proximo_mantenimiento"
                 InputLabelProps={{ shrink: true }}
                 value={nuevoMantenimiento.fd_proximo_mantenimiento}
-                onChange={(e) =>
+                onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
                     fd_proximo_mantenimiento: e.target.value,
-                  })
-                }
+                  });
+                  clearMantFieldError("fd_proximo_mantenimiento");
+                }}
                 fullWidth
+                error={!!mantErrors.fd_proximo_mantenimiento}
+                helperText={mantErrors.fd_proximo_mantenimiento}
               />
             </Grid>
           </Grid>

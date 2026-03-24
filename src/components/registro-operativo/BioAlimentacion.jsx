@@ -14,6 +14,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function BioAlimentacionContent() {
   const [form, setForm] = useState({
@@ -35,9 +36,19 @@ function BioAlimentacionContent() {
 
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
-  const handleChange = (e) =>
+  const requiredFields = [
+    "fc_mes", "fn_num_instalacion", "fn_peso_promedio_entrada",
+    "fd_fecha_siembra", "fc_origen_alevines", "fd_fecha",
+    "fn_total_alimento_kg", "fn_mortalidad", "fc_recambio_agua",
+    "fn_temp_agua", "fn_amonio", "fn_ph", "fc_observaciones",
+  ];
+
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const cargarDatos = async () => {
     try {
@@ -53,6 +64,7 @@ function BioAlimentacionContent() {
   }, []);
 
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
         await axios.put(
@@ -90,6 +102,7 @@ function BioAlimentacionContent() {
   };
 
   const editar = (row) => {
+    clearErrors();
     setEditId(row.fi_id);
     setForm({
       fc_mes: row.fc_mes,
@@ -206,6 +219,8 @@ function BioAlimentacionContent() {
                 value={form.fc_mes}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_mes}
+                helperText={errors.fc_mes}
               />
             </Grid>
 
@@ -217,6 +232,8 @@ function BioAlimentacionContent() {
                 value={form.fn_num_instalacion}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_num_instalacion}
+                helperText={errors.fn_num_instalacion}
               />
             </Grid>
 
@@ -228,6 +245,8 @@ function BioAlimentacionContent() {
                 value={form.fn_peso_promedio_entrada}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_peso_promedio_entrada}
+                helperText={errors.fn_peso_promedio_entrada}
               />
             </Grid>
 
@@ -240,6 +259,8 @@ function BioAlimentacionContent() {
                 value={form.fd_fecha_siembra}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fd_fecha_siembra}
+                helperText={errors.fd_fecha_siembra}
               />
             </Grid>
 
@@ -250,6 +271,8 @@ function BioAlimentacionContent() {
                 value={form.fc_origen_alevines}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_origen_alevines}
+                helperText={errors.fc_origen_alevines}
               />
             </Grid>
 
@@ -262,6 +285,8 @@ function BioAlimentacionContent() {
                 value={form.fd_fecha}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fd_fecha}
+                helperText={errors.fd_fecha}
               />
             </Grid>
 
@@ -273,6 +298,8 @@ function BioAlimentacionContent() {
                 value={form.fn_total_alimento_kg}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_total_alimento_kg}
+                helperText={errors.fn_total_alimento_kg}
               />
             </Grid>
 
@@ -284,6 +311,8 @@ function BioAlimentacionContent() {
                 value={form.fn_mortalidad}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_mortalidad}
+                helperText={errors.fn_mortalidad}
               />
             </Grid>
 
@@ -294,6 +323,8 @@ function BioAlimentacionContent() {
                 value={form.fc_recambio_agua}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_recambio_agua}
+                helperText={errors.fc_recambio_agua}
               />
             </Grid>
 
@@ -305,6 +336,8 @@ function BioAlimentacionContent() {
                 value={form.fn_temp_agua}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_temp_agua}
+                helperText={errors.fn_temp_agua}
               />
             </Grid>
 
@@ -316,6 +349,8 @@ function BioAlimentacionContent() {
                 value={form.fn_amonio}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_amonio}
+                helperText={errors.fn_amonio}
               />
             </Grid>
 
@@ -327,6 +362,8 @@ function BioAlimentacionContent() {
                 value={form.fn_ph}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_ph}
+                helperText={errors.fn_ph}
               />
             </Grid>
 
@@ -339,6 +376,8 @@ function BioAlimentacionContent() {
                 fullWidth
                 value={form.fc_observaciones}
                 onChange={handleChange}
+                error={!!errors.fc_observaciones}
+                helperText={errors.fc_observaciones}
               />
             </Grid>
           </Grid>

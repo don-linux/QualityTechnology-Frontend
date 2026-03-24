@@ -25,6 +25,7 @@ import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
 import Save from "@mui/icons-material/Save";
 import Close from "@mui/icons-material/Close";
 import axios from "../utils/axiosInstance.js";
+import useFormValidation from "../hooks/useFormValidation";
 
 const api = `${API_URL}/proveedores`;
 
@@ -34,6 +35,14 @@ export default function Proveedores() {
 
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({});
+
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "nombre", "empresa", "rfc", "categoria", "contacto",
+    "telefono", "correo", "direccion", "forma_pago",
+    "plazo_credito", "ultima_compra", "monto_promedio",
+  ];
 
   const normalizarFechaInput = (valor) => {
     if (!valor) return "";
@@ -79,6 +88,7 @@ export default function Proveedores() {
   //  Crear nuevo proveedor
   // ============================
   const crear = () => {
+    clearErrors();
     setFormData({
       nombre: "",
       empresa: "",
@@ -100,6 +110,7 @@ export default function Proveedores() {
   //  Editar proveedor
   // ============================
   const editar = (p) => {
+    clearErrors();
     setFormData({
       ...p,
       ultima_compra: normalizarFechaInput(p.ultima_compra),
@@ -111,7 +122,8 @@ export default function Proveedores() {
   //  Guardar (crear o actualizar)
   // ============================
   const guardar = async () => {
-    // Validaciones básicas
+    if (!validate(formData, requiredFields)) return;
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.correo && !emailRegex.test(formData.correo)) {
       alert(" El correo no tiene un formato válido.");
@@ -214,6 +226,7 @@ export default function Proveedores() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    clearFieldError(name);
   };
 
   return (
@@ -400,6 +413,8 @@ export default function Proveedores() {
                   onChange={handleChange}
                   fullWidth
                   size="small"
+                  error={!!errors[f.name]}
+                  helperText={errors[f.name]}
                 />
               </Grid>
             ))}

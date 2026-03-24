@@ -19,8 +19,17 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 
 // *** IMPORTANTE: USAR AXIOS INSTANCE CON TOKEN ***
 import axios from "../utils/axiosInstance.js";
+import useFormValidation from "../hooks/useFormValidation";
 
 const LotesRegistro = () => {
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fecha", "familia", "fi_instalacion_id", "huevos_ml",
+    "ovadas", "no_lote", "observacion", "mortalidad",
+    "alevines_inicial",
+  ];
+
   const [granja, setGranja] = useState("Medellin");
   const [instalaciones, setInstalaciones] = useState([]);
   const [lotes, setLotes] = useState([]);
@@ -51,6 +60,7 @@ const LotesRegistro = () => {
 
   if (name === "no_lote") {
     setFormData({ ...formData, no_lote: validarNoLote(value) });
+    clearFieldError(name);
     return;
   }
 
@@ -59,6 +69,7 @@ const LotesRegistro = () => {
     setFormData({ ...formData, fi_instalacion_id: value });
 
     setInstalacionSeleccionada(value);
+    clearFieldError(name);
 
     try {
 
@@ -82,6 +93,7 @@ const LotesRegistro = () => {
   }
 
   setFormData({ ...formData, [name]: value });
+  clearFieldError(name);
 
 };
   /** --------------------------------------------------------
@@ -120,6 +132,7 @@ const LotesRegistro = () => {
      Registrar lote
   -------------------------------------------------------- */
   const registrarLote = async () => {
+    if (!validate(formData, requiredFields)) return;
     try {
       await axios.post(`${API_URL}/lotes`, {
         fecha: formData.fecha,
@@ -148,6 +161,7 @@ const LotesRegistro = () => {
   -------------------------------------------------------- */
   const activarEdicion = () => {
     if (!loteSeleccionado) return;
+    clearErrors();
 
     setFormData({
       fecha: loteSeleccionado.fecha.split("T")[0],
@@ -168,6 +182,7 @@ const LotesRegistro = () => {
      Guardar cambios de edición
   -------------------------------------------------------- */
   const actualizarLote = async () => {
+    if (!validate(formData, requiredFields)) return;
     try {
       await axios.put(`${API_URL}/lotes/${loteSeleccionado.fi_lote_id}`, {
         fecha: formData.fecha,
@@ -228,6 +243,7 @@ const LotesRegistro = () => {
       mortalidad: 0,
       alevines_inicial: 0,
     });
+    clearErrors();
   };
 
   const resetEdicion = () => {
@@ -314,6 +330,8 @@ const LotesRegistro = () => {
                 onChange={handleChange}
                 fullWidth
                 InputLabelProps={{ shrink: true }}
+                error={!!errors.fecha}
+                helperText={errors.fecha}
               />
             </Grid>
 
@@ -325,6 +343,8 @@ const LotesRegistro = () => {
                 value={formData.familia}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.familia}
+                helperText={errors.familia}
               />
             </Grid>
 
@@ -337,6 +357,8 @@ const LotesRegistro = () => {
                 value={formData.fi_instalacion_id || ""}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fi_instalacion_id}
+                helperText={errors.fi_instalacion_id}
               >
                 {instalaciones.map((i) => (
                   <MenuItem key={i.fi_instalacion_id} value={i.fi_instalacion_id}>
@@ -354,6 +376,8 @@ const LotesRegistro = () => {
                 value={formData.huevos_ml}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.huevos_ml}
+                helperText={errors.huevos_ml}
               />
             </Grid>
 
@@ -366,6 +390,8 @@ const LotesRegistro = () => {
                 value={formData.ovadas}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.ovadas}
+                helperText={errors.ovadas}
               />
             </Grid>
 
@@ -377,6 +403,8 @@ const LotesRegistro = () => {
                 value={formData.no_lote}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.no_lote}
+                helperText={errors.no_lote}
               />
             </Grid>
 
@@ -389,6 +417,8 @@ const LotesRegistro = () => {
                 onChange={handleChange}
                 fullWidth
                 multiline
+                error={!!errors.observacion}
+                helperText={errors.observacion}
               />
             </Grid>
 

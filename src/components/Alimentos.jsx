@@ -22,6 +22,8 @@ import Stack from "@mui/material/Stack";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import axios from "../utils/axiosInstance.js";
+import FormHelperText from "@mui/material/FormHelperText";
+import useFormValidation from "../hooks/useFormValidation";
 import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
@@ -46,6 +48,7 @@ function AlimentosContent() {
   const [reproductores, setReproductores] = useState([]);
   const [piletas, setPiletas] = useState([]);
   const [engorda, setEngorda] = useState([]);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
   const safeNumber = (val, decimals = 2) =>
     !isNaN(Number(val)) ? Number(val).toFixed(decimals) : "—";
@@ -102,7 +105,10 @@ function AlimentosContent() {
   // =======================================
   // Registro y acciones
   // =======================================
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
+  };
 
   const limpiarFormulario = () => {
     setForm({
@@ -111,10 +117,16 @@ function AlimentosContent() {
       fi_pileta_id: "",
       fi_engorda_id: "",
     });
+    clearErrors();
   };
 
   const registrar = async () => {
     if (!usuario_id) return alert("Vuelve a iniciar sesión.");
+
+    const currentField = tab === "alevinaje" ? "fi_pileta_id"
+      : tab === "engorda" ? "fi_engorda_id"
+      : "fi_reproductor_id";
+    if (!validate(form, [currentField])) return;
 
     let payload = { fi_usuario_id: Number(usuario_id) };
 
@@ -144,6 +156,7 @@ function AlimentosContent() {
   };
 
   const seleccionar = (dato) => {
+    clearErrors();
     setForm({
       fi_alimento_id: dato.fi_alimento_id,
       fi_reproductor_id: dato.fi_reproductor_id || "",
@@ -219,7 +232,7 @@ function AlimentosContent() {
           <Grid container spacing={2}>
             {tab === "alevinaje" && (
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
+                <FormControl fullWidth error={!!errors.fi_pileta_id}>
                   <InputLabel>Pileta</InputLabel>
                   <Select
                     name="fi_pileta_id"
@@ -234,13 +247,14 @@ function AlimentosContent() {
                       </MenuItem>
                     ))}
                   </Select>
+                  {errors.fi_pileta_id && <FormHelperText>{errors.fi_pileta_id}</FormHelperText>}
                 </FormControl>
               </Grid>
             )}
 
             {tab === "engorda" && (
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
+                <FormControl fullWidth error={!!errors.fi_engorda_id}>
                   <InputLabel>Instalación Engorda</InputLabel>
                   <Select
                     name="fi_engorda_id"
@@ -255,13 +269,14 @@ function AlimentosContent() {
                       </MenuItem>
                     ))}
                   </Select>
+                  {errors.fi_engorda_id && <FormHelperText>{errors.fi_engorda_id}</FormHelperText>}
                 </FormControl>
               </Grid>
             )}
 
             {tab === "reproductores" && (
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
+                <FormControl fullWidth error={!!errors.fi_reproductor_id}>
                   <InputLabel>Reproductor</InputLabel>
                   <Select
                     name="fi_reproductor_id"
@@ -276,6 +291,7 @@ function AlimentosContent() {
                       </MenuItem>
                     ))}
                   </Select>
+                  {errors.fi_reproductor_id && <FormHelperText>{errors.fi_reproductor_id}</FormHelperText>}
                 </FormControl>
               </Grid>
             )}

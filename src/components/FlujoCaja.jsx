@@ -22,6 +22,7 @@ import axios from "../utils/axiosInstance.js";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
 import { API_URL, getUploadUrl } from "../utils/api.js";
+import useFormValidation from "../hooks/useFormValidation";
 
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
 const API = API_URL;
@@ -134,6 +135,13 @@ export default function FlujoCaja() {
   const [editId, setEditId] = useState(null);
   const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
 
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fd_fecha", "fc_cuenta", "fc_descripcion", "fc_categoria",
+    "fc_subcategoria", "fc_noproyecto", "fc_factura_opcion", "fc_estatus",
+  ];
+
   // =====================================================
   //  Cargar datos
   // =====================================================
@@ -171,6 +179,7 @@ export default function FlujoCaja() {
   //  CRUD
   // =====================================================
   const handleOpen = (data = null) => {
+    clearErrors();
     if (data) {
       setFormData({ ...data });
       setEditId(data.fi_movimiento_id);
@@ -193,9 +202,14 @@ export default function FlujoCaja() {
     setOpen(true);
   };
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    clearErrors();
+    setOpen(false);
+  };
 
   const handleSubmit = async (data) => {
+    if (!validate(data, requiredFields)) return;
+
     try {
       const payload = { ...data, fc_granja: GRANJAS[subTab] };
       if (editId) {
@@ -284,6 +298,11 @@ export default function FlujoCaja() {
         onClose={handleClose}
         onSubmit={handleSubmit}
         editId={editId}
+        errors={errors}
+        clearFieldError={clearFieldError}
+        clearErrors={clearErrors}
+        validate={validate}
+        requiredFields={requiredFields}
       />
 
       {/*  Modal de cuentas */}

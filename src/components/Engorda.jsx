@@ -16,6 +16,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
 import { apiFetch } from "../utils/api";
+import useFormValidation from "../hooks/useFormValidation";
 
 export default function Engorda() {
   return <EngordaContent />;
@@ -23,6 +24,14 @@ export default function Engorda() {
 
 function EngordaContent() {
   const usuario_id = localStorage.getItem("usuario_id");
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "origen_instalacion", "fi_instalacion_id", "cantidad",
+    "talla_gr", "no_lote", "observacion", "fecha_siembra",
+    "fecha_biometria",
+  ];
+
   const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellín");
   const [engordas, setEngordas] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
@@ -92,7 +101,8 @@ function EngordaContent() {
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
-  }, [granjaActiva, usuario_id]);
+    clearErrors();
+  }, [granjaActiva, usuario_id, clearErrors]);
 
   useEffect(() => {
     limpiarFormulario();
@@ -105,7 +115,10 @@ function EngordaContent() {
   /* =========================================================
        FORMULARIO Y CAMBIOS
   ========================================================= */
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
+  };
 
   //  Nueva función para manejar el cambio de origen (Lote)
   const handleOrigenLote = (loteId) => {
@@ -124,7 +137,7 @@ function EngordaContent() {
        CRUD
   ========================================================= */
   const registrarEngorda = async () => {
-    if (!form.fi_instalacion_id) return alert(" Seleccione una instalación destino.");
+    if (!validate(form, requiredFields)) return;
 
     try {
       await apiFetch("/engorda", {
@@ -147,6 +160,7 @@ function EngordaContent() {
 
   const actualizarEngorda = async () => {
     if (!seleccionado) return;
+    if (!validate(form, requiredFields)) return;
     try {
       await apiFetch("/engorda", {
         method: "POST", // En tu backend el POST maneja el update si mandas el id
@@ -177,6 +191,7 @@ function EngordaContent() {
   };
 
   const seleccionarRegistro = (e) => {
+    clearErrors();
     setSeleccionado(e.fi_engorda_id);
     setForm({
       fi_instalacion_id: e.fi_instalacion_id,
@@ -259,6 +274,8 @@ function EngordaContent() {
                     value={form.origen_instalacion || ""}
                     onChange={(e) => handleOrigenLote(e.target.value)}
                     fullWidth
+                    error={!!errors.origen_instalacion}
+                    helperText={errors.origen_instalacion}
                   >
                     <MenuItem value="">Seleccione Lote de Inventario</MenuItem>
                     {lotes.map((l) => (
@@ -278,6 +295,8 @@ function EngordaContent() {
                     value={form.fi_instalacion_id || ""}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors.fi_instalacion_id}
+                    helperText={errors.fi_instalacion_id}
                   >
                     <MenuItem value="">Seleccione un destino</MenuItem>
                     {instalaciones.map((i) => (
@@ -289,27 +308,27 @@ function EngordaContent() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField label="Cantidad a Sembrar" name="cantidad" type="number" value={form.cantidad || ""} onChange={handleChange} fullWidth />
+                  <TextField label="Cantidad a Sembrar" name="cantidad" type="number" value={form.cantidad || ""} onChange={handleChange} fullWidth error={!!errors.cantidad} helperText={errors.cantidad} />
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField label="Talla (Gr)" name="talla_gr" type="number" value={form.talla_gr || ""} onChange={handleChange} fullWidth />
+                  <TextField label="Talla (Gr)" name="talla_gr" type="number" value={form.talla_gr || ""} onChange={handleChange} fullWidth error={!!errors.talla_gr} helperText={errors.talla_gr} />
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField label="No. Lote" name="no_lote" value={form.no_lote || ""} fullWidth slotProps={{ input: { readOnly: true } }} />
+                  <TextField label="No. Lote" name="no_lote" value={form.no_lote || ""} fullWidth slotProps={{ input: { readOnly: true } }} error={!!errors.no_lote} helperText={errors.no_lote} />
                 </Grid>
 
                 <Grid size={12}>
-                  <TextField label="Observación" name="observacion" value={form.observacion || ""} onChange={handleChange} fullWidth multiline rows={2} />
+                  <TextField label="Observación" name="observacion" value={form.observacion || ""} onChange={handleChange} fullWidth multiline rows={2} error={!!errors.observacion} helperText={errors.observacion} />
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField type="date" label="Fecha Siembra" name="fecha_siembra" InputLabelProps={{ shrink: true }} value={form.fecha_siembra || ""} onChange={handleChange} fullWidth />
+                  <TextField type="date" label="Fecha Siembra" name="fecha_siembra" InputLabelProps={{ shrink: true }} value={form.fecha_siembra || ""} onChange={handleChange} fullWidth error={!!errors.fecha_siembra} helperText={errors.fecha_siembra} />
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField type="date" label="Fecha Biometría" name="fecha_biometria" InputLabelProps={{ shrink: true }} value={form.fecha_biometria || ""} onChange={handleChange} fullWidth />
+                  <TextField type="date" label="Fecha Biometría" name="fecha_biometria" InputLabelProps={{ shrink: true }} value={form.fecha_biometria || ""} onChange={handleChange} fullWidth error={!!errors.fecha_biometria} helperText={errors.fecha_biometria} />
                 </Grid>
               </Grid>
 

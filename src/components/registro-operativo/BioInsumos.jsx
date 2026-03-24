@@ -14,6 +14,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function BioInsumosContent() {
   const [form, setForm] = useState({
@@ -29,9 +30,17 @@ function BioInsumosContent() {
 
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
-  const handleChange = (e) =>
+  const requiredFields = [
+    "fd_fecha", "fc_cantidad_udm", "fc_num_lote", "fc_descripcion",
+    "fc_observaciones", "fc_encargado_entrega", "fc_encargado_recepcion",
+  ];
+
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const cargarDatos = async () => {
     try {
@@ -47,6 +56,7 @@ function BioInsumosContent() {
   }, []);
 
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
         await axios.put(`${API_URL}/ceiba/insumos/${editId}`, form);
@@ -73,6 +83,7 @@ function BioInsumosContent() {
   };
 
   const editar = (row) => {
+    clearErrors();
     setEditId(row.fi_id);
     setForm({
       fd_fecha: row.fd_fecha?.split("T")[0],
@@ -171,6 +182,8 @@ function BioInsumosContent() {
                 value={form.fd_fecha}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fd_fecha}
+                helperText={errors.fd_fecha}
               />
             </Grid>
 
@@ -181,6 +194,8 @@ function BioInsumosContent() {
                 value={form.fc_cantidad_udm}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_cantidad_udm}
+                helperText={errors.fc_cantidad_udm}
               />
             </Grid>
 
@@ -191,6 +206,8 @@ function BioInsumosContent() {
                 value={form.fc_num_lote}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_num_lote}
+                helperText={errors.fc_num_lote}
               />
             </Grid>
 
@@ -201,6 +218,8 @@ function BioInsumosContent() {
                 value={form.fc_descripcion}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_descripcion}
+                helperText={errors.fc_descripcion}
               />
             </Grid>
 
@@ -213,6 +232,8 @@ function BioInsumosContent() {
                 value={form.fc_observaciones}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_observaciones}
+                helperText={errors.fc_observaciones}
               />
             </Grid>
 
@@ -223,6 +244,8 @@ function BioInsumosContent() {
                 value={form.fc_encargado_entrega}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_encargado_entrega}
+                helperText={errors.fc_encargado_entrega}
               />
             </Grid>
 
@@ -233,6 +256,8 @@ function BioInsumosContent() {
                 value={form.fc_encargado_recepcion}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_encargado_recepcion}
+                helperText={errors.fc_encargado_recepcion}
               />
             </Grid>
           </Grid>

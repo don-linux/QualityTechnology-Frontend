@@ -23,6 +23,8 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "../utils/axiosInstance.js";
+import useFormValidation from "../hooks/useFormValidation";
+import FormHelperText from "@mui/material/FormHelperText";
 
 export default function ListaEspera() {
   return <ListaEsperaContent />;
@@ -66,6 +68,15 @@ function ListaEsperaContent() {
   const [form, setForm] = useState(emptyForm);
   const [lista, setLista] = useState([]);
 
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fd_fecha_entrega", "fc_talla", "fn_cantidad", "fc_cliente",
+    "fc_lugar_entrega", "fc_unidad_produccion", "fc_hora_embolsado",
+    "fc_hora_entrega", "fn_precio_venta", "fc_uap_asignada",
+    "fc_granja_asignada",
+  ];
+
   const cargarLista = async () => {
     try {
       const res = await axios.get(`${API_URL}/lista-espera`);
@@ -92,9 +103,12 @@ function ListaEsperaContent() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
   };
 
   const registrar = async () => {
+    if (!validate(form, requiredFields)) return;
+
     if (!form.fd_fecha_entrega) {
       alert("Debes seleccionar una fecha de entrega.");
       return;
@@ -111,11 +125,14 @@ function ListaEsperaContent() {
   };
 
   const editar = (item) => {
+    clearErrors();
     setEditId(item.fi_lista_id);
     setForm(item);
   };
 
   const actualizar = async () => {
+    if (!validate(form, requiredFields)) return;
+
     try {
       await axios.put(`${API_URL}/lista-espera/${editId}`, form);
       alert("Actualizado correctamente");
@@ -191,15 +208,17 @@ function ListaEsperaContent() {
               value={form.fd_fecha_entrega}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
+              error={!!errors.fd_fecha_entrega}
+              helperText={errors.fd_fecha_entrega}
             />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Talla" name="fc_talla" value={form.fc_talla} onChange={handleChange} />
+            <TextField fullWidth label="Talla" name="fc_talla" value={form.fc_talla} onChange={handleChange} error={!!errors.fc_talla} helperText={errors.fc_talla} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth type="number" label="Cantidad" name="fn_cantidad" value={form.fn_cantidad} onChange={handleChange} />
+            <TextField fullWidth type="number" label="Cantidad" name="fn_cantidad" value={form.fn_cantidad} onChange={handleChange} error={!!errors.fn_cantidad} helperText={errors.fn_cantidad} />
           </Grid>
 
           {/* CLIENTE AUTOCOMPLETE */}
@@ -212,9 +231,12 @@ function ListaEsperaContent() {
                   options={clientes}
                   getOptionLabel={(o) => o.fc_nombre || ""}
                   value={form.fc_cliente}
-                  onChange={(e, val) => setForm({ ...form, fc_cliente: val?.fc_nombre || "" })}
+                  onChange={(e, val) => {
+                    setForm({ ...form, fc_cliente: val?.fc_nombre || "" });
+                    clearFieldError("fc_cliente");
+                  }}
                   renderInput={(params) => (
-                    <TextField {...params} label="Cliente" />
+                    <TextField {...params} label="Cliente" error={!!errors.fc_cliente} helperText={errors.fc_cliente} />
                   )}
                 />
               </Grid>
@@ -232,27 +254,27 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Lugar" name="fc_lugar_entrega" value={form.fc_lugar_entrega} onChange={handleChange} />
+            <TextField fullWidth label="Lugar" name="fc_lugar_entrega" value={form.fc_lugar_entrega} onChange={handleChange} error={!!errors.fc_lugar_entrega} helperText={errors.fc_lugar_entrega} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Unidad Producción" name="fc_unidad_produccion" value={form.fc_unidad_produccion} onChange={handleChange} />
+            <TextField fullWidth label="Unidad Producción" name="fc_unidad_produccion" value={form.fc_unidad_produccion} onChange={handleChange} error={!!errors.fc_unidad_produccion} helperText={errors.fc_unidad_produccion} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Hora Embolsado" name="fc_hora_embolsado" value={form.fc_hora_embolsado} onChange={handleChange} />
+            <TextField fullWidth label="Hora Embolsado" name="fc_hora_embolsado" value={form.fc_hora_embolsado} onChange={handleChange} error={!!errors.fc_hora_embolsado} helperText={errors.fc_hora_embolsado} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Hora Entrega" name="fc_hora_entrega" value={form.fc_hora_entrega} onChange={handleChange} />
+            <TextField fullWidth label="Hora Entrega" name="fc_hora_entrega" value={form.fc_hora_entrega} onChange={handleChange} error={!!errors.fc_hora_entrega} helperText={errors.fc_hora_entrega} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} />
+            <TextField fullWidth label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} error={!!errors.fn_precio_venta} helperText={errors.fn_precio_venta} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <FormControl fullWidth>
+            <FormControl fullWidth error={!!errors.fc_uap_asignada}>
               <InputLabel>Tipo de Venta</InputLabel>
               <Select
                 name="fc_uap_asignada"
@@ -265,12 +287,13 @@ function ListaEsperaContent() {
                 <MenuItem value="ALIMENTO">Alimento</MenuItem>
                 <MenuItem value="MEDICAMENTO">Medicamento</MenuItem>
               </Select>
+              {errors.fc_uap_asignada && <FormHelperText>{errors.fc_uap_asignada}</FormHelperText>}
             </FormControl>
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
             {rol === "Administrador" ? (
-              <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange}>
+              <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange} error={!!errors.fc_granja_asignada} helperText={errors.fc_granja_asignada}>
                 <MenuItem value="Medellin">Medellín</MenuItem>
                 <MenuItem value="La Ceiba">La Ceiba</MenuItem>
               </TextField>
@@ -297,6 +320,7 @@ function ListaEsperaContent() {
                 onClick={() => {
                   setEditId(null);
                   setForm(emptyForm);
+                  clearErrors();
                 }}
               >
                 Cancelar

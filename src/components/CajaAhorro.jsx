@@ -22,6 +22,7 @@ import Delete from "@mui/icons-material/Delete";
 import DeleteForever from "@mui/icons-material/DeleteForever";
 import EventAvailable from "@mui/icons-material/EventAvailable";
 import axios from "../utils/axiosInstance.js";
+import useFormValidation from "../hooks/useFormValidation";
 
 const api = `${API_URL}/caja-ahorro`;
 
@@ -31,6 +32,10 @@ export default function CajaAhorro() {
   const [granja, setGranja] = useState("Ceiba");
   const [openNuevo, setOpenNuevo] = useState(false);
   const [nuevaCategoria, setNuevaCategoria] = useState("");
+
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = ["nuevaCategoria"];
 
   /* =========================================================
       Obtener datos por granja
@@ -65,11 +70,13 @@ export default function CajaAhorro() {
       Crear nueva categoría
      ========================================================= */
   const crearRegistro = async () => {
+    clearErrors();
     setNuevaCategoria("");
     setOpenNuevo(true);
   };
 
   const guardarNuevaCategoria = async () => {
+    if (!validate({ nuevaCategoria }, requiredFields)) return;
     if (!nuevaCategoria.trim()) {
       alert(" El nombre de la categoría es obligatorio.");
       return;
@@ -237,8 +244,13 @@ export default function CajaAhorro() {
           <TextField
             label="Nombre de la categoría"
             value={nuevaCategoria}
-            onChange={(e) => setNuevaCategoria(e.target.value)}
+            onChange={(e) => {
+              clearFieldError("nuevaCategoria");
+              setNuevaCategoria(e.target.value);
+            }}
             fullWidth
+            error={!!errors.nuevaCategoria}
+            helperText={errors.nuevaCategoria}
           />
         </DialogContent>
         <DialogActions>

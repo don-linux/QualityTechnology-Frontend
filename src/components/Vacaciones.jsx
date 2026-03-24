@@ -23,6 +23,7 @@ import Add from "@mui/icons-material/Add";
 import DeleteForever from "@mui/icons-material/DeleteForever";
 import Edit from "@mui/icons-material/Edit";
 import axios from "../utils/axiosInstance.js";
+import useFormValidation from "../hooks/useFormValidation";
 
 const api = `${API_URL}/vacaciones`;
 
@@ -39,6 +40,10 @@ export default function Vacaciones() {
     inicio: "2025-01-01",
     fin: "2025-12-31",
   });
+
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = ["nombre", "idEmpleado", "departamento", "inicio", "fin"];
 
   const obtenerDatos = async () => {
     try {
@@ -64,6 +69,7 @@ export default function Vacaciones() {
   };
 
   const crearRegistro = () => {
+    clearErrors();
     setNuevoForm({
       nombre: "",
       idEmpleado: "",
@@ -75,6 +81,7 @@ export default function Vacaciones() {
   };
 
   const guardarNuevo = async () => {
+    if (!validate(nuevoForm, requiredFields)) return;
     if (!nuevoForm.nombre.trim()) {
       alert(" El nombre del empleado es obligatorio.");
       return;
@@ -214,8 +221,13 @@ export default function Vacaciones() {
               <TextField
                 label="Nombre del empleado"
                 value={nuevoForm.nombre}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, nombre: e.target.value })}
+                onChange={(e) => {
+                  clearFieldError("nombre");
+                  setNuevoForm({ ...nuevoForm, nombre: e.target.value });
+                }}
                 fullWidth
+                error={!!errors.nombre}
+                helperText={errors.nombre}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -223,16 +235,26 @@ export default function Vacaciones() {
                 label="ID del empleado"
                 type="number"
                 value={nuevoForm.idEmpleado}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, idEmpleado: e.target.value })}
+                onChange={(e) => {
+                  clearFieldError("idEmpleado");
+                  setNuevoForm({ ...nuevoForm, idEmpleado: e.target.value });
+                }}
                 fullWidth
+                error={!!errors.idEmpleado}
+                helperText={errors.idEmpleado}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
                 label="Departamento"
                 value={nuevoForm.departamento}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, departamento: e.target.value })}
+                onChange={(e) => {
+                  clearFieldError("departamento");
+                  setNuevoForm({ ...nuevoForm, departamento: e.target.value });
+                }}
                 fullWidth
+                error={!!errors.departamento}
+                helperText={errors.departamento}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -241,8 +263,13 @@ export default function Vacaciones() {
                 type="date"
                 InputLabelProps={{ shrink: true }}
                 value={nuevoForm.inicio}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, inicio: e.target.value })}
+                onChange={(e) => {
+                  clearFieldError("inicio");
+                  setNuevoForm({ ...nuevoForm, inicio: e.target.value });
+                }}
                 fullWidth
+                error={!!errors.inicio}
+                helperText={errors.inicio}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -251,8 +278,13 @@ export default function Vacaciones() {
                 type="date"
                 InputLabelProps={{ shrink: true }}
                 value={nuevoForm.fin}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, fin: e.target.value })}
+                onChange={(e) => {
+                  clearFieldError("fin");
+                  setNuevoForm({ ...nuevoForm, fin: e.target.value });
+                }}
                 fullWidth
+                error={!!errors.fin}
+                helperText={errors.fin}
               />
             </Grid>
           </Grid>

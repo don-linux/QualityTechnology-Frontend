@@ -14,6 +14,7 @@ import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
+import useFormValidation from "../hooks/useFormValidation";
 
 export default function Instalaciones() {
   return <InstalacionesContent />;
@@ -21,6 +22,12 @@ export default function Instalaciones() {
 
 function InstalacionesContent() {
   const usuario_id = localStorage.getItem("usuario_id");
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "nombre_instalacion", "largo", "ancho", "altura",
+    "material", "estado", "tipo_instalacion",
+  ];
 
   const [form, setForm] = useState({
     nombre_instalacion: "",
@@ -89,8 +96,10 @@ function InstalacionesContent() {
   /* =========================================================
       CRUD
   ========================================================= */
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
+  };
 
   const limpiarFormulario = () => {
     setForm({
@@ -104,9 +113,11 @@ function InstalacionesContent() {
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
+    clearErrors();
   };
 
   const registrarInstalacion = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       await apiFetch("/instalaciones", {
         method: "POST",
@@ -127,6 +138,7 @@ function InstalacionesContent() {
   };
 
   const actualizarInstalacion = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       await apiFetch(`/instalaciones/${seleccionado}`, {
         method: "PUT",
@@ -165,6 +177,7 @@ function InstalacionesContent() {
       Seleccionar instalación
   ========================================================= */
   const seleccionarInstalacion = (i) => {
+    clearErrors();
     setSeleccionado(i.fi_instalacion_id);
     setForm({
       nombre_instalacion: i.nombre_instalacion,
@@ -268,6 +281,8 @@ function InstalacionesContent() {
                   value={form.nombre_instalacion}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.nombre_instalacion}
+                  helperText={errors.nombre_instalacion}
                 />
               </Grid>
 
@@ -279,6 +294,8 @@ function InstalacionesContent() {
                   value={form.largo}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.largo}
+                  helperText={errors.largo}
                 />
               </Grid>
 
@@ -290,6 +307,8 @@ function InstalacionesContent() {
                   value={form.ancho}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.ancho}
+                  helperText={errors.ancho}
                 />
               </Grid>
 
@@ -301,6 +320,8 @@ function InstalacionesContent() {
                   value={form.altura}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.altura}
+                  helperText={errors.altura}
                 />
               </Grid>
 
@@ -311,6 +332,8 @@ function InstalacionesContent() {
                   value={form.material}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.material}
+                  helperText={errors.material}
                 />
               </Grid>
 
@@ -323,6 +346,8 @@ function InstalacionesContent() {
                   value={form.estado}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.estado}
+                  helperText={errors.estado}
                 >
                   <MenuItem value="vacia">Vacía</MenuItem>
                   <MenuItem value="ocupada">Ocupada</MenuItem>
@@ -338,6 +363,8 @@ function InstalacionesContent() {
                   value={form.tipo_instalacion}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.tipo_instalacion}
+                  helperText={errors.tipo_instalacion}
                 >
                   <MenuItem value="Alevinaje">Alevinaje</MenuItem>
                   <MenuItem value="Reproductores">Reproductores</MenuItem>

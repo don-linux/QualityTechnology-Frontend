@@ -18,6 +18,7 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import axios from "../utils/axiosInstance.js";
 import dayjs from "dayjs";
+import useFormValidation from "../hooks/useFormValidation";
 
 export default function Cliente() {
   const usuarioId = localStorage.getItem("usuario_id") || "";
@@ -32,6 +33,10 @@ export default function Cliente() {
   });
 
   const [clientes, setClientes] = useState([]);
+
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = ["fc_nombre", "fc_telefono", "fc_correo", "fc_localidad", "fc_cp"];
 
   useEffect(() => {
     obtenerClientes();
@@ -48,9 +53,11 @@ export default function Cliente() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
   };
 
   const limpiarFormulario = () => {
+    clearErrors();
     setForm({
       fi_cliente_id: null,
       fc_nombre: "",
@@ -63,6 +70,7 @@ export default function Cliente() {
   };
 
   const registrarCliente = async () => {
+    if (!validate(form, requiredFields)) return;
     if (!form.fc_nombre.trim()) return alert("El nombre es obligatorio");
     try {
       await axios.post(`${API_URL}/clientes`, form);
@@ -76,6 +84,7 @@ export default function Cliente() {
 
   const actualizarCliente = async () => {
     if (!form.fi_cliente_id) return alert("Selecciona un cliente para actualizar");
+    if (!validate(form, requiredFields)) return;
     try {
       await axios.put(`${API_URL}/clientes/${form.fi_cliente_id}`, form);
       obtenerClientes();
@@ -100,6 +109,7 @@ export default function Cliente() {
   };
 
   const seleccionarCliente = (cliente) => {
+    clearErrors();
     setForm({
       fi_cliente_id: cliente.fi_cliente_id,
       fc_nombre: cliente.fc_nombre || "",
@@ -127,6 +137,8 @@ export default function Cliente() {
                 fullWidth
                 value={form.fc_nombre}
                 onChange={handleChange}
+                error={!!errors.fc_nombre}
+                helperText={errors.fc_nombre}
               />
             </Grid>
 
@@ -137,6 +149,8 @@ export default function Cliente() {
                 fullWidth
                 value={form.fc_telefono}
                 onChange={handleChange}
+                error={!!errors.fc_telefono}
+                helperText={errors.fc_telefono}
               />
             </Grid>
 
@@ -147,6 +161,8 @@ export default function Cliente() {
                 fullWidth
                 value={form.fc_correo}
                 onChange={handleChange}
+                error={!!errors.fc_correo}
+                helperText={errors.fc_correo}
               />
             </Grid>
 
@@ -157,6 +173,8 @@ export default function Cliente() {
                 fullWidth
                 value={form.fc_localidad}
                 onChange={handleChange}
+                error={!!errors.fc_localidad}
+                helperText={errors.fc_localidad}
               />
             </Grid>
 
@@ -167,6 +185,8 @@ export default function Cliente() {
                 fullWidth
                 value={form.fc_cp}
                 onChange={handleChange}
+                error={!!errors.fc_cp}
+                helperText={errors.fc_cp}
               />
             </Grid>
           </Grid>
