@@ -1,6 +1,5 @@
 ---
 description: "Coding style guidelines for the project."
-
 alwaysApply: true
 ---
 

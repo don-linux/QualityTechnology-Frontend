@@ -1,6 +1,5 @@
 ---
 description: "Useful context mcp for the project, including guidelines and best practices."
-
 alwaysApply: true
 ---
 
