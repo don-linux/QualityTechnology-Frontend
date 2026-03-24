@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 export default function useFormValidation() {
   const [errors, setErrors] = useState({});
 
-  const validate = (form, requiredFields) => {
+  const validate = useCallback((form, requiredFields) => {
     const newErrors = {};
     for (const field of requiredFields) {
       const value = form[field];
@@ -13,17 +13,19 @@ export default function useFormValidation() {
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, []);
 
-  const clearFieldError = (fieldName) => {
+  const clearFieldError = useCallback((fieldName) => {
     setErrors((prev) => {
       if (!prev[fieldName]) return prev;
       const { [fieldName]: _, ...rest } = prev;
       return rest;
     });
-  };
+  }, []);
 
-  const clearErrors = () => setErrors({});
+  const clearErrors = useCallback(() => {
+    setErrors((prev) => (Object.keys(prev).length === 0 ? prev : {}));
+  }, []);
 
   return { errors, validate, clearFieldError, clearErrors };
 }

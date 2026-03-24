@@ -1,5 +1,5 @@
 // src/utils/auth.js
-import { API_URL } from "./api";
+import { API_URL } from "./config";
 
 export const isAuthenticated = () => {
   const token = localStorage.getItem("token");

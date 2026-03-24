@@ -1,5 +1,6 @@
 import axios from "axios";
-import { API_URL } from "./api";
+import { API_URL } from "./config";
+import { refreshAccessToken, isTokenExpiredError } from "./tokenRefresh";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
@@ -17,65 +18,21 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-let isRefreshing = false;
-let pendingQueue = [];
-
-const processQueue = (error, token = null) => {
-  pendingQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error);
-    else resolve(token);
-  });
-  pendingQueue = [];
-};
-
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const status = error.response?.status;
+    const errorMessage = error.response?.data?.error || "";
 
-    if (
-      (error.response?.status === 401 || error.response?.status === 403) &&
-      !originalRequest._retry
-    ) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          pendingQueue.push({ resolve, reject });
-        }).then((token) => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return axiosInstance(originalRequest);
-        });
-      }
-
+    if (isTokenExpiredError(status, errorMessage) && !originalRequest._retry) {
       originalRequest._retry = true;
-      isRefreshing = true;
-
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (!refreshToken) {
-        isRefreshing = false;
-        localStorage.clear();
-        window.location.href = "/login";
-        return Promise.reject(error);
-      }
-
       try {
-        const { data } = await axios.post(`${API_URL}/usuarios/refresh`, {
-          refreshToken,
-        });
-
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("refreshToken", data.refreshToken);
-
-        processQueue(null, data.token);
-
-        originalRequest.headers.Authorization = `Bearer ${data.token}`;
+        const newToken = await refreshAccessToken();
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
-        localStorage.clear();
-        window.location.href = "/login";
         return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
       }
     }
 
