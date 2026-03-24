@@ -21,6 +21,24 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import useFormValidation from "../hooks/useFormValidation";
 
+const REPRODUCTOR_BASE_REQUIRED = [
+  "fc_instalacion",
+  "fn_machos",
+  "fn_hembras",
+  "fn_talla",
+  "fc_linea",
+  "fc_familia",
+  "fc_observacion",
+  "fd_fecha_siembra",
+  "fd_fecha_biometria",
+];
+
+function getReproductorRequiredFields(origenTipo) {
+  return origenTipo === "Interno"
+    ? [...REPRODUCTOR_BASE_REQUIRED, "origen_instalacion"]
+    : [...REPRODUCTOR_BASE_REQUIRED, "origen_texto"];
+}
+
 const CirculoNumero = ({ color, value }) => (
   <Box
     component="span"
@@ -49,13 +67,6 @@ export default function Reproductores() {
 function ReproductoresContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-
-  const requiredFields = [
-    "origen_instalacion", "origen_texto", "fc_instalacion",
-    "fn_machos", "fn_hembras", "fn_talla", "fc_linea",
-    "fc_familia", "fc_observacion", "fd_fecha_siembra",
-    "fd_fecha_biometria",
-  ];
 
   const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
   const [reproductores, setReproductores] = useState([]);
@@ -189,6 +200,7 @@ const colorDias = (dias) => {
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
+    setOrigenTipo("Interno");
     clearErrors();
   };
 
@@ -219,26 +231,34 @@ const colorDias = (dias) => {
   /* ===================== ACCIONES ===================== */
 
   const registrarReproductor = async () => {
-    if (!validate(form, requiredFields)) return;
+    if (!validate(form, getReproductorRequiredFields(origenTipo))) return;
 
-    await apiFetch("/reproductores", {
-      method: "POST",
-      body: JSON.stringify({
-        ...form,
-        origen_texto: form.origen_instalacion || form.origen_texto,
-        fi_usuario_id: usuario_id,
-        fc_granja: granjaActiva,
-      }),
-    });
+    try {
+      await apiFetch("/reproductores", {
+        method: "POST",
+        body: JSON.stringify({
+          ...form,
+          origen_texto: form.origen_instalacion || form.origen_texto,
+          fi_usuario_id: usuario_id,
+          fc_granja: granjaActiva,
+        }),
+      });
 
-    limpiarFormulario();
-    obtenerReproductores();
-    obtenerTrazabilidad();
+      limpiarFormulario();
+      obtenerReproductores();
+      obtenerTrazabilidad();
+    } catch (err) {
+      console.error("Error al registrar reproductor:", err);
+      alert(err.message || "No se pudo registrar el reproductor.");
+    }
   };
 
   const editarReproductor = (r) => {
     clearErrors();
     setSeleccionado(r);
+    setOrigenTipo(
+      String(r.origen_instalacion || "").trim() ? "Interno" : "Externo"
+    );
 
     setForm({
       origen_instalacion: r.origen_instalacion || "",
@@ -260,18 +280,24 @@ const colorDias = (dias) => {
   };
 
   const guardarEdicion = async () => {
-    if (!validate(form, requiredFields)) return;
-    await apiFetch(`/reproductores/${seleccionado.fi_reproductor_id}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        ...form,
-        fi_usuario_id: usuario_id,
-      }),
-    });
+    if (!validate(form, getReproductorRequiredFields(origenTipo))) return;
+    try {
+      await apiFetch(`/reproductores/${seleccionado.fi_reproductor_id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          ...form,
+          origen_texto: form.origen_instalacion || form.origen_texto,
+          fi_usuario_id: usuario_id,
+        }),
+      });
 
-    limpiarFormulario();
-    obtenerReproductores();
-    obtenerTrazabilidad();
+      limpiarFormulario();
+      obtenerReproductores();
+      obtenerTrazabilidad();
+    } catch (err) {
+      console.error("Error al guardar reproductor:", err);
+      alert(err.message || "No se pudo guardar el reproductor.");
+    }
   };
 
   const eliminarReproductor = async (id) => {
