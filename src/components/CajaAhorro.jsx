@@ -77,10 +77,6 @@ export default function CajaAhorro() {
 
   const guardarNuevaCategoria = async () => {
     if (!validate({ nuevaCategoria }, requiredFields)) return;
-    if (!nuevaCategoria.trim()) {
-      alert(" El nombre de la categoría es obligatorio.");
-      return;
-    }
     try {
       await axios.post(api, { categoria: nuevaCategoria.trim(), granja });
       setOpenNuevo(false);

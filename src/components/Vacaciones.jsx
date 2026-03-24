@@ -82,17 +82,9 @@ export default function Vacaciones() {
 
   const guardarNuevo = async () => {
     if (!validate(nuevoForm, requiredFields)) return;
-    if (!nuevoForm.nombre.trim()) {
-      alert(" El nombre del empleado es obligatorio.");
-      return;
-    }
     const idEmpleado = Number(nuevoForm.idEmpleado);
-    if (!nuevoForm.idEmpleado || Number.isNaN(idEmpleado)) {
-      alert(" El ID del empleado debe ser numérico.");
-      return;
-    }
-    if (!nuevoForm.inicio || !nuevoForm.fin) {
-      alert(" Las fechas de inicio y fin son obligatorias.");
+    if (Number.isNaN(idEmpleado)) {
+      alert("El ID del empleado debe ser numérico.");
       return;
     }
 

@@ -63,18 +63,9 @@ export default function Nomina() {
   useEffect(() => { cargarDatos(); }, []);
 
   const prepararPayload = () => {
-    if (!form.fc_nombre_empleado?.trim()) {
-      alert(" El nombre del empleado es obligatorio.");
-      return null;
-    }
-    if (!form.fd_fecha_pago) {
-      alert(" La fecha de pago es obligatoria.");
-      return null;
-    }
-
     const empleadoId = form.fi_empleado_id ? Number(form.fi_empleado_id) : null;
     if (form.fi_empleado_id && Number.isNaN(empleadoId)) {
-      alert(" El ID del empleado debe ser numérico.");
+      alert("El ID del empleado debe ser numérico.");
       return null;
     }
 

@@ -71,7 +71,6 @@ export default function Cliente() {
 
   const registrarCliente = async () => {
     if (!validate(form, requiredFields)) return;
-    if (!form.fc_nombre.trim()) return alert("El nombre es obligatorio");
     try {
       await axios.post(`${API_URL}/clientes`, form);
       obtenerClientes();
