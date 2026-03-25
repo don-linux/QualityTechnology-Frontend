@@ -21,6 +21,7 @@ import Save from "@mui/icons-material/Save";
 import axios from "../utils/axiosInstance.js";
 
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 const requiredFields = ["nombre"];
 
@@ -28,6 +29,7 @@ const CuentasDialog = ({ open, onClose }) => {
   const [cuentas, setCuentas] = useState([]);
   const [nuevaCuenta, setNuevaCuenta] = useState({ nombre: "", saldo: "" });
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const obtenerCuentas = async () => {
     try {
@@ -67,7 +69,7 @@ const CuentasDialog = ({ open, onClose }) => {
   };
 
   const handleDeleteCuenta = async (id) => {
-    if (!window.confirm("¿Eliminar esta cuenta?")) return;
+    if (!await confirm("¿Eliminar esta cuenta?")) return;
     try {
       await axios.delete(`${API_URL}/cuentas/${id}`);
       obtenerCuentas();
@@ -196,6 +198,7 @@ const CuentasDialog = ({ open, onClose }) => {
       <DialogActions>
         <Button onClick={onClose}>Cerrar</Button>
       </DialogActions>
+      {ConfirmModal}
     </Dialog>
   );
 };

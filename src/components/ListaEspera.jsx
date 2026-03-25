@@ -24,6 +24,7 @@ import DialogActions from "@mui/material/DialogActions";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 import FormHelperText from "@mui/material/FormHelperText";
 
 export default function ListaEspera() {
@@ -69,6 +70,7 @@ function ListaEsperaContent() {
   const [lista, setLista] = useState([]);
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fd_fecha_entrega", "fc_talla", "fn_cantidad", "fc_cliente",
@@ -145,7 +147,7 @@ function ListaEsperaContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar este registro?")) return;
+    if (!await confirm("¿Eliminar este registro?")) return;
 
     try {
       await axios.delete(`${API_URL}/lista-espera/${id}`);
@@ -157,7 +159,7 @@ function ListaEsperaContent() {
   };
 
   const convertir = async (id) => {
-    if (!window.confirm("¿Convertir a venta real?")) return;
+    if (!await confirm("¿Convertir a venta real?")) return;
 
     try {
       await axios.post(`${API_URL}/lista-espera/convertir/${id}`);
@@ -405,6 +407,7 @@ function ListaEsperaContent() {
           </Button>
         </DialogActions>
       </Dialog>
+      {ConfirmModal}
     </Box>
   );
 }

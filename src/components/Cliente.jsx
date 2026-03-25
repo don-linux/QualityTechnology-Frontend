@@ -19,6 +19,7 @@ import Box from "@mui/material/Box";
 import axios from "../utils/axiosInstance.js";
 import dayjs from "dayjs";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 export default function Cliente() {
   const usuarioId = localStorage.getItem("usuario_id") || "";
@@ -35,6 +36,7 @@ export default function Cliente() {
   const [clientes, setClientes] = useState([]);
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = ["fc_nombre", "fc_telefono", "fc_correo", "fc_localidad", "fc_cp"];
 
@@ -96,7 +98,7 @@ export default function Cliente() {
 
   const eliminarCliente = async () => {
     if (!form.fi_cliente_id) return alert("Selecciona un cliente para eliminar");
-    if (!window.confirm("¿Seguro que deseas eliminar este cliente?")) return;
+    if (!await confirm("¿Seguro que deseas eliminar este cliente?")) return;
     try {
       await axios.delete(`${API_URL}/clientes/${form.fi_cliente_id}`);
       obtenerClientes();
@@ -248,6 +250,7 @@ export default function Cliente() {
           </Table>
         </TableContainer>
       </Box>
+      {ConfirmModal}
     </Container>
   );
 }

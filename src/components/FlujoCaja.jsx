@@ -23,6 +23,7 @@ import FormDialog from "./FormDialog";
 import CuentasDialog from "./CuentasDialog"; 
 import { API_URL, getUploadUrl } from "../utils/api.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
 const API = API_URL;
@@ -136,6 +137,7 @@ export default function FlujoCaja() {
   const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fd_fecha", "fc_cuenta", "fc_descripcion", "fc_categoria",
@@ -228,15 +230,14 @@ export default function FlujoCaja() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("¿Eliminar este registro?")) {
-      try {
-        await axios.delete(`${API}/flujo-caja/${id}`);
-        obtenerMovimientos();
-        mostrarAlerta("Movimiento eliminado correctamente ", "success");
-      } catch (err) {
-        console.error(" Error al eliminar:", err);
-        mostrarAlerta("Error al eliminar el movimiento ", "error");
-      }
+    if (!await confirm("¿Eliminar este registro?")) return;
+    try {
+      await axios.delete(`${API}/flujo-caja/${id}`);
+      obtenerMovimientos();
+      mostrarAlerta("Movimiento eliminado correctamente ", "success");
+    } catch (err) {
+      console.error(" Error al eliminar:", err);
+      mostrarAlerta("Error al eliminar el movimiento ", "error");
     }
   };
 
@@ -321,6 +322,7 @@ export default function FlujoCaja() {
           {snack.message}
         </Alert>
       </Snackbar>
+      {ConfirmModal}
     </Container>
   );
 }

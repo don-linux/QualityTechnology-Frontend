@@ -24,6 +24,7 @@ import DeleteForever from "@mui/icons-material/DeleteForever";
 import Edit from "@mui/icons-material/Edit";
 import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 const api = `${API_URL}/vacaciones`;
 
@@ -42,6 +43,7 @@ export default function Vacaciones() {
   });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = ["nombre", "idEmpleado", "departamento", "inicio", "fin"];
 
@@ -104,13 +106,13 @@ export default function Vacaciones() {
   };
 
   const eliminarRegistro = async (id) => {
-    if (!window.confirm("¿Eliminar este registro?")) return;
+    if (!await confirm("¿Eliminar este registro?")) return;
     await axios.delete(`${api}/${id}`);
     obtenerDatos();
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm(" Eliminar TODOS los registros?")) return;
+    if (!await confirm(" Eliminar TODOS los registros?")) return;
     await axios.delete(api);
     obtenerDatos();
   };
@@ -478,6 +480,7 @@ export default function Vacaciones() {
           </TableBody>
         </Table>
       </TableContainer>
+      {ConfirmModal}
     </Box>
   );
 }

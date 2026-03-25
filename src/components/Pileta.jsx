@@ -15,6 +15,7 @@ import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 /* ============================================================
    NORMALIZAR GRANJA PARA BACKEND (SIN ACENTOS Y CORRECTO)
@@ -40,12 +41,16 @@ export default function Pileta() {
 function PiletaContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
-  const requiredFields = [
-    "tipo_origen", "fi_instalacion_id", "origen_instalacion",
-    "origen_externo", "fi_lote_id", "no_lote", "cantidad",
-    "talla_gr", "observacion", "fecha_siembra", "fecha_ultima_biometria",
-  ];
+  const getRequiredFields = (tipoOrigen) => {
+    const base = [
+      "tipo_origen", "fi_instalacion_id", "no_lote", "cantidad",
+      "talla_gr", "observacion", "fecha_siembra", "fecha_ultima_biometria",
+    ];
+    if (tipoOrigen === "INTERNO") return [...base, "origen_instalacion", "fi_lote_id"];
+    return [...base, "origen_externo"];
+  };
 
   const [form, setForm] = useState({
     tipo_origen: "INTERNO",
@@ -229,7 +234,7 @@ function PiletaContent() {
       REGISTRAR
   ============================================================ */
   const registrarPileta = async () => {
-    if (!validate(form, requiredFields)) return;
+    if (!validate(form, getRequiredFields(form.tipo_origen))) return;
     try {
       const dataPayload = {
         ...form,
@@ -259,7 +264,7 @@ function PiletaContent() {
   ============================================================ */
   const actualizarPileta = async () => {
     if (!seleccionado) return alert("Seleccione un registro");
-    if (!validate(form, requiredFields)) return;
+    if (!validate(form, getRequiredFields(form.tipo_origen))) return;
 
     try {
       const dataPayload = {
@@ -346,7 +351,7 @@ function PiletaContent() {
   };
 
   const eliminarUno = async (id) => {
-    if (!window.confirm("¿Eliminar este movimiento?")) return;
+    if (!await confirm("¿Eliminar este movimiento?")) return;
 
     try {
       await apiFetch("/piletas/movimientos/eliminar", {
@@ -360,7 +365,7 @@ function PiletaContent() {
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm(`Eliminar trazabilidad completa de ${granjaActiva}?`))
+    if (!await confirm(`Eliminar trazabilidad completa de ${granjaActiva}?`))
       return;
 
     try {
@@ -784,6 +789,7 @@ function PiletaContent() {
 
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

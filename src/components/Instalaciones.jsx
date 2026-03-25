@@ -15,6 +15,7 @@ import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 export default function Instalaciones() {
   return <InstalacionesContent />;
@@ -41,8 +42,8 @@ function InstalacionesContent() {
 
   const [instalaciones, setInstalaciones] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
-  // eslint-disable-next-line no-unused-vars
-  const [mensaje, setMensaje] = useState("");
+  const [mensaje, setMensaje] = useState({ texto: "", error: false });
+  const [modalEliminar, setModalEliminar] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [granja, setGranja] = useState("Medellin");
   const [tipo, setTipo] = useState("Alevinaje");
@@ -93,6 +94,11 @@ function InstalacionesContent() {
     obtenerInstalaciones();
   }, [obtenerInstalaciones]);
 
+  const mostrarMensaje = (texto, error = false) => {
+    setMensaje({ texto, error });
+    setTimeout(() => setMensaje({ texto: "", error: false }), 4000);
+  };
+
   /* =========================================================
       CRUD
   ========================================================= */
@@ -128,12 +134,12 @@ function InstalacionesContent() {
         }),
       });
 
-      setMensaje(" Instalación registrada");
+      mostrarMensaje("Instalación registrada correctamente.");
       limpiarFormulario();
       obtenerInstalaciones();
     } catch (error) {
       console.error(error);
-      setMensaje("Error al registrar instalación");
+      mostrarMensaje("Error al registrar instalación.", true);
     }
   };
 
@@ -149,27 +155,28 @@ function InstalacionesContent() {
         }),
       });
 
-      setMensaje(" Actualizado correctamente");
+      mostrarMensaje("Instalación actualizada correctamente.");
       limpiarFormulario();
       obtenerInstalaciones();
     } catch (error) {
       console.error(error);
-      setMensaje("Error al actualizar");
+      mostrarMensaje("Error al actualizar instalación.", true);
     }
   };
 
-  const eliminarInstalacion = async () => {
-    if (!window.confirm("¿Eliminar instalación?")) return;
+  const confirmarEliminar = () => setModalEliminar(true);
 
+  const eliminarInstalacion = async () => {
+    setModalEliminar(false);
     try {
       await apiFetch(`/instalaciones/${seleccionado}`, { method: "DELETE" });
 
-      setMensaje(" Eliminado correctamente");
+      mostrarMensaje("Instalación eliminada correctamente.");
       limpiarFormulario();
       obtenerInstalaciones();
     } catch (error) {
       console.error(error);
-      setMensaje("Error al eliminar");
+      mostrarMensaje(error.message || "Error al eliminar la instalación.", true);
     }
   };
 
@@ -395,7 +402,7 @@ function InstalacionesContent() {
                 color="error"
                 sx={{ ml: 2 }}
                 disabled={!seleccionado}
-                onClick={eliminarInstalacion}
+                onClick={confirmarEliminar}
               >
                 ELIMINAR
               </Button>
@@ -429,6 +436,25 @@ function InstalacionesContent() {
           <MenuItem value="vacia">Vacía</MenuItem>
         </TextField>
       </Box>
+
+      {/* MENSAJE DE FEEDBACK */}
+      {mensaje.texto && (
+        <Box
+          sx={{
+            mt: 2,
+            p: 1.5,
+            borderRadius: 2,
+            backgroundColor: mensaje.error ? "#FFEBEE" : "#E8F5E9",
+            border: `1px solid ${mensaje.error ? "#EF9A9A" : "#A5D6A7"}`,
+          }}
+        >
+          <Typography
+            sx={{ color: mensaje.error ? "#C62828" : "#2E7D32", fontWeight: 500 }}
+          >
+            {mensaje.texto}
+          </Typography>
+        </Box>
+      )}
 
       {/* TABLA */}
       <Paper sx={{ mt: 3, borderRadius: 3, overflow: "hidden" }}>
@@ -493,6 +519,20 @@ function InstalacionesContent() {
           {totalM3.toFixed(2)}
         </Typography>
       </Paper>
+
+      {/* MODAL CONFIRMAR ELIMINACIÓN */}
+      <Dialog open={modalEliminar} onClose={() => setModalEliminar(false)}>
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          <Typography>¿Estás seguro de que deseas eliminar esta instalación?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalEliminar(false)}>Cancelar</Button>
+          <Button variant="contained" color="error" onClick={eliminarInstalacion}>
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
