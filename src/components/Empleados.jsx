@@ -20,6 +20,7 @@ import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import dayjs from "dayjs";
 import { apiFetch } from "../utils/api";
+import useFormValidation from "../hooks/useFormValidation";
 
 export default function EmpleadosRegistro() {
   const [form, setForm] = useState({
@@ -48,6 +49,13 @@ export default function EmpleadosRegistro() {
   const [ciudades, setCiudades] = useState([]);
   const [estados, setEstados] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const requiredFields = [
+    "nombre", "apellido_paterno", "apellido_materno", "genero",
+    "calle", "cp", "referencia", "comentarios",
+    "puesto_id", "departamento_id", "ciudad_id", "estado_id",
+    "edad", "fecha_nacimiento", "fecha_contratacion",
+  ];
 
   useEffect(() => {
     cargarTodo();
@@ -77,10 +85,12 @@ export default function EmpleadosRegistro() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
   };
 
   const handleDateChange = (field, value) => {
     setForm({ ...form, [field]: value });
+    clearFieldError(field);
   };
 
   const limpiarFormulario = () => {
@@ -103,23 +113,11 @@ export default function EmpleadosRegistro() {
       fecha_contratacion: null,
       fi_empleado_id: null,
     });
+    clearErrors();
   };
 
   const registrarEmpleado = async () => {
-    if (
-      !form.nombre ||
-      !form.apellido_paterno ||
-      !form.genero ||
-      !form.puesto_id ||
-      !form.departamento_id ||
-      !form.ciudad_id ||
-      !form.estado_id ||
-      !form.edad ||
-      !form.fecha_nacimiento ||
-      !form.fecha_contratacion
-    ) {
-      return alert("Llena todos los campos requeridos.");
-    }
+    if (!validate(form, requiredFields)) return;
 
     try {
       await apiFetch("/empleados", {
@@ -153,6 +151,7 @@ export default function EmpleadosRegistro() {
 
   const actualizarEmpleado = async () => {
     if (!form.fi_empleado_id) return alert("Selecciona un empleado para actualizar");
+    if (!validate(form, requiredFields)) return;
 
     try {
       await apiFetch(`/empleados/${form.fi_empleado_id}`, {
@@ -199,6 +198,7 @@ export default function EmpleadosRegistro() {
   };
 
   const seleccionarEmpleado = (e) => {
+    clearErrors();
     setForm({
       fi_empleado_id: e.fi_empleado_id,
       nombre: e.fc_nombre,

@@ -21,6 +21,7 @@ import Delete from "@mui/icons-material/Delete";
 import Search from "@mui/icons-material/Search";
 import CleaningServices from "@mui/icons-material/CleaningServices";
 import axios from "../utils/axiosInstance.js";
+import useFormValidation from "../hooks/useFormValidation";
 
 // =========================================================
 //  COMPONENTE PRINCIPAL
@@ -55,7 +56,34 @@ export default function Expedientes() {
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fc_nombre",
+    "fc_id_empleado",
+    "fn_uniformes",
+    "fc_puesto",
+    "fc_credencial",
+    "fc_fotografia",
+    "fc_acta_nacimiento",
+    "fc_ine",
+    "fc_licencia_conducir",
+    "fc_comprobante_domicilio",
+    "fc_rfc",
+    "fc_curp",
+    "fc_comprobante_estudios",
+    "fc_cv",
+    "fc_carta_recomendacion",
+    "fc_acuerdo_confidencialidad",
+    "fc_codigo_etica",
+    "fc_codigo_conducta",
+    "fc_solicitud_empleo",
+  ];
+
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   // =========================================================
   //  CARGAR / BUSCAR
@@ -78,6 +106,7 @@ export default function Expedientes() {
   //  GUARDAR / ACTUALIZAR
   // =========================================================
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
         await axios.put(`${api}/${editId}`, form);
@@ -97,6 +126,7 @@ export default function Expedientes() {
   //  EDITAR /  ELIMINAR /  LIMPIAR
   // =========================================================
   const editar = (row) => {
+    clearErrors();
     setEditId(row.fi_expediente_id);
     setForm({ ...row });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -131,6 +161,7 @@ export default function Expedientes() {
       fc_solicitud_empleo: "NO",
     });
     setEditId(null);
+    clearErrors();
   };
 
   // =========================================================
@@ -157,13 +188,13 @@ export default function Expedientes() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField label="Nombre completo" name="fc_nombre" value={form.fc_nombre} onChange={handleChange} fullWidth />
+              <TextField label="Nombre completo" name="fc_nombre" value={form.fc_nombre} onChange={handleChange} fullWidth error={!!errors.fc_nombre} helperText={errors.fc_nombre} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField label="ID Empleado" name="fc_id_empleado" value={form.fc_id_empleado} onChange={handleChange} fullWidth />
+              <TextField label="ID Empleado" name="fc_id_empleado" value={form.fc_id_empleado} onChange={handleChange} fullWidth error={!!errors.fc_id_empleado} helperText={errors.fc_id_empleado} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField label="Uniformes" name="fn_uniformes" type="number" value={form.fn_uniformes} onChange={handleChange} fullWidth />
+              <TextField label="Uniformes" name="fn_uniformes" type="number" value={form.fn_uniformes} onChange={handleChange} fullWidth error={!!errors.fn_uniformes} helperText={errors.fn_uniformes} />
             </Grid>
 
             {/* CAMPO PUESTO */}
@@ -175,6 +206,8 @@ export default function Expedientes() {
                 value={form.fc_puesto || ""}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_puesto}
+                helperText={errors.fc_puesto}
               >
                 <MenuItem value="GAC">GAC</MenuItem>
                 <MenuItem value="GAM">GAM</MenuItem>
@@ -211,6 +244,8 @@ export default function Expedientes() {
                   value={form[campo]}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors[campo]}
+                  helperText={errors[campo]}
                 >
                   <MenuItem value="SI">SI</MenuItem>
                   <MenuItem value="NO">NO</MenuItem>

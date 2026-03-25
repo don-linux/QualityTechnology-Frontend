@@ -14,6 +14,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function BitacoraParametrosContent() {
   const [form, setForm] = useState({
@@ -30,7 +31,17 @@ function BitacoraParametrosContent() {
   });
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fd_fecha", "fn_num_estanque", "fn_oxigeno", "fn_temperatura",
+    "fn_ph", "fn_amonio", "fn_nitritos", "fn_nitratos", "fc_responsable",
+  ];
+
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const cargarDatos = async () => {
     try {
@@ -43,6 +54,7 @@ function BitacoraParametrosContent() {
   useEffect(() => { cargarDatos(); }, []);
 
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId)
         await axios.put(`${API_URL}/medellin/parametros/${editId}`, form);
@@ -68,6 +80,7 @@ function BitacoraParametrosContent() {
   };
 
   const editar = (r) => {
+    clearErrors();
     setEditId(r.fi_id);
     setForm({ ...r, fd_fecha: r.fd_fecha?.split("T")[0] });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -159,6 +172,8 @@ function BitacoraParametrosContent() {
                 value={form.fd_fecha}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fd_fecha}
+                helperText={errors.fd_fecha}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -168,6 +183,8 @@ function BitacoraParametrosContent() {
                 value={form.fn_num_estanque}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_num_estanque}
+                helperText={errors.fn_num_estanque}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -177,6 +194,8 @@ function BitacoraParametrosContent() {
                 value={form.fn_oxigeno}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_oxigeno}
+                helperText={errors.fn_oxigeno}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -186,6 +205,8 @@ function BitacoraParametrosContent() {
                 value={form.fn_temperatura}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_temperatura}
+                helperText={errors.fn_temperatura}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -195,6 +216,8 @@ function BitacoraParametrosContent() {
                 value={form.fn_ph}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_ph}
+                helperText={errors.fn_ph}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -204,6 +227,8 @@ function BitacoraParametrosContent() {
                 value={form.fn_amonio}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_amonio}
+                helperText={errors.fn_amonio}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -213,6 +238,8 @@ function BitacoraParametrosContent() {
                 value={form.fn_nitritos}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_nitritos}
+                helperText={errors.fn_nitritos}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -222,6 +249,8 @@ function BitacoraParametrosContent() {
                 value={form.fn_nitratos}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_nitratos}
+                helperText={errors.fn_nitratos}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -231,6 +260,8 @@ function BitacoraParametrosContent() {
                 value={form.fc_responsable}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_responsable}
+                helperText={errors.fc_responsable}
               />
             </Grid>
           </Grid>

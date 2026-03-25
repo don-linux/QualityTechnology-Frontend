@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { apiFetch } from "../utils/api.js";
+import useFormValidation from "../hooks/useFormValidation";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -26,6 +27,8 @@ export default function UsuariosRegistro() {
   const [usuarios, setUsuarios] = useState([]);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
   const [roles, setRoles] = useState([]);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const requiredFields = ["nombre", "contraseña", "rol_id"];
 
   useEffect(() => {
     obtenerUsuarios();
@@ -52,9 +55,11 @@ export default function UsuariosRegistro() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
   };
 
   const handleSubmit = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       await apiFetch("/usuarios", {
         method: "POST",
@@ -71,6 +76,7 @@ export default function UsuariosRegistro() {
 
   const handleUpdate = async () => {
     if (!usuarioSeleccionado) return;
+    if (!validate(form, requiredFields)) return;
     try {
       await apiFetch(`/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
         method: "PUT",
@@ -111,11 +117,13 @@ export default function UsuariosRegistro() {
       contraseña: "",
       rol_id: usuario.fi_rol_id,
     });
+    clearErrors();
   };
 
   const limpiarFormulario = () => {
     setForm({ nombre: "", contraseña: "", rol_id: "" });
     setUsuarioSeleccionado(null);
+    clearErrors();
   };
 
   //  Función para obtener el nombre del rol dado su ID
@@ -139,6 +147,8 @@ export default function UsuariosRegistro() {
                 fullWidth
                 value={form.nombre}
                 onChange={handleChange}
+                error={!!errors.nombre}
+                helperText={errors.nombre}
               />
             </Grid>
             <Grid size={12}>
@@ -149,6 +159,8 @@ export default function UsuariosRegistro() {
                 fullWidth
                 value={form.contraseña}
                 onChange={handleChange}
+                error={!!errors.contraseña}
+                helperText={errors.contraseña}
               />
             </Grid>
             <Grid size={12}>
@@ -159,6 +171,8 @@ export default function UsuariosRegistro() {
                 fullWidth
                 value={form.rol_id}
                 onChange={handleChange}
+                error={!!errors.rol_id}
+                helperText={errors.rol_id}
               >
                 {roles.map((rol) => (
                   <MenuItem key={rol.fi_rol_id} value={rol.fi_rol_id}>

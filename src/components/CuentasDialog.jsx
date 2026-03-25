@@ -20,9 +20,14 @@ import Delete from "@mui/icons-material/Delete";
 import Save from "@mui/icons-material/Save";
 import axios from "../utils/axiosInstance.js";
 
+import useFormValidation from "../hooks/useFormValidation";
+
+const requiredFields = ["nombre"];
+
 const CuentasDialog = ({ open, onClose }) => {
   const [cuentas, setCuentas] = useState([]);
   const [nuevaCuenta, setNuevaCuenta] = useState({ nombre: "", saldo: "" });
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
   const obtenerCuentas = async () => {
     try {
@@ -34,10 +39,7 @@ const CuentasDialog = ({ open, onClose }) => {
   };
 
   const handleAddCuenta = async () => {
-    if (!nuevaCuenta.nombre.trim()) {
-      alert(" Ingresa un nombre para la cuenta");
-      return;
-    }
+    if (!validate(nuevaCuenta, requiredFields)) return;
 
     try {
       await axios.post(`${API_URL}/cuentas`, {
@@ -45,6 +47,7 @@ const CuentasDialog = ({ open, onClose }) => {
         saldo: Number(nuevaCuenta.saldo) || 0,
       });
       setNuevaCuenta({ nombre: "", saldo: "" });
+      clearErrors();
       obtenerCuentas();
     } catch (err) {
       console.error(" Error al agregar cuenta:", err);
@@ -74,7 +77,7 @@ const CuentasDialog = ({ open, onClose }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" TransitionProps={{ onEnter: () => obtenerCuentas() }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" TransitionProps={{ onEnter: () => { clearErrors(); obtenerCuentas(); } }}>
       <DialogTitle sx={{ background: "#0D4D3A", color: "white", fontWeight: "bold" }}>
          Administración de Cuentas
       </DialogTitle>
@@ -91,9 +94,12 @@ const CuentasDialog = ({ open, onClose }) => {
               label="Nombre de cuenta"
               fullWidth
               value={nuevaCuenta.nombre}
-              onChange={(e) =>
-                setNuevaCuenta((prev) => ({ ...prev, nombre: e.target.value }))
-              }
+              onChange={(e) => {
+                setNuevaCuenta((prev) => ({ ...prev, nombre: e.target.value }));
+                clearFieldError("nombre");
+              }}
+              error={!!errors.nombre}
+              helperText={errors.nombre}
             />
           </Grid>
 

@@ -14,6 +14,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function BitacoraMedicamentosContent() {
   const [form, setForm] = useState({
@@ -29,7 +30,17 @@ function BitacoraMedicamentosContent() {
   });
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fd_fecha_hora", "fn_num_estanque", "fc_diagnosis", "fc_tratamiento",
+    "fc_dosis", "fc_forma_aplicacion", "fd_fecha_ultima_dosis", "fc_responsable",
+  ];
+
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const cargarDatos = async () => {
     try {
@@ -44,6 +55,7 @@ function BitacoraMedicamentosContent() {
 
   //  Guardar / Actualizar
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId)
         await axios.put(`${API_URL}/medellin/medicamentos/${editId}`, form);
@@ -69,6 +81,7 @@ function BitacoraMedicamentosContent() {
 
   //  Editar
   const editar = (r) => {
+    clearErrors();
     setEditId(r.fi_id);
     setForm({
       ...r,
@@ -154,37 +167,37 @@ function BitacoraMedicamentosContent() {
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Fecha" type="date" name="fd_fecha_hora" InputLabelProps={{ shrink: true }}
-                value={form.fd_fecha_hora} onChange={handleChange} fullWidth />
+                value={form.fd_fecha_hora} onChange={handleChange} fullWidth error={!!errors.fd_fecha_hora} helperText={errors.fd_fecha_hora} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Estanque" name="fn_num_estanque"
-                value={form.fn_num_estanque} onChange={handleChange} fullWidth />
+                value={form.fn_num_estanque} onChange={handleChange} fullWidth error={!!errors.fn_num_estanque} helperText={errors.fn_num_estanque} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField label="Diagnóstico" name="fc_diagnosis"
-                value={form.fc_diagnosis} onChange={handleChange} fullWidth />
+                value={form.fc_diagnosis} onChange={handleChange} fullWidth error={!!errors.fc_diagnosis} helperText={errors.fc_diagnosis} />
             </Grid>
             <Grid size={12}>
               <TextField label="Tratamiento" name="fc_tratamiento"
                 value={form.fc_tratamiento} onChange={handleChange}
-                multiline rows={2} fullWidth />
+                multiline rows={2} fullWidth error={!!errors.fc_tratamiento} helperText={errors.fc_tratamiento} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Dosis" name="fc_dosis"
-                value={form.fc_dosis} onChange={handleChange} fullWidth />
+                value={form.fc_dosis} onChange={handleChange} fullWidth error={!!errors.fc_dosis} helperText={errors.fc_dosis} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Forma Aplicación" name="fc_forma_aplicacion"
-                value={form.fc_forma_aplicacion} onChange={handleChange} fullWidth />
+                value={form.fc_forma_aplicacion} onChange={handleChange} fullWidth error={!!errors.fc_forma_aplicacion} helperText={errors.fc_forma_aplicacion} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Última Dosis" type="date" name="fd_fecha_ultima_dosis"
                 InputLabelProps={{ shrink: true }}
-                value={form.fd_fecha_ultima_dosis} onChange={handleChange} fullWidth />
+                value={form.fd_fecha_ultima_dosis} onChange={handleChange} fullWidth error={!!errors.fd_fecha_ultima_dosis} helperText={errors.fd_fecha_ultima_dosis} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Responsable" name="fc_responsable"
-                value={form.fc_responsable} onChange={handleChange} fullWidth />
+                value={form.fc_responsable} onChange={handleChange} fullWidth error={!!errors.fc_responsable} helperText={errors.fc_responsable} />
             </Grid>
           </Grid>
 

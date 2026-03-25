@@ -18,6 +18,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
+import FormHelperText from "@mui/material/FormHelperText";
 import Divider from "@mui/material/Divider";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -28,6 +29,7 @@ import Add from "@mui/icons-material/Add";
 import Edit from "@mui/icons-material/Edit";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
+import useFormValidation from "../hooks/useFormValidation";
 
 const AlevinesChart = lazy(() => import("./AlevinesChart"));
 
@@ -36,6 +38,13 @@ const AlevinesChart = lazy(() => import("./AlevinesChart"));
 dayjs.locale("es");
 
 export default function AlevinesRegistro() {
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "numero_lote", "cantidad_nacidos", "peso_promedio",
+    "observacion", "colecta_id",
+  ];
+
   const [form, setForm] = useState({
     numero_lote: "",
     cantidad_nacidos: "",
@@ -81,6 +90,7 @@ export default function AlevinesRegistro() {
       ...form,
       [e.target.name]: e.target.value,
     });
+    clearFieldError(e.target.name);
   };
 
   const limpiarFormulario = () => {
@@ -93,17 +103,11 @@ export default function AlevinesRegistro() {
       colecta_id: "",
       fi_alevines_id: null,
     });
+    clearErrors();
   };
 
   const registrarAlevines = async () => {
-    if (
-      form.numero_lote.trim() === "" ||
-      form.cantidad_nacidos.trim() === "" ||
-      form.peso_promedio.trim() === "" ||
-      !form.colecta_id
-    ) {
-      return alert("Llena todos los campos requeridos.");
-    }
+    if (!validate(form, requiredFields)) return;
 
     const fechaActual = dayjs().format("YYYY-MM-DD");
 
@@ -128,6 +132,7 @@ export default function AlevinesRegistro() {
   const actualizarAlevines = async () => {
     if (!form.fi_alevines_id)
       return alert("Selecciona un registro para actualizar");
+    if (!validate(form, requiredFields)) return;
 
     const fechaModificacion = dayjs().format("YYYY-MM-DD");
 
@@ -167,6 +172,7 @@ export default function AlevinesRegistro() {
   };
 
   const seleccionarAlevines = (a) => {
+    clearErrors();
     setForm({
       fi_alevines_id: a.fi_alevines_id,
       numero_lote: a.fc_numero_lote,
@@ -273,6 +279,8 @@ export default function AlevinesRegistro() {
                 size="medium"
                 value={form.numero_lote}
                 onChange={handleChange}
+                error={!!errors.numero_lote}
+                helperText={errors.numero_lote}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -285,6 +293,8 @@ export default function AlevinesRegistro() {
                 size="medium"
                 value={form.cantidad_nacidos}
                 onChange={handleChange}
+                error={!!errors.cantidad_nacidos}
+                helperText={errors.cantidad_nacidos}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -297,11 +307,13 @@ export default function AlevinesRegistro() {
                 size="medium"
                 value={form.peso_promedio}
                 onChange={handleChange}
+                error={!!errors.peso_promedio}
+                helperText={errors.peso_promedio}
               />
             </Grid>
 
             <Grid size={12}>
-              <FormControl fullWidth size="medium">
+              <FormControl fullWidth size="medium" error={!!errors.colecta_id}>
                 <InputLabel id="label-colecta">Colecta</InputLabel>
                 <Select
                   labelId="label-colecta"
@@ -316,6 +328,7 @@ export default function AlevinesRegistro() {
                     </MenuItem>
                   ))}
                 </Select>
+                {errors.colecta_id && <FormHelperText>{errors.colecta_id}</FormHelperText>}
               </FormControl>
             </Grid>
 
@@ -329,6 +342,8 @@ export default function AlevinesRegistro() {
                 rows={2}
                 value={form.observacion}
                 onChange={handleChange}
+                error={!!errors.observacion}
+                helperText={errors.observacion}
               />
             </Grid>
 

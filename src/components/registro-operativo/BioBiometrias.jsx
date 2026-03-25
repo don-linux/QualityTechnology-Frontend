@@ -15,6 +15,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 const mapGranja = (g) => (g === "Medellin" ? "med" : "ceiba");
 
@@ -36,6 +37,13 @@ function BioBiometriasContent() {
   const [instalaciones, setInstalaciones] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [editId, setEditId] = useState(null);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fd_fecha", "fi_instalacion_id", "fi_lote_id", "tipo",
+    "fn_peso_total_gramos", "fn_organismos_muestreados",
+    "fc_encargado", "fc_observaciones",
+  ];
 
   /* FORMULARIO */
   const [form, setForm] = useState({
@@ -122,6 +130,7 @@ function BioBiometriasContent() {
   ------------------------------*/
   const handleChange = (e) => {
     const { name, value } = e.target;
+    clearFieldError(name);
 
     // Cálculo de peso promedio
     if (
@@ -164,6 +173,7 @@ function BioBiometriasContent() {
       GUARDAR / ACTUALIZAR
   ------------------------------*/
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       const body = {
         ...form,
@@ -190,6 +200,7 @@ function BioBiometriasContent() {
       EDITAR
   ------------------------------*/
   const editar = (row) => {
+    clearErrors();
     setEditId(row.fi_id);
 
     setForm({
@@ -222,6 +233,7 @@ function BioBiometriasContent() {
       LIMPIAR FORMULARIO
   ------------------------------*/
   const limpiar = () => {
+    clearErrors();
     setEditId(null);
     setForm({
       fd_fecha: "",
@@ -285,6 +297,8 @@ function BioBiometriasContent() {
                 onChange={handleChange}
                 InputLabelProps={{ shrink: true }}
                 fullWidth
+                error={!!errors.fd_fecha}
+                helperText={errors.fd_fecha}
               />
             </Grid>
 
@@ -297,6 +311,8 @@ function BioBiometriasContent() {
                 value={form.fi_instalacion_id}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fi_instalacion_id}
+                helperText={errors.fi_instalacion_id}
               >
                 <MenuItem value="">Seleccione</MenuItem>
                 {instalaciones.map((i) => (
@@ -316,6 +332,8 @@ function BioBiometriasContent() {
                 value={form.fi_lote_id}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fi_lote_id}
+                helperText={errors.fi_lote_id}
               >
                 <MenuItem value="">Seleccione</MenuItem>
                 {lotes.map((l) => (
@@ -335,6 +353,8 @@ function BioBiometriasContent() {
                 value={form.tipo}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.tipo}
+                helperText={errors.tipo}
                 slotProps={{
                   input: {
                     readOnly:
@@ -361,6 +381,8 @@ function BioBiometriasContent() {
                 value={form.fn_peso_total_gramos}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_peso_total_gramos}
+                helperText={errors.fn_peso_total_gramos}
               />
             </Grid>
 
@@ -373,6 +395,8 @@ function BioBiometriasContent() {
                 value={form.fn_organismos_muestreados}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_organismos_muestreados}
+                helperText={errors.fn_organismos_muestreados}
               />
             </Grid>
 
@@ -396,6 +420,8 @@ function BioBiometriasContent() {
                 value={form.fc_encargado}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_encargado}
+                helperText={errors.fc_encargado}
               />
             </Grid>
 
@@ -409,6 +435,8 @@ function BioBiometriasContent() {
                 fullWidth
                 multiline
                 rows={2}
+                error={!!errors.fc_observaciones}
+                helperText={errors.fc_observaciones}
               />
             </Grid>
           </Grid>

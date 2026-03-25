@@ -13,6 +13,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function BitacoraBanosContent() {
   const [form, setForm] = useState({
@@ -29,9 +30,17 @@ function BitacoraBanosContent() {
 
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
-  const handleChange = (e) =>
+  const requiredFields = [
+    "fc_mes", "fc_dia", "fc_banio_hombres", "fc_banio_mujeres",
+    "fc_regadera", "fc_realizo", "fc_firma", "fc_observaciones",
+  ];
+
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   //  Cargar datos
   const cargarDatos = async () => {
@@ -49,6 +58,7 @@ function BitacoraBanosContent() {
 
   //  Guardar / Actualizar
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
         await axios.put(`/medellin/banos/${editId}`, form);
@@ -78,6 +88,7 @@ function BitacoraBanosContent() {
 
   //  Editar
   const editar = (row) => {
+    clearErrors();
     setEditId(row.fi_id);
     setForm({
       fc_mes: row.fc_mes,
@@ -177,25 +188,25 @@ function BitacoraBanosContent() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Mes" name="fc_mes" value={form.fc_mes} onChange={handleChange} fullWidth />
+              <TextField label="Mes" name="fc_mes" value={form.fc_mes} onChange={handleChange} fullWidth error={!!errors.fc_mes} helperText={errors.fc_mes} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Día" name="fc_dia" value={form.fc_dia} onChange={handleChange} fullWidth />
+              <TextField label="Día" name="fc_dia" value={form.fc_dia} onChange={handleChange} fullWidth error={!!errors.fc_dia} helperText={errors.fc_dia} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Baño Hombres" name="fc_banio_hombres" value={form.fc_banio_hombres} onChange={handleChange} fullWidth />
+              <TextField label="Baño Hombres" name="fc_banio_hombres" value={form.fc_banio_hombres} onChange={handleChange} fullWidth error={!!errors.fc_banio_hombres} helperText={errors.fc_banio_hombres} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Baño Mujeres" name="fc_banio_mujeres" value={form.fc_banio_mujeres} onChange={handleChange} fullWidth />
+              <TextField label="Baño Mujeres" name="fc_banio_mujeres" value={form.fc_banio_mujeres} onChange={handleChange} fullWidth error={!!errors.fc_banio_mujeres} helperText={errors.fc_banio_mujeres} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Regadera" name="fc_regadera" value={form.fc_regadera} onChange={handleChange} fullWidth />
+              <TextField label="Regadera" name="fc_regadera" value={form.fc_regadera} onChange={handleChange} fullWidth error={!!errors.fc_regadera} helperText={errors.fc_regadera} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Realizó" name="fc_realizo" value={form.fc_realizo} onChange={handleChange} fullWidth />
+              <TextField label="Realizó" name="fc_realizo" value={form.fc_realizo} onChange={handleChange} fullWidth error={!!errors.fc_realizo} helperText={errors.fc_realizo} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Firma" name="fc_firma" value={form.fc_firma} onChange={handleChange} fullWidth />
+              <TextField label="Firma" name="fc_firma" value={form.fc_firma} onChange={handleChange} fullWidth error={!!errors.fc_firma} helperText={errors.fc_firma} />
             </Grid>
             <Grid size={12}>
               <TextField
@@ -206,6 +217,8 @@ function BitacoraBanosContent() {
                 fullWidth
                 value={form.fc_observaciones}
                 onChange={handleChange}
+                error={!!errors.fc_observaciones}
+                helperText={errors.fc_observaciones}
               />
             </Grid>
           </Grid>

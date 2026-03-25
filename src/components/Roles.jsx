@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from "../utils/api.js";
+import useFormValidation from "../hooks/useFormValidation";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -21,6 +22,8 @@ export default function Roles() {
   const [form, setForm] = useState({ rol_id: '', nombre: '' });
   const [roles, setRoles] = useState([]);
   const [mensaje, setMensaje] = useState('');
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const requiredFields = ["nombre"];
 
   useEffect(() => {
     obtenerRoles();
@@ -37,15 +40,17 @@ export default function Roles() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
   };
 
   const limpiarFormulario = () => {
     setForm({ rol_id: '', nombre: '' });
     setMensaje('');
+    clearErrors();
   };
 
   const registrarRol = async () => {
-    if (form.nombre.trim() === '') return setMensaje(' El nombre no puede estar vacío');
+    if (!validate(form, requiredFields)) return;
     try {
       await axios.post(`${API_URL}/roles`, { nombre: form.nombre });
       setMensaje(' Rol registrado correctamente');
@@ -59,6 +64,7 @@ export default function Roles() {
 
   const actualizarRol = async () => {
     if (!form.rol_id) return setMensaje(' Selecciona un rol para actualizar');
+    if (!validate(form, requiredFields)) return;
     try {
       await axios.put(`${API_URL}/roles/${form.rol_id}`, { nombre: form.nombre });
       setMensaje(' Rol actualizado correctamente');
@@ -86,6 +92,7 @@ export default function Roles() {
   const seleccionarRol = (rol) => {
     setForm({ rol_id: rol.fi_rol_id, nombre: rol.fc_nombre });
     setMensaje('');
+    clearErrors();
   };
 
   return (
@@ -104,6 +111,8 @@ export default function Roles() {
                 fullWidth
                 value={form.nombre}
                 onChange={handleChange}
+                error={!!errors.nombre}
+                helperText={errors.nombre}
               />
             </Grid>
 

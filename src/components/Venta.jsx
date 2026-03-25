@@ -14,6 +14,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Autocomplete from "@mui/material/Autocomplete";
 import axios from "../utils/axiosInstance.js";
+import useFormValidation from "../hooks/useFormValidation";
 
 const API = `${API_URL}/ventas`;
 
@@ -48,6 +49,14 @@ function VentaContent() {
     fc_observaciones: "",
     fc_empresa: empresa,
   });
+
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fd_fecha_venta", "fc_folio", "fc_cliente", "fc_tipo_venta",
+    "fn_cantidad_vendida", "fn_precio_venta", "fn_abonado",
+    "fc_encargado_venta", "fc_observaciones",
+  ];
 
   /* ============================================================
       NORMALIZAR LISTAS
@@ -109,6 +118,7 @@ function VentaContent() {
   ============================================================ */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
   };
 
   /* ============================================================
@@ -137,6 +147,8 @@ function VentaContent() {
       GUARDAR
   ============================================================ */
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
+
     if (!form.fc_cliente || !form.fc_encargado_venta) {
       alert("Debe seleccionar un cliente y un encargado.");
       return;
@@ -168,6 +180,7 @@ function VentaContent() {
       EDITAR
   ============================================================ */
   const editarVenta = (v) => {
+    clearErrors();
     setEditando(true);
     setIdEditando(v.fi_venta_id);
 
@@ -189,6 +202,7 @@ function VentaContent() {
       LIMPIAR
   ============================================================ */
   const limpiar = () => {
+    clearErrors();
     setForm({
       fd_fecha_venta: "",
       fc_folio: "",
@@ -259,6 +273,8 @@ function VentaContent() {
               onChange={handleChange}
               fullWidth
               InputLabelProps={{ shrink: true }}
+              error={!!errors.fd_fecha_venta}
+              helperText={errors.fd_fecha_venta}
             />
           </Grid>
 
@@ -270,6 +286,8 @@ function VentaContent() {
               value={form.fc_folio}
               onChange={handleChange}
               fullWidth
+              error={!!errors.fc_folio}
+              helperText={errors.fc_folio}
             />
           </Grid>
 
@@ -283,14 +301,15 @@ function VentaContent() {
                   (o) => o.nombre === form.fc_cliente
                 ) || null
               }
-              onChange={(e, val) =>
+              onChange={(e, val) => {
                 setForm({
                   ...form,
                   fc_cliente: val ? val.nombre : "",
-                })
-              }
+                });
+                clearFieldError("fc_cliente");
+              }}
               renderInput={(params) => (
-                <TextField {...params} label="Razón Social" fullWidth />
+                <TextField {...params} label="Razón Social" fullWidth error={!!errors.fc_cliente} helperText={errors.fc_cliente} />
               )}
             />
           </Grid>
@@ -304,6 +323,8 @@ function VentaContent() {
               value={form.fc_tipo_venta}
               onChange={handleChange}
               fullWidth
+              error={!!errors.fc_tipo_venta}
+              helperText={errors.fc_tipo_venta}
             >
               <MenuItem value="ALEVINES">Venta de Alevines</MenuItem>
               <MenuItem value="MOJARRA_KG">Venta de Mojarra (Kg)</MenuItem>
@@ -320,6 +341,8 @@ function VentaContent() {
               value={form.fn_cantidad_vendida}
               onChange={handleChange}
               fullWidth
+              error={!!errors.fn_cantidad_vendida}
+              helperText={errors.fn_cantidad_vendida}
             />
           </Grid>
 
@@ -331,6 +354,8 @@ function VentaContent() {
               value={form.fn_precio_venta}
               onChange={handleChange}
               fullWidth
+              error={!!errors.fn_precio_venta}
+              helperText={errors.fn_precio_venta}
             />
           </Grid>
 
@@ -352,6 +377,8 @@ function VentaContent() {
               value={form.fn_abonado}
               onChange={handleChange}
               fullWidth
+              error={!!errors.fn_abonado}
+              helperText={errors.fn_abonado}
             />
           </Grid>
 
@@ -381,14 +408,15 @@ function VentaContent() {
                   (o) => o.nombre === form.fc_encargado_venta
                 ) || null
               }
-              onChange={(e, val) =>
+              onChange={(e, val) => {
                 setForm({
                   ...form,
                   fc_encargado_venta: val ? val.nombre : "",
-                })
-              }
+                });
+                clearFieldError("fc_encargado_venta");
+              }}
               renderInput={(params) => (
-                <TextField {...params} label="Encargado de venta" fullWidth />
+                <TextField {...params} label="Encargado de venta" fullWidth error={!!errors.fc_encargado_venta} helperText={errors.fc_encargado_venta} />
               )}
             />
           </Grid>
@@ -403,6 +431,8 @@ function VentaContent() {
               fullWidth
               value={form.fc_observaciones}
               onChange={handleChange}
+              error={!!errors.fc_observaciones}
+              helperText={errors.fc_observaciones}
             />
           </Grid>
 

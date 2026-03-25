@@ -14,6 +14,7 @@ import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
+import useFormValidation from "../hooks/useFormValidation";
 
 /* ============================================================
    NORMALIZAR GRANJA PARA BACKEND (SIN ACENTOS Y CORRECTO)
@@ -38,6 +39,13 @@ export default function Pileta() {
 
 function PiletaContent() {
   const usuario_id = localStorage.getItem("usuario_id");
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "tipo_origen", "fi_instalacion_id", "origen_instalacion",
+    "origen_externo", "fi_lote_id", "no_lote", "cantidad",
+    "talla_gr", "observacion", "fecha_siembra", "fecha_ultima_biometria",
+  ];
 
   const [form, setForm] = useState({
     tipo_origen: "INTERNO",
@@ -147,7 +155,8 @@ function PiletaContent() {
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
-  }, [granjaActiva]);
+    clearErrors();
+  }, [granjaActiva, clearErrors]);
 
   /* ============================================================
       CARGAR TODO CUANDO CAMBIA LA GRANJA
@@ -207,10 +216,12 @@ function PiletaContent() {
         fi_lote_id: "",
         no_lote: "",
       });
+      clearFieldError(name);
       return;
     }
 
     setForm({ ...form, [name]: value });
+    clearFieldError(name);
   };
 
 
@@ -218,6 +229,7 @@ function PiletaContent() {
       REGISTRAR
   ============================================================ */
   const registrarPileta = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       const dataPayload = {
         ...form,
@@ -247,6 +259,7 @@ function PiletaContent() {
   ============================================================ */
   const actualizarPileta = async () => {
     if (!seleccionado) return alert("Seleccione un registro");
+    if (!validate(form, requiredFields)) return;
 
     try {
       const dataPayload = {
@@ -292,6 +305,7 @@ function PiletaContent() {
       SELECCIÓN DE FILA EN TABLA
   ============================================================ */
   const seleccionarPileta = (p) => {
+    clearErrors();
     setSeleccionado(p.fi_pileta_id);
     setForm({
       fi_instalacion_id: p.fi_instalacion_id,
@@ -430,6 +444,8 @@ function PiletaContent() {
                   value={form.tipo_origen}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.tipo_origen}
+                  helperText={errors.tipo_origen}
                 >
                   <MenuItem value="INTERNO">Interno</MenuItem>
                   <MenuItem value="EXTERNO">Externo</MenuItem>
@@ -445,6 +461,8 @@ function PiletaContent() {
                     onChange={(e) => handleOrigenLote(e.target.value)}
                     fullWidth
                     sx={{ mt: 2 }}
+                    error={!!errors.origen_instalacion}
+                    helperText={errors.origen_instalacion}
                   >
                     <MenuItem value="">Seleccione origen</MenuItem>
 
@@ -466,6 +484,8 @@ function PiletaContent() {
                     onChange={handleChange}
                     fullWidth
                     sx={{ mt: 2 }}
+                    error={!!errors.origen_externo}
+                    helperText={errors.origen_externo}
                   />
                   </>
                 )}
@@ -480,6 +500,8 @@ function PiletaContent() {
                   value={form.fi_instalacion_id}
                   onChange={(e) => handleInstalacionDestino(e.target.value)}
                   fullWidth
+                  error={!!errors.fi_instalacion_id}
+                  helperText={errors.fi_instalacion_id}
                 >
                   <MenuItem value="">Seleccione instalación</MenuItem>
 
@@ -500,6 +522,8 @@ function PiletaContent() {
                   onChange={handleChange}
                   fullWidth
                   slotProps={{ input: { readOnly: form.tipo_origen === "INTERNO" } }}
+                  error={!!errors.no_lote}
+                  helperText={errors.no_lote}
                 />
               </Grid>
 
@@ -511,6 +535,8 @@ function PiletaContent() {
                   value={form.cantidad}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.cantidad}
+                  helperText={errors.cantidad}
                 />
               </Grid>
 
@@ -522,6 +548,8 @@ function PiletaContent() {
                   value={form.talla_gr}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.talla_gr}
+                  helperText={errors.talla_gr}
                 />
               </Grid>
 
@@ -533,6 +561,8 @@ function PiletaContent() {
                   value={form.observacion}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.observacion}
+                  helperText={errors.observacion}
                 />
               </Grid>
 
@@ -546,6 +576,8 @@ function PiletaContent() {
                   value={form.fecha_siembra}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.fecha_siembra}
+                  helperText={errors.fecha_siembra}
                 />
               </Grid>
 
@@ -558,6 +590,8 @@ function PiletaContent() {
                   value={form.fecha_ultima_biometria}
                   onChange={handleChange}
                   fullWidth
+                  error={!!errors.fecha_ultima_biometria}
+                  helperText={errors.fecha_ultima_biometria}
                 />
               </Grid>
             </Grid>

@@ -20,6 +20,7 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function RecepcionInsumosContent() {
   const [form, setForm] = useState({
@@ -39,12 +40,22 @@ function RecepcionInsumosContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fd_fecha", "fc_proveedor", "fc_producto", "fc_lote",
+    "fc_cantidad", "fc_unidad_medida", "fc_condiciones_entrega",
+    "fc_verifico", "fc_observaciones",
+  ];
 
   //  Opciones para selects
   const unidadesMedida = ["Kg", "Litros", "Piezas", "Bultos", "Otro"];
   const ubicaciones = ["medellin", "ceiba", "quality"]; // Opciones para la ubicación
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
@@ -69,6 +80,7 @@ function RecepcionInsumosContent() {
 
   //  Guardar o actualizar
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId)
         await axios.put(`${API_URL}/recepcion_insumos/${editId}`, form);
@@ -95,6 +107,7 @@ function RecepcionInsumosContent() {
   };
 
   const editar = (r) => {
+    clearErrors();
     setEditId(r.fi_id);
     setForm({ ...r, fd_fecha: r.fd_fecha?.split("T")[0] });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -236,6 +249,8 @@ function RecepcionInsumosContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fd_fecha}
+                helperText={errors.fd_fecha}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
@@ -246,6 +261,8 @@ function RecepcionInsumosContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_proveedor}
+                helperText={errors.fc_proveedor}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
@@ -256,6 +273,8 @@ function RecepcionInsumosContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_producto}
+                helperText={errors.fc_producto}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
@@ -266,6 +285,8 @@ function RecepcionInsumosContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_lote}
+                helperText={errors.fc_lote}
               />
             </Grid>
 
@@ -277,6 +298,8 @@ function RecepcionInsumosContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_cantidad}
+                helperText={errors.fc_cantidad}
               />
             </Grid>
 
@@ -289,6 +312,8 @@ function RecepcionInsumosContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_unidad_medida}
+                helperText={errors.fc_unidad_medida}
               >
                 {unidadesMedida.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
@@ -304,6 +329,8 @@ function RecepcionInsumosContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_condiciones_entrega}
+                helperText={errors.fc_condiciones_entrega}
               />
             </Grid>
 
@@ -315,6 +342,8 @@ function RecepcionInsumosContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_verifico}
+                helperText={errors.fc_verifico}
               />
             </Grid>
 
@@ -328,6 +357,8 @@ function RecepcionInsumosContent() {
                 multiline
                 rows={2}
                 size="small"
+                error={!!errors.fc_observaciones}
+                helperText={errors.fc_observaciones}
               />
             </Grid>
           </Grid>

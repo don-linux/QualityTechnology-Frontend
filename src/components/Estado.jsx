@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_URL } from "../utils/api.js";
+import useFormValidation from "../hooks/useFormValidation";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -25,6 +26,8 @@ export default function Estados() {
   });
 
   const [estados, setEstados] = useState([]);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const requiredFields = ["fc_nombre"];
 
   useEffect(() => {
     obtenerEstados();
@@ -41,6 +44,7 @@ export default function Estados() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    clearFieldError(e.target.name);
   };
 
   const limpiarFormulario = () => {
@@ -48,10 +52,11 @@ export default function Estados() {
       fi_estado_id: null,
       fc_nombre: "",
     });
+    clearErrors();
   };
 
   const registrarEstado = async () => {
-    if (!form.fc_nombre.trim()) return alert("El nombre es obligatorio");
+    if (!validate(form, requiredFields)) return;
     try {
       await axios.post(`${API_URL}/estados`, {
         fc_nombre: form.fc_nombre,
@@ -67,6 +72,7 @@ export default function Estados() {
   const actualizarEstado = async () => {
     if (!form.fi_estado_id)
       return alert("Selecciona un estado para actualizar");
+    if (!validate(form, requiredFields)) return;
 
     try {
       await axios.put(
@@ -104,6 +110,7 @@ export default function Estados() {
       fi_estado_id: estado.fi_estado_id,
       fc_nombre: estado.fc_nombre,
     });
+    clearErrors();
   };
 
   return (
@@ -141,6 +148,8 @@ export default function Estados() {
               fullWidth
               value={form.fc_nombre}
               onChange={handleChange}
+              error={!!errors.fc_nombre}
+              helperText={errors.fc_nombre}
             />
           </Grid>
         </Grid>

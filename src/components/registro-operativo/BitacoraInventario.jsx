@@ -14,6 +14,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function BitacoraInventarioContent() {
   const [form, setForm] = useState({
@@ -28,9 +29,17 @@ function BitacoraInventarioContent() {
   });
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
-  const handleChange = (e) =>
+  const requiredFields = [
+    "fn_num_instalacion", "fn_cantidad", "fn_talla", "fc_lote",
+    "fd_fecha_siembra", "fd_fecha_salida_hormonado", "fc_observacion",
+  ];
+
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const cargarDatos = async () => {
     try {
@@ -46,6 +55,7 @@ function BitacoraInventarioContent() {
   }, []);
 
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId)
         await axios.put(
@@ -73,6 +83,7 @@ function BitacoraInventarioContent() {
   };
 
   const editar = (r) => {
+    clearErrors();
     setEditId(r.fi_id);
     setForm({
       ...r,
@@ -168,6 +179,8 @@ function BitacoraInventarioContent() {
                 value={form.fn_num_instalacion}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_num_instalacion}
+                helperText={errors.fn_num_instalacion}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -178,6 +191,8 @@ function BitacoraInventarioContent() {
                 value={form.fn_cantidad}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_cantidad}
+                helperText={errors.fn_cantidad}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -188,6 +203,8 @@ function BitacoraInventarioContent() {
                 value={form.fn_talla}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_talla}
+                helperText={errors.fn_talla}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -197,6 +214,8 @@ function BitacoraInventarioContent() {
                 value={form.fc_lote}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_lote}
+                helperText={errors.fc_lote}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -208,6 +227,8 @@ function BitacoraInventarioContent() {
                 value={form.fd_fecha_siembra}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fd_fecha_siembra}
+                helperText={errors.fd_fecha_siembra}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -219,6 +240,8 @@ function BitacoraInventarioContent() {
                 value={form.fd_fecha_salida_hormonado}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fd_fecha_salida_hormonado}
+                helperText={errors.fd_fecha_salida_hormonado}
               />
             </Grid>
             <Grid size={12}>
@@ -230,6 +253,8 @@ function BitacoraInventarioContent() {
                 fullWidth
                 value={form.fc_observacion}
                 onChange={handleChange}
+                error={!!errors.fc_observacion}
+                helperText={errors.fc_observacion}
               />
             </Grid>
           </Grid>

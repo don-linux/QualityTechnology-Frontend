@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { API_URL } from "../../utils/api.js";
+import { API_URL, getUploadUrl } from "../../utils/api.js";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -20,6 +20,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function BitacoraVisitasContent() {
   const [form, setForm] = useState({
@@ -38,10 +39,19 @@ function BitacoraVisitasContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+
+  const requiredFields = [
+    "fd_fecha", "fc_nombre_completo", "fc_origen", "fc_motivo",
+    "fc_observaciones", "fd_entrada", "fd_salida",
+  ];
 
   const ubicaciones = ["medellin", "ceiba", "quality"];
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleFileChange = (e) => {
     setForm({
@@ -64,6 +74,7 @@ function BitacoraVisitasContent() {
   }, [cargarDatos]);
 
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       const formData = new FormData();
       const appendIfValue = (key, value) => {
@@ -110,6 +121,7 @@ function BitacoraVisitasContent() {
   };
 
   const editar = (r) => {
+    clearErrors();
     setEditId(r.fi_id);
     setForm({ ...r, fd_fecha: r.fd_fecha?.split("T")[0] });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -223,6 +235,8 @@ function BitacoraVisitasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fd_fecha}
+                helperText={errors.fd_fecha}
               />
             </Grid>
 
@@ -234,6 +248,8 @@ function BitacoraVisitasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_nombre_completo}
+                helperText={errors.fc_nombre_completo}
               />
             </Grid>
 
@@ -245,6 +261,8 @@ function BitacoraVisitasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                error={!!errors.fc_origen}
+                helperText={errors.fc_origen}
               />
             </Grid>
 
@@ -256,6 +274,8 @@ function BitacoraVisitasContent() {
                 onChange={handleChange}
                 fullWidth
                 multiline
+                error={!!errors.fc_motivo}
+                helperText={errors.fc_motivo}
               />
             </Grid>
 
@@ -268,6 +288,8 @@ function BitacoraVisitasContent() {
                 fullWidth
                 multiline
                 rows={2}
+                error={!!errors.fc_observaciones}
+                helperText={errors.fc_observaciones}
               />
             </Grid>
 
@@ -319,26 +341,30 @@ function BitacoraVisitasContent() {
                   <TextField
                     label="Hora de Entrada"
                     type="time"
-                    name="fd_entrada"
-                    value={form.fd_entrada}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    InputLabelProps={{ shrink: true }}
-                  />
+                name="fd_entrada"
+                value={form.fd_entrada}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.fd_entrada}
+                helperText={errors.fd_entrada}
+              />
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     label="Hora de Salida"
                     type="time"
-                    name="fd_salida"
-                    value={form.fd_salida}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    InputLabelProps={{ shrink: true }}
-                  />
+                name="fd_salida"
+                value={form.fd_salida}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.fd_salida}
+                helperText={errors.fd_salida}
+              />
                 </Grid>
               </Grid>
             </Grid>
@@ -392,7 +418,20 @@ function BitacoraVisitasContent() {
                 <TableCell>{r.fc_nombre_completo}</TableCell>
                 <TableCell>{r.fc_origen}</TableCell>
                 <TableCell>{r.fc_motivo}</TableCell>
-                <TableCell>{r.fc_foto_identificacion}</TableCell>
+                <TableCell>
+                  {r.fc_foto_identificacion ? (
+                    <a
+                      href={getUploadUrl(r.fc_foto_identificacion)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
+                    >
+                      Ver foto
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </TableCell>
                 <TableCell>{r.fd_entrada}</TableCell>
                 <TableCell>{r.fd_salida}</TableCell>
                 <TableCell>{r.fc_observaciones}</TableCell>

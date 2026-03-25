@@ -12,7 +12,7 @@ import MenuItem from "@mui/material/MenuItem";
 import axios from "../utils/axiosInstance.js";
 
 const FormDialog = React.memo(
-  ({ open, onClose, onSubmit, formData, setFormData, editId }) => {
+  ({ open, onClose, onSubmit, formData, setFormData, editId, errors = {}, clearFieldError, clearErrors, validate, requiredFields = [] }) => {
     const [clientes, setClientes] = useState([]);
     const [proveedores, setProveedores] = useState([]);
     const [cuentas, setCuentas] = useState([]);
@@ -34,14 +34,16 @@ const FormDialog = React.memo(
 
     const handleChange = (e) => {
       setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value ?? "" }));
+      if (clearFieldError) clearFieldError(e.target.name);
     };
 
     const handleSave = () => {
+      if (validate && !validate(formData, requiredFields)) return;
       onSubmit(formData);
     };
 
     return (
-      <Dialog open={open} onClose={onClose} fullWidth TransitionProps={{ onEnter: () => fetchDatos() }}>
+      <Dialog open={open} onClose={onClose} fullWidth TransitionProps={{ onEnter: () => { fetchDatos(); if (clearErrors) clearErrors(); } }}>
         <DialogTitle>{editId ? "Editar Movimiento" : "Nuevo Movimiento"}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -54,6 +56,8 @@ const FormDialog = React.memo(
                 onChange={handleChange}
                 fullWidth
                 InputLabelProps={{ shrink: true }}
+                error={!!errors.fd_fecha}
+                helperText={errors.fd_fecha}
               />
             </Grid>
 
@@ -66,6 +70,8 @@ const FormDialog = React.memo(
                 value={formData.fc_cuenta || ""}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_cuenta}
+                helperText={errors.fc_cuenta}
               >
                 {cuentas.map((cuenta) => (
                   <MenuItem key={cuenta.id} value={cuenta.nombre}>
@@ -89,10 +95,13 @@ const FormDialog = React.memo(
                     fn_egreso: val > 0 ? "" : prev.fn_egreso,
                     fc_beneficiario: "",
                   }));
+                  if (clearFieldError) clearFieldError("fn_ingreso");
                 }}
                 disabled={Number(formData.fn_egreso) > 0}
                 fullWidth
                 margin="dense"
+                error={!!errors.fn_ingreso}
+                helperText={errors.fn_ingreso}
               />
             </Grid>
 
@@ -110,10 +119,13 @@ const FormDialog = React.memo(
                     fn_ingreso: val > 0 ? "" : prev.fn_ingreso,
                     fc_beneficiario: "",
                   }));
+                  if (clearFieldError) clearFieldError("fn_egreso");
                 }}
                 disabled={Number(formData.fn_ingreso) > 0}
                 fullWidth
                 margin="dense"
+                error={!!errors.fn_egreso}
+                helperText={errors.fn_egreso}
               />
             </Grid>
 
@@ -125,6 +137,8 @@ const FormDialog = React.memo(
                 onChange={handleChange}
                 fullWidth
                 multiline
+                error={!!errors.fc_descripcion}
+                helperText={errors.fc_descripcion}
               />
             </Grid>
 
@@ -135,6 +149,8 @@ const FormDialog = React.memo(
                 value={formData.fc_categoria || ""}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_categoria}
+                helperText={errors.fc_categoria}
               />
             </Grid>
 
@@ -145,6 +161,8 @@ const FormDialog = React.memo(
                 value={formData.fc_subcategoria || ""}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_subcategoria}
+                helperText={errors.fc_subcategoria}
               />
             </Grid>
 
@@ -158,6 +176,8 @@ const FormDialog = React.memo(
                 onChange={handleChange}
                 fullWidth
                 disabled={!formData.fn_ingreso && !formData.fn_egreso}
+                error={!!errors.fc_beneficiario}
+                helperText={errors.fc_beneficiario}
                 SelectProps={{
                   MenuProps: {
                     PaperProps: {
@@ -198,6 +218,8 @@ const FormDialog = React.memo(
                 value={formData.fc_noproyecto || ""}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_noproyecto}
+                helperText={errors.fc_noproyecto}
               />
             </Grid>
 {/*  Menú de factura con 3 opciones */}
@@ -220,8 +242,11 @@ const FormDialog = React.memo(
             : prev.fc_factura,
         facturaFile: opcion === "CON_FACTURA" ? prev.facturaFile : null,
       }));
+      if (clearFieldError) clearFieldError("fc_factura_opcion");
     }}
     fullWidth
+    error={!!errors.fc_factura_opcion}
+    helperText={errors.fc_factura_opcion}
   >
     <MenuItem value="APLICA">Con factura</MenuItem>
     <MenuItem value="PENDIENTE">Pendiente</MenuItem>
@@ -261,6 +286,8 @@ const FormDialog = React.memo(
                 value={formData.fc_estatus || ""}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_estatus}
+                helperText={errors.fc_estatus}
               >
                 <MenuItem value="REPOSICION">Reposición</MenuItem>
                 <MenuItem value="LIQUIDADO">Liquidado</MenuItem>

@@ -14,6 +14,7 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
+import useFormValidation from "../../hooks/useFormValidation";
 
 function BitacoraRecambiosContent() {
   const [form, setForm] = useState({
@@ -36,9 +37,20 @@ function BitacoraRecambiosContent() {
   });
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
+  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
-  const handleChange = (e) =>
+  const requiredFields = [
+    "fc_mes", "fn_num_instalacion",
+    "fd_fecha1", "fc_tipo1", "fd_fecha2", "fc_tipo2",
+    "fd_fecha3", "fc_tipo3", "fd_fecha4", "fc_tipo4",
+    "fd_fecha5", "fc_tipo5", "fd_fecha6", "fc_tipo6",
+    "fc_responsable",
+  ];
+
+  const handleChange = (e) => {
+    clearFieldError(e.target.name);
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const cargarDatos = async () => {
     try {
@@ -54,6 +66,7 @@ function BitacoraRecambiosContent() {
   }, []);
 
   const guardar = async () => {
+    if (!validate(form, requiredFields)) return;
     try {
       if (editId)
         await axios.put(
@@ -88,6 +101,7 @@ function BitacoraRecambiosContent() {
   };
 
   const editar = (r) => {
+    clearErrors();
     setEditId(r.fi_id);
     setForm({
       ...r,
@@ -238,6 +252,8 @@ const exportarPDF = async () => {
                 value={form.fc_mes}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_mes}
+                helperText={errors.fc_mes}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -248,6 +264,8 @@ const exportarPDF = async () => {
                 value={form.fn_num_instalacion}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fn_num_instalacion}
+                helperText={errors.fn_num_instalacion}
               />
             </Grid>
 
@@ -262,6 +280,8 @@ const exportarPDF = async () => {
                     value={form[`fd_fecha${n}`] || ""}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors[`fd_fecha${n}`]}
+                    helperText={errors[`fd_fecha${n}`]}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 3 }}>
@@ -271,6 +291,8 @@ const exportarPDF = async () => {
                     value={form[`fc_tipo${n}`] || ""}
                     onChange={handleChange}
                     fullWidth
+                    error={!!errors[`fc_tipo${n}`]}
+                    helperText={errors[`fc_tipo${n}`]}
                   />
                 </Grid>
               </React.Fragment>
@@ -283,6 +305,8 @@ const exportarPDF = async () => {
                 value={form.fc_responsable}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.fc_responsable}
+                helperText={errors.fc_responsable}
               />
             </Grid>
           </Grid>

@@ -13,14 +13,20 @@ import Lock from "@mui/icons-material/Lock";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
+import useFormValidation from "../hooks/useFormValidation";
+
+const requiredFields = ["usuario", "password"];
+
 const Login = () => {
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { errors, validate, clearFieldError } = useFormValidation();
 
   const handleLogin = async () => {
+    if (!validate({ usuario, password }, requiredFields)) return;
     setError("");
     setLoading(true);
     try {
@@ -51,6 +57,7 @@ const Login = () => {
 
       localStorage.setItem("auth", "true");
       localStorage.setItem("token", data.token || "");
+      localStorage.setItem("refreshToken", data.refreshToken || "");
       localStorage.setItem("rol", rolNormalizado);
       localStorage.setItem("nombre", data.usuario.nombre || "Usuario");
       localStorage.setItem("usuario_id", usuarioId.toString());
@@ -149,7 +156,12 @@ const Login = () => {
                 fullWidth
                 margin="normal"
                 value={usuario}
-                onChange={(e) => setUsuario(e.target.value)}
+                onChange={(e) => {
+                  setUsuario(e.target.value);
+                  clearFieldError("usuario");
+                }}
+                error={!!errors.usuario}
+                helperText={errors.usuario}
                 slotProps={{
                   input: {
                     startAdornment: (
@@ -167,7 +179,12 @@ const Login = () => {
                 fullWidth
                 margin="normal"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  clearFieldError("password");
+                }}
+                error={!!errors.password}
+                helperText={errors.password}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                 slotProps={{
                   input: {
