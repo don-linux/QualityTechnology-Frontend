@@ -15,6 +15,7 @@ import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 function BioInsumosContent() {
   const [form, setForm] = useState({
@@ -31,6 +32,7 @@ function BioInsumosContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fd_fecha", "fc_cantidad_udm", "fc_num_lote", "fc_descripcion",
@@ -99,20 +101,15 @@ function BioInsumosContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/ceiba/insumos/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
-    if (
-      window.confirm(
-        " ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer."
-      )
-    ) {
-      await axios.delete(`${API_URL}/ceiba/insumos`);
-      cargarDatos();
-    }
+    if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
+    await axios.delete(`${API_URL}/ceiba/insumos`);
+    cargarDatos();
   };
 
   const exportarPDF = async () => {
@@ -335,6 +332,7 @@ function BioInsumosContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

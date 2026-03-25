@@ -40,10 +40,11 @@ function InstalacionesContent() {
     estado: "vacia",
   });
 
+  const { confirm, ConfirmModal } = useConfirm();
+
   const [instalaciones, setInstalaciones] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [mensaje, setMensaje] = useState({ texto: "", error: false });
-  const [modalEliminar, setModalEliminar] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [granja, setGranja] = useState("Medellin");
   const [tipo, setTipo] = useState("Alevinaje");
@@ -164,10 +165,8 @@ function InstalacionesContent() {
     }
   };
 
-  const confirmarEliminar = () => setModalEliminar(true);
-
   const eliminarInstalacion = async () => {
-    setModalEliminar(false);
+    if (!await confirm("¿Estás seguro de que deseas eliminar esta instalación?", "Confirmar eliminación")) return;
     try {
       await apiFetch(`/instalaciones/${seleccionado}`, { method: "DELETE" });
 
@@ -402,7 +401,7 @@ function InstalacionesContent() {
                 color="error"
                 sx={{ ml: 2 }}
                 disabled={!seleccionado}
-                onClick={confirmarEliminar}
+                onClick={eliminarInstalacion}
               >
                 ELIMINAR
               </Button>
@@ -520,19 +519,7 @@ function InstalacionesContent() {
         </Typography>
       </Paper>
 
-      {/* MODAL CONFIRMAR ELIMINACIÓN */}
-      <Dialog open={modalEliminar} onClose={() => setModalEliminar(false)}>
-        <DialogTitle>Confirmar eliminación</DialogTitle>
-        <DialogContent>
-          <Typography>¿Estás seguro de que deseas eliminar esta instalación?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setModalEliminar(false)}>Cancelar</Button>
-          <Button variant="contained" color="error" onClick={eliminarInstalacion}>
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {ConfirmModal}
     </Box>
   );
 }

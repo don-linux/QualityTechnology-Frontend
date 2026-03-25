@@ -15,6 +15,7 @@ import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 function BitacoraMedicamentosContent() {
   const [form, setForm] = useState({
@@ -31,6 +32,7 @@ function BitacoraMedicamentosContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fd_fecha_hora", "fn_num_estanque", "fc_diagnosis", "fc_tratamiento",
@@ -93,14 +95,14 @@ function BitacoraMedicamentosContent() {
 
   //  Eliminar uno
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/medellin/medicamentos/${id}`);
     cargarDatos();
   };
 
   //  Eliminar todos
   const eliminarTodos = async () => {
-    if (!window.confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
+    if (!await confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
     await axios.delete(`${API_URL}/medellin/medicamentos`);
     cargarDatos();
   };
@@ -268,6 +270,7 @@ function BitacoraMedicamentosContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }
