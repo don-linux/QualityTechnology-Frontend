@@ -14,6 +14,7 @@ import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 function BitacoraBanosContent() {
   const [form, setForm] = useState({
@@ -31,6 +32,7 @@ function BitacoraBanosContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fc_mes", "fc_dia", "fc_banio_hombres", "fc_banio_mujeres",
@@ -106,19 +108,14 @@ function BitacoraBanosContent() {
 
   //  Eliminar uno
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/medellin/banos/${id}`);
     cargarDatos();
   };
 
   //  Eliminar todos
   const eliminarTodos = async () => {
-    if (
-      !window.confirm(
-        " ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer."
-      )
-    )
-      return;
+    if (!await confirm(" ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer.")) return;
     await axios.delete(`${API_URL}/medellin/banos`);
     cargarDatos();
   };
@@ -299,6 +296,7 @@ function BitacoraBanosContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

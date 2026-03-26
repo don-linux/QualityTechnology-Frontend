@@ -24,6 +24,7 @@ import Tab from "@mui/material/Tab";
 import axios from "../utils/axiosInstance.js";
 import FormHelperText from "@mui/material/FormHelperText";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
@@ -49,6 +50,7 @@ function AlimentosContent() {
   const [piletas, setPiletas] = useState([]);
   const [engorda, setEngorda] = useState([]);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const safeNumber = (val, decimals = 2) =>
     !isNaN(Number(val)) ? Number(val).toFixed(decimals) : "—";
@@ -146,7 +148,7 @@ function AlimentosContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este registro?")) return;
+    if (!await confirm("¿Seguro que deseas eliminar este registro?")) return;
     try {
       await axios.delete(`${API_URL}/alimentos/${id}`);
       obtenerRegistros();
@@ -407,6 +409,7 @@ function AlimentosContent() {
           </Table>
         </TableContainer>
       </Box>
+      {ConfirmModal}
     </Container>
   );
 }

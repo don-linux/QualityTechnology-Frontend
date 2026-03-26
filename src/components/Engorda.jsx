@@ -17,6 +17,14 @@ import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
 import { apiFetch } from "../utils/api";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
+
+const normalizarGranja = (g) => {
+  if (!g) return "Granja Acu\u00EDcola Medellin";
+  const txt = g.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (txt.includes("ceib")) return "Granja Acu\u00EDcola La Ceiba";
+  return "Granja Acu\u00EDcola Medellin";
+};
 
 export default function Engorda() {
   return <EngordaContent />;
@@ -25,6 +33,7 @@ export default function Engorda() {
 function EngordaContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "origen_instalacion", "fi_instalacion_id", "cantidad",
@@ -52,7 +61,8 @@ function EngordaContent() {
   ========================================================= */
   const obtenerInstalaciones = useCallback(async () => {
     try {
-      const data = await apiFetch(`/instalaciones/tipo/Engorda/${granjaActiva}`);
+      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const data = await apiFetch(`/instalaciones/tipo/Engorda/${granja}`);
       setInstalaciones(data || []);
     } catch (err) {
       console.error(" Error al obtener instalaciones:", err);
@@ -61,7 +71,8 @@ function EngordaContent() {
 
   const obtenerLotes = useCallback(async () => {
     try {
-      const data = await apiFetch(`/piletas/inventario/${granjaActiva}`);
+      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const data = await apiFetch(`/piletas/inventario/${granja}`);
       setLotes(data || []);
     } catch (err) {
       console.error(" Error al obtener lotes:", err);
@@ -70,7 +81,8 @@ function EngordaContent() {
 
   const obtenerEngordas = useCallback(async () => {
     try {
-      const data = await apiFetch(`/engorda/granja/${granjaActiva}`);
+      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const data = await apiFetch(`/engorda/granja/${granja}`);
       setEngordas(data || []);
     } catch (err) {
       console.error("Error al obtener engordas:", err);
@@ -179,7 +191,7 @@ function EngordaContent() {
   };
 
   const eliminarEngorda = async () => {
-    if (!window.confirm("¿Eliminar este registro?")) return;
+    if (!await confirm("¿Eliminar este registro?")) return;
     try {
       await apiFetch(`/engorda/${seleccionado}`, { method: "DELETE" });
       alert(" Eliminado");
@@ -208,7 +220,7 @@ function EngordaContent() {
   };
 
   const eliminarMovimiento = async (id) => {
-    if (!window.confirm("¿Eliminar este movimiento?")) return;
+    if (!await confirm("¿Eliminar este movimiento?")) return;
     try {
       await apiFetch(`/engorda/movimientos/${id}`, { method: "DELETE" });
       obtenerMovimientos();
@@ -406,6 +418,7 @@ function EngordaContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

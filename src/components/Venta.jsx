@@ -15,6 +15,7 @@ import TableBody from "@mui/material/TableBody";
 import Autocomplete from "@mui/material/Autocomplete";
 import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 const API = `${API_URL}/ventas`;
 
@@ -51,6 +52,7 @@ function VentaContent() {
   });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fd_fecha_venta", "fc_folio", "fc_cliente", "fc_tipo_venta",
@@ -224,7 +226,7 @@ function VentaContent() {
       ELIMINAR
   ============================================================ */
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar venta?")) return;
+    if (!await confirm("¿Eliminar venta?")) return;
     await axios.delete(`${API}/${id}`);
     obtenerVentas();
   };
@@ -519,6 +521,7 @@ function VentaContent() {
     </Table>
   </Box>
 </Card>
+      {ConfirmModal}
 </Box>
   );
 }

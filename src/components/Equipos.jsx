@@ -27,6 +27,7 @@ import Build from "@mui/icons-material/Build";
 import Close from "@mui/icons-material/Close";
 import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 function EquiposContent() {
   const usuario_id = localStorage.getItem("usuario_id");
@@ -68,6 +69,7 @@ function EquiposContent() {
   });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
   const requiredFields = [
     "fc_nombre", "fc_marca", "fc_modelo", "fc_tipo",
     "fd_fecha_compra", "fn_costo", "fc_estado", "fc_ubicacion",
@@ -161,7 +163,7 @@ function EquiposContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar este equipo?")) return;
+    if (!await confirm("¿Eliminar este equipo?")) return;
     await axios.delete(`${api}/${id}`);
     cargarDatos();
     setSnackbar({
@@ -172,7 +174,7 @@ function EquiposContent() {
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm(" ¿Eliminar todos los equipos?")) return;
+    if (!await confirm(" ¿Eliminar todos los equipos?")) return;
     await Promise.all(data.map((r) => axios.delete(`${api}/${r.fi_equipo_id}`)));
     cargarDatos();
     setSnackbar({
@@ -735,6 +737,7 @@ function EquiposContent() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+      {ConfirmModal}
     </Box>
   );
 }

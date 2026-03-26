@@ -21,6 +21,7 @@ import FormControl from "@mui/material/FormControl";
 import dayjs from "dayjs";
 import { apiFetch } from "../utils/api";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 export default function EmpleadosRegistro() {
   const [form, setForm] = useState({
@@ -50,6 +51,7 @@ export default function EmpleadosRegistro() {
   const [estados, setEstados] = useState([]);
   const [loading, setLoading] = useState(false);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
   const requiredFields = [
     "nombre", "apellido_paterno", "apellido_materno", "genero",
     "calle", "cp", "referencia", "comentarios",
@@ -185,7 +187,7 @@ export default function EmpleadosRegistro() {
 
   const eliminarEmpleado = async () => {
     if (!form.fi_empleado_id) return alert("Selecciona un empleado para eliminar");
-    if (!window.confirm("¿Seguro que deseas eliminar este registro?")) return;
+    if (!await confirm("¿Seguro que deseas eliminar este registro?")) return;
 
     try {
       await apiFetch(`/empleados/${form.fi_empleado_id}`, { method: "DELETE" });
@@ -281,6 +283,7 @@ export default function EmpleadosRegistro() {
           </TableContainer>
         </>
       )}
+      {ConfirmModal}
     </Container>
   );
 }

@@ -15,6 +15,7 @@ import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 function BitacoraParametrosContent() {
   const [form, setForm] = useState({
@@ -32,6 +33,7 @@ function BitacoraParametrosContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fd_fecha", "fn_num_estanque", "fn_oxigeno", "fn_temperatura",
@@ -87,14 +89,14 @@ function BitacoraParametrosContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/medellin/parametros/${id}`);
     cargarDatos();
   };
 
   //  Eliminar todos los registros
   const eliminarTodos = async () => {
-    if (!window.confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
+    if (!await confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
     await axios.delete(`${API_URL}/medellin/parametros`);
     cargarDatos();
   };
@@ -344,6 +346,7 @@ function BitacoraParametrosContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

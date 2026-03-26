@@ -26,6 +26,7 @@ import Save from "@mui/icons-material/Save";
 import Close from "@mui/icons-material/Close";
 import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 const api = `${API_URL}/proveedores`;
 
@@ -37,6 +38,7 @@ export default function Proveedores() {
   const [formData, setFormData] = useState({});
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "nombre", "empresa", "rfc", "categoria", "contacto",
@@ -152,7 +154,7 @@ export default function Proveedores() {
   //  Eliminar proveedor
   // ============================
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar proveedor?")) return;
+    if (!await confirm("¿Eliminar proveedor?")) return;
     await axios.delete(`${api}/${id}`);
     obtenerDatos();
   };
@@ -438,6 +440,7 @@ export default function Proveedores() {
           </Button>
         </DialogActions>
       </Dialog>
+      {ConfirmModal}
     </Box>
   );
 }

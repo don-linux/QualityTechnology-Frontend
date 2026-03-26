@@ -23,6 +23,7 @@ import DeleteForever from "@mui/icons-material/DeleteForever";
 import EventAvailable from "@mui/icons-material/EventAvailable";
 import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 const api = `${API_URL}/caja-ahorro`;
 
@@ -34,6 +35,7 @@ export default function CajaAhorro() {
   const [nuevaCategoria, setNuevaCategoria] = useState("");
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = ["nuevaCategoria"];
 
@@ -102,7 +104,7 @@ export default function CajaAhorro() {
       Eliminar registro
      ========================================================= */
   const eliminarRegistro = async (id) => {
-    if (!window.confirm("¿Eliminar esta categoría?")) return;
+    if (!await confirm("¿Eliminar esta categoría?")) return;
     await axios.delete(`${api}/${id}`);
     obtenerDatos();
   };
@@ -111,7 +113,7 @@ export default function CajaAhorro() {
       Eliminar todo por granja
      ========================================================= */
   const eliminarTodo = async () => {
-    if (!window.confirm(` Eliminar TODOS los registros de ${granja}?`)) return;
+    if (!await confirm(` Eliminar TODOS los registros de ${granja}?`)) return;
     await axios.delete(`${api}?granja=${granja}`);
     obtenerDatos();
   };
@@ -414,6 +416,7 @@ export default function CajaAhorro() {
           </TableBody>
         </Table>
       </TableContainer>
+      {ConfirmModal}
     </Box>
   );
 }

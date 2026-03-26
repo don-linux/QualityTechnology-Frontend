@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { API_URL } from "../utils/api.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -27,6 +28,7 @@ export default function Estados() {
 
   const [estados, setEstados] = useState([]);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
   const requiredFields = ["fc_nombre"];
 
   useEffect(() => {
@@ -91,7 +93,7 @@ export default function Estados() {
     if (!form.fi_estado_id)
       return alert("Selecciona un estado para eliminar");
 
-    if (!window.confirm("¿Seguro que deseas eliminar este estado?")) return;
+    if (!await confirm("¿Seguro que deseas eliminar este estado?")) return;
 
     try {
       await axios.delete(
@@ -221,6 +223,7 @@ export default function Estados() {
           </Table>
         </TableContainer>
       </Box>
+      {ConfirmModal}
     </Container>
   );
 }

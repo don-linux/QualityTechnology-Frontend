@@ -20,9 +20,11 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 // *** IMPORTANTE: USAR AXIOS INSTANCE CON TOKEN ***
 import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 const LotesRegistro = () => {
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fecha", "familia", "fi_instalacion_id", "huevos_ml",
@@ -211,7 +213,7 @@ const LotesRegistro = () => {
      Eliminar lote
   -------------------------------------------------------- */
   const eliminarLote = async (id) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este lote?")) return;
+    if (!await confirm("¿Seguro que deseas eliminar este lote?")) return;
 
     try {
       await axios.delete(`${API_URL}/lotes/${id}`);
@@ -515,6 +517,7 @@ const LotesRegistro = () => {
           </Button>
         </div>
       )}
+      {ConfirmModal}
     </div>
   );
 };

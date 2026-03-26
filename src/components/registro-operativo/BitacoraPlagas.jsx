@@ -18,6 +18,7 @@ import MenuItem from "@mui/material/MenuItem";
 import SearchIcon from "@mui/icons-material/Search";
 import axiosInstance from "../../utils/axiosInstance";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 function BitacoraPlagasContent() {
   const [form, setForm] = useState({
@@ -38,6 +39,7 @@ function BitacoraPlagasContent() {
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fd_fecha", "fc_num_trampa", "tipo_trampa", "fc_hallazgo",
@@ -113,13 +115,13 @@ function BitacoraPlagasContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axiosInstance.delete(`/plagas/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm(" ¿Eliminar todos los registros de esta ubicación?")) return;
+    if (!await confirm(" ¿Eliminar todos los registros de esta ubicación?")) return;
     await axiosInstance.delete(`/plagas?ubicacion=${form.ubicacion}`);
     cargarDatos();
   };
@@ -443,6 +445,7 @@ function BitacoraPlagasContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

@@ -16,6 +16,7 @@ import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 const mapGranja = (g) => (g === "Medellin" ? "med" : "ceiba");
 
@@ -38,6 +39,7 @@ function BioBiometriasContent() {
   const [lotes, setLotes] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fd_fecha", "fi_instalacion_id", "fi_lote_id", "tipo",
@@ -224,7 +226,7 @@ function BioBiometriasContent() {
       ELIMINAR
   ------------------------------*/
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/biometrias/${id}`);
     cargarDatos();
   };
@@ -514,6 +516,7 @@ function BioBiometriasContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

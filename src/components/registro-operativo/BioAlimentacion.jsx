@@ -15,6 +15,7 @@ import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 function BioAlimentacionContent() {
   const [form, setForm] = useState({
@@ -37,6 +38,7 @@ function BioAlimentacionContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fc_mes", "fn_num_instalacion", "fn_peso_promedio_entrada",
@@ -124,7 +126,7 @@ function BioAlimentacionContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/ceiba/alimentacion/${id}`);
     cargarDatos();
   };
@@ -193,14 +195,9 @@ function BioAlimentacionContent() {
 
   //  Eliminar todos los registros
   const eliminarTodos = async () => {
-    if (
-      window.confirm(
-        " ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer."
-      )
-    ) {
-      await axios.delete(`${API_URL}/ceiba/alimentacion`);
-      cargarDatos();
-    }
+    if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
+    await axios.delete(`${API_URL}/ceiba/alimentacion`);
+    cargarDatos();
   };
 
   return (
@@ -466,6 +463,7 @@ function BioAlimentacionContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

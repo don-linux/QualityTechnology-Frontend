@@ -21,6 +21,7 @@ import Select from "@mui/material/Select";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 function BitacoraVisitasContent() {
   const [form, setForm] = useState({
@@ -40,6 +41,7 @@ function BitacoraVisitasContent() {
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fd_fecha", "fc_nombre_completo", "fc_origen", "fc_motivo",
@@ -128,13 +130,13 @@ function BitacoraVisitasContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/visitas/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
+    if (!await confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
     await axios.delete(`${API_URL}/visitas`);
     cargarDatos();
   };
@@ -459,6 +461,7 @@ function BitacoraVisitasContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

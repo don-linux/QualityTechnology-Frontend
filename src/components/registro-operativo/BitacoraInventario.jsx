@@ -15,6 +15,7 @@ import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 function BitacoraInventarioContent() {
   const [form, setForm] = useState({
@@ -30,6 +31,7 @@ function BitacoraInventarioContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fn_num_instalacion", "fn_cantidad", "fn_talla", "fc_lote",
@@ -94,16 +96,14 @@ function BitacoraInventarioContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/medellin/inventario/${id}`);
     cargarDatos();
   };
 
   //  Eliminar todos
   const eliminarTodos = async () => {
-    if (
-      !window.confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")
-    ) return;
+    if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
     try {
       await axios.delete(`${API_URL}/medellin/inventario`);
       cargarDatos();
@@ -332,6 +332,7 @@ function BitacoraInventarioContent() {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

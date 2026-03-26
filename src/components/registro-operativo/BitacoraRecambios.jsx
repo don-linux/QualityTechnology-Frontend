@@ -15,6 +15,7 @@ import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
+import useConfirm from "../../hooks/useConfirm";
 
 function BitacoraRecambiosContent() {
   const [form, setForm] = useState({
@@ -38,6 +39,7 @@ function BitacoraRecambiosContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fc_mes", "fn_num_instalacion",
@@ -116,13 +118,13 @@ function BitacoraRecambiosContent() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar registro?")) return;
+    if (!await confirm("¿Eliminar registro?")) return;
     await axios.delete(`${API_URL}/medellin/recambios/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
-    if (!window.confirm(" ¿Deseas eliminar todos los registros?")) return;
+    if (!await confirm(" ¿Deseas eliminar todos los registros?")) return;
     try {
       await axios.delete(`${API_URL}/medellin/recambios`);
       cargarDatos();
@@ -387,6 +389,7 @@ const exportarPDF = async () => {
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

@@ -22,6 +22,7 @@ import Search from "@mui/icons-material/Search";
 import CleaningServices from "@mui/icons-material/CleaningServices";
 import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 // =========================================================
 //  COMPONENTE PRINCIPAL
@@ -57,6 +58,7 @@ export default function Expedientes() {
   const [busqueda, setBusqueda] = useState("");
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
     "fc_nombre",
@@ -133,7 +135,7 @@ export default function Expedientes() {
   };
 
   const eliminar = async (id) => {
-    if (!window.confirm("¿Eliminar este expediente?")) return;
+    if (!await confirm("¿Eliminar este expediente?")) return;
     await axios.delete(`${api}/${id}`);
     cargarDatos();
   };
@@ -366,6 +368,7 @@ export default function Expedientes() {
           </Table>
         </Box>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }

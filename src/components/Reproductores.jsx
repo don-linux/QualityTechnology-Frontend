@@ -20,6 +20,7 @@ import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import useFormValidation from "../hooks/useFormValidation";
+import useConfirm from "../hooks/useConfirm";
 
 const REPRODUCTOR_BASE_REQUIRED = [
   "fc_instalacion",
@@ -67,6 +68,7 @@ export default function Reproductores() {
 function ReproductoresContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
 
   const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
   const [reproductores, setReproductores] = useState([]);
@@ -301,12 +303,14 @@ const colorDias = (dias) => {
   };
 
   const eliminarReproductor = async (id) => {
-    if (!window.confirm("¿Eliminar este reproductor?")) return;
-
-    await apiFetch(`/reproductores/${id}`, { method: "DELETE" });
-
-    obtenerReproductores();
-    obtenerTrazabilidad();
+    if (!await confirm("¿Eliminar este reproductor?")) return;
+    try {
+      await apiFetch(`/reproductores/${id}`, { method: "DELETE" });
+      obtenerReproductores();
+      obtenerTrazabilidad();
+    } catch (err) {
+      alert("Error al eliminar: " + err.message);
+    }
   };
 
   const trazarReproductor = (r) => {
@@ -782,6 +786,7 @@ Pronto conectaremos este botón con traspasos internos.`);
           </TableBody>
         </Table>
       </Paper>
+      {ConfirmModal}
     </Box>
   );
 }
