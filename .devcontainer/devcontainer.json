@@ -3,13 +3,28 @@
   "dockerComposeFile": ["../docker/dev/compose.yaml", "compose.yaml"],
   "service": "react",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-  "remoteUser": "root",
+  "containerUser": "bun",
+  "remoteUser": "bun",
   "overrideCommand": false,
   "forwardPorts": [3000],
   "postCreateCommand": "bun install --frozen-lockfile || bun install",
   "postStartCommand": "bun run dev",
+  "remoteEnv": {
+    "SHELL": "/bin/bash"
+  },
   "customizations": {
     "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        },
+        "terminal.integrated.automationProfile.linux": {
+          "path": "/bin/bash"
+        }
+      },
       "extensions": [
         "dsznajder.es7-react-js-snippets",
         "esbenp.prettier-vscode",
