@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Single-page web application for **Quality Technology** (see `index.html` title and meta description). The UI is organized by functional areas (catalogs, inventories, sales, HR, operational logs, security) behind authentication and module-based access control.
+Single-page web application for **Quality Technology** (`index.html` title: *Sistema Integral Quality Technology*; meta description: *Quality Technology*). The UI is grouped by domain (catalogs, inventories, sales, finance, HR, operational logs, security) behind authentication and module-based access control. Route groupings in `src/App.jsx` mirror those domains via `PrivateRoute` `modulo` values (e.g. `Operaciones`, `Finanzas`, `RRHH`, `Catálogos`, `Inventarios`, `Ventas`, `Seguridad`).
 
 ## Runtime stack
 
@@ -52,6 +52,19 @@ Verified from `package.json`:
 - **Dev Docker Compose** (`docker/dev/compose.yaml`): builds from `docker/dev/Dockerfile` (Bun base image), bind-mounts the repo, exposes host port from **`DOCKER_DEV_REACT_PORT`** to container **3000**, runs `bun install && bun run dev`.
 - **Production Docker** (`docker/prod/`): multi-stage image builds with **`bun run build`**, final stage is minimal Alpine with **`dist`**; compose file mounts a **`dist` volume** and copies build output into it (orchestration details depend on how that volume is consumed—**unverified** beyond the compose comment).
 
+## Source organization (`src/`)
+
+There is no separate `pages/` directory; screens live as components.
+
+- **`index.jsx`** — Mounts the app, `StrictMode`, MUI `ThemeProvider`.
+- **`App.jsx`** — Router, lazy-loaded routes, `Suspense` fallback, `CssBaseline`, `GlobalStyles`.
+- **`components/`** — Feature screens (e.g. `Usuarios`, `Empleados`, `Venta`, `Login`, `PrivateRoute`, `PageHeader`, `FormDialog`). Operational log and bio tracking UIs sit under **`components/registro-operativo/`** (bitácora and related modules).
+- **`layout/CorporateLayout.jsx`** — Authenticated shell (navigation, `Outlet` for child routes).
+- **`hooks/`** — Reusable hooks (e.g. `useConfirm.jsx`, `useFormValidation.js`).
+- **`utils/`** — `axiosInstance`, `auth`, `tokenRefresh`, `config` (`VITE_API_URL`), `uploadUrl`, `GlobalStyles.jsx`.
+
+Shared UI helpers such as **`PageHeader`** and **`FormDialog`** live alongside domain components; prefer reusing them when adding screens.
+
 ## Exploring the codebase
 
-Use your editor or local commands to list `src/`; this document intentionally avoids embedding a directory tree. High-signal locations: `src/components/` (features and subfolders such as `registro-operativo/`), `src/layout/`, `src/utils/`, `src/hooks/`.
+Use your editor or repository search to list files under `src/`; this document does not embed a full directory tree. Start from `App.jsx` for the route map, then the matching component file under `components/` or `components/registro-operativo/`.

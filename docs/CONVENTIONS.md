@@ -6,6 +6,7 @@ This file records conventions that are **evident from repository configuration a
 
 - **Language:** JavaScript with **JSX** (`.jsx` files). There is no TypeScript configuration in the project root **verified** from the inspected manifests.
 - **Module system:** ESM via Vite (`import` / `export`).
+- **Component files:** React screens and shared UI use **PascalCase** filenames (e.g. `Usuarios.jsx`, `CorporateLayout.jsx`). Utility modules under `utils/` and `hooks/` use **camelCase** (e.g. `axiosInstance.js`, `useFormValidation.js`).
 
 ## Formatting (observed in source, not enforced by repo config)
 
@@ -47,7 +48,7 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 - **Lockfile:** `bun.lock` is present; production Dockerfile uses **`bun install --frozen-lockfile`**.
 - **Dev container and Docker dev service** use **Bun** to install dependencies and run `bun run dev` (see `.devcontainer/devcontainer.json`, `docker/dev/compose.yaml`, `docker/dev/Dockerfile`).
 
-Using **npm** or **yarn** is not required by any committed script; compatibility **unverified**.
+**Local and container workflows** use **Bun** (`bun install`, `bun run …`). Do not assume `npm`, `npx`, `node`, or `yarn` are available in the standard dev environment; compatibility with those tools is **unverified**.
 
 ## Static assets
 
