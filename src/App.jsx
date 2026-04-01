@@ -18,7 +18,8 @@ const Inicio = lazy(() => import("./components/Inicio"));
 const Usuarios = lazy(() => import("./components/Usuarios"));
 const Roles = lazy(() => import("./components/Roles"));
 const Cliente = lazy(() => import("./components/Cliente"));
-const Estado = lazy(() => import("./components/Estado"));
+const Puestos = lazy(() => import("./components/Puestos"));
+const Departamentos = lazy(() => import("./components/Departamentos"));
 
 // Inventarios
 const Pileta = lazy(() => import("./components/Pileta"));
@@ -49,7 +50,8 @@ const BioAlimentacion = lazy(() => import("./components/registro-operativo/BioAl
 const BioInsumos = lazy(() => import("./components/registro-operativo/BioInsumos"));
 
 // RRHH
-const Expedientes = lazy(() => import("./components/Expedientes"));
+const Empleados = lazy(() => import("./components/Empleados"));
+const MiPerfil = lazy(() => import("./components/MiPerfil"));
 const Nomina = lazy(() => import("./components/Nomina"));
 const Vacaciones = lazy(() => import("./components/Vacaciones"));
 const CajaAhorro = lazy(() => import("./components/CajaAhorro"));
@@ -83,11 +85,8 @@ function App() {
         >
           {/* LAYOUT GENERAL */}
           <Route element={<CorporateLayout />}>
-            {/* PANTALLA DE INICIO */}
             <Route index element={<Inicio />} />
-
-            {/* REGISTRO OPERATIVO */}
-            
+            <Route path="mi-perfil" element={<MiPerfil />} />
           </Route>
         </Route>
 
@@ -121,8 +120,7 @@ function App() {
 
         <Route element={<PrivateRoute modulo="RRHH" />}>
           <Route element={<CorporateLayout />}>
-              {/* RRHH */}
-              <Route path="expedientes" element={<Expedientes />} />
+              <Route path="empleados" element={<Empleados />} />
               <Route path="nomina" element={<Nomina />} />
               <Route path="vacaciones" element={<Vacaciones />} />
               <Route path="/caja-ahorro" element={<CajaAhorro />} />
@@ -131,10 +129,10 @@ function App() {
 
         <Route element={<PrivateRoute modulo="Catálogos" />}>
           <Route element={<CorporateLayout />}>
-            {/* CATÁLOGOS */}
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="roles" element={<Roles />} />
-            <Route path="estados" element={<Estado />} />
+            <Route path="puestos" element={<Puestos />} />
+            <Route path="departamentos" element={<Departamentos />} />
           </Route>
         </Route>
 

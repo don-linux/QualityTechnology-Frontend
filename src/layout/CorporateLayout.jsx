@@ -34,7 +34,10 @@ import CleaningServices from "@mui/icons-material/CleaningServices";
 import Grass from "@mui/icons-material/Grass";
 import Biotech from "@mui/icons-material/Biotech";
 import ReceiptLong from "@mui/icons-material/ReceiptLong";
-import LocationOn from "@mui/icons-material/LocationOn";
+import Work from "@mui/icons-material/Work";
+import Badge from "@mui/icons-material/Badge";
+import Business from "@mui/icons-material/Business";
+import AccountCircle from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 
@@ -216,6 +219,24 @@ export default function CorporateLayout() {
               <Dashboard />
             </ListItemIcon>
             {drawerOpen && <ListItemText primary="Inicio" />}
+          </ListItemButton>
+
+          <ListItemButton
+            component={Link}
+            to="/mi-perfil"
+            sx={{
+              borderRadius: 1,
+              mb: 0.5,
+              backgroundColor:
+                location.pathname === "/mi-perfil" ? "#388E3C" : "transparent",
+              "&:hover": { backgroundColor: "#43A047" },
+              justifyContent: drawerOpen ? "flex-start" : "center",
+            }}
+          >
+            <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
+              <AccountCircle />
+            </ListItemIcon>
+            {drawerOpen && <ListItemText primary="Mi Perfil" />}
           </ListItemButton>
           {modulos.has("Operaciones") && (
             <>
@@ -516,11 +537,11 @@ export default function CorporateLayout() {
                 {drawerOpen && <ListItemText primary="Nómina" />}
               </ListItemButton>
 
-              <ListItemButton component={Link} to="/expedientes" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
+              <ListItemButton component={Link} to="/empleados" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
                 <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <Folder />
+                  <Badge />
                 </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Expedientes" />}
+                {drawerOpen && <ListItemText primary="Empleados" />}
               </ListItemButton>
 
               <ListItemButton
@@ -599,20 +620,38 @@ export default function CorporateLayout() {
 
             <ListItemButton
               component={Link}
-              to="/estados"
+              to="/departamentos"
               sx={{
                 borderRadius: 1,
                 mb: 0.5,
                 backgroundColor:
-                  location.pathname === "/estados" ? "#388E3C" : "transparent",
+                  location.pathname === "/departamentos" ? "#388E3C" : "transparent",
                 "&:hover": { backgroundColor: "#43A047" },
                 justifyContent: drawerOpen ? "flex-start" : "center",
               }}
             >
               <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                <LocationOn />
+                <Business />
               </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Estados" />}
+              {drawerOpen && <ListItemText primary="Departamentos" />}
+            </ListItemButton>
+
+            <ListItemButton
+              component={Link}
+              to="/puestos"
+              sx={{
+                borderRadius: 1,
+                mb: 0.5,
+                backgroundColor:
+                  location.pathname === "/puestos" ? "#388E3C" : "transparent",
+                "&:hover": { backgroundColor: "#43A047" },
+                justifyContent: drawerOpen ? "flex-start" : "center",
+              }}
+            >
+              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
+                <Work />
+              </ListItemIcon>
+              {drawerOpen && <ListItemText primary="Puestos" />}
             </ListItemButton>
           </>
         )}
