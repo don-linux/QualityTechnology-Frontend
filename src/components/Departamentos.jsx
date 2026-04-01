@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { apiFetch } from "../utils/api.js";
+import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
 import useConfirm from "../hooks/useConfirm";
 import Container from "@mui/material/Container";
@@ -28,7 +28,7 @@ export default function Departamentos() {
   useEffect(() => { obtenerDepartamentos(); }, []);
 
   const obtenerDepartamentos = async () => {
-    try { setDepartamentos(await apiFetch("/departamentos")); } catch (e) { console.error(e); }
+    try { const { data } = await axios.get("/departamentos"); setDepartamentos(data); } catch (e) { console.error(e); }
   };
 
   const handleChange = (e) => {
@@ -41,7 +41,7 @@ export default function Departamentos() {
   const registrar = async () => {
     if (!validate(form, ["fc_nombre"])) return;
     try {
-      await apiFetch("/departamentos", { method: "POST", body: JSON.stringify({ fc_nombre: form.fc_nombre }) });
+      await axios.post("/departamentos", { fc_nombre: form.fc_nombre });
       obtenerDepartamentos();
       limpiar();
     } catch (e) { console.error(e); alert("Error al registrar departamento"); }
@@ -51,10 +51,7 @@ export default function Departamentos() {
     if (!form.fi_departamento_id) return;
     if (!validate(form, ["fc_nombre"])) return;
     try {
-      await apiFetch(`/departamentos/${form.fi_departamento_id}`, {
-        method: "PUT",
-        body: JSON.stringify({ fc_nombre: form.fc_nombre, fb_activo: true }),
-      });
+      await axios.put(`/departamentos/${form.fi_departamento_id}`, { fc_nombre: form.fc_nombre, fb_activo: true });
       obtenerDepartamentos();
       limpiar();
     } catch (e) { console.error(e); alert("Error al actualizar departamento"); }
@@ -63,7 +60,7 @@ export default function Departamentos() {
   const desactivar = async (id, nombre) => {
     if (!await confirm(`¿Desactivar el departamento "${nombre}"?`)) return;
     try {
-      await apiFetch(`/departamentos/${id}/deactivate`, { method: "PATCH" });
+      await axios.patch(`/departamentos/${id}/deactivate`);
       obtenerDepartamentos();
       limpiar();
     } catch (e) { console.error(e); }

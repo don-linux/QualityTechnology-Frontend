@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { apiFetch } from "../utils/api.js";
+import axios from "../utils/axiosInstance.js";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -59,7 +59,7 @@ export default function RolesModulos() {
   // ================================
   const obtenerRoles = async () => {
     try {
-      const data = await apiFetch("/roles");
+      const { data } = await axios.get("/roles");
       setRoles(data);
     } catch (error) {
       console.error("Error al obtener roles:", error);
@@ -71,7 +71,7 @@ export default function RolesModulos() {
   // ================================
   const obtenerModulos = async () => {
     try {
-      const data = await apiFetch("/modulos");
+      const { data } = await axios.get("/modulos");
       setModulos(data);
     } catch (error) {
       console.error("Error al obtener módulos:", error);
@@ -83,7 +83,7 @@ export default function RolesModulos() {
   // ================================
   const obtenerModulosRol = async (rolId) => {
     try {
-      const data = await apiFetch(`/roles-modulos/${rolId}/modulos`);
+      const { data } = await axios.get(`/roles-modulos/${rolId}/modulos`);
       const ids = data.map((m) => m.fi_modulo_id);
       
       setRolesModulos(prev => ({
@@ -135,11 +135,8 @@ export default function RolesModulos() {
     if (!rolEditando) return;
 
     try {
-      await apiFetch(`/roles-modulos/${rolEditando.fi_rol_id}/modulos`, {
-        method: "PUT",
-        body: JSON.stringify({
-          modulosIds: modulosSeleccionados
-        })
+      await axios.put(`/roles-modulos/${rolEditando.fi_rol_id}/modulos`, {
+        modulosIds: modulosSeleccionados,
       });
 
       // Actualizar estado local

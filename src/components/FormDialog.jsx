@@ -1,6 +1,6 @@
 // src/components/FormDialog.jsx
 import React, { useState, useCallback } from "react";
-import { API_URL } from "../utils/api.js";
+import { API_URL } from "../utils/config.js";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";

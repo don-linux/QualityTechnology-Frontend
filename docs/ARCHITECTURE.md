@@ -12,7 +12,7 @@ Verified from `package.json`:
 - **Routing:** `react-router-dom` 7
 - **Build / dev server:** Vite 8 with `@vitejs/plugin-react`
 - **UI library:** MUI 7 (`@mui/material`, `@mui/icons-material`) with Emotion
-- **HTTP:** `fetch`-based helper in `src/utils/api.js` (`apiFetch`); `axios` is also a dependency and used via `src/utils/axiosInstance.js` where that pattern is already established
+- **HTTP:** `axios` via `src/utils/axiosInstance.js` (shared instance with request/response interceptors for auth and token refresh)
 - **Other notable libraries:** `dayjs`, `exceljs`, `file-saver`, `framer-motion`, `jspdf` / `jspdf-autotable`, `recharts`
 
 ## Entry points and bootstrap
@@ -32,14 +32,15 @@ Verified from `package.json`:
 
 ## Authentication and session
 
-- **`src/utils/auth.js`:** `isAuthenticated()` checks for a `token` in `localStorage`; `logout` clears storage and redirects to `/login`, optionally calling the backend logout endpoint when a `refreshToken` exists.
-- **`src/utils/api.js`:** `apiFetch` sends `Authorization: Bearer <token>` when present; on 401/403 it may retry after refresh via **`src/utils/tokenRefresh.js`** when the error is treated as an expired token.
+- **`src/utils/auth.js`:** `isAuthenticated()` checks for a `token` in `localStorage`; `logout` clears storage and redirects to `/login`, calling the backend logout endpoint via `axiosInstance` when a `refreshToken` exists.
+- **`src/utils/axiosInstance.js`:** Shared axios instance with `baseURL` from config. Request interceptor injects `Authorization: Bearer <token>`; response interceptor retries on 401/403 after refresh via **`src/utils/tokenRefresh.js`**.
+- **`src/utils/tokenRefresh.js`:** Uses native `fetch()` (not axios) to avoid circular dependency with the axios interceptors. Concurrent callers share a single in-flight refresh promise.
 - **Backend base URL:** **`src/utils/config.js`** sets `API_URL` from `import.meta.env.VITE_API_URL` when defined, otherwise defaults to `http://localhost:5000`.
 
 ## API access pattern
 
-- Prefer **`apiFetch`** for JSON `fetch` calls with shared auth and refresh behavior (see `src/utils/api.js`).
-- Use **`axiosInstance`** where existing code already depends on axios behavior (`src/utils/axiosInstance.js`).
+- Use **`axiosInstance`** (`src/utils/axiosInstance.js`) for all HTTP calls. Import it as `import axios from "../utils/axiosInstance.js"`.
+- **`src/utils/uploadUrl.js`** exports `getUploadUrl(path)` for building authenticated download/upload URLs with a token query parameter.
 
 ## Build and artifacts
 

@@ -34,7 +34,7 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 ## API and configuration
 
 - **Environment:** Vite exposes variables prefixed with **`VITE_`**. Backend base URL is read as **`VITE_API_URL`** in `src/utils/config.js` (falls back to `http://localhost:5000`).
-- **HTTP helpers:** Prefer `apiFetch` from `src/utils/api.js` for new JSON `fetch` usage; use `axiosInstance` where the file already relies on axios.
+- **HTTP helpers:** Use `axiosInstance` from `src/utils/axiosInstance.js` for all HTTP calls. Import as `import axios from "../utils/axiosInstance.js"`. For file download URLs with authentication, use `getUploadUrl` from `src/utils/uploadUrl.js`.
 
 ## Testing
 

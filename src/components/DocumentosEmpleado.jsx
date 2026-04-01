@@ -12,7 +12,7 @@ import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
-import { apiFetch, API_URL } from "../utils/api";
+import axios from "../utils/axiosInstance.js";
 
 export default function DocumentosEmpleado({ empleadoId, selfService = false }) {
   const [documentos, setDocumentos] = useState([]);
@@ -25,14 +25,15 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
       const endpoint = selfService
         ? "/documentos-empleado/mis-documentos"
         : `/documentos-empleado/${empleadoId}`;
-      const data = await apiFetch(endpoint);
+      const { data } = await axios.get(endpoint);
       setDocumentos(data);
     } catch (e) { console.error(e); }
   }, [empleadoId, selfService]);
 
   const cargarTipos = useCallback(async () => {
     try {
-      setTiposDocumento(await apiFetch("/tipos-documento/activos"));
+      const { data } = await axios.get("/tipos-documento/activos");
+      setTiposDocumento(data);
     } catch (e) { console.error(e); }
   }, []);
 
@@ -48,18 +49,12 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
     formData.append("archivo", archivo);
     formData.append("fi_tipo_documento_id", tipoSeleccionado);
 
-    const token = localStorage.getItem("token");
     const endpoint = selfService
       ? "/documentos-empleado/mis-documentos/upload"
       : `/documentos-empleado/${empleadoId}/upload`;
 
     try {
-      const res = await fetch(`${API_URL}${endpoint}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-      if (!res.ok) throw new Error("Error al subir");
+      await axios.post(endpoint, formData);
       setArchivo(null);
       setTipoSeleccionado("");
       await cargarDocumentos();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { apiFetch } from "../utils/api.js";
+import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
 import useConfirm from "../hooks/useConfirm";
 import Container from "@mui/material/Container";
@@ -28,7 +28,7 @@ export default function Puestos() {
   useEffect(() => { obtenerPuestos(); }, []);
 
   const obtenerPuestos = async () => {
-    try { setPuestos(await apiFetch("/puestos")); } catch (e) { console.error(e); }
+    try { const { data } = await axios.get("/puestos"); setPuestos(data); } catch (e) { console.error(e); }
   };
 
   const handleChange = (e) => {
@@ -41,7 +41,7 @@ export default function Puestos() {
   const registrar = async () => {
     if (!validate(form, ["fc_nombre"])) return;
     try {
-      await apiFetch("/puestos", { method: "POST", body: JSON.stringify({ fc_nombre: form.fc_nombre }) });
+      await axios.post("/puestos", { fc_nombre: form.fc_nombre });
       obtenerPuestos();
       limpiar();
     } catch (e) { console.error(e); alert("Error al registrar puesto"); }
@@ -51,10 +51,7 @@ export default function Puestos() {
     if (!form.fi_puesto_id) return;
     if (!validate(form, ["fc_nombre"])) return;
     try {
-      await apiFetch(`/puestos/${form.fi_puesto_id}`, {
-        method: "PUT",
-        body: JSON.stringify({ fc_nombre: form.fc_nombre, fb_activo: true }),
-      });
+      await axios.put(`/puestos/${form.fi_puesto_id}`, { fc_nombre: form.fc_nombre, fb_activo: true });
       obtenerPuestos();
       limpiar();
     } catch (e) { console.error(e); alert("Error al actualizar puesto"); }
@@ -63,7 +60,7 @@ export default function Puestos() {
   const desactivar = async (id, nombre) => {
     if (!await confirm(`¿Desactivar el puesto "${nombre}"?`)) return;
     try {
-      await apiFetch(`/puestos/${id}/deactivate`, { method: "PATCH" });
+      await axios.patch(`/puestos/${id}/deactivate`);
       obtenerPuestos();
       limpiar();
     } catch (e) { console.error(e); }

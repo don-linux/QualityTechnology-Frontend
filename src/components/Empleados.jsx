@@ -16,7 +16,7 @@ import TableBody from "@mui/material/TableBody";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
-import { apiFetch } from "../utils/api";
+import axios from "../utils/axiosInstance.js";
 import useConfirm from "../hooks/useConfirm";
 import DocumentosEmpleado from "./DocumentosEmpleado";
 
@@ -42,14 +42,14 @@ export default function Empleados() {
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      const [emp, dep, pue] = await Promise.all([
-        apiFetch("/empleados"),
-        apiFetch("/departamentos/activos"),
-        apiFetch("/puestos/activos"),
+      const [empRes, depRes, pueRes] = await Promise.all([
+        axios.get("/empleados"),
+        axios.get("/departamentos/activos"),
+        axios.get("/puestos/activos"),
       ]);
-      setEmpleados(emp);
-      setDepartamentos(dep);
-      setPuestos(pue);
+      setEmpleados(empRes.data);
+      setDepartamentos(depRes.data);
+      setPuestos(pueRes.data);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
@@ -92,10 +92,7 @@ export default function Empleados() {
   const actualizarEmpleado = async () => {
     if (!seleccionado) return;
     try {
-      await apiFetch(`/empleados/${seleccionado.fi_empleado_id}`, {
-        method: "PUT",
-        body: JSON.stringify(form),
-      });
+      await axios.put(`/empleados/${seleccionado.fi_empleado_id}`, form);
       await cargarDatos();
       limpiar();
     } catch (e) { console.error(e); alert("Error al actualizar"); }
@@ -106,7 +103,7 @@ export default function Empleados() {
     if (!await confirm(`¿Seguro que deseas ${accion} a ${emp.fc_nombre} ${emp.fc_apellido_paterno}?`)) return;
     try {
       const endpoint = emp.fb_activo ? "deactivate" : "activate";
-      await apiFetch(`/empleados/${emp.fi_empleado_id}/${endpoint}`, { method: "PATCH" });
+      await axios.patch(`/empleados/${emp.fi_empleado_id}/${endpoint}`);
       await cargarDatos();
     } catch (e) { console.error(e); }
   };

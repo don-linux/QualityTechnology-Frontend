@@ -10,7 +10,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
-import { apiFetch } from "../utils/api";
+import axios from "../utils/axiosInstance.js";
 import DocumentosEmpleado from "./DocumentosEmpleado";
 
 export default function MiPerfil() {
@@ -29,7 +29,7 @@ export default function MiPerfil() {
   const cargarPerfil = async () => {
     setLoading(true);
     try {
-      const data = await apiFetch("/empleados/mi-perfil");
+      const { data } = await axios.get("/empleados/mi-perfil");
       setPerfil(data);
       setForm({
         fc_nombre: data.fc_nombre || "",
@@ -58,10 +58,7 @@ export default function MiPerfil() {
       return alert("Nombre y apellidos son obligatorios");
     }
     try {
-      await apiFetch("/empleados/mi-perfil", {
-        method: "PUT",
-        body: JSON.stringify(form),
-      });
+      await axios.put("/empleados/mi-perfil", form);
       alert("Perfil actualizado correctamente");
       await cargarPerfil();
     } catch (e) { console.error(e); alert("Error al actualizar perfil"); }

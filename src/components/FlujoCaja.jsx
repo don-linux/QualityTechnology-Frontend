@@ -21,7 +21,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "../utils/axiosInstance.js";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
-import { API_URL, getUploadUrl } from "../utils/api.js";
+import { API_URL } from "../utils/config.js";
+import { getUploadUrl } from "../utils/uploadUrl.js";
 import useFormValidation from "../hooks/useFormValidation";
 import useConfirm from "../hooks/useConfirm";
 

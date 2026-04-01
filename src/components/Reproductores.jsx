@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { apiFetch } from "../utils/api";
+import axios from "../utils/axiosInstance.js";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -133,7 +133,7 @@ const colorDias = (dias) => {
 
   const obtenerReproductores = useCallback(async () => {
     const granja = encodeURIComponent(granjaActiva);
-    const data = await apiFetch(`/reproductores/granja/${granja}`);
+    const { data } = await axios.get(`/reproductores/granja/${granja}`);
     setReproductores(data || []);
     setTotalOrganismos(
       data?.reduce(
@@ -148,13 +148,13 @@ const colorDias = (dias) => {
       ? "Granja Acuícola La Ceiba"
       : "Granja Acuícola Medellin";
     const granja = encodeURIComponent(granjaNormalizada);
-    const data = await apiFetch(`/instalaciones/granja/${granja}`);
+    const { data } = await axios.get(`/instalaciones/granja/${granja}`);
     setInstalaciones(data || []);
     setTotalInstalaciones(data?.length || 0);
   }, [granjaActiva]);
 
   const obtenerTrazabilidad = useCallback(async () => {
-    const data = await apiFetch(`/reproductores/movimientos/${granjaActiva}`);
+    const { data } = await axios.get(`/reproductores/movimientos/${granjaActiva}`);
     setRastreos(data || []);
   }, [granjaActiva]);
 
@@ -236,14 +236,11 @@ const colorDias = (dias) => {
     if (!validate(form, getReproductorRequiredFields(origenTipo))) return;
 
     try {
-      await apiFetch("/reproductores", {
-        method: "POST",
-        body: JSON.stringify({
-          ...form,
-          origen_texto: form.origen_instalacion || form.origen_texto,
-          fi_usuario_id: usuario_id,
-          fc_granja: granjaActiva,
-        }),
+      await axios.post("/reproductores", {
+        ...form,
+        origen_texto: form.origen_instalacion || form.origen_texto,
+        fi_usuario_id: usuario_id,
+        fc_granja: granjaActiva,
       });
 
       limpiarFormulario();
@@ -251,7 +248,7 @@ const colorDias = (dias) => {
       obtenerTrazabilidad();
     } catch (err) {
       console.error("Error al registrar reproductor:", err);
-      alert(err.message || "No se pudo registrar el reproductor.");
+      alert(err.response?.data?.error || err.message || "No se pudo registrar el reproductor.");
     }
   };
 
@@ -284,13 +281,10 @@ const colorDias = (dias) => {
   const guardarEdicion = async () => {
     if (!validate(form, getReproductorRequiredFields(origenTipo))) return;
     try {
-      await apiFetch(`/reproductores/${seleccionado.fi_reproductor_id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          ...form,
-          origen_texto: form.origen_instalacion || form.origen_texto,
-          fi_usuario_id: usuario_id,
-        }),
+      await axios.put(`/reproductores/${seleccionado.fi_reproductor_id}`, {
+        ...form,
+        origen_texto: form.origen_instalacion || form.origen_texto,
+        fi_usuario_id: usuario_id,
       });
 
       limpiarFormulario();
@@ -298,18 +292,18 @@ const colorDias = (dias) => {
       obtenerTrazabilidad();
     } catch (err) {
       console.error("Error al guardar reproductor:", err);
-      alert(err.message || "No se pudo guardar el reproductor.");
+      alert(err.response?.data?.error || err.message || "No se pudo guardar el reproductor.");
     }
   };
 
   const eliminarReproductor = async (id) => {
     if (!await confirm("¿Eliminar este reproductor?")) return;
     try {
-      await apiFetch(`/reproductores/${id}`, { method: "DELETE" });
+      await axios.delete(`/reproductores/${id}`);
       obtenerReproductores();
       obtenerTrazabilidad();
     } catch (err) {
-      alert("Error al eliminar: " + err.message);
+      alert("Error al eliminar: " + (err.response?.data?.error || err.message));
     }
   };
 

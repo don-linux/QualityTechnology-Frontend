@@ -1,6 +1,6 @@
 // src/components/Login.jsx
 import React, { useState } from "react";
-import { API_URL } from "../utils/api.js";
+import axios from "../utils/axiosInstance.js";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -30,14 +30,11 @@ const Login = () => {
     setError("");
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/usuarios/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: usuario, contrasena: password }),
+      const { data } = await axios.post("/usuarios/login", {
+        nombre: usuario,
+        contrasena: password,
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Error al iniciar sesión");
       if (!data.usuario) throw new Error("Respuesta inválida del servidor");
 
       const usuarioId =
@@ -71,10 +68,11 @@ const Login = () => {
       setTimeout(() => navigate("/"), 800);
     } catch (err) {
       console.error("Error en login:", err);
+      const msg = err.response?.data?.error || err.message;
       setError(
-        err.message === "Failed to fetch"
+        msg === "Failed to fetch" || err.code === "ERR_NETWORK"
           ? "No se pudo conectar con el servidor. Verifica que el backend esté corriendo."
-          : err.message || "Error de autenticación"
+          : msg || "Error de autenticación"
       );
     } finally {
       setLoading(false);

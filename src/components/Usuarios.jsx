@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { apiFetch } from "../utils/api.js";
+import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -53,16 +53,16 @@ export default function UsuariosRegistro() {
   }, []);
 
   const obtenerUsuarios = async () => {
-    try { setUsuarios(await apiFetch("/usuarios")); } catch (e) { console.error(e); }
+    try { const { data } = await axios.get("/usuarios"); setUsuarios(data); } catch (e) { console.error(e); }
   };
   const obtenerRoles = async () => {
-    try { setRoles(await apiFetch("/roles")); } catch (e) { console.error(e); }
+    try { const { data } = await axios.get("/roles"); setRoles(data); } catch (e) { console.error(e); }
   };
   const obtenerDepartamentos = async () => {
-    try { setDepartamentos(await apiFetch("/departamentos/activos")); } catch (e) { console.error(e); }
+    try { const { data } = await axios.get("/departamentos/activos"); setDepartamentos(data); } catch (e) { console.error(e); }
   };
   const obtenerPuestos = async () => {
-    try { setPuestos(await apiFetch("/puestos/activos")); } catch (e) { console.error(e); }
+    try { const { data } = await axios.get("/puestos/activos"); setPuestos(data); } catch (e) { console.error(e); }
   };
 
   const handleChange = (e) => {
@@ -73,10 +73,7 @@ export default function UsuariosRegistro() {
   const handleSubmit = async () => {
     if (!validate(form, requiredFields)) return;
     try {
-      await apiFetch("/usuarios", {
-        method: "POST",
-        body: JSON.stringify(form),
-      });
+      await axios.post("/usuarios", form);
       alert("Usuario registrado correctamente");
       limpiarFormulario();
       obtenerUsuarios();
@@ -90,13 +87,10 @@ export default function UsuariosRegistro() {
     if (!usuarioSeleccionado) return;
     if (!validate(form, ["nombre", "contraseña", "rol_id"])) return;
     try {
-      await apiFetch(`/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          nombre: form.nombre,
-          contraseña: form.contraseña,
-          rol_id: form.rol_id,
-        }),
+      await axios.put(`/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
+        nombre: form.nombre,
+        contraseña: form.contraseña,
+        rol_id: form.rol_id,
       });
       alert("Usuario actualizado correctamente");
       limpiarFormulario();
@@ -112,7 +106,7 @@ export default function UsuariosRegistro() {
     if (!window.confirm(`¿Seguro que deseas ${accion} al usuario "${usuario.fc_nombre}"?`)) return;
     try {
       const endpoint = usuario.fb_activo ? "deactivate" : "activate";
-      await apiFetch(`/usuarios/${usuario.fi_usuario_id}/${endpoint}`, { method: "PATCH" });
+      await axios.patch(`/usuarios/${usuario.fi_usuario_id}/${endpoint}`);
       obtenerUsuarios();
     } catch (error) {
       console.error(`Error al ${accion} usuario:`, error);

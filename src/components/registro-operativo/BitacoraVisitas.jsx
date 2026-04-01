@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { API_URL, getUploadUrl } from "../../utils/api.js";
+import { API_URL } from "../../utils/config.js";
+import { getUploadUrl } from "../../utils/uploadUrl.js";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
