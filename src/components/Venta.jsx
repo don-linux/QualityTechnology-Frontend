@@ -91,7 +91,7 @@ function VentaContent() {
   }, []);
 
   const obtenerClientes = async () => {
-    const res = await axios.get("http://localhost:5000/ventas/clientes");
+    const res = await axios.get(`${API}/clientes`);
     setClientes(res.data);
   };
 
@@ -100,9 +100,7 @@ function VentaContent() {
   ============================================================ */
   const obtenerEncargados = useCallback(async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:5000/ventas/encargados/${empresa}`
-      );
+      const res = await axios.get(`${API}/encargados/${empresa}`);
       setExpedientes(res.data);
     } catch (err) {
       console.error(err);
