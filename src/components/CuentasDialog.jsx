@@ -89,7 +89,7 @@ const CuentasDialog = ({ open, onClose }) => {
           Aquí puedes agregar, editar o eliminar las cuentas disponibles para los movimientos.
         </Typography>
 
-        {/* 🆕 Nueva cuenta */}
+        {/* Nueva cuenta */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid size={5}>
             <TextField

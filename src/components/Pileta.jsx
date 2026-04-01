@@ -139,7 +139,7 @@ function PiletaContent() {
       const { data } = await axios.get(`/piletas/movimientos/${usuario_id}/${granja}`);
       setRastreos(data || []);
     } catch (error) {
-      console.error("❌ Error trazabilidad:", error);
+      console.error("Error trazabilidad:", error);
     }
   }, [granjaActiva, usuario_id]);
 
@@ -247,12 +247,12 @@ function PiletaContent() {
 
       if (response.error) throw new Error(response.error);
 
-      alert("✅ Siembra registrada correctamente");
+      alert("Siembra registrada correctamente");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
     } catch (err) {
-      alert("❌ Error: " + err.message);
+      alert("Error: " + err.message);
     }
   };
 
@@ -274,7 +274,7 @@ function PiletaContent() {
 
       if (response.error) throw new Error(response.error);
 
-      alert("✅ Registro actualizado");
+      alert("Registro actualizado");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -291,7 +291,7 @@ function PiletaContent() {
 
     try {
       await axios.delete(`/piletas/${seleccionado}`);
-      alert("🗑️ Pileta eliminada");
+      alert("Pileta eliminada");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -340,7 +340,7 @@ function PiletaContent() {
 
       setRastreos(data);
     } catch (error) {
-      console.error("❌ Error filtrado:", error);
+      console.error("Error filtrado:", error);
     }
   };
 
@@ -624,7 +624,7 @@ function PiletaContent() {
 
       {/* INVENTARIO */}
       <Typography variant="h6" color="#00796B" fontWeight="bold" mb={2}>
-        📋 Inventario
+        Inventario
       </Typography>
 
       <Paper sx={{ borderRadius: 3, overflow: "hidden", mb: 4, p: 2 }}>
@@ -679,7 +679,7 @@ function PiletaContent() {
 
       {/* TRAZABILIDAD */}
       <Typography variant="h6" mt={5} mb={2} color="#E65100">
-        🔁 Trazabilidad
+        Trazabilidad
       </Typography>
 
       <Grid container spacing={2} mb={2}>
