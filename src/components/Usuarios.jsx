@@ -16,6 +16,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
+import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
 
 export default function UsuariosRegistro() {
@@ -106,16 +107,16 @@ export default function UsuariosRegistro() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!usuarioSeleccionado) return;
+  const handleToggleActive = async (usuario) => {
+    const accion = usuario.fb_activo ? "desactivar" : "activar";
+    if (!window.confirm(`¿Seguro que deseas ${accion} al usuario "${usuario.fc_nombre}"?`)) return;
     try {
-      await apiFetch(`/usuarios/${usuarioSeleccionado.fi_usuario_id}`, { method: "DELETE" });
-      alert("Usuario eliminado correctamente");
-      limpiarFormulario();
+      const endpoint = usuario.fb_activo ? "deactivate" : "activate";
+      await apiFetch(`/usuarios/${usuario.fi_usuario_id}/${endpoint}`, { method: "PATCH" });
       obtenerUsuarios();
     } catch (error) {
-      console.error("Error al eliminar usuario:", error);
-      alert("Error al eliminar usuario");
+      console.error(`Error al ${accion} usuario:`, error);
+      alert(`Error al ${accion} usuario`);
     }
   };
 
@@ -222,9 +223,6 @@ export default function UsuariosRegistro() {
               <Button variant="contained" color="primary" sx={{ mr: 1 }} onClick={handleUpdate} disabled={!usuarioSeleccionado}>
                 Actualizar
               </Button>
-              <Button variant="contained" color="error" sx={{ mr: 1 }} onClick={handleDelete} disabled={!usuarioSeleccionado}>
-                Eliminar
-              </Button>
               <Button variant="outlined" onClick={limpiarFormulario}>
                 Limpiar
               </Button>
@@ -240,18 +238,34 @@ export default function UsuariosRegistro() {
               <TableCell>ID</TableCell>
               <TableCell>Nombre</TableCell>
               <TableCell>Rol</TableCell>
-              <TableCell>Accion</TableCell>
+              <TableCell>Estado</TableCell>
+              <TableCell align="center">Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {usuarios.map((usuario) => (
-              <TableRow key={usuario.fi_usuario_id} hover>
+              <TableRow key={usuario.fi_usuario_id} hover sx={{ opacity: usuario.fb_activo ? 1 : 0.5 }}>
                 <TableCell>{usuario.fi_usuario_id}</TableCell>
                 <TableCell>{usuario.fc_nombre}</TableCell>
                 <TableCell>{obtenerNombreRol(usuario.fi_rol_id)}</TableCell>
                 <TableCell>
-                  <Button variant="outlined" size="small" onClick={() => seleccionarUsuario(usuario)}>
+                  <Chip
+                    label={usuario.fb_activo ? "Activo" : "Inactivo"}
+                    color={usuario.fb_activo ? "success" : "default"}
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell align="center">
+                  <Button variant="outlined" size="small" sx={{ mr: 1 }} onClick={() => seleccionarUsuario(usuario)}>
                     Seleccionar
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color={usuario.fb_activo ? "error" : "success"}
+                    onClick={() => handleToggleActive(usuario)}
+                  >
+                    {usuario.fb_activo ? "Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>
