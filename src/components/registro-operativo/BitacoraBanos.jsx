@@ -17,12 +17,18 @@ import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
 
+const getTipoBanio = (row) => {
+  if (row.fc_tipo_banio) return row.fc_tipo_banio;
+  if (String(row.fc_banio_hombres || "").trim()) return "Hombre";
+  if (String(row.fc_banio_mujeres || "").trim()) return "Mujer";
+  return "";
+};
+
 function BitacoraBanosContent() {
   const [form, setForm] = useState({
     fc_mes: "",
     fc_dia: "",
-    fc_banio_hombres: "",
-    fc_banio_mujeres: "",
+    fc_tipo_banio: "",
     fc_regadera: "",
     fc_realizo: "",
     fc_firma: "",
@@ -36,7 +42,7 @@ function BitacoraBanosContent() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
-    "fc_mes", "fc_dia", "fc_banio_hombres", "fc_banio_mujeres",
+    "fc_mes", "fc_dia", "fc_tipo_banio",
     "fc_regadera", "fc_realizo", "fc_firma", "fc_observaciones",
   ];
 
@@ -74,8 +80,7 @@ function BitacoraBanosContent() {
       setForm({
         fc_mes: "",
         fc_dia: "",
-        fc_banio_hombres: "",
-        fc_banio_mujeres: "",
+        fc_tipo_banio: "",
         fc_regadera: "",
         fc_realizo: "",
         fc_firma: "",
@@ -96,8 +101,7 @@ function BitacoraBanosContent() {
     setForm({
       fc_mes: row.fc_mes,
       fc_dia: row.fc_dia,
-      fc_banio_hombres: row.fc_banio_hombres,
-      fc_banio_mujeres: row.fc_banio_mujeres,
+      fc_tipo_banio: getTipoBanio(row),
       fc_regadera: row.fc_regadera,
       fc_realizo: row.fc_realizo,
       fc_firma: row.fc_firma,
@@ -110,14 +114,14 @@ function BitacoraBanosContent() {
   //  Eliminar uno
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/medellin/banos/${id}`);
+    await axios.delete(`/medellin/banos/${id}`);
     cargarDatos();
   };
 
   //  Eliminar todos
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`${API_URL}/medellin/banos`);
+    await axios.delete(`/medellin/banos`);
     cargarDatos();
   };
 
@@ -138,8 +142,7 @@ function BitacoraBanosContent() {
     const columnas = [
       "Mes",
       "Día",
-      "Baño Hombres",
-      "Baño Mujeres",
+      "Tipo de Baño",
       "Regadera",
       "Realizó",
       "Firma",
@@ -149,8 +152,7 @@ function BitacoraBanosContent() {
     const filas = data.map((r) => [
       r.fc_mes,
       r.fc_dia,
-      r.fc_banio_hombres,
-      r.fc_banio_mujeres,
+      getTipoBanio(r),
       r.fc_regadera,
       r.fc_realizo,
       r.fc_firma,
@@ -225,10 +227,20 @@ function BitacoraBanosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Baño Hombres" name="fc_banio_hombres" value={form.fc_banio_hombres} onChange={handleChange} fullWidth error={!!errors.fc_banio_hombres} helperText={errors.fc_banio_hombres} />
-            </Grid>
-            <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Baño Mujeres" name="fc_banio_mujeres" value={form.fc_banio_mujeres} onChange={handleChange} fullWidth error={!!errors.fc_banio_mujeres} helperText={errors.fc_banio_mujeres} />
+              <TextField
+                select
+                label="Tipo de Baño"
+                name="fc_tipo_banio"
+                value={form.fc_tipo_banio}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_tipo_banio}
+                helperText={errors.fc_tipo_banio}
+              >
+                <MenuItem value="">Selecciona un tipo</MenuItem>
+                <MenuItem value="Hombre">Hombre</MenuItem>
+                <MenuItem value="Mujer">Mujer</MenuItem>
+              </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Regadera" name="fc_regadera" value={form.fc_regadera} onChange={handleChange} fullWidth error={!!errors.fc_regadera} helperText={errors.fc_regadera} />
@@ -286,8 +298,7 @@ function BitacoraBanosContent() {
             <TableRow>
               <TableCell>Mes</TableCell>
               <TableCell>Día</TableCell>
-              <TableCell>Baño Hombres</TableCell>
-              <TableCell>Baño Mujeres</TableCell>
+              <TableCell>Tipo de Baño</TableCell>
               <TableCell>Regadera</TableCell>
               <TableCell>Realizó</TableCell>
               <TableCell>Firma</TableCell>
@@ -300,8 +311,7 @@ function BitacoraBanosContent() {
               <TableRow key={r.fi_id}>
                 <TableCell>{r.fc_mes}</TableCell>
                 <TableCell>{r.fc_dia}</TableCell>
-                <TableCell>{r.fc_banio_hombres}</TableCell>
-                <TableCell>{r.fc_banio_mujeres}</TableCell>
+                <TableCell>{getTipoBanio(r)}</TableCell>
                 <TableCell>{r.fc_regadera}</TableCell>
                 <TableCell>{r.fc_realizo}</TableCell>
                 <TableCell>{r.fc_firma}</TableCell>
