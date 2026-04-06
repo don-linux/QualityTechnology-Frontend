@@ -212,7 +212,17 @@ function BitacoraBanosContent() {
               </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Día" name="fc_dia" value={form.fc_dia} onChange={handleChange} fullWidth error={!!errors.fc_dia} helperText={errors.fc_dia} />
+              <TextField
+                label="Día"
+                name="fc_dia"
+                type="number"
+                value={form.fc_dia}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_dia}
+                helperText={errors.fc_dia}
+                inputProps={{ min: 1, max: 31 }}
+              />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Baño Hombres" name="fc_banio_hombres" value={form.fc_banio_hombres} onChange={handleChange} fullWidth error={!!errors.fc_banio_hombres} helperText={errors.fc_banio_hombres} />
