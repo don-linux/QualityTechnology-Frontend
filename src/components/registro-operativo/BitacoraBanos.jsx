@@ -5,6 +5,7 @@ import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -185,7 +186,30 @@ function BitacoraBanosContent() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Mes" name="fc_mes" value={form.fc_mes} onChange={handleChange} fullWidth error={!!errors.fc_mes} helperText={errors.fc_mes} />
+              <TextField
+                select
+                label="Mes"
+                name="fc_mes"
+                value={form.fc_mes}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_mes}
+                helperText={errors.fc_mes}
+              >
+                <MenuItem value="">Selecciona un mes</MenuItem>
+                <MenuItem value="Enero">Enero</MenuItem>
+                <MenuItem value="Febrero">Febrero</MenuItem>
+                <MenuItem value="Marzo">Marzo</MenuItem>
+                <MenuItem value="Abril">Abril</MenuItem>
+                <MenuItem value="Mayo">Mayo</MenuItem>
+                <MenuItem value="Junio">Junio</MenuItem>
+                <MenuItem value="Julio">Julio</MenuItem>
+                <MenuItem value="Agosto">Agosto</MenuItem>
+                <MenuItem value="Septiembre">Septiembre</MenuItem>
+                <MenuItem value="Octubre">Octubre</MenuItem>
+                <MenuItem value="Noviembre">Noviembre</MenuItem>
+                <MenuItem value="Diciembre">Diciembre</MenuItem>
+              </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Día" name="fc_dia" value={form.fc_dia} onChange={handleChange} fullWidth error={!!errors.fc_dia} helperText={errors.fc_dia} />
