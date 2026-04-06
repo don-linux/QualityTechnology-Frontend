@@ -5,6 +5,7 @@ import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -16,27 +17,30 @@ import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
 
+const getTipoBanio = (row) => {
+  return row.fc_tipo_banio || "";
+};
+
 function BitacoraBanosContent() {
   const [form, setForm] = useState({
     fc_mes: "",
     fc_dia: "",
-    fc_banio_hombres: "",
-    fc_banio_mujeres: "",
+    fc_tipo_banio: "",
     fc_regadera: "",
     fc_realizo: "",
-    fc_firma: "",
     fc_observaciones: "",
     fi_usuario_id: 1,
   });
 
   const [data, setData] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
-    "fc_mes", "fc_dia", "fc_banio_hombres", "fc_banio_mujeres",
-    "fc_regadera", "fc_realizo", "fc_firma", "fc_observaciones",
+    "fc_mes", "fc_dia", "fc_tipo_banio",
+    "fc_regadera", "fc_realizo", "fc_observaciones",
   ];
 
   const handleChange = (e) => {
@@ -54,8 +58,18 @@ function BitacoraBanosContent() {
     }
   };
 
+  const cargarEmpleados = async () => {
+    try {
+      const res = await axios.get("/medellin/banos/empleados");
+      setEmpleados(res.data);
+    } catch {
+      alert("Error al cargar empleados.");
+    }
+  };
+
   useEffect(() => {
     cargarDatos();
+    cargarEmpleados();
   }, []);
 
   //  Guardar / Actualizar
@@ -73,11 +87,9 @@ function BitacoraBanosContent() {
       setForm({
         fc_mes: "",
         fc_dia: "",
-        fc_banio_hombres: "",
-        fc_banio_mujeres: "",
+        fc_tipo_banio: "",
         fc_regadera: "",
         fc_realizo: "",
-        fc_firma: "",
         fc_observaciones: "",
         fi_usuario_id: 1,
       });
@@ -95,11 +107,9 @@ function BitacoraBanosContent() {
     setForm({
       fc_mes: row.fc_mes,
       fc_dia: row.fc_dia,
-      fc_banio_hombres: row.fc_banio_hombres,
-      fc_banio_mujeres: row.fc_banio_mujeres,
+      fc_tipo_banio: getTipoBanio(row),
       fc_regadera: row.fc_regadera,
       fc_realizo: row.fc_realizo,
-      fc_firma: row.fc_firma,
       fc_observaciones: row.fc_observaciones,
       fi_usuario_id: row.fi_usuario_id,
     });
@@ -109,14 +119,14 @@ function BitacoraBanosContent() {
   //  Eliminar uno
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/medellin/banos/${id}`);
+    await axios.delete(`/medellin/banos/${id}`);
     cargarDatos();
   };
 
   //  Eliminar todos
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`${API_URL}/medellin/banos`);
+    await axios.delete(`/medellin/banos`);
     cargarDatos();
   };
 
@@ -137,22 +147,18 @@ function BitacoraBanosContent() {
     const columnas = [
       "Mes",
       "Día",
-      "Baño Hombres",
-      "Baño Mujeres",
+      "Tipo de Baño",
       "Regadera",
       "Realizó",
-      "Firma",
       "Observaciones",
     ];
 
     const filas = data.map((r) => [
       r.fc_mes,
       r.fc_dia,
-      r.fc_banio_hombres,
-      r.fc_banio_mujeres,
+      getTipoBanio(r),
       r.fc_regadera,
       r.fc_realizo,
-      r.fc_firma,
       r.fc_observaciones,
     ]);
 
@@ -185,25 +191,84 @@ function BitacoraBanosContent() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Mes" name="fc_mes" value={form.fc_mes} onChange={handleChange} fullWidth error={!!errors.fc_mes} helperText={errors.fc_mes} />
+              <TextField
+                select
+                label="Mes"
+                name="fc_mes"
+                value={form.fc_mes}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_mes}
+                helperText={errors.fc_mes}
+              >
+                <MenuItem value="">Selecciona un mes</MenuItem>
+                <MenuItem value="Enero">Enero</MenuItem>
+                <MenuItem value="Febrero">Febrero</MenuItem>
+                <MenuItem value="Marzo">Marzo</MenuItem>
+                <MenuItem value="Abril">Abril</MenuItem>
+                <MenuItem value="Mayo">Mayo</MenuItem>
+                <MenuItem value="Junio">Junio</MenuItem>
+                <MenuItem value="Julio">Julio</MenuItem>
+                <MenuItem value="Agosto">Agosto</MenuItem>
+                <MenuItem value="Septiembre">Septiembre</MenuItem>
+                <MenuItem value="Octubre">Octubre</MenuItem>
+                <MenuItem value="Noviembre">Noviembre</MenuItem>
+                <MenuItem value="Diciembre">Diciembre</MenuItem>
+              </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Día" name="fc_dia" value={form.fc_dia} onChange={handleChange} fullWidth error={!!errors.fc_dia} helperText={errors.fc_dia} />
+              <TextField
+                label="Día"
+                name="fc_dia"
+                type="number"
+                value={form.fc_dia}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_dia}
+                helperText={errors.fc_dia}
+                inputProps={{ min: 1, max: 31 }}
+              />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Baño Hombres" name="fc_banio_hombres" value={form.fc_banio_hombres} onChange={handleChange} fullWidth error={!!errors.fc_banio_hombres} helperText={errors.fc_banio_hombres} />
-            </Grid>
-            <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Baño Mujeres" name="fc_banio_mujeres" value={form.fc_banio_mujeres} onChange={handleChange} fullWidth error={!!errors.fc_banio_mujeres} helperText={errors.fc_banio_mujeres} />
+              <TextField
+                select
+                label="Tipo de Baño"
+                name="fc_tipo_banio"
+                value={form.fc_tipo_banio}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_tipo_banio}
+                helperText={errors.fc_tipo_banio}
+              >
+                <MenuItem value="">Selecciona un tipo</MenuItem>
+                <MenuItem value="Hombre">Hombre</MenuItem>
+                <MenuItem value="Mujer">Mujer</MenuItem>
+              </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Regadera" name="fc_regadera" value={form.fc_regadera} onChange={handleChange} fullWidth error={!!errors.fc_regadera} helperText={errors.fc_regadera} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Realizó" name="fc_realizo" value={form.fc_realizo} onChange={handleChange} fullWidth error={!!errors.fc_realizo} helperText={errors.fc_realizo} />
-            </Grid>
-            <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Firma" name="fc_firma" value={form.fc_firma} onChange={handleChange} fullWidth error={!!errors.fc_firma} helperText={errors.fc_firma} />
+              <TextField
+                select
+                label="Realizó"
+                name="fc_realizo"
+                value={form.fc_realizo}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_realizo}
+                helperText={errors.fc_realizo}
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
+                    {empleado.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_realizo && !empleados.some((e) => e.fc_nombre_completo === form.fc_realizo) && (
+                  <MenuItem value={form.fc_realizo}>{form.fc_realizo}</MenuItem>
+                )}
+              </TextField>
             </Grid>
             <Grid size={12}>
               <TextField
@@ -252,11 +317,9 @@ function BitacoraBanosContent() {
             <TableRow>
               <TableCell>Mes</TableCell>
               <TableCell>Día</TableCell>
-              <TableCell>Baño Hombres</TableCell>
-              <TableCell>Baño Mujeres</TableCell>
+              <TableCell>Tipo de Baño</TableCell>
               <TableCell>Regadera</TableCell>
               <TableCell>Realizó</TableCell>
-              <TableCell>Firma</TableCell>
               <TableCell>Observaciones</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
@@ -266,11 +329,9 @@ function BitacoraBanosContent() {
               <TableRow key={r.fi_id}>
                 <TableCell>{r.fc_mes}</TableCell>
                 <TableCell>{r.fc_dia}</TableCell>
-                <TableCell>{r.fc_banio_hombres}</TableCell>
-                <TableCell>{r.fc_banio_mujeres}</TableCell>
+                <TableCell>{getTipoBanio(r)}</TableCell>
                 <TableCell>{r.fc_regadera}</TableCell>
                 <TableCell>{r.fc_realizo}</TableCell>
-                <TableCell>{r.fc_firma}</TableCell>
                 <TableCell>{r.fc_observaciones}</TableCell>
                 <TableCell>
                   <Button

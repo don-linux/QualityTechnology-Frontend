@@ -6,6 +6,7 @@ import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -13,9 +14,17 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
+import TableContainer from "@mui/material/TableContainer";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
+
+const normalizarGranja = (g) => {
+  if (!g) return "Granja Acuicola Medellin";
+  const txt = g.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (txt.includes("ceib")) return "Granja Acuicola La Ceiba";
+  return "Granja Acuicola Medellin";
+};
 
 function BioAlimentacionContent() {
   const [form, setForm] = useState({
@@ -36,6 +45,8 @@ function BioAlimentacionContent() {
   });
 
   const [data, setData] = useState([]);
+  const [origenes, setOrigenes] = useState([]);
+  const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola La Ceiba");
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -61,9 +72,47 @@ function BioAlimentacionContent() {
     }
   };
 
+  const cargarOrigenes = async () => {
+    try {
+      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const res = await axios.get(`${API_URL}/piletas/origen/${granja}`);
+      setOrigenes(res.data || []);
+    } catch {
+      alert("Error al cargar orígenes.");
+    }
+  };
+
+  const cambiarGranja = (granja) => {
+    setGranjaActiva(granja);
+    setForm((prev) => ({
+      ...prev,
+      fn_num_instalacion: "",
+      fc_origen_alevines: "",
+    }));
+  };
+
+  const handleOrigenChange = (e) => {
+    const origenSeleccionado = origenes.find(
+      (origen) => String(origen.fi_instalacion_id) === String(e.target.value)
+    );
+
+    clearFieldError("fc_origen_alevines");
+    clearFieldError("fn_num_instalacion");
+
+    setForm({
+      ...form,
+      fn_num_instalacion: origenSeleccionado?.fi_instalacion_id || "",
+      fc_origen_alevines: origenSeleccionado?.nombre_instalacion || "",
+    });
+  };
+
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  useEffect(() => {
+    cargarOrigenes();
+  }, [granjaActiva]);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
@@ -203,14 +252,31 @@ function BioAlimentacionContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-         La Ceiba — Alimentación
+         {granjaActiva.includes("Medellín") ? "Medellín" : "La Ceiba"} — Alimentación
       </Typography>
+
+      <Box sx={{ mb: 2, display: "flex", gap: 1 }}>
+        <Button
+          variant={granjaActiva.includes("Medellín") ? "contained" : "outlined"}
+          onClick={() => cambiarGranja("Granja Acuícola Medellín")}
+        >
+          Medellín
+        </Button>
+        <Button
+          variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"}
+          color="secondary"
+          onClick={() => cambiarGranja("Granja Acuícola La Ceiba")}
+        >
+          La Ceiba
+        </Button>
+      </Box>
 
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
+                select
                 label="Mes"
                 name="fc_mes"
                 value={form.fc_mes}
@@ -218,17 +284,30 @@ function BioAlimentacionContent() {
                 fullWidth
                 error={!!errors.fc_mes}
                 helperText={errors.fc_mes}
-              />
+              >
+                <MenuItem value="">Selecciona un mes</MenuItem>
+                <MenuItem value="Enero">Enero</MenuItem>
+                <MenuItem value="Febrero">Febrero</MenuItem>
+                <MenuItem value="Marzo">Marzo</MenuItem>
+                <MenuItem value="Abril">Abril</MenuItem>
+                <MenuItem value="Mayo">Mayo</MenuItem>
+                <MenuItem value="Junio">Junio</MenuItem>
+                <MenuItem value="Julio">Julio</MenuItem>
+                <MenuItem value="Agosto">Agosto</MenuItem>
+                <MenuItem value="Septiembre">Septiembre</MenuItem>
+                <MenuItem value="Octubre">Octubre</MenuItem>
+                <MenuItem value="Noviembre">Noviembre</MenuItem>
+                <MenuItem value="Diciembre">Diciembre</MenuItem>
+              </TextField>
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Instalación"
                 name="fn_num_instalacion"
-                type="number"
                 value={form.fn_num_instalacion}
-                onChange={handleChange}
                 fullWidth
+                InputProps={{ readOnly: true }}
                 error={!!errors.fn_num_instalacion}
                 helperText={errors.fn_num_instalacion}
               />
@@ -263,14 +342,28 @@ function BioAlimentacionContent() {
 
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
+                select
                 label="Origen Alevines"
                 name="fc_origen_alevines"
-                value={form.fc_origen_alevines}
-                onChange={handleChange}
+                value={form.fn_num_instalacion || ""}
+                onChange={handleOrigenChange}
                 fullWidth
                 error={!!errors.fc_origen_alevines}
                 helperText={errors.fc_origen_alevines}
-              />
+              >
+                <MenuItem value="">Selecciona un origen</MenuItem>
+                {origenes.map((origen) => (
+                  <MenuItem
+                    key={`${origen.fi_instalacion_id}-${origen.fi_lote_id || "sin-lote"}`}
+                    value={origen.fi_instalacion_id}
+                  >
+                    {`${origen.nombre_instalacion} (Inst. ${origen.fi_instalacion_id})`}
+                  </MenuItem>
+                ))}
+                {form.fc_origen_alevines && !origenes.some((origen) => origen.nombre_instalacion === form.fc_origen_alevines) && (
+                  <MenuItem value={form.fn_num_instalacion}>{form.fc_origen_alevines}</MenuItem>
+                )}
+              </TextField>
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
@@ -403,8 +496,9 @@ function BioAlimentacionContent() {
         </CardContent>
       </Card>
 
-      <Paper>
-        <Table>
+      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table sx={{ minWidth: 1350 }}>
           <TableHead sx={{ background: "#E8F5E9" }}>
             <TableRow>
               <TableCell>Mes</TableCell>
@@ -438,8 +532,17 @@ function BioAlimentacionContent() {
                 <TableCell>{row.fn_temp_agua}</TableCell>
                 <TableCell>{row.fn_amonio}</TableCell>
                 <TableCell>{row.fn_ph}</TableCell>
-                <TableCell>{row.fc_observaciones}</TableCell>
-                <TableCell>
+                <TableCell
+                  sx={{
+                    minWidth: 220,
+                    maxWidth: 320,
+                    whiteSpace: "normal",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {row.fc_observaciones}
+                </TableCell>
+                <TableCell sx={{ minWidth: 150 }}>
                   <Button
                     variant="contained"
                     color="warning"
@@ -462,6 +565,7 @@ function BioAlimentacionContent() {
             ))}
           </TableBody>
         </Table>
+        </TableContainer>
       </Paper>
       {ConfirmModal}
     </Box>
