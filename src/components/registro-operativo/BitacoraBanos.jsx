@@ -33,6 +33,7 @@ function BitacoraBanosContent() {
   });
 
   const [data, setData] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -57,8 +58,18 @@ function BitacoraBanosContent() {
     }
   };
 
+  const cargarEmpleados = async () => {
+    try {
+      const res = await axios.get("/medellin/banos/empleados");
+      setEmpleados(res.data);
+    } catch {
+      alert("Error al cargar empleados.");
+    }
+  };
+
   useEffect(() => {
     cargarDatos();
+    cargarEmpleados();
   }, []);
 
   //  Guardar / Actualizar
@@ -238,7 +249,26 @@ function BitacoraBanosContent() {
               <TextField label="Regadera" name="fc_regadera" value={form.fc_regadera} onChange={handleChange} fullWidth error={!!errors.fc_regadera} helperText={errors.fc_regadera} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Realizó" name="fc_realizo" value={form.fc_realizo} onChange={handleChange} fullWidth error={!!errors.fc_realizo} helperText={errors.fc_realizo} />
+              <TextField
+                select
+                label="Realizó"
+                name="fc_realizo"
+                value={form.fc_realizo}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_realizo}
+                helperText={errors.fc_realizo}
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
+                    {empleado.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_realizo && !empleados.some((e) => e.fc_nombre_completo === form.fc_realizo) && (
+                  <MenuItem value={form.fc_realizo}>{form.fc_realizo}</MenuItem>
+                )}
+              </TextField>
             </Grid>
             <Grid size={12}>
               <TextField
