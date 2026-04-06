@@ -15,7 +15,7 @@ import CardContent from "@mui/material/CardContent";
 import MenuItem from "@mui/material/MenuItem";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
-import { apiFetch } from "../utils/api";
+import axios from "../utils/axiosInstance.js";
 import useFormValidation from "../hooks/useFormValidation";
 import useConfirm from "../hooks/useConfirm";
 
@@ -62,7 +62,7 @@ function EngordaContent() {
   const obtenerInstalaciones = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/instalaciones/tipo/Engorda/${granja}`);
+      const { data } = await axios.get(`/instalaciones/tipo/Engorda/${granja}`);
       setInstalaciones(data || []);
     } catch (err) {
       console.error(" Error al obtener instalaciones:", err);
@@ -72,7 +72,7 @@ function EngordaContent() {
   const obtenerLotes = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/piletas/inventario/${granja}`);
+      const { data } = await axios.get(`/piletas/inventario/${granja}`);
       setLotes(data || []);
     } catch (err) {
       console.error(" Error al obtener lotes:", err);
@@ -82,7 +82,7 @@ function EngordaContent() {
   const obtenerEngordas = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/engorda/granja/${granja}`);
+      const { data } = await axios.get(`/engorda/granja/${granja}`);
       setEngordas(data || []);
     } catch (err) {
       console.error("Error al obtener engordas:", err);
@@ -91,7 +91,7 @@ function EngordaContent() {
 
   const obtenerMovimientos = useCallback(async () => {
     try {
-      const data = await apiFetch(`/engorda/movimientos/${usuario_id}`);
+      const { data } = await axios.get(`/engorda/movimientos/${usuario_id}`);
       setMovimientos(data || []);
     } catch (err) {
       console.error("Error al obtener movimientos:", err);
@@ -152,13 +152,10 @@ function EngordaContent() {
     if (!validate(form, requiredFields)) return;
 
     try {
-      await apiFetch("/engorda", {
-        method: "POST",
-        body: JSON.stringify({
-          ...form,
-          origen_id: form.origen_instalacion, // El backend espera origen_id
-          fi_instalacion_id: form.fi_instalacion_id,
-        }),
+      await axios.post("/engorda", {
+        ...form,
+        origen_id: form.origen_instalacion,
+        fi_instalacion_id: form.fi_instalacion_id,
       });
 
       alert(" Registro agregado correctamente");
@@ -166,7 +163,7 @@ function EngordaContent() {
       obtenerLotes(); // Refrescar lotes por si cambió el inventario
       limpiarFormulario();
     } catch (err) {
-      alert("Error al registrar engorda: " + err.message);
+      alert("Error al registrar engorda: " + (err.response?.data?.error || err.message));
     }
   };
 
@@ -174,12 +171,9 @@ function EngordaContent() {
     if (!seleccionado) return;
     if (!validate(form, requiredFields)) return;
     try {
-      await apiFetch("/engorda", {
-        method: "POST", // En tu backend el POST maneja el update si mandas el id
-        body: JSON.stringify({
-          ...form,
-          fi_engorda_id: seleccionado,
-        }),
+      await axios.post("/engorda", {
+        ...form,
+        fi_engorda_id: seleccionado,
       });
 
       alert(" Registro actualizado");
@@ -193,7 +187,7 @@ function EngordaContent() {
   const eliminarEngorda = async () => {
     if (!await confirm("¿Eliminar este registro?")) return;
     try {
-      await apiFetch(`/engorda/${seleccionado}`, { method: "DELETE" });
+      await axios.delete(`/engorda/${seleccionado}`);
       alert(" Eliminado");
       obtenerEngordas();
       limpiarFormulario();
@@ -222,7 +216,7 @@ function EngordaContent() {
   const eliminarMovimiento = async (id) => {
     if (!await confirm("¿Eliminar este movimiento?")) return;
     try {
-      await apiFetch(`/engorda/movimientos/${id}`, { method: "DELETE" });
+      await axios.delete(`/engorda/movimientos/${id}`);
       obtenerMovimientos();
     } catch (err) {
       console.error(err);

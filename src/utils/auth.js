@@ -1,5 +1,5 @@
 // src/utils/auth.js
-import { API_URL } from "./config";
+import axiosInstance from "./axiosInstance";
 
 export const isAuthenticated = () => {
   const token = localStorage.getItem("token");
@@ -14,11 +14,7 @@ export const logout = async () => {
   const refreshToken = localStorage.getItem("refreshToken");
   if (refreshToken) {
     try {
-      await fetch(`${API_URL}/usuarios/logout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken }),
-      });
+      await axiosInstance.post("/usuarios/logout", { refreshToken });
     } catch (err) {
       console.error("Error al cerrar sesión en servidor:", err);
     }

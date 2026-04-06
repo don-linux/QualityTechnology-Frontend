@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_URL } from "../utils/api.js";
+import { API_URL } from "../utils/config.js";
 import useFormValidation from "../hooks/useFormValidation";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";

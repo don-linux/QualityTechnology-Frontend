@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { apiFetch } from "../utils/api";
+import axios from "../utils/axiosInstance.js";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -58,7 +58,7 @@ function InstalacionesContent() {
   ========================================================= */
   const obtenerInstalaciones = useCallback(async () => {
     try {
-      const data = await apiFetch(`/instalaciones/granja/${granja}`);
+      const { data } = await axios.get(`/instalaciones/granja/${granja}`);
 
       if (!Array.isArray(data)) {
         setInstalaciones([]);
@@ -126,13 +126,10 @@ function InstalacionesContent() {
   const registrarInstalacion = async () => {
     if (!validate(form, requiredFields)) return;
     try {
-      await apiFetch("/instalaciones", {
-        method: "POST",
-        body: JSON.stringify({
-          ...form,
-          fi_usuario_id: usuario_id,
-          fc_granja: granja,
-        }),
+      await axios.post("/instalaciones", {
+        ...form,
+        fi_usuario_id: usuario_id,
+        fc_granja: granja,
       });
 
       mostrarMensaje("Instalación registrada correctamente.");
@@ -147,13 +144,10 @@ function InstalacionesContent() {
   const actualizarInstalacion = async () => {
     if (!validate(form, requiredFields)) return;
     try {
-      await apiFetch(`/instalaciones/${seleccionado}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          ...form,
-          fi_usuario_id: usuario_id,
-          fc_granja: granja,
-        }),
+      await axios.put(`/instalaciones/${seleccionado}`, {
+        ...form,
+        fi_usuario_id: usuario_id,
+        fc_granja: granja,
       });
 
       mostrarMensaje("Instalación actualizada correctamente.");
@@ -168,14 +162,14 @@ function InstalacionesContent() {
   const eliminarInstalacion = async () => {
     if (!await confirm("¿Estás seguro de que deseas eliminar esta instalación?", "Confirmar eliminación")) return;
     try {
-      await apiFetch(`/instalaciones/${seleccionado}`, { method: "DELETE" });
+      await axios.delete(`/instalaciones/${seleccionado}`);
 
       mostrarMensaje("Instalación eliminada correctamente.");
       limpiarFormulario();
       obtenerInstalaciones();
     } catch (error) {
       console.error(error);
-      mostrarMensaje(error.message || "Error al eliminar la instalación.", true);
+      mostrarMensaje(error.response?.data?.error || error.message || "Error al eliminar la instalación.", true);
     }
   };
 

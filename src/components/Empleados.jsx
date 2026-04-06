@@ -1,4 +1,3 @@
-// src/components/EmpleadosRegistro.jsx
 import React, { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -15,273 +14,245 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
-import dayjs from "dayjs";
-import { apiFetch } from "../utils/api";
-import useFormValidation from "../hooks/useFormValidation";
+import Chip from "@mui/material/Chip";
+import Box from "@mui/material/Box";
+import axios from "../utils/axiosInstance.js";
 import useConfirm from "../hooks/useConfirm";
+import DocumentosEmpleado from "./DocumentosEmpleado";
 
-export default function EmpleadosRegistro() {
+export default function Empleados() {
+  const [empleados, setEmpleados] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [puestos, setPuestos] = useState([]);
+  const [seleccionado, setSeleccionado] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { confirm, ConfirmModal } = useConfirm();
+
   const [form, setForm] = useState({
-    nombre: "",
-    apellido_paterno: "",
-    apellido_materno: "",
-    genero: "",
-    calle: "",
-    cp: "",
-    referencia: "",
-    comentarios: "",
-    usuario_id: "3", // fijo (puedes ajustarlo según login)
-    puesto_id: "",
-    departamento_id: "",
-    ciudad_id: "",
-    estado_id: "",
-    edad: "",
-    fecha_nacimiento: null,
-    fecha_contratacion: null,
-    fi_empleado_id: null,
+    fc_nombre: "", fc_apellido_paterno: "", fc_apellido_materno: "",
+    fc_genero: "", fd_fecha_nacimiento: "", fc_estado: "",
+    fc_ciudad: "", fc_calle: "", fc_codigo_postal: "",
+    fc_referencias: "", ft_comentarios_adicionales: "",
+    fi_departamento_id: "", fi_puesto_id: "",
+    fd_fecha_contratacion: "", fn_uniformes: 0,
   });
 
-  const [empleados, setEmpleados] = useState([]);
-  const [puestos, setPuestos] = useState([]);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [ciudades, setCiudades] = useState([]);
-  const [estados, setEstados] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
-  const requiredFields = [
-    "nombre", "apellido_paterno", "apellido_materno", "genero",
-    "calle", "cp", "referencia", "comentarios",
-    "puesto_id", "departamento_id", "ciudad_id", "estado_id",
-    "edad", "fecha_nacimiento", "fecha_contratacion",
-  ];
+  useEffect(() => { cargarDatos(); }, []);
 
-  useEffect(() => {
-    cargarTodo();
-  }, []);
-
-  const cargarTodo = async () => {
+  const cargarDatos = async () => {
     setLoading(true);
     try {
-      const [emp, pue, dep, ciu, est] = await Promise.all([
-        apiFetch("/empleados"),
-        apiFetch("/puestos"),
-        apiFetch("/departamentos"),
-        apiFetch("/ciudades"),
-        apiFetch("/estados"),
+      const [empRes, depRes, pueRes] = await Promise.all([
+        axios.get("/empleados"),
+        axios.get("/departamentos/activos"),
+        axios.get("/puestos/activos"),
       ]);
-      setEmpleados(emp);
-      setPuestos(pue);
-      setDepartamentos(dep);
-      setCiudades(ciu);
-      setEstados(est);
-    } catch (error) {
-      console.error("Error al cargar datos:", error);
-    } finally {
-      setLoading(false);
-    }
+      setEmpleados(empRes.data);
+      setDepartamentos(depRes.data);
+      setPuestos(pueRes.data);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    clearFieldError(e.target.name);
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleDateChange = (field, value) => {
-    setForm({ ...form, [field]: value });
-    clearFieldError(field);
-  };
-
-  const limpiarFormulario = () => {
+  const seleccionarEmpleado = (e) => {
+    setSeleccionado(e);
     setForm({
-      nombre: "",
-      apellido_paterno: "",
-      apellido_materno: "",
-      genero: "",
-      calle: "",
-      cp: "",
-      referencia: "",
-      comentarios: "",
-      usuario_id: "3",
-      puesto_id: "",
-      departamento_id: "",
-      ciudad_id: "",
-      estado_id: "",
-      edad: "",
-      fecha_nacimiento: null,
-      fecha_contratacion: null,
-      fi_empleado_id: null,
+      fc_nombre: e.fc_nombre || "",
+      fc_apellido_paterno: e.fc_apellido_paterno || "",
+      fc_apellido_materno: e.fc_apellido_materno || "",
+      fc_genero: e.fc_genero || "",
+      fd_fecha_nacimiento: e.fd_fecha_nacimiento ? e.fd_fecha_nacimiento.substring(0, 10) : "",
+      fc_estado: e.fc_estado || "",
+      fc_ciudad: e.fc_ciudad || "",
+      fc_calle: e.fc_calle || "",
+      fc_codigo_postal: e.fc_codigo_postal || "",
+      fc_referencias: e.fc_referencias || "",
+      ft_comentarios_adicionales: e.ft_comentarios_adicionales || "",
+      fi_departamento_id: e.fi_departamento_id || "",
+      fi_puesto_id: e.fi_puesto_id || "",
+      fd_fecha_contratacion: e.fd_fecha_contratacion ? e.fd_fecha_contratacion.substring(0, 10) : "",
+      fn_uniformes: e.fn_uniformes ?? 0,
     });
-    clearErrors();
   };
 
-  const registrarEmpleado = async () => {
-    if (!validate(form, requiredFields)) return;
-
-    try {
-      await apiFetch("/empleados", {
-        method: "POST",
-        body: JSON.stringify({
-          fc_nombre: form.nombre,
-          fc_apellido_paterno: form.apellido_paterno,
-          fc_apellido_materno: form.apellido_materno,
-          fc_genero: form.genero,
-          fc_calle: form.calle,
-          fc_cp: form.cp,
-          fc_referencia: form.referencia,
-          fc_comentarios: form.comentarios,
-          fi_usuario_id: form.usuario_id,
-          fi_puesto_id: Number(form.puesto_id),
-          fi_departamento_id: Number(form.departamento_id),
-          fi_ciudad_id: Number(form.ciudad_id),
-          fi_estado_id: Number(form.estado_id),
-          fi_edad: Number(form.edad),
-          fd_fecha_nacimiento: dayjs(form.fecha_nacimiento).format("YYYY-MM-DD"),
-          fd_fecha_contratacion: dayjs(form.fecha_contratacion).format("YYYY-MM-DD"),
-        }),
-      });
-      await cargarTodo();
-      limpiarFormulario();
-    } catch (error) {
-      console.error("Error al registrar empleado:", error);
-      alert("Error al registrar empleado.");
-    }
+  const limpiar = () => {
+    setSeleccionado(null);
+    setForm({
+      fc_nombre: "", fc_apellido_paterno: "", fc_apellido_materno: "",
+      fc_genero: "", fd_fecha_nacimiento: "", fc_estado: "",
+      fc_ciudad: "", fc_calle: "", fc_codigo_postal: "",
+      fc_referencias: "", ft_comentarios_adicionales: "",
+      fi_departamento_id: "", fi_puesto_id: "",
+      fd_fecha_contratacion: "", fn_uniformes: 0,
+    });
   };
 
   const actualizarEmpleado = async () => {
-    if (!form.fi_empleado_id) return alert("Selecciona un empleado para actualizar");
-    if (!validate(form, requiredFields)) return;
-
+    if (!seleccionado) return;
     try {
-      await apiFetch(`/empleados/${form.fi_empleado_id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          fc_nombre: form.nombre,
-          fc_apellido_paterno: form.apellido_paterno,
-          fc_apellido_materno: form.apellido_materno,
-          fc_genero: form.genero,
-          fc_calle: form.calle,
-          fc_cp: form.cp,
-          fc_referencia: form.referencia,
-          fc_comentarios: form.comentarios,
-          fi_usuario_id: form.usuario_id,
-          fi_puesto_id: Number(form.puesto_id),
-          fi_departamento_id: Number(form.departamento_id),
-          fi_ciudad_id: Number(form.ciudad_id),
-          fi_estado_id: Number(form.estado_id),
-          fi_edad: Number(form.edad),
-          fd_fecha_nacimiento: dayjs(form.fecha_nacimiento).format("YYYY-MM-DD"),
-          fd_fecha_contratacion: dayjs(form.fecha_contratacion).format("YYYY-MM-DD"),
-        }),
-      });
-      await cargarTodo();
-      limpiarFormulario();
-    } catch (error) {
-      console.error("Error al actualizar empleado:", error);
-      alert("Error al actualizar empleado.");
-    }
+      await axios.put(`/empleados/${seleccionado.fi_empleado_id}`, form);
+      await cargarDatos();
+      limpiar();
+    } catch (e) { console.error(e); alert("Error al actualizar"); }
   };
 
-  const eliminarEmpleado = async () => {
-    if (!form.fi_empleado_id) return alert("Selecciona un empleado para eliminar");
-    if (!await confirm("¿Seguro que deseas eliminar este registro?")) return;
-
+  const toggleActivo = async (emp) => {
+    const accion = emp.fb_activo ? "desactivar" : "activar";
+    if (!await confirm(`¿Seguro que deseas ${accion} a ${emp.fc_nombre} ${emp.fc_apellido_paterno}?`)) return;
     try {
-      await apiFetch(`/empleados/${form.fi_empleado_id}`, { method: "DELETE" });
-      await cargarTodo();
-      limpiarFormulario();
-    } catch (error) {
-      console.error("Error al eliminar empleado:", error);
-      alert("Error al eliminar empleado.");
-    }
+      const endpoint = emp.fb_activo ? "deactivate" : "activate";
+      await axios.patch(`/empleados/${emp.fi_empleado_id}/${endpoint}`);
+      await cargarDatos();
+    } catch (e) { console.error(e); }
   };
 
-  const seleccionarEmpleado = (e) => {
-    clearErrors();
-    setForm({
-      fi_empleado_id: e.fi_empleado_id,
-      nombre: e.fc_nombre,
-      apellido_paterno: e.fc_apellido_paterno,
-      apellido_materno: e.fc_apellido_materno,
-      genero: e.fc_genero,
-      calle: e.fc_calle,
-      cp: e.fc_cp,
-      referencia: e.fc_referencia,
-      comentarios: e.fc_comentarios,
-      usuario_id: e.fi_usuario_id?.toString() || "3",
-      puesto_id: e.fi_puesto_id?.toString() || "",
-      departamento_id: e.fi_departamento_id?.toString() || "",
-      ciudad_id: e.fi_ciudad_id?.toString() || "",
-      estado_id: e.fi_estado_id?.toString() || "",
-      edad: e.fi_edad?.toString() || "",
-      fecha_nacimiento: e.fd_fecha_nacimiento ? dayjs(e.fd_fecha_nacimiento) : null,
-      fecha_contratacion: e.fd_fecha_contratacion ? dayjs(e.fd_fecha_contratacion) : null,
-    });
-  };
+  const perfilIncompleto = (e) => !e.fd_fecha_nacimiento || !e.fc_calle || !e.fc_estado;
 
   return (
     <Container maxWidth="lg" sx={{ pt: 2, pb: 4 }}>
-      <Typography variant="h4" gutterBottom textAlign="center">
-         Registro de Empleados
-      </Typography>
+      <Box textAlign="center" mb={3}>
+        <Typography variant="h4" fontWeight="bold">Gestion de Empleados</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Los empleados se crean automaticamente desde Usuarios
+        </Typography>
+      </Box>
+
+      {seleccionado && (
+        <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
+          <CardContent>
+            <Typography variant="subtitle1" fontWeight="bold" mb={2}>
+              Editando: {seleccionado.fc_nombre} {seleccionado.fc_apellido_paterno}
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField name="fc_nombre" label="Nombre" fullWidth value={form.fc_nombre} onChange={handleChange} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField name="fc_apellido_paterno" label="Apellido Paterno" fullWidth value={form.fc_apellido_paterno} onChange={handleChange} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField name="fc_apellido_materno" label="Apellido Materno" fullWidth value={form.fc_apellido_materno} onChange={handleChange} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField select name="fc_genero" label="Genero" fullWidth value={form.fc_genero} onChange={handleChange}>
+                  <MenuItem value="">Sin especificar</MenuItem>
+                  <MenuItem value="Masculino">Masculino</MenuItem>
+                  <MenuItem value="Femenino">Femenino</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField name="fd_fecha_nacimiento" label="Fecha Nacimiento" type="date" fullWidth value={form.fd_fecha_nacimiento} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField name="fd_fecha_contratacion" label="Fecha Contratacion" type="date" fullWidth value={form.fd_fecha_contratacion} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField select name="fi_departamento_id" label="Departamento" fullWidth value={form.fi_departamento_id} onChange={handleChange}>
+                  {departamentos.map((d) => (
+                    <MenuItem key={d.fi_departamento_id} value={d.fi_departamento_id}>{d.fc_nombre}</MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField select name="fi_puesto_id" label="Puesto" fullWidth value={form.fi_puesto_id} onChange={handleChange}>
+                  <MenuItem value="">Sin asignar</MenuItem>
+                  {puestos.map((p) => (
+                    <MenuItem key={p.fi_puesto_id} value={p.fi_puesto_id}>{p.fc_nombre}</MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField select name="fn_uniformes" label="Uniformes" fullWidth value={form.fn_uniformes} onChange={handleChange}>
+                  <MenuItem value={0}>Sin uniforme</MenuItem>
+                  <MenuItem value={1}>Entregado</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField name="fc_estado" label="Estado" fullWidth value={form.fc_estado} onChange={handleChange} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField name="fc_ciudad" label="Ciudad" fullWidth value={form.fc_ciudad} onChange={handleChange} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField name="fc_codigo_postal" label="Codigo Postal" fullWidth value={form.fc_codigo_postal} onChange={handleChange} />
+              </Grid>
+              <Grid size={12}>
+                <TextField name="fc_calle" label="Calle / Direccion" fullWidth value={form.fc_calle} onChange={handleChange} />
+              </Grid>
+              <Grid size={12}>
+                <TextField name="fc_referencias" label="Referencias" fullWidth value={form.fc_referencias} onChange={handleChange} />
+              </Grid>
+              <Grid size={12}>
+                <TextField name="ft_comentarios_adicionales" label="Comentarios" fullWidth multiline rows={2} value={form.ft_comentarios_adicionales} onChange={handleChange} />
+              </Grid>
+              <Grid size={12}>
+                <Button variant="contained" color="primary" sx={{ mr: 1 }} onClick={actualizarEmpleado}>Guardar</Button>
+                <Button variant="outlined" onClick={limpiar}>Cancelar</Button>
+              </Grid>
+            </Grid>
+
+            {seleccionado && (
+              <Box sx={{ mt: 3 }}>
+                <DocumentosEmpleado empleadoId={seleccionado.fi_empleado_id} />
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {loading ? (
-        <Typography textAlign="center">Cargando datos...</Typography>
+        <Typography textAlign="center">Cargando...</Typography>
       ) : (
-        <>
-          {/* Formulario */}
-          <Card>
-            <CardContent>
-              <Grid container spacing={2}>
-                {/* Campos de formulario (igual que antes) */}
-                {/* ... (no se modifican, solo se dejan igual que tu código original) */}
-              </Grid>
-            </CardContent>
-          </Card>
-
-          {/* Tabla */}
-          <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>
-            Empleados Registrados
-          </Typography>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Apellido Paterno</TableCell>
-                  <TableCell>Apellido Materno</TableCell>
-                  <TableCell>Género</TableCell>
-                  <TableCell>Puesto</TableCell>
-                  <TableCell>Departamento</TableCell>
-                  <TableCell>Acción</TableCell>
+        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 2 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Nombre</TableCell>
+                <TableCell>Puesto</TableCell>
+                <TableCell>Departamento</TableCell>
+                <TableCell>Estado</TableCell>
+                <TableCell>Perfil</TableCell>
+                <TableCell align="center">Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {empleados.map((e) => (
+                <TableRow key={e.fi_empleado_id} hover sx={{ opacity: e.fb_activo ? 1 : 0.5 }}>
+                  <TableCell>{e.fc_nombre} {e.fc_apellido_paterno} {e.fc_apellido_materno}</TableCell>
+                  <TableCell>{e.puesto_nombre || "-"}</TableCell>
+                  <TableCell>{e.departamento_nombre || "-"}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={e.fb_activo ? "Activo" : "Inactivo"}
+                      color={e.fb_activo ? "success" : "default"}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {perfilIncompleto(e) && (
+                      <Chip label="Incompleto" color="warning" size="small" variant="outlined" />
+                    )}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Button variant="outlined" size="small" sx={{ mr: 1 }} onClick={() => seleccionarEmpleado(e)}>
+                      Editar
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color={e.fb_activo ? "error" : "success"}
+                      onClick={() => toggleActivo(e)}
+                    >
+                      {e.fb_activo ? "Desactivar" : "Activar"}
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {empleados.map((e) => (
-                  <TableRow key={e.fi_empleado_id}>
-                    <TableCell>{e.fc_nombre}</TableCell>
-                    <TableCell>{e.fc_apellido_paterno}</TableCell>
-                    <TableCell>{e.fc_apellido_materno}</TableCell>
-                    <TableCell>{e.fc_genero}</TableCell>
-                    <TableCell>{e.puesto_nombre}</TableCell>
-                    <TableCell>{e.departamento_nombre}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outlined"
-                        onClick={() => seleccionarEmpleado(e)}
-                      >
-                        Seleccionar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
       {ConfirmModal}
     </Container>

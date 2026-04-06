@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { apiFetch } from "../utils/api";
+import axios from "../utils/axiosInstance.js";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -96,7 +96,7 @@ function PiletaContent() {
   const obtenerInventario = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/piletas/inventario/${granja}`);
+      const { data } = await axios.get(`/piletas/inventario/${granja}`);
       setInventario(data || []);
     } catch (error) {
       console.error(" Error inventario:", error);
@@ -106,7 +106,7 @@ function PiletaContent() {
   const obtenerLotes = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/piletas/lotes/${granja}`);
+      const { data } = await axios.get(`/piletas/lotes/${granja}`);
       setLotes(data || []);
     } catch (error) {
       console.error(" Error lotes:", error);
@@ -116,7 +116,7 @@ function PiletaContent() {
   const obtenerInstalaciones = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/piletas/destino/${granja}`);
+      const { data } = await axios.get(`/piletas/destino/${granja}`);
       setInstalaciones(data || []);
     } catch (error) {
       console.error(" Error instalaciones:", error);
@@ -126,7 +126,7 @@ function PiletaContent() {
   const obtenerOrigenes = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/piletas/origen/${granja}`);
+      const { data } = await axios.get(`/piletas/origen/${granja}`);
       setOrigenesDisponibles(data || []);
     } catch (error) {
       console.error(" Error origenes:", error);
@@ -136,10 +136,10 @@ function PiletaContent() {
   const obtenerRastreos = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const data = await apiFetch(`/piletas/movimientos/${usuario_id}/${granja}`);
+      const { data } = await axios.get(`/piletas/movimientos/${usuario_id}/${granja}`);
       setRastreos(data || []);
     } catch (error) {
-      console.error("❌ Error trazabilidad:", error);
+      console.error("Error trazabilidad:", error);
     }
   }, [granjaActiva, usuario_id]);
 
@@ -243,19 +243,16 @@ function PiletaContent() {
         fc_granja: granjaActiva,
       };
 
-      const response = await apiFetch("/piletas/movimientos/registrar", {
-        method: "POST",
-        body: JSON.stringify(dataPayload)
-      });
+      const { data: response } = await axios.post("/piletas/movimientos/registrar", dataPayload);
 
       if (response.error) throw new Error(response.error);
 
-      alert("✅ Siembra registrada correctamente");
+      alert("Siembra registrada correctamente");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
     } catch (err) {
-      alert("❌ Error: " + err.message);
+      alert("Error: " + err.message);
     }
   };
 
@@ -273,14 +270,11 @@ function PiletaContent() {
         fi_usuario_id: usuario_id,
       };
 
-      const response = await apiFetch("/piletas/siembra", {
-        method: "POST",
-        body: JSON.stringify(dataPayload)
-      });
+      const { data: response } = await axios.post("/piletas/siembra", dataPayload);
 
       if (response.error) throw new Error(response.error);
 
-      alert("✅ Registro actualizado");
+      alert("Registro actualizado");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -296,8 +290,8 @@ function PiletaContent() {
     if (!seleccionado) return alert("Seleccione una pileta");
 
     try {
-      await apiFetch(`/piletas/${seleccionado}`, { method: "DELETE" });
-      alert("🗑️ Pileta eliminada");
+      await axios.delete(`/piletas/${seleccionado}`);
+      alert("Pileta eliminada");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -340,13 +334,13 @@ function PiletaContent() {
 
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
 
-      const data = await apiFetch(
+      const { data } = await axios.get(
         `/piletas/movimientos/filtro/${usuario_id}/${granja}?${params}`
       );
 
       setRastreos(data);
     } catch (error) {
-      console.error("❌ Error filtrado:", error);
+      console.error("Error filtrado:", error);
     }
   };
 
@@ -354,9 +348,8 @@ function PiletaContent() {
     if (!await confirm("¿Eliminar este movimiento?")) return;
 
     try {
-      await apiFetch("/piletas/movimientos/eliminar", {
-        method: "DELETE",
-        body: JSON.stringify({ movimiento_id: id })
+      await axios.delete("/piletas/movimientos/eliminar", {
+        data: { movimiento_id: id },
       });
       filtrarRastreabilidad();
     } catch (err) {
@@ -369,12 +362,8 @@ function PiletaContent() {
       return;
 
     try {
-      await apiFetch("/piletas/movimientos/eliminar", {
-        method: "DELETE",
-        body: JSON.stringify({
-          eliminar_todos: true,
-          granja: granjaActiva,
-        })
+      await axios.delete("/piletas/movimientos/eliminar", {
+        data: { eliminar_todos: true, granja: granjaActiva },
       });
 
       setRastreos([]);
@@ -635,7 +624,7 @@ function PiletaContent() {
 
       {/* INVENTARIO */}
       <Typography variant="h6" color="#00796B" fontWeight="bold" mb={2}>
-        📋 Inventario
+        Inventario
       </Typography>
 
       <Paper sx={{ borderRadius: 3, overflow: "hidden", mb: 4, p: 2 }}>
@@ -690,7 +679,7 @@ function PiletaContent() {
 
       {/* TRAZABILIDAD */}
       <Typography variant="h6" mt={5} mb={2} color="#E65100">
-        🔁 Trazabilidad
+        Trazabilidad
       </Typography>
 
       <Grid container spacing={2} mb={2}>
