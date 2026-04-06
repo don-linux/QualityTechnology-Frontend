@@ -18,10 +18,7 @@ import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
 
 const getTipoBanio = (row) => {
-  if (row.fc_tipo_banio) return row.fc_tipo_banio;
-  if (String(row.fc_banio_hombres || "").trim()) return "Hombre";
-  if (String(row.fc_banio_mujeres || "").trim()) return "Mujer";
-  return "";
+  return row.fc_tipo_banio || "";
 };
 
 function BitacoraBanosContent() {
@@ -31,7 +28,6 @@ function BitacoraBanosContent() {
     fc_tipo_banio: "",
     fc_regadera: "",
     fc_realizo: "",
-    fc_firma: "",
     fc_observaciones: "",
     fi_usuario_id: 1,
   });
@@ -43,7 +39,7 @@ function BitacoraBanosContent() {
 
   const requiredFields = [
     "fc_mes", "fc_dia", "fc_tipo_banio",
-    "fc_regadera", "fc_realizo", "fc_firma", "fc_observaciones",
+    "fc_regadera", "fc_realizo", "fc_observaciones",
   ];
 
   const handleChange = (e) => {
@@ -83,7 +79,6 @@ function BitacoraBanosContent() {
         fc_tipo_banio: "",
         fc_regadera: "",
         fc_realizo: "",
-        fc_firma: "",
         fc_observaciones: "",
         fi_usuario_id: 1,
       });
@@ -104,7 +99,6 @@ function BitacoraBanosContent() {
       fc_tipo_banio: getTipoBanio(row),
       fc_regadera: row.fc_regadera,
       fc_realizo: row.fc_realizo,
-      fc_firma: row.fc_firma,
       fc_observaciones: row.fc_observaciones,
       fi_usuario_id: row.fi_usuario_id,
     });
@@ -145,7 +139,6 @@ function BitacoraBanosContent() {
       "Tipo de Baño",
       "Regadera",
       "Realizó",
-      "Firma",
       "Observaciones",
     ];
 
@@ -155,7 +148,6 @@ function BitacoraBanosContent() {
       getTipoBanio(r),
       r.fc_regadera,
       r.fc_realizo,
-      r.fc_firma,
       r.fc_observaciones,
     ]);
 
@@ -248,9 +240,6 @@ function BitacoraBanosContent() {
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Realizó" name="fc_realizo" value={form.fc_realizo} onChange={handleChange} fullWidth error={!!errors.fc_realizo} helperText={errors.fc_realizo} />
             </Grid>
-            <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Firma" name="fc_firma" value={form.fc_firma} onChange={handleChange} fullWidth error={!!errors.fc_firma} helperText={errors.fc_firma} />
-            </Grid>
             <Grid size={12}>
               <TextField
                 label="Observaciones"
@@ -301,7 +290,6 @@ function BitacoraBanosContent() {
               <TableCell>Tipo de Baño</TableCell>
               <TableCell>Regadera</TableCell>
               <TableCell>Realizó</TableCell>
-              <TableCell>Firma</TableCell>
               <TableCell>Observaciones</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
@@ -314,7 +302,6 @@ function BitacoraBanosContent() {
                 <TableCell>{getTipoBanio(r)}</TableCell>
                 <TableCell>{r.fc_regadera}</TableCell>
                 <TableCell>{r.fc_realizo}</TableCell>
-                <TableCell>{r.fc_firma}</TableCell>
                 <TableCell>{r.fc_observaciones}</TableCell>
                 <TableCell>
                   <Button
