@@ -18,6 +18,7 @@ import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
+import PasswordField from "./PasswordField";
 
 export default function UsuariosRegistro() {
   const [form, setForm] = useState({
@@ -166,7 +167,7 @@ export default function UsuariosRegistro() {
               <TextField name="nombre" label="Nombre de Usuario" fullWidth value={form.nombre} onChange={handleChange} error={!!errors.nombre} helperText={errors.nombre} />
             </Grid>
             <Grid size={12}>
-              <TextField name="contraseña" label="Contraseña" type="password" fullWidth value={form.contraseña} onChange={handleChange} error={!!errors.contraseña} helperText={errors.contraseña} />
+              <PasswordField name="contraseña" label="Contraseña" fullWidth value={form.contraseña} onChange={handleChange} error={!!errors.contraseña} helperText={errors.contraseña} />
             </Grid>
             <Grid size={12}>
               <TextField select name="rol_id" label="Rol" fullWidth value={form.rol_id} onChange={handleChange} error={!!errors.rol_id} helperText={errors.rol_id}>

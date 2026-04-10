@@ -9,11 +9,11 @@ import Paper from "@mui/material/Paper";
 import CircularProgress from "@mui/material/CircularProgress";
 import InputAdornment from "@mui/material/InputAdornment";
 import Person from "@mui/icons-material/Person";
-import Lock from "@mui/icons-material/Lock";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 import useFormValidation from "../hooks/useFormValidation";
+import PasswordField from "./PasswordField";
 
 const requiredFields = ["usuario", "password"];
 
@@ -171,9 +171,8 @@ const Login = () => {
                 }}
               />
 
-              <TextField
+              <PasswordField
                 label="Contraseña"
-                type="password"
                 fullWidth
                 margin="normal"
                 value={password}
@@ -184,15 +183,6 @@ const Login = () => {
                 error={!!errors.password}
                 helperText={errors.password}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock sx={{ color: "#1B5E20" }} />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
               />
 
               {error && (
