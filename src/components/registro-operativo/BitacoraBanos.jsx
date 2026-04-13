@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -54,7 +55,7 @@ function BitacoraBanosContent() {
       const res = await axios.get("/medellin/banos");
       setData(res.data);
     } catch {
-      alert("Error al cargar registros.");
+      Swal.fire({ icon: "error", title: "Error", text: "Error al cargar registros." });
     }
   };
 
@@ -63,7 +64,7 @@ function BitacoraBanosContent() {
       const res = await axios.get("/medellin/banos/empleados");
       setEmpleados(res.data);
     } catch {
-      alert("Error al cargar empleados.");
+      Swal.fire({ icon: "error", title: "Error", text: "Error al cargar empleados." });
     }
   };
 
@@ -78,10 +79,10 @@ function BitacoraBanosContent() {
     try {
       if (editId) {
         await axios.put(`/medellin/banos/${editId}`, form);
-        alert("Registro actualizado");
+        Swal.fire({ icon: "success", title: "Listo", text: "Registro actualizado." });
       } else {
         await axios.post("/medellin/banos", form);
-        alert("Registro guardado");
+        Swal.fire({ icon: "success", title: "Listo", text: "Registro guardado." });
       }
 
       setForm({
@@ -96,7 +97,7 @@ function BitacoraBanosContent() {
       setEditId(null);
       cargarDatos();
     } catch {
-      alert("Error al guardar registro.");
+      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar registro." });
     }
   };
 

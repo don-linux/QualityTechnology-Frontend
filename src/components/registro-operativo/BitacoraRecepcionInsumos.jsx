@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { API_URL } from "../../utils/config.js";
+import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -104,7 +105,7 @@ function RecepcionInsumosContent() {
       });
       cargarDatos();
     } catch (err) {
-      alert("Error al guardar: " + err.message);
+      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar: " + err.message });
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { API_URL } from "../../utils/config.js";
+import Swal from "sweetalert2";
 import { getUploadUrl } from "../../utils/uploadUrl.js";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -119,7 +120,7 @@ function BitacoraVisitasContent() {
       });
       cargarDatos();
     } catch (err) {
-      alert("Error al guardar: " + err.message);
+      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar: " + err.message });
     }
   };
 
