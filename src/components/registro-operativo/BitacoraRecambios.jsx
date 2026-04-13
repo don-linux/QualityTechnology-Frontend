@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../../utils/config.js";
+import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -98,7 +99,7 @@ function BitacoraRecambiosContent() {
       });
       cargarDatos();
     } catch (err) {
-      alert("Error al guardar: " + err.message);
+      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar: " + err.message });
     }
   };
 
@@ -128,9 +129,9 @@ function BitacoraRecambiosContent() {
     try {
       await axios.delete(`${API_URL}/medellin/recambios`);
       cargarDatos();
-      alert("Todos los registros fueron eliminados correctamente.");
+      Swal.fire({ icon: "success", title: "Listo", text: "Todos los registros fueron eliminados correctamente." });
     } catch (err) {
-      alert("Error eliminando registros: " + err.message);
+      Swal.fire({ icon: "error", title: "Error", text: "Error eliminando registros: " + err.message });
     }
   };
 
@@ -250,7 +251,9 @@ const exportarPDF = async () => {
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Mes"
+                type="month"
                 name="fc_mes"
+                InputLabelProps={{ shrink: true }}
                 value={form.fc_mes}
                 onChange={handleChange}
                 fullWidth

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../../utils/config.js";
+import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -50,7 +51,7 @@ function BitacoraParametrosContent() {
       const res = await axios.get(`${API_URL}/medellin/parametros`);
       setData(res.data);
     } catch {
-      alert("Error al cargar registros.");
+      Swal.fire({ icon: "error", title: "Error", text: "Error al cargar registros." });
     }
   };
   useEffect(() => { cargarDatos(); }, []);
@@ -77,7 +78,7 @@ function BitacoraParametrosContent() {
       });
       cargarDatos();
     } catch {
-      alert("Error al guardar registro.");
+      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar registro." });
     }
   };
 
@@ -182,6 +183,8 @@ function BitacoraParametrosContent() {
               <TextField
                 label="Estanque"
                 name="fn_num_estanque"
+                type="number"
+                inputProps={{ min: 0, step: 1 }}
                 value={form.fn_num_estanque}
                 onChange={handleChange}
                 fullWidth
@@ -193,6 +196,8 @@ function BitacoraParametrosContent() {
               <TextField
                 label="Oxígeno"
                 name="fn_oxigeno"
+                type="number"
+                inputProps={{ min: 0, step: "any" }}
                 value={form.fn_oxigeno}
                 onChange={handleChange}
                 fullWidth
@@ -204,6 +209,8 @@ function BitacoraParametrosContent() {
               <TextField
                 label="Temperatura"
                 name="fn_temperatura"
+                type="number"
+                inputProps={{ step: "any" }}
                 value={form.fn_temperatura}
                 onChange={handleChange}
                 fullWidth
@@ -215,6 +222,8 @@ function BitacoraParametrosContent() {
               <TextField
                 label="pH"
                 name="fn_ph"
+                type="number"
+                inputProps={{ min: 0, max: 14, step: "any" }}
                 value={form.fn_ph}
                 onChange={handleChange}
                 fullWidth
@@ -226,6 +235,8 @@ function BitacoraParametrosContent() {
               <TextField
                 label="Amonio"
                 name="fn_amonio"
+                type="number"
+                inputProps={{ min: 0, step: "any" }}
                 value={form.fn_amonio}
                 onChange={handleChange}
                 fullWidth
@@ -237,6 +248,8 @@ function BitacoraParametrosContent() {
               <TextField
                 label="Nitritos"
                 name="fn_nitritos"
+                type="number"
+                inputProps={{ min: 0, step: "any" }}
                 value={form.fn_nitritos}
                 onChange={handleChange}
                 fullWidth
@@ -248,6 +261,8 @@ function BitacoraParametrosContent() {
               <TextField
                 label="Nitratos"
                 name="fn_nitratos"
+                type="number"
+                inputProps={{ min: 0, step: "any" }}
                 value={form.fn_nitratos}
                 onChange={handleChange}
                 fullWidth

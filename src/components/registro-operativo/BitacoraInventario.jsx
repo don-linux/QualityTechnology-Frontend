@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../../utils/config.js";
+import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -80,7 +81,7 @@ function BitacoraInventarioContent() {
       });
       cargarDatos();
     } catch (err) {
-      alert("Error al guardar: " + err.message);
+      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar: " + err.message });
     }
   };
 
@@ -107,9 +108,9 @@ function BitacoraInventarioContent() {
     try {
       await axios.delete(`${API_URL}/medellin/inventario`);
       cargarDatos();
-      alert("Todos los registros fueron eliminados correctamente.");
+      Swal.fire({ icon: "success", title: "Listo", text: "Todos los registros fueron eliminados correctamente." });
     } catch (err) {
-      alert("Error eliminando todos los registros: " + err.message);
+      Swal.fire({ icon: "error", title: "Error", text: "Error eliminando todos los registros: " + err.message });
     }
   };
 

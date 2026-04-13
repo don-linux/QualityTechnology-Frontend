@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { API_URL } from "../../utils/config.js";
+import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -47,8 +48,9 @@ function BitacoraPlagasContent() {
     "unidad_produccion",
   ];
 
-  //  Opciones para selects
-  const tiposTrampa = ["Adhesiva", "Cebadera", "Mecánica", "Luz UV", "Otro"];
+  //  Opciones para selects: tipos base + tipos registrados previamente
+  const tiposTrampaBase = ["Adhesiva", "Cebadera", "Mecánica", "Luz UV", "Otro"];
+  const tiposTrampa = [...new Set([...tiposTrampaBase, ...data.map((r) => r.tipo_trampa).filter(Boolean)])];
   const tiposMalla = ["Buena", "Dañada", "Sin Malla"];
   const tiposVeneno = ["Rodenticida", "Gel", "Granulado", "Líquido", "Ninguno"];
   const unidadesProduccion = ["Engorda", "Alevinaje", "Reproductores"];
@@ -103,7 +105,7 @@ function BitacoraPlagasContent() {
       });
       cargarDatos();
     } catch (err) {
-      alert("Error al guardar: " + err.message);
+      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar: " + err.message });
     }
   };
 

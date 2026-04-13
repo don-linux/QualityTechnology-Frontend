@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../../utils/config.js";
+import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -49,7 +50,7 @@ function BitacoraMedicamentosContent() {
       const res = await axios.get(`${API_URL}/medellin/medicamentos`);
       setData(res.data);
     } catch {
-      alert("Error al cargar registros.");
+      Swal.fire({ icon: "error", title: "Error", text: "Error al cargar registros." });
     }
   };
 
@@ -77,7 +78,7 @@ function BitacoraMedicamentosContent() {
       });
       cargarDatos();
     } catch {
-      alert("Error al guardar registro.");
+      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar registro." });
     }
   };
 
@@ -173,6 +174,7 @@ function BitacoraMedicamentosContent() {
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Estanque" name="fn_num_estanque"
+                type="number" inputProps={{ min: 0, step: 1 }}
                 value={form.fn_num_estanque} onChange={handleChange} fullWidth error={!!errors.fn_num_estanque} helperText={errors.fn_num_estanque} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -186,6 +188,7 @@ function BitacoraMedicamentosContent() {
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Dosis" name="fc_dosis"
+                type="number" inputProps={{ min: 0, step: "any" }}
                 value={form.fc_dosis} onChange={handleChange} fullWidth error={!!errors.fc_dosis} helperText={errors.fc_dosis} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
