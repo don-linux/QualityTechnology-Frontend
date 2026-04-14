@@ -16,10 +16,19 @@ import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
 import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Divider from "@mui/material/Divider";
 import SearchIcon from "@mui/icons-material/Search";
 import axiosInstance from "../../utils/axiosInstance";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
+
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 function BitacoraPlagasContent() {
   const [form, setForm] = useState({
@@ -39,6 +48,7 @@ function BitacoraPlagasContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const [registroDetalle, setRegistroDetalle] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
@@ -362,8 +372,9 @@ function BitacoraPlagasContent() {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                inputProps={{ maxLength: 500 }}
                 error={!!errors.fc_hallazgo}
-                helperText={errors.fc_hallazgo}
+                helperText={errors.fc_hallazgo || `${form.fc_hallazgo.length}/500`}
               />
             </Grid>
 
@@ -377,8 +388,9 @@ function BitacoraPlagasContent() {
                 multiline
                 rows={2}
                 size="small"
+                inputProps={{ maxLength: 500 }}
                 error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones}
+                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/500`}
               />
             </Grid>
           </Grid>
@@ -422,12 +434,25 @@ function BitacoraPlagasContent() {
                 <TableCell>{r.fc_num_trampa}</TableCell>
                 <TableCell>{r.tipo_trampa}</TableCell>
                 <TableCell>{r.unidad_produccion}</TableCell>
-                <TableCell>{r.fc_hallazgo}</TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_hallazgo}>{truncar(r.fc_hallazgo)}</span>
+                </TableCell>
                 <TableCell>{r.fc_malla}</TableCell>
                 <TableCell>{r.fc_veneno}</TableCell>
                 <TableCell>{r.fc_verifico}</TableCell>
-                <TableCell>{r.fc_observaciones}</TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+                </TableCell>
                 <TableCell>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="info"
+                    sx={{ mr: 0.5 }}
+                    onClick={() => setRegistroDetalle(r)}
+                  >
+                    Ver
+                  </Button>
                   <Button
                     size="small"
                     variant="contained"
@@ -452,6 +477,56 @@ function BitacoraPlagasContent() {
         </Table>
       </Paper>
       {ConfirmModal}
+
+      <Dialog
+        open={!!registroDetalle}
+        onClose={() => setRegistroDetalle(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Detalle del Registro</DialogTitle>
+        <DialogContent dividers>
+          {registroDetalle && (
+            <Grid container spacing={1.5}>
+              {[
+                { label: "Fecha", value: registroDetalle.fd_fecha?.split("T")[0] },
+                { label: "No. Trampa", value: registroDetalle.fc_num_trampa },
+                { label: "Tipo de Trampa", value: registroDetalle.tipo_trampa },
+                { label: "Unidad de Producción", value: registroDetalle.unidad_produccion },
+                { label: "Malla", value: registroDetalle.fc_malla },
+                { label: "Veneno", value: registroDetalle.fc_veneno },
+                { label: "Verificó", value: registroDetalle.fc_verifico },
+              ].map(({ label, value }) => (
+                <Grid size={{ xs: 12, sm: 6 }} key={label}>
+                  <Typography variant="caption" color="text.secondary">{label}</Typography>
+                  <Typography variant="body2">{value || "—"}</Typography>
+                </Grid>
+              ))}
+
+              <Grid size={12}>
+                <Divider sx={{ my: 1 }} />
+              </Grid>
+
+              <Grid size={12}>
+                <Typography variant="caption" color="text.secondary">Hallazgo</Typography>
+                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  {registroDetalle.fc_hallazgo || "—"}
+                </Typography>
+              </Grid>
+
+              <Grid size={12}>
+                <Typography variant="caption" color="text.secondary">Observaciones</Typography>
+                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  {registroDetalle.fc_observaciones || "—"}
+                </Typography>
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRegistroDetalle(null)}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
