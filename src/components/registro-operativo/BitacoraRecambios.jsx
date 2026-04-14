@@ -241,7 +241,7 @@ const exportarPDF = async () => {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-         Medellín — Recambios de Trampas
+        Recambios de Trampas
       </Typography>
 
       {/* FORMULARIO */}

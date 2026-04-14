@@ -162,7 +162,7 @@ function BitacoraMedicamentosContent() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight="bold" mb={3}>​ Medellín — Medicamentos</Typography>
+      <Typography variant="h4" fontWeight="bold" mb={3}>Aplicación de Medicamentos</Typography>
 
       {/* FORMULARIO */}
       <Card sx={{ mb: 4 }}>

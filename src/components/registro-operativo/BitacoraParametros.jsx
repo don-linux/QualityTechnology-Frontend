@@ -159,7 +159,7 @@ function BitacoraParametrosContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Medellín — Parámetros
+        Parámetros Fisico-Quimicos
       </Typography>
 
       {/* FORMULARIO */}
