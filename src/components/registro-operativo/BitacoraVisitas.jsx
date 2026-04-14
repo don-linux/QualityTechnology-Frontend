@@ -191,7 +191,7 @@ function BitacoraVisitasContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Visitas — {ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion}
+        Bitacora de Visitas
       </Typography>
 
       {/* Filtro superior */}
@@ -415,6 +415,7 @@ function BitacoraVisitasContent() {
               <TableCell>Foto ID</TableCell>
               <TableCell>Entrada</TableCell>
               <TableCell>Salida</TableCell>
+              <TableCell>Ubicación</TableCell>
               <TableCell>Observaciones</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
@@ -442,6 +443,7 @@ function BitacoraVisitasContent() {
                 </TableCell>
                 <TableCell>{r.fd_entrada}</TableCell>
                 <TableCell>{r.fd_salida}</TableCell>
+                <TableCell>{ubicaciones.find((u) => u.value === r.ubicacion)?.label ?? r.ubicacion}</TableCell>
                 <TableCell>{r.fc_observaciones}</TableCell>
                 <TableCell>
                   <Button
