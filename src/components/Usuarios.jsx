@@ -18,7 +18,10 @@ import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import PasswordField from "./PasswordField";
+import useConfirm from "../hooks/useConfirm";
 
 export default function UsuariosRegistro() {
   const [form, setForm] = useState({
@@ -38,6 +41,12 @@ export default function UsuariosRegistro() {
   const [departamentos, setDepartamentos] = useState([]);
   const [puestos, setPuestos] = useState([]);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { confirm, ConfirmModal } = useConfirm();
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const rolSeleccionado = roles.find((r) => r.fi_rol_id === Number(form.rol_id));
   const esRoot = rolSeleccionado?.fb_es_root === true;
@@ -75,12 +84,12 @@ export default function UsuariosRegistro() {
     if (!validate(form, requiredFields)) return;
     try {
       await axios.post("/usuarios", form);
-      alert("Usuario registrado correctamente");
+      setSnackbar({ open: true, message: "Usuario registrado correctamente", severity: "success" });
       limpiarFormulario();
       obtenerUsuarios();
     } catch (error) {
       console.error("Error al registrar usuario:", error);
-      alert("Error al registrar usuario");
+      setSnackbar({ open: true, message: "Error al registrar usuario", severity: "error" });
     }
   };
 
@@ -93,25 +102,25 @@ export default function UsuariosRegistro() {
         contraseña: form.contraseña,
         rol_id: form.rol_id,
       });
-      alert("Usuario actualizado correctamente");
+      setSnackbar({ open: true, message: "Usuario actualizado correctamente", severity: "success" });
       limpiarFormulario();
       obtenerUsuarios();
     } catch (error) {
       console.error("Error al actualizar usuario:", error);
-      alert("Error al actualizar usuario");
+      setSnackbar({ open: true, message: "Error al actualizar usuario", severity: "error" });
     }
   };
 
   const handleToggleActive = async (usuario) => {
     const accion = usuario.fb_activo ? "desactivar" : "activar";
-    if (!window.confirm(`¿Seguro que deseas ${accion} al usuario "${usuario.fc_nombre}"?`)) return;
+    if (!await confirm(`¿Seguro que deseas ${accion} al usuario "${usuario.fc_nombre}"?`)) return;
     try {
       const endpoint = usuario.fb_activo ? "deactivate" : "activate";
       await axios.patch(`/usuarios/${usuario.fi_usuario_id}/${endpoint}`);
       obtenerUsuarios();
     } catch (error) {
       console.error(`Error al ${accion} usuario:`, error);
-      alert(`Error al ${accion} usuario`);
+      setSnackbar({ open: true, message: `Error al ${accion} usuario`, severity: "error" });
     }
   };
 
@@ -268,6 +277,22 @@ export default function UsuariosRegistro() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={2500}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+      {ConfirmModal}
     </Container>
   );
 }
