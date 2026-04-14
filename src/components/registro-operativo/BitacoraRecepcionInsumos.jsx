@@ -298,10 +298,12 @@ function RecepcionInsumosContent() {
               <TextField
                 label="Cantidad"
                 name="fc_cantidad"
+                type="number"
                 value={form.fc_cantidad}
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                inputProps={{ step: "0.01", min: "0" }}
                 error={!!errors.fc_cantidad}
                 helperText={errors.fc_cantidad}
               />
@@ -361,8 +363,9 @@ function RecepcionInsumosContent() {
                 multiline
                 rows={2}
                 size="small"
+                inputProps={{ maxLength: 500 }}
                 error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones}
+                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/500`}
               />
             </Grid>
           </Grid>
