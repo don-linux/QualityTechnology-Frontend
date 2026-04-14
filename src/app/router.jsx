@@ -54,6 +54,7 @@ const Proveedores = lazy(() => import("@pages/rrhh/ProveedoresPage"));
 
 // Seguridad
 const RolesModulos = lazy(() => import("@pages/seguridad/ModulosPorRolPage"));
+const SinAcceso = lazy(() => import("@pages/SinAccesoPage"));
 
 const LazyFallback = () => (
   <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh" }}>
@@ -71,6 +72,7 @@ export default function AppRouter() {
           <Route element={<CorporateLayout />}>
             <Route index element={<Inicio />} />
             <Route path="mi-perfil" element={<MiPerfil />} />
+            <Route path="sin-acceso" element={<SinAcceso />} />
           </Route>
         </Route>
 

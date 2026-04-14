@@ -27,8 +27,11 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
-function BioInsumosContent() {
+export default function BioInsumos() {
+  const { usuarioId } = useAuth();
+  const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
     ubicacion: "",
     fd_fecha: "",
@@ -38,7 +41,7 @@ function BioInsumosContent() {
     fc_observaciones: "",
     fc_encargado_entrega: "",
     fc_encargado_recepcion: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
   });
 
   const [data, setData] = useState([]);
@@ -89,7 +92,7 @@ function BioInsumosContent() {
         fc_observaciones: "",
         fc_encargado_entrega: "",
         fc_encargado_recepcion: "",
-        fi_usuario_id: 1,
+        fi_usuario_id: usuarioId,
       });
       setEditId(null);
       cargarDatos();
@@ -391,7 +394,3 @@ function BioInsumosContent() {
   );
 }
 
-export default function BioInsumos() {
-  const showSnackbar = useSnackbar();
-  return <BioInsumosContent />;
-}

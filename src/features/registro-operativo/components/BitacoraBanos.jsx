@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -24,12 +23,16 @@ import {
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 const getTipoBanio = (row) => {
   return row.fc_tipo_banio || "";
 };
 
 function BitacoraBanosContent() {
+  const showSnackbar = useSnackbar();
+  const { usuarioId } = useAuth();
   const [form, setForm] = useState({
     fc_mes: "",
     fc_dia: "",
@@ -37,7 +40,7 @@ function BitacoraBanosContent() {
     fc_regadera: "",
     fc_realizo: "",
     fc_observaciones: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
     ubicacion: "",
   });
 
@@ -68,7 +71,7 @@ function BitacoraBanosContent() {
       const res = await listBanos();
       setData(res.data);
     } catch {
-      Swal.fire({ icon: "error", title: "Error", text: "Error al cargar registros." });
+      showSnackbar("Error al cargar registros.", "error");
     }
   };
 
@@ -77,7 +80,7 @@ function BitacoraBanosContent() {
       const res = await listEmpleadosBanos();
       setEmpleados(res.data);
     } catch {
-      Swal.fire({ icon: "error", title: "Error", text: "Error al cargar empleados." });
+      showSnackbar("Error al cargar empleados.", "error");
     }
   };
 
@@ -92,10 +95,10 @@ function BitacoraBanosContent() {
     try {
       if (editId) {
         await updateBano(editId, form);
-        Swal.fire({ icon: "success", title: "Listo", text: "Registro actualizado." });
+        showSnackbar("Registro actualizado.", "success");
       } else {
         await createBano(form);
-        Swal.fire({ icon: "success", title: "Listo", text: "Registro guardado." });
+        showSnackbar("Registro guardado.", "success");
       }
 
       setForm({
@@ -105,13 +108,13 @@ function BitacoraBanosContent() {
         fc_regadera: "",
         fc_realizo: "",
         fc_observaciones: "",
-        fi_usuario_id: 1,
+        fi_usuario_id: usuarioId,
         ubicacion: form.ubicacion,
       });
       setEditId(null);
       cargarDatos();
     } catch {
-      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar registro." });
+      showSnackbar("Error al guardar registro.", "error");
     }
   };
 

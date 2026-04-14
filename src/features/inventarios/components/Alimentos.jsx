@@ -38,12 +38,9 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
 
 export default function Alimentos() {
-  const showSnackbar = useSnackbar();
-  return <AlimentosContent />;
-}
-
-function AlimentosContent() {
+  const auth = useAuth();
   const usuario_id = auth.usuarioId;
+  const showSnackbar = useSnackbar();
   const [tab, setTab] = useState("alevinaje");
   const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
 
@@ -60,7 +57,6 @@ function AlimentosContent() {
   const [engorda, setEngorda] = useState([]);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const auth = useAuth();
 
   const safeNumber = (val, decimals = 2) =>
     !isNaN(Number(val)) ? Number(val).toFixed(decimals) : "—";
@@ -74,8 +70,9 @@ function AlimentosContent() {
       setRegistros(res.data);
     } catch (error) {
       console.error("Error al obtener alimentos:", error);
+      showSnackbar("Error al cargar alimentos", "error");
     }
-  }, []);
+  }, [showSnackbar]);
 
   const obtenerReproductores = useCallback(async () => {
     try {
@@ -84,8 +81,9 @@ function AlimentosContent() {
       setReproductores(res.data);
     } catch (error) {
       console.error("Error al obtener reproductores:", error);
+      showSnackbar("Error al cargar reproductores", "error");
     }
-  }, [granjaActiva]);
+  }, [granjaActiva, showSnackbar]);
 
   const obtenerPiletas = useCallback(async () => {
     try {
@@ -94,8 +92,9 @@ function AlimentosContent() {
       setPiletas(res.data);
     } catch (error) {
       console.error("Error al obtener piletas:", error);
+      showSnackbar("Error al cargar piletas", "error");
     }
-  }, [granjaActiva]);
+  }, [granjaActiva, showSnackbar]);
 
   const obtenerEngorda = useCallback(async () => {
     try {
@@ -104,8 +103,9 @@ function AlimentosContent() {
       setEngorda(res.data);
     } catch (error) {
       console.error("Error al obtener engorda:", error);
+      showSnackbar("Error al cargar engorda", "error");
     }
-  }, [granjaActiva]);
+  }, [granjaActiva, showSnackbar]);
 
   useEffect(() => {
     obtenerRegistros();
@@ -164,6 +164,7 @@ function AlimentosContent() {
       obtenerRegistros();
     } catch (error) {
       console.error("Error al eliminar alimento:", error);
+      showSnackbar("Error al eliminar el registro", "error");
     }
   };
 

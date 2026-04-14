@@ -81,8 +81,13 @@ function VentaContent() {
       CARGAR VENTAS POR EMPRESA
   ============================================================ */
   const obtenerVentas = useCallback(async () => {
-    const res = await listVentas();
-    setVentas(res.data.filter((v) => v.fc_empresa === empresa));
+    try {
+      const res = await listVentas();
+      setVentas(res.data.filter((v) => v.fc_empresa === empresa));
+    } catch (err) {
+      console.error(err);
+      showSnackbar("Error al cargar ventas", "error");
+    }
   }, [empresa]);
 
   useEffect(() => {
@@ -97,8 +102,13 @@ function VentaContent() {
   }, []);
 
   const obtenerClientes = async () => {
-    const res = await listClientes();
-    setClientes(res.data);
+    try {
+      const res = await listClientes();
+      setClientes(res.data);
+    } catch (err) {
+      console.error(err);
+      showSnackbar("Error al cargar clientes", "error");
+    }
   };
 
   /* ============================================================
@@ -156,7 +166,7 @@ function VentaContent() {
     if (!validate(form, requiredFields)) return;
 
     if (!form.fc_cliente || !form.fc_encargado_venta) {
-      showSnackbar("Debe seleccionar un cliente y un encargado.", "success");
+      showSnackbar("Debe seleccionar un cliente y un encargado.", "warning");
       return;
     }
 
@@ -231,8 +241,13 @@ function VentaContent() {
   ============================================================ */
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar venta?")) return;
-    await removeVenta(id);
-    obtenerVentas();
+    try {
+      await removeVenta(id);
+      obtenerVentas();
+    } catch (err) {
+      console.error(err);
+      showSnackbar("Error al eliminar venta", "error");
+    }
   };
 
   /* ============================================================

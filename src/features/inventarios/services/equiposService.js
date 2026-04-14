@@ -23,3 +23,11 @@ export function listMantenimientos(equipoId) {
 export function createMantenimiento(equipoId, data) {
   return axios.post(`/equipos/${equipoId}/mantenimientos`, data);
 }
+
+export function updateMantenimiento(mantenimientoId, data) {
+  return axios.put(`/equipos/mantenimientos/${mantenimientoId}`, data);
+}
+
+export function removeMantenimiento(mantenimientoId) {
+  return axios.delete(`/equipos/mantenimientos/${mantenimientoId}`);
+}

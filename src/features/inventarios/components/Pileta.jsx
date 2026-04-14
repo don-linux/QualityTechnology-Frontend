@@ -49,15 +49,11 @@ const normalizarGranja = (g) => {
 
 
 export default function Pileta() {
-  const showSnackbar = useSnackbar();
-  return <PiletaContent />;
-}
-
-function PiletaContent() {
+  const auth = useAuth();
   const usuario_id = auth.usuarioId;
+  const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const auth = useAuth();
 
   const getRequiredFields = (tipoOrigen) => {
     const base = [
@@ -263,7 +259,7 @@ function PiletaContent() {
 
       if (response.error) throw new Error(response.error);
 
-      showSnackbar("Siembra registrada correctamente", "error");
+      showSnackbar("Siembra registrada correctamente", "success");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -276,7 +272,7 @@ function PiletaContent() {
       ACTUALIZAR
   ============================================================ */
   const actualizarPileta = async () => {
-    if (!seleccionado) return showSnackbar("Seleccione un registro", "success");
+    if (!seleccionado) return showSnackbar("Seleccione un registro", "warning");
     if (!validate(form, getRequiredFields(form.tipo_origen))) return;
 
     try {
@@ -290,7 +286,7 @@ function PiletaContent() {
 
       if (response.error) throw new Error(response.error);
 
-      showSnackbar("Registro actualizado", "error");
+      showSnackbar("Registro actualizado", "success");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -303,7 +299,7 @@ function PiletaContent() {
       ELIMINAR
   ============================================================ */
   const eliminarPileta = async () => {
-    if (!seleccionado) return showSnackbar("Seleccione una pileta", "success");
+    if (!seleccionado) return showSnackbar("Seleccione una pileta", "warning");
 
     try {
       await removePileta(seleccionado);

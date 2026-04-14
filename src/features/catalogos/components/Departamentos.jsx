@@ -18,19 +18,30 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function Departamentos() {
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState({ fi_departamento_id: null, fc_nombre: "" });
   const [departamentos, setDepartamentos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
   useEffect(() => { obtenerDepartamentos(); }, []);
 
   const obtenerDepartamentos = async () => {
-    try { const { data } = await listDepartamentos(); setDepartamentos(data); } catch (e) { console.error(e); }
+    setLoading(true);
+    try {
+      const { data } = await listDepartamentos();
+      setDepartamentos(data);
+    } catch (e) {
+      console.error(e);
+      showSnackbar("Error al cargar departamentos", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -65,7 +76,7 @@ export default function Departamentos() {
       await deactivateDepartamento(id);
       obtenerDepartamentos();
       limpiar();
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); showSnackbar("Error al desactivar departamento", "error"); }
   };
 
   const seleccionar = (d) => {
@@ -104,6 +115,9 @@ export default function Departamentos() {
         </CardContent>
       </Card>
 
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}><CircularProgress /></Box>
+      ) : (
       <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
         <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 2 }}>
           <Table stickyHeader>
@@ -135,6 +149,7 @@ export default function Departamentos() {
           </Table>
         </TableContainer>
       </Box>
+      )}
       {ConfirmModal}
     </Container>
   );

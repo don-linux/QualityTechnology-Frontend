@@ -4,10 +4,6 @@ export function listAlevines() {
   return axios.get("/alevines");
 }
 
-export function listColectas() {
-  return axios.get("/colectas");
-}
-
 export function createAlevines(data) {
   return axios.post("/alevines", data);
 }

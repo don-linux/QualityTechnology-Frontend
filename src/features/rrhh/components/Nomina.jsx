@@ -22,9 +22,11 @@ import Edit from "@mui/icons-material/Edit";
 import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 export default function Nomina() {
   const showSnackbar = useSnackbar();
+  const { usuarioId } = useAuth();
   const [form, setForm] = useState({
     fc_nombre_empleado: "",
     fi_empleado_id: "",
@@ -34,7 +36,7 @@ export default function Nomina() {
     fn_deuda: "",
     fn_descuento: "",
     fn_anticipo: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
   });
 
   const [data, setData] = useState([]);
@@ -112,7 +114,7 @@ export default function Nomina() {
       fn_deuda: "",
       fn_descuento: "",
       fn_anticipo: "",
-      fi_usuario_id: 1,
+      fi_usuario_id: usuarioId,
     });
     setEditId(null);
     clearErrors();

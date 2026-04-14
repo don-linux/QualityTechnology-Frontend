@@ -1,28 +1,25 @@
 import axios from "@shared/lib/axiosInstance";
-import { API_URL } from "@shared/lib/config";
-
-const base = `${API_URL}/ventas`;
 
 export function listVentas() {
-  return axios.get(base);
+  return axios.get("/ventas");
 }
 
 export function listClientes() {
-  return axios.get(`${base}/clientes`);
+  return axios.get("/ventas/clientes");
 }
 
 export function listEncargados(empresa) {
-  return axios.get(`${base}/encargados/${empresa}`);
+  return axios.get(`/ventas/encargados/${empresa}`);
 }
 
 export function createVenta(payload) {
-  return axios.post(base, payload);
+  return axios.post("/ventas", payload);
 }
 
 export function updateVenta(id, payload) {
-  return axios.put(`${base}/${id}`, payload);
+  return axios.put(`/ventas/${id}`, payload);
 }
 
 export function removeVenta(id) {
-  return axios.delete(`${base}/${id}`);
+  return axios.delete(`/ventas/${id}`);
 }

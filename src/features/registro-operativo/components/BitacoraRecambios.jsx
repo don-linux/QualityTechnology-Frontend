@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -27,8 +26,12 @@ import {
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 function BitacoraRecambiosContent() {
+  const { usuarioId } = useAuth();
+  const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
     ubicacion: "",
     fc_mes: "",
@@ -46,7 +49,7 @@ function BitacoraRecambiosContent() {
     fd_fecha6: "",
     fc_tipo6: "",
     fc_responsable: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
@@ -105,11 +108,11 @@ function BitacoraRecambiosContent() {
         fd_fecha6: "",
         fc_tipo6: "",
         fc_responsable: "",
-        fi_usuario_id: 1,
+        fi_usuario_id: usuarioId,
       });
       cargarDatos();
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar: " + err.message });
+      showSnackbar("Error al guardar: " + err.message, "error");
     }
   };
 
@@ -140,9 +143,9 @@ function BitacoraRecambiosContent() {
     try {
       await removeAllRecambios();
       cargarDatos();
-      Swal.fire({ icon: "success", title: "Listo", text: "Todos los registros fueron eliminados correctamente." });
+      showSnackbar("Todos los registros fueron eliminados correctamente.", "success");
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Error", text: "Error eliminando registros: " + err.message });
+      showSnackbar("Error eliminando registros: " + err.message, "error");
     }
   };
 

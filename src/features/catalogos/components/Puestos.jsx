@@ -18,19 +18,30 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function Puestos() {
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState({ fi_puesto_id: null, fc_nombre: "" });
   const [puestos, setPuestos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
   useEffect(() => { obtenerPuestos(); }, []);
 
   const obtenerPuestos = async () => {
-    try { const { data } = await listPuestos(); setPuestos(data); } catch (e) { console.error(e); }
+    setLoading(true);
+    try {
+      const { data } = await listPuestos();
+      setPuestos(data);
+    } catch (e) {
+      console.error(e);
+      showSnackbar("Error al cargar puestos", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -65,7 +76,7 @@ export default function Puestos() {
       await deactivatePuesto(id);
       obtenerPuestos();
       limpiar();
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); showSnackbar("Error al desactivar puesto", "error"); }
   };
 
   const seleccionar = (p) => {
@@ -104,6 +115,9 @@ export default function Puestos() {
         </CardContent>
       </Card>
 
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}><CircularProgress /></Box>
+      ) : (
       <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
         <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 2 }}>
           <Table stickyHeader>
@@ -135,6 +149,7 @@ export default function Puestos() {
           </Table>
         </TableContainer>
       </Box>
+      )}
       {ConfirmModal}
     </Container>
   );

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -27,8 +26,12 @@ import {
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 function BitacoraMedicamentosContent() {
+  const { usuarioId } = useAuth();
+  const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
     fd_fecha_hora: "",
     fn_num_estanque: "",
@@ -39,7 +42,7 @@ function BitacoraMedicamentosContent() {
     fd_fecha_ultima_dosis: "",
     fc_responsable: "",
     ubicacion: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
@@ -62,7 +65,7 @@ function BitacoraMedicamentosContent() {
       const res = await listMedicamentos();
       setData(res.data);
     } catch {
-      Swal.fire({ icon: "error", title: "Error", text: "Error al cargar registros." });
+      showSnackbar("Error al cargar registros.", "error");
     }
   };
 
@@ -87,11 +90,11 @@ function BitacoraMedicamentosContent() {
         fd_fecha_ultima_dosis: "",
         fc_responsable: "",
         ubicacion: "",
-        fi_usuario_id: 1,
+        fi_usuario_id: usuarioId,
       });
       cargarDatos();
     } catch {
-      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar registro." });
+      showSnackbar("Error al guardar registro.", "error");
     }
   };
 

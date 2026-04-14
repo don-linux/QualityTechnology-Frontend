@@ -42,12 +42,9 @@ const UBICACION_TO_PARAM = {
 };
 
 export default function BioBiometrias() {
+  const auth = useAuth();
+  const usuario_id = auth.usuarioId || "";
   const showSnackbar = useSnackbar();
-  return <BioBiometriasContent />;
-}
-
-function BioBiometriasContent() {
-  const usuario_id = auth.usuarioId || 1;
 
   const [data, setData] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
@@ -55,7 +52,6 @@ function BioBiometriasContent() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const auth = useAuth();
 
   const requiredFields = [
     "ubicacion", "fd_fecha", "fi_instalacion_id", "fi_lote_id", "tipo",
@@ -102,8 +98,13 @@ function BioBiometriasContent() {
   };
 
   const cargarLotes = async (instalacionId) => {
-    const res = await getLotesByInstalacion(instalacionId);
-    setLotes(res.data);
+    try {
+      const res = await getLotesByInstalacion(instalacionId);
+      setLotes(res.data);
+    } catch {
+      setLotes([]);
+      showSnackbar("Error al cargar lotes", "error");
+    }
   };
 
   useEffect(() => { cargarDatos(); }, []);
@@ -253,8 +254,13 @@ function BioBiometriasContent() {
   ------------------------------*/
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await removeBiometria(id);
-    cargarDatos();
+    try {
+      await removeBiometria(id);
+      cargarDatos();
+      showSnackbar("Registro eliminado", "success");
+    } catch {
+      showSnackbar("Error al eliminar biometría", "error");
+    }
   };
 
   /* -----------------------------

@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import Swal from "sweetalert2";
 import { getUploadUrl } from "@shared/lib/uploadUrl";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -29,8 +28,12 @@ import {
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 function BitacoraVisitasContent() {
+  const showSnackbar = useSnackbar();
+  const { usuarioId } = useAuth();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_nombre_completo: "",
@@ -40,7 +43,7 @@ function BitacoraVisitasContent() {
     fc_foto_identificacion: "",
     fd_entrada: "",
     fd_salida: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
     ubicacion: "medellin",
   });
 
@@ -123,12 +126,12 @@ function BitacoraVisitasContent() {
         fc_foto_identificacion: "",
         fd_entrada: "",
         fd_salida: "",
-        fi_usuario_id: 1,
+        fi_usuario_id: usuarioId,
         ubicacion: form.ubicacion,
       });
       cargarDatos();
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar: " + err.message });
+      showSnackbar("Error al guardar: " + err.message, "error");
     }
   };
 

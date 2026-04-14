@@ -28,8 +28,11 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
-function BioAlimentacionContent() {
+export default function BioAlimentacion() {
+  const { usuarioId } = useAuth();
+  const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
     ubicacion: "",
     fc_mes: "",
@@ -45,7 +48,7 @@ function BioAlimentacionContent() {
     fn_amonio: "",
     fn_ph: "",
     fc_observaciones: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
   });
 
   const [data, setData] = useState([]);
@@ -138,7 +141,7 @@ function BioAlimentacionContent() {
         fn_amonio: "",
         fn_ph: "",
         fc_observaciones: "",
-        fi_usuario_id: 1,
+        fi_usuario_id: usuarioId,
       });
 
       setEditId(null);
@@ -594,7 +597,3 @@ function BioAlimentacionContent() {
   );
 }
 
-export default function BioAlimentacion() {
-  const showSnackbar = useSnackbar();
-  return <BioAlimentacionContent />;
-}

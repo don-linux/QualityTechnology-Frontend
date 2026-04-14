@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -28,12 +27,16 @@ import {
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 function RecepcionInsumosContent() {
+  const showSnackbar = useSnackbar();
+  const { usuarioId } = useAuth();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_proveedor: "",
@@ -44,7 +47,7 @@ function RecepcionInsumosContent() {
     fc_condiciones_entrega: "",
     fc_verifico: "",
     fc_observaciones: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
     ubicacion: "medellin",
   });
 
@@ -112,12 +115,12 @@ function RecepcionInsumosContent() {
         fc_condiciones_entrega: "",
         fc_verifico: "",
         fc_observaciones: "",
-        fi_usuario_id: 1,
+        fi_usuario_id: usuarioId,
         ubicacion: form.ubicacion,
       });
       cargarDatos();
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar: " + err.message });
+      showSnackbar("Error al guardar: " + err.message, "error");
     }
   };
 

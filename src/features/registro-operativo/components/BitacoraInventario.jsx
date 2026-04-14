@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -27,8 +26,12 @@ import {
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 function BitacoraInventarioContent() {
+  const { usuarioId } = useAuth();
+  const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
     ubicacion: "",
     fn_num_instalacion: "",
@@ -38,7 +41,7 @@ function BitacoraInventarioContent() {
     fc_observacion: "",
     fd_fecha_siembra: "",
     fd_fecha_salida_hormonado: "",
-    fi_usuario_id: 1,
+    fi_usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
@@ -87,11 +90,11 @@ function BitacoraInventarioContent() {
         fc_observacion: "",
         fd_fecha_siembra: "",
         fd_fecha_salida_hormonado: "",
-        fi_usuario_id: 1,
+        fi_usuario_id: usuarioId,
       });
       cargarDatos();
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Error", text: "Error al guardar: " + err.message });
+      showSnackbar("Error al guardar: " + err.message, "error");
     }
   };
 
@@ -119,9 +122,9 @@ function BitacoraInventarioContent() {
     try {
       await removeAllInventario();
       cargarDatos();
-      Swal.fire({ icon: "success", title: "Listo", text: "Todos los registros fueron eliminados correctamente." });
+      showSnackbar("Todos los registros fueron eliminados correctamente.", "success");
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Error", text: "Error eliminando todos los registros: " + err.message });
+      showSnackbar("Error eliminando todos los registros: " + err.message, "error");
     }
   };
 

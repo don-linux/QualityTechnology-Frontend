@@ -28,6 +28,7 @@ export default function Instalaciones() {
 }
 
 function InstalacionesContent() {
+  const auth = useAuth();
   const usuario_id = auth.usuarioId;
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
@@ -47,7 +48,6 @@ function InstalacionesContent() {
   });
 
   const { confirm, ConfirmModal } = useConfirm();
-  const auth = useAuth();
 
   const [instalaciones, setInstalaciones] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);

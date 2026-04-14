@@ -17,3 +17,13 @@ export function uploadDocumento(empleadoId, formData) {
     : "/documentos-empleado/mis-documentos/upload";
   return axios.post(path, formData);
 }
+
+export function downloadDocumento(documentoId) {
+  return axios.get(`/documentos-empleado/download/${documentoId}`, {
+    responseType: "blob",
+  });
+}
+
+export function removeDocumento(documentoId) {
+  return axios.delete(`/documentos-empleado/${documentoId}`);
+}
