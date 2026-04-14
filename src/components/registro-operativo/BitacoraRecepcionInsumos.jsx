@@ -24,6 +24,10 @@ import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
 
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
 function RecepcionInsumosContent() {
   const [form, setForm] = useState({
     fd_fecha: "",
@@ -407,13 +411,19 @@ function RecepcionInsumosContent() {
               <TableRow key={r.fi_id}>
                 <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
                 <TableCell>{r.fc_proveedor}</TableCell>
-                <TableCell>{r.fc_producto}</TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_producto}>{truncar(r.fc_producto)}</span>
+                </TableCell>
                 <TableCell>{r.fc_lote}</TableCell>
                 <TableCell>{r.fc_cantidad}</TableCell>
                 <TableCell>{r.fc_unidad_medida}</TableCell>
-                <TableCell>{r.fc_condiciones_entrega}</TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_condiciones_entrega}>{truncar(r.fc_condiciones_entrega)}</span>
+                </TableCell>
                 <TableCell>{r.fc_verifico}</TableCell>
-                <TableCell>{r.fc_observaciones}</TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+                </TableCell>
                 <TableCell>
                   <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
                     Editar
