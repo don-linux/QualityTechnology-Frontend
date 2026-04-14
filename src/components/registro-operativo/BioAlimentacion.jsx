@@ -13,21 +13,18 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
-import Paper from "@mui/material/Paper";
 import TableContainer from "@mui/material/TableContainer";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
 
-const normalizarGranja = (g) => {
-  if (!g) return "Granja Acuicola Medellin";
-  const txt = g.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  if (txt.includes("ceib")) return "Granja Acuicola La Ceiba";
-  return "Granja Acuicola Medellin";
-};
-
 function BioAlimentacionContent() {
   const [form, setForm] = useState({
+    ubicacion: "",
     fc_mes: "",
     fn_num_instalacion: "",
     fn_peso_promedio_entrada: "",
@@ -46,12 +43,12 @@ function BioAlimentacionContent() {
 
   const [data, setData] = useState([]);
   const [origenes, setOrigenes] = useState([]);
-  const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola La Ceiba");
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
+    "ubicacion",
     "fc_mes", "fn_num_instalacion", "fn_peso_promedio_entrada",
     "fd_fecha_siembra", "fc_origen_alevines", "fd_fecha",
     "fn_total_alimento_kg", "fn_mortalidad", "fc_recambio_agua",
@@ -65,7 +62,7 @@ function BioAlimentacionContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/ceiba/alimentacion`);
+      const res = await axios.get(`${API_URL}/alimentacion`);
       setData(res.data);
     } catch {
       alert("Error al cargar registros.");
@@ -73,22 +70,16 @@ function BioAlimentacionContent() {
   };
 
   const cargarOrigenes = async () => {
+    if (!form.ubicacion) { setOrigenes([]); return; }
     try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const res = await axios.get(`${API_URL}/piletas/origen/${granja}`);
+      const granja = form.ubicacion === "La Ceiba"
+        ? "Granja Acuicola La Ceiba"
+        : "Granja Acuicola Medellin";
+      const res = await axios.get(`${API_URL}/piletas/origen/${encodeURIComponent(granja)}`);
       setOrigenes(res.data || []);
     } catch {
       alert("Error al cargar orígenes.");
     }
-  };
-
-  const cambiarGranja = (granja) => {
-    setGranjaActiva(granja);
-    setForm((prev) => ({
-      ...prev,
-      fn_num_instalacion: "",
-      fc_origen_alevines: "",
-    }));
   };
 
   const handleOrigenChange = (e) => {
@@ -112,23 +103,24 @@ function BioAlimentacionContent() {
 
   useEffect(() => {
     cargarOrigenes();
-  }, [granjaActiva]);
+  }, [form.ubicacion]);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
         await axios.put(
-          `${API_URL}/ceiba/alimentacion/${editId}`,
+          `${API_URL}/alimentacion/${editId}`,
           form
         );
         alert("Registro actualizado");
       } else {
-        await axios.post(`${API_URL}/ceiba/alimentacion`, form);
+        await axios.post(`${API_URL}/alimentacion`, form);
         alert("Registro guardado");
       }
 
       setForm({
+        ubicacion: "",
         fc_mes: "",
         fn_num_instalacion: "",
         fn_peso_promedio_entrada: "",
@@ -156,6 +148,7 @@ function BioAlimentacionContent() {
     clearErrors();
     setEditId(row.fi_id);
     setForm({
+      ubicacion: row.ubicacion || "",
       fc_mes: row.fc_mes,
       fn_num_instalacion: row.fn_num_instalacion,
       fn_peso_promedio_entrada: row.fn_peso_promedio_entrada,
@@ -176,7 +169,7 @@ function BioAlimentacionContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/ceiba/alimentacion/${id}`);
+    await axios.delete(`${API_URL}/alimentacion/${id}`);
     cargarDatos();
   };
 
@@ -245,35 +238,113 @@ function BioAlimentacionContent() {
   //  Eliminar todos los registros
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`${API_URL}/ceiba/alimentacion`);
+    await axios.delete(`${API_URL}/alimentacion`);
     cargarDatos();
   };
+
+  const datosMedellin = data.filter(r => r.ubicacion === "Medellin");
+  const datosCeiba = data.filter(r => r.ubicacion === "La Ceiba");
+
+  const tablaAlimentacion = (rows) => (
+    <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+      <Table sx={{ minWidth: 1350 }}>
+        <TableHead sx={{ background: "#E8F5E9" }}>
+          <TableRow>
+            <TableCell>Mes</TableCell>
+            <TableCell>Instalación</TableCell>
+            <TableCell>Peso Entrada</TableCell>
+            <TableCell>Siembra</TableCell>
+            <TableCell>Origen</TableCell>
+            <TableCell>Fecha</TableCell>
+            <TableCell>Alimento (Kg)</TableCell>
+            <TableCell>Mortalidad</TableCell>
+            <TableCell>Recambio</TableCell>
+            <TableCell>Temp</TableCell>
+            <TableCell>Amonio</TableCell>
+            <TableCell>pH</TableCell>
+            <TableCell>Observaciones</TableCell>
+            <TableCell>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.fi_id}>
+              <TableCell>{row.fc_mes}</TableCell>
+              <TableCell>{row.fn_num_instalacion}</TableCell>
+              <TableCell>{row.fn_peso_promedio_entrada}</TableCell>
+              <TableCell>{row.fd_fecha_siembra?.split("T")[0]}</TableCell>
+              <TableCell>{row.fc_origen_alevines}</TableCell>
+              <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{row.fn_total_alimento_kg}</TableCell>
+              <TableCell>{row.fn_mortalidad}</TableCell>
+              <TableCell>{row.fc_recambio_agua}</TableCell>
+              <TableCell>{row.fn_temp_agua}</TableCell>
+              <TableCell>{row.fn_amonio}</TableCell>
+              <TableCell>{row.fn_ph}</TableCell>
+              <TableCell
+                sx={{
+                  minWidth: 220,
+                  maxWidth: 320,
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                }}
+              >
+                {row.fc_observaciones}
+              </TableCell>
+              <TableCell sx={{ minWidth: 150 }}>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  size="small"
+                  sx={{ mr: 1 }}
+                  onClick={() => editar(row)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  size="small"
+                  onClick={() => eliminar(row.fi_id)}
+                >
+                  Eliminar
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
 
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-         {granjaActiva.includes("Medellín") ? "Medellín" : "La Ceiba"} — Alimentación
+        Alimentación
       </Typography>
-
-      <Box sx={{ mb: 2, display: "flex", gap: 1 }}>
-        <Button
-          variant={granjaActiva.includes("Medellín") ? "contained" : "outlined"}
-          onClick={() => cambiarGranja("Granja Acuícola Medellín")}
-        >
-          Medellín
-        </Button>
-        <Button
-          variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"}
-          color="secondary"
-          onClick={() => cambiarGranja("Granja Acuícola La Ceiba")}
-        >
-          La Ceiba
-        </Button>
-      </Box>
 
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={(e) => {
+                  handleChange(e);
+                  setForm(prev => ({ ...prev, ubicacion: e.target.value, fn_num_instalacion: "", fc_origen_alevines: "" }));
+                }}
+                fullWidth
+                error={!!errors.ubicacion}
+                helperText={errors.ubicacion}
+              >
+                <MenuItem value="Medellin">Medellín</MenuItem>
+                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+              </TextField>
+            </Grid>
+
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 select
@@ -496,77 +567,24 @@ function BioAlimentacionContent() {
         </CardContent>
       </Card>
 
-      <Paper sx={{ width: "100%", overflow: "hidden" }}>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-        <Table sx={{ minWidth: 1350 }}>
-          <TableHead sx={{ background: "#E8F5E9" }}>
-            <TableRow>
-              <TableCell>Mes</TableCell>
-              <TableCell>Instalación</TableCell>
-              <TableCell>Peso Entrada</TableCell>
-              <TableCell>Siembra</TableCell>
-              <TableCell>Origen</TableCell>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Alimento (Kg)</TableCell>
-              <TableCell>Mortalidad</TableCell>
-              <TableCell>Recambio</TableCell>
-              <TableCell>Temp</TableCell>
-              <TableCell>Amonio</TableCell>
-              <TableCell>pH</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((row) => (
-              <TableRow key={row.fi_id}>
-                <TableCell>{row.fc_mes}</TableCell>
-                <TableCell>{row.fn_num_instalacion}</TableCell>
-                <TableCell>{row.fn_peso_promedio_entrada}</TableCell>
-                <TableCell>{row.fd_fecha_siembra?.split("T")[0]}</TableCell>
-                <TableCell>{row.fc_origen_alevines}</TableCell>
-                <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
-                <TableCell>{row.fn_total_alimento_kg}</TableCell>
-                <TableCell>{row.fn_mortalidad}</TableCell>
-                <TableCell>{row.fc_recambio_agua}</TableCell>
-                <TableCell>{row.fn_temp_agua}</TableCell>
-                <TableCell>{row.fn_amonio}</TableCell>
-                <TableCell>{row.fn_ph}</TableCell>
-                <TableCell
-                  sx={{
-                    minWidth: 220,
-                    maxWidth: 320,
-                    whiteSpace: "normal",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {row.fc_observaciones}
-                </TableCell>
-                <TableCell sx={{ minWidth: 150 }}>
-                  <Button
-                    variant="contained"
-                    color="warning"
-                    size="small"
-                    sx={{ mr: 1 }}
-                    onClick={() => editar(row)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    size="small"
-                    onClick={() => eliminar(row.fi_id)}
-                  >
-                    Eliminar
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        </TableContainer>
-      </Paper>
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography component="span" fontWeight="bold">Medellín</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          {tablaAlimentacion(datosMedellin)}
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion defaultExpanded sx={{ mt: 1 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography component="span" fontWeight="bold">La Ceiba</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          {tablaAlimentacion(datosCeiba)}
+        </AccordionDetails>
+      </Accordion>
+
       {ConfirmModal}
     </Box>
   );

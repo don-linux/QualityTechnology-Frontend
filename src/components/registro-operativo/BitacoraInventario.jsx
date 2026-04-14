@@ -14,12 +14,18 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import MenuItem from "@mui/material/MenuItem";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
 
 function BitacoraInventarioContent() {
   const [form, setForm] = useState({
+    ubicacion: "",
     fn_num_instalacion: "",
     fn_cantidad: "",
     fn_talla: "",
@@ -35,6 +41,7 @@ function BitacoraInventarioContent() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
+    "ubicacion",
     "fn_num_instalacion", "fn_cantidad", "fn_talla", "fc_lote",
     "fd_fecha_siembra", "fd_fecha_salida_hormonado", "fc_observacion",
   ];
@@ -46,7 +53,7 @@ function BitacoraInventarioContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/medellin/inventario`);
+      const res = await axios.get(`${API_URL}/inventario`);
       setData(res.data);
     } catch (err) {
       console.error("Error al cargar inventario:", err.message);
@@ -62,14 +69,15 @@ function BitacoraInventarioContent() {
     try {
       if (editId)
         await axios.put(
-          `${API_URL}/medellin/inventario/${editId}`,
+          `${API_URL}/inventario/${editId}`,
           form
         );
       else
-        await axios.post(`${API_URL}/medellin/inventario`, form);
+        await axios.post(`${API_URL}/inventario`, form);
 
       setEditId(null);
       setForm({
+        ubicacion: "",
         fn_num_instalacion: "",
         fn_cantidad: "",
         fn_talla: "",
@@ -90,6 +98,7 @@ function BitacoraInventarioContent() {
     setEditId(r.fi_id);
     setForm({
       ...r,
+      ubicacion: r.ubicacion || "",
       fd_fecha_siembra: r.fd_fecha_siembra?.split("T")[0],
       fd_fecha_salida_hormonado: r.fd_fecha_salida_hormonado?.split("T")[0],
     });
@@ -98,7 +107,7 @@ function BitacoraInventarioContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/medellin/inventario/${id}`);
+    await axios.delete(`${API_URL}/inventario/${id}`);
     cargarDatos();
   };
 
@@ -106,7 +115,7 @@ function BitacoraInventarioContent() {
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
     try {
-      await axios.delete(`${API_URL}/medellin/inventario`);
+      await axios.delete(`${API_URL}/inventario`);
       cargarDatos();
       Swal.fire({ icon: "success", title: "Listo", text: "Todos los registros fueron eliminados correctamente." });
     } catch (err) {
@@ -163,16 +172,85 @@ function BitacoraInventarioContent() {
     doc.save(`Bitacora_Inventario_Medellin_${fecha}.pdf`);
   };
 
+  const datosMedellin = data.filter((r) => r.ubicacion === "Medellin");
+  const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
+
+  const renderTablaInventario = (rows) => (
+    <Paper>
+      <Table>
+        <TableHead sx={{ background: "#E3F2FD" }}>
+          <TableRow>
+            <TableCell>Instalación</TableCell>
+            <TableCell>Cantidad</TableCell>
+            <TableCell>Talla</TableCell>
+            <TableCell>Lote</TableCell>
+            <TableCell>Siembra</TableCell>
+            <TableCell>Salida Hormonado</TableCell>
+            <TableCell>Observación</TableCell>
+            <TableCell>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.fi_id}>
+              <TableCell>{r.fn_num_instalacion}</TableCell>
+              <TableCell>{r.fn_cantidad}</TableCell>
+              <TableCell>{r.fn_talla}</TableCell>
+              <TableCell>{r.fc_lote}</TableCell>
+              <TableCell>{r.fd_fecha_siembra?.split("T")[0]}</TableCell>
+              <TableCell>{r.fd_fecha_salida_hormonado?.split("T")[0]}</TableCell>
+              <TableCell>{r.fc_observacion}</TableCell>
+              <TableCell>
+                <Button
+                  size="small"
+                  color="warning"
+                  variant="contained"
+                  sx={{ mr: 1 }}
+                  onClick={() => editar(r)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="small"
+                  color="error"
+                  variant="contained"
+                  onClick={() => eliminar(r.fi_id)}
+                >
+                  Eliminar
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Paper>
+  );
+
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-         Medellín — Inventario de Alevines
+        Inventario de Alevines
       </Typography>
 
       {/* FORMULARIO */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.ubicacion}
+                helperText={errors.ubicacion}
+              >
+                <MenuItem value="Medellin">Medellín</MenuItem>
+                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+              </TextField>
+            </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Instalación"
@@ -284,55 +362,23 @@ function BitacoraInventarioContent() {
         </CardContent>
       </Card>
 
-      {/* TABLA */}
-      <Paper>
-        <Table>
-          <TableHead sx={{ background: "#E3F2FD" }}>
-            <TableRow>
-              <TableCell>Instalación</TableCell>
-              <TableCell>Cantidad</TableCell>
-              <TableCell>Talla</TableCell>
-              <TableCell>Lote</TableCell>
-              <TableCell>Siembra</TableCell>
-              <TableCell>Salida Hormonado</TableCell>
-              <TableCell>Observación</TableCell>
-              <TableCell>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((r) => (
-              <TableRow key={r.fi_id}>
-                <TableCell>{r.fn_num_instalacion}</TableCell>
-                <TableCell>{r.fn_cantidad}</TableCell>
-                <TableCell>{r.fn_talla}</TableCell>
-                <TableCell>{r.fc_lote}</TableCell>
-                <TableCell>{r.fd_fecha_siembra?.split("T")[0]}</TableCell>
-                <TableCell>{r.fd_fecha_salida_hormonado?.split("T")[0]}</TableCell>
-                <TableCell>{r.fc_observacion}</TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    color="warning"
-                    variant="contained"
-                    sx={{ mr: 1 }}
-                    onClick={() => editar(r)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    variant="contained"
-                    onClick={() => eliminar(r.fi_id)}
-                  >
-                    Eliminar
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
+      {/* TABLAS POR UBICACIÓN */}
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography fontWeight="bold">Medellín</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          {renderTablaInventario(datosMedellin)}
+        </AccordionDetails>
+      </Accordion>
+      <Accordion defaultExpanded sx={{ mt: 1 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography fontWeight="bold">La Ceiba</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          {renderTablaInventario(datosCeiba)}
+        </AccordionDetails>
+      </Accordion>
       {ConfirmModal}
     </Box>
   );

@@ -13,12 +13,18 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import MenuItem from "@mui/material/MenuItem";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
 
 function BioInsumosContent() {
   const [form, setForm] = useState({
+    ubicacion: "",
     fd_fecha: "",
     fc_cantidad_udm: "",
     fc_num_lote: "",
@@ -35,6 +41,7 @@ function BioInsumosContent() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
+    "ubicacion",
     "fd_fecha", "fc_cantidad_udm", "fc_num_lote", "fc_descripcion",
     "fc_observaciones", "fc_encargado_entrega", "fc_encargado_recepcion",
   ];
@@ -46,7 +53,7 @@ function BioInsumosContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/ceiba/insumos`);
+      const res = await axios.get(`${API_URL}/insumos`);
       setData(res.data);
     } catch {
       alert("Error cargando registros.");
@@ -61,13 +68,14 @@ function BioInsumosContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
-        await axios.put(`${API_URL}/ceiba/insumos/${editId}`, form);
+        await axios.put(`${API_URL}/insumos/${editId}`, form);
         alert("Registro actualizado");
       } else {
-        await axios.post(`${API_URL}/ceiba/insumos`, form);
+        await axios.post(`${API_URL}/insumos`, form);
         alert("Registro guardado");
       }
       setForm({
+        ubicacion: "",
         fd_fecha: "",
         fc_cantidad_udm: "",
         fc_num_lote: "",
@@ -88,6 +96,7 @@ function BioInsumosContent() {
     clearErrors();
     setEditId(row.fi_id);
     setForm({
+      ubicacion: row.ubicacion || "",
       fd_fecha: row.fd_fecha?.split("T")[0],
       fc_cantidad_udm: row.fc_cantidad_udm,
       fc_num_lote: row.fc_num_lote,
@@ -102,13 +111,13 @@ function BioInsumosContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/ceiba/insumos/${id}`);
+    await axios.delete(`${API_URL}/insumos/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`${API_URL}/ceiba/insumos`);
+    await axios.delete(`${API_URL}/insumos`);
     cargarDatos();
   };
 
@@ -161,15 +170,86 @@ function BioInsumosContent() {
     doc.save(`Recepcion_Insumos_Ceiba_${fecha}.pdf`);
   };
 
+  const datosMedellin = data.filter((r) => r.ubicacion === "Medellin");
+  const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
+
+  const renderTablaInsumos = (rows) => (
+    <Paper>
+      <Table>
+        <TableHead sx={{ background: "#E8F5E9" }}>
+          <TableRow>
+            <TableCell>Fecha</TableCell>
+            <TableCell>Cantidad UdM</TableCell>
+            <TableCell>Lote</TableCell>
+            <TableCell>Descripción</TableCell>
+            <TableCell>Observaciones</TableCell>
+            <TableCell>Entrega</TableCell>
+            <TableCell>Recepción</TableCell>
+            <TableCell>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.fi_id}>
+              <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{row.fc_cantidad_udm}</TableCell>
+              <TableCell>{row.fc_num_lote}</TableCell>
+              <TableCell>{row.fc_descripcion}</TableCell>
+              <TableCell>{row.fc_observaciones}</TableCell>
+              <TableCell>{row.fc_encargado_entrega}</TableCell>
+              <TableCell>{row.fc_encargado_recepcion}</TableCell>
+              <TableCell>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  size="small"
+                  sx={{ mr: 1 }}
+                  onClick={() => editar(row)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  size="small"
+                  onClick={() => eliminar(row.fi_id)}
+                >
+                  Eliminar
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Paper>
+  );
+
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        ​ La Ceiba — Ingresos / Egresos de Insumos
+        Ingresos / Egresos de Insumos
       </Typography>
 
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.ubicacion}
+                helperText={errors.ubicacion}
+              >
+                <MenuItem value="Medellin">Medellín</MenuItem>
+                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+              </TextField>
+            </Grid>
+
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 type="date"
@@ -283,55 +363,23 @@ function BioInsumosContent() {
         </CardContent>
       </Card>
 
-      <Paper>
-        <Table>
-          <TableHead sx={{ background: "#E8F5E9" }}>
-            <TableRow>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Cantidad UdM</TableCell>
-              <TableCell>Lote</TableCell>
-              <TableCell>Descripción</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell>Entrega</TableCell>
-              <TableCell>Recepción</TableCell>
-              <TableCell>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
+      <Accordion defaultExpanded sx={{ mb: 2 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography fontWeight="bold">Medellín</Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ px: 0 }}>
+          {renderTablaInsumos(datosMedellin)}
+        </AccordionDetails>
+      </Accordion>
 
-          <TableBody>
-            {data.map((row) => (
-              <TableRow key={row.fi_id}>
-                <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
-                <TableCell>{row.fc_cantidad_udm}</TableCell>
-                <TableCell>{row.fc_num_lote}</TableCell>
-                <TableCell>{row.fc_descripcion}</TableCell>
-                <TableCell>{row.fc_observaciones}</TableCell>
-                <TableCell>{row.fc_encargado_entrega}</TableCell>
-                <TableCell>{row.fc_encargado_recepcion}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="warning"
-                    size="small"
-                    sx={{ mr: 1 }}
-                    onClick={() => editar(row)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    size="small"
-                    onClick={() => eliminar(row.fi_id)}
-                  >
-                    Eliminar
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
+      <Accordion defaultExpanded sx={{ mb: 2 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography fontWeight="bold">La Ceiba</Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ px: 0 }}>
+          {renderTablaInsumos(datosCeiba)}
+        </AccordionDetails>
+      </Accordion>
       {ConfirmModal}
     </Box>
   );

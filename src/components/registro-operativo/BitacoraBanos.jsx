@@ -46,8 +46,8 @@ function BitacoraBanosContent() {
   ];
 
   const ubicaciones = [
-    { value: "medellin", label: "Medellín" },
-    { value: "ceiba", label: "La Ceiba" },
+    { value: "Medellin", label: "Medellín" },
+    { value: "La Ceiba", label: "La Ceiba" },
   ];
 
   const handleChange = (e) => {
@@ -58,7 +58,7 @@ function BitacoraBanosContent() {
   //  Cargar datos
   const cargarDatos = async () => {
     try {
-      const res = await axios.get("/medellin/banos");
+      const res = await axios.get("/banos");
       setData(res.data);
     } catch {
       Swal.fire({ icon: "error", title: "Error", text: "Error al cargar registros." });
@@ -67,7 +67,7 @@ function BitacoraBanosContent() {
 
   const cargarEmpleados = async () => {
     try {
-      const res = await axios.get("/medellin/banos/empleados");
+      const res = await axios.get("/banos/empleados");
       setEmpleados(res.data);
     } catch {
       Swal.fire({ icon: "error", title: "Error", text: "Error al cargar empleados." });
@@ -84,10 +84,10 @@ function BitacoraBanosContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
-        await axios.put(`/medellin/banos/${editId}`, form);
+        await axios.put(`/banos/${editId}`, form);
         Swal.fire({ icon: "success", title: "Listo", text: "Registro actualizado." });
       } else {
-        await axios.post("/medellin/banos", form);
+        await axios.post("/banos", form);
         Swal.fire({ icon: "success", title: "Listo", text: "Registro guardado." });
       }
 
@@ -128,14 +128,14 @@ function BitacoraBanosContent() {
   //  Eliminar uno
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`/medellin/banos/${id}`);
+    await axios.delete(`/banos/${id}`);
     cargarDatos();
   };
 
   //  Eliminar todos
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`/medellin/banos`);
+    await axios.delete(`/banos`);
     cargarDatos();
   };
 

@@ -14,12 +14,18 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import MenuItem from "@mui/material/MenuItem";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
 
 function BitacoraRecambiosContent() {
   const [form, setForm] = useState({
+    ubicacion: "",
     fc_mes: "",
     fn_num_instalacion: "",
     fd_fecha1: "",
@@ -43,6 +49,7 @@ function BitacoraRecambiosContent() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
+    "ubicacion",
     "fc_mes", "fn_num_instalacion",
     "fd_fecha1", "fc_tipo1", "fd_fecha2", "fc_tipo2",
     "fd_fecha3", "fc_tipo3", "fd_fecha4", "fc_tipo4",
@@ -57,7 +64,7 @@ function BitacoraRecambiosContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/medellin/recambios`);
+      const res = await axios.get(`${API_URL}/recambios`);
       setData(res.data);
     } catch (err) {
       console.error(err.message);
@@ -73,13 +80,14 @@ function BitacoraRecambiosContent() {
     try {
       if (editId)
         await axios.put(
-          `${API_URL}/medellin/recambios/${editId}`,
+          `${API_URL}/recambios/${editId}`,
           form
         );
-      else await axios.post(`${API_URL}/medellin/recambios`, form);
+      else await axios.post(`${API_URL}/recambios`, form);
 
       setEditId(null);
       setForm({
+        ubicacion: "",
         fc_mes: "",
         fn_num_instalacion: "",
         fd_fecha1: "",
@@ -108,6 +116,7 @@ function BitacoraRecambiosContent() {
     setEditId(r.fi_id);
     setForm({
       ...r,
+      ubicacion: r.ubicacion || "",
       fd_fecha1: r.fd_fecha1?.split("T")[0],
       fd_fecha2: r.fd_fecha2?.split("T")[0],
       fd_fecha3: r.fd_fecha3?.split("T")[0],
@@ -120,14 +129,14 @@ function BitacoraRecambiosContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/medellin/recambios/${id}`);
+    await axios.delete(`${API_URL}/recambios/${id}`);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar todos los registros?")) return;
     try {
-      await axios.delete(`${API_URL}/medellin/recambios`);
+      await axios.delete(`${API_URL}/recambios`);
       cargarDatos();
       Swal.fire({ icon: "success", title: "Listo", text: "Todos los registros fueron eliminados correctamente." });
     } catch (err) {
@@ -238,6 +247,63 @@ const exportarPDF = async () => {
   doc.save(`Registro_Recambios_Medellin_${fecha}.pdf`);
 };
 
+  const datosMedellin = data.filter((r) => r.ubicacion === "Medellin");
+  const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
+
+  const renderTablaRecambios = (rows) => (
+    <Paper>
+      <Table>
+        <TableHead sx={{ background: "#E3F2FD" }}>
+          <TableRow>
+            <TableCell>Mes</TableCell>
+            <TableCell>Instalación</TableCell>
+            <TableCell>Fechas y Tipos</TableCell>
+            <TableCell>Responsable</TableCell>
+            <TableCell>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.fi_id}>
+              <TableCell>{r.fc_mes}</TableCell>
+              <TableCell>{r.fn_num_instalacion}</TableCell>
+              <TableCell>
+                {[1, 2, 3, 4, 5, 6]
+                  .map((n) =>
+                    r[`fd_fecha${n}`]
+                      ? `${r[`fd_fecha${n}`]?.split("T")[0]} (${r[`fc_tipo${n}`]})`
+                      : null
+                  )
+                  .filter(Boolean)
+                  .join(", ")}
+              </TableCell>
+              <TableCell>{r.fc_responsable}</TableCell>
+              <TableCell>
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="warning"
+                  sx={{ mr: 1 }}
+                  onClick={() => editar(r)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="error"
+                  onClick={() => eliminar(r.fi_id)}
+                >
+                  Eliminar
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Paper>
+  );
+
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
@@ -248,6 +314,21 @@ const exportarPDF = async () => {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.ubicacion}
+                helperText={errors.ubicacion}
+              >
+                <MenuItem value="Medellin">Medellín</MenuItem>
+                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+              </TextField>
+            </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Mes"
@@ -340,58 +421,19 @@ const exportarPDF = async () => {
         </CardContent>
       </Card>
 
-      {/* TABLA */}
-      <Paper>
-        <Table>
-          <TableHead sx={{ background: "#E3F2FD" }}>
-            <TableRow>
-              <TableCell>Mes</TableCell>
-              <TableCell>Instalación</TableCell>
-              <TableCell>Fechas y Tipos</TableCell>
-              <TableCell>Responsable</TableCell>
-              <TableCell>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((r) => (
-              <TableRow key={r.fi_id}>
-                <TableCell>{r.fc_mes}</TableCell>
-                <TableCell>{r.fn_num_instalacion}</TableCell>
-                <TableCell>
-                  {[1, 2, 3, 4, 5, 6]
-                    .map((n) =>
-                      r[`fd_fecha${n}`]
-                        ? `${r[`fd_fecha${n}`]?.split("T")[0]} (${r[`fc_tipo${n}`]})`
-                        : null
-                    )
-                    .filter(Boolean)
-                    .join(", ")}
-                </TableCell>
-                <TableCell>{r.fc_responsable}</TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="warning"
-                    sx={{ mr: 1 }}
-                    onClick={() => editar(r)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="error"
-                    onClick={() => eliminar(r.fi_id)}
-                  >
-                    Eliminar
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
+      {/* TABLAS POR UBICACIÓN */}
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography fontWeight="bold">Medellín</Typography>
+        </AccordionSummary>
+        <AccordionDetails>{renderTablaRecambios(datosMedellin)}</AccordionDetails>
+      </Accordion>
+      <Accordion defaultExpanded sx={{ mt: 1 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography fontWeight="bold">La Ceiba</Typography>
+        </AccordionSummary>
+        <AccordionDetails>{renderTablaRecambios(datosCeiba)}</AccordionDetails>
+      </Accordion>
       {ConfirmModal}
     </Box>
   );

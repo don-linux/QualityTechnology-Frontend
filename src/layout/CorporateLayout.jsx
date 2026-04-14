@@ -264,17 +264,6 @@ export default function CorporateLayout() {
 
             <Collapse in={openBitacora && drawerOpen} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
-                <Typography
-                  sx={{
-                    ml: 4,
-                    mt: 1,
-                    mb: 0.5,
-                    fontSize: "13px",
-                    color: "#61fce7ff",
-                  }}
-                >
-                </Typography>
-
                 <ListItemButton component={Link} to="/registro-operativo/plagas" sx={{ pl: 5 }}>
                   <ListItemIcon sx={{ color: "white" }}>
                     <BugReport />
@@ -323,18 +312,6 @@ export default function CorporateLayout() {
                   </ListItemIcon>
                   <ListItemText primary="Recambios" />
                 </ListItemButton>
-
-                {/* La Ceiba */}
-                <Typography
-                  sx={{
-                    ml: 4,
-                    mt: 1,
-                    mb: 0.5,
-                    fontSize: "13px",
-                    color: "#ebf74dff",
-                  }}
-                >
-                </Typography>
 
                 <ListItemButton component={Link} to="/registro-operativo/biometrias" sx={{ pl: 5 }}>
                   <ListItemIcon sx={{ color: "white" }}>
