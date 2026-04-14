@@ -132,11 +132,9 @@ function BitacoraPlagasContent() {
   const getColorPorUbicacion = () => {
     switch (form.ubicacion) {
       case "ceiba":
-        return [46, 125, 50]; // verde pasto
-      case "quality":
-        return [25, 118, 210]; // azul normal
+        return [46, 125, 50];
       default:
-        return [13, 71, 161]; // azul marino Medellín
+        return [13, 71, 161];
     }
   };
 
@@ -216,7 +214,6 @@ function BitacoraPlagasContent() {
         >
           <MenuItem value="medellin">Medellín</MenuItem>
           <MenuItem value="ceiba">La Ceiba</MenuItem>
-          <MenuItem value="quality">Quality</MenuItem>
         </TextField>
 
         <TextField

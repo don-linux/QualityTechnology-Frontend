@@ -50,7 +50,7 @@ function BitacoraVisitasContent() {
     "fc_observaciones", "fd_entrada", "fd_salida",
   ];
 
-  const ubicaciones = ["medellin", "ceiba", "quality"];
+  const ubicaciones = ["medellin", "ceiba"];
 
   const handleChange = (e) => {
     clearFieldError(e.target.name);
@@ -148,7 +148,7 @@ function BitacoraVisitasContent() {
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
     const logo = `${""}/images/${form.ubicacion}.png`;
-    const color = form.ubicacion === "ceiba" ? [46, 125, 50] : form.ubicacion === "quality" ? [25, 118, 210] : [13, 71, 161];
+    const color = form.ubicacion === "ceiba" ? [46, 125, 50] : [13, 71, 161];
 
     try {
       doc.addImage(logo, "PNG", 10, 8, 25, 25);

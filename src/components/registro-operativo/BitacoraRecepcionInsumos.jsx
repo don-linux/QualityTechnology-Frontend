@@ -53,7 +53,7 @@ function RecepcionInsumosContent() {
 
   //  Opciones para selects
   const unidadesMedida = ["Kg", "Litros", "Piezas", "Bultos", "Otro"];
-  const ubicaciones = ["medellin", "ceiba", "quality"]; // Opciones para la ubicación
+  const ubicaciones = ["medellin", "ceiba"];
 
   const handleChange = (e) => {
     clearFieldError(e.target.name);
@@ -132,11 +132,9 @@ function RecepcionInsumosContent() {
   const getColorPorUbicacion = () => {
     switch (form.ubicacion) {
       case "ceiba":
-        return [46, 125, 50]; // verde pasto
-      case "quality":
-        return [25, 118, 210]; // azul normal
+        return [46, 125, 50];
       default:
-        return [13, 71, 161]; // azul marino Medellín
+        return [13, 71, 161];
     }
   };
 
