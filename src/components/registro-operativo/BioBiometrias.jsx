@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { API_URL } from "../../utils/config.js";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -14,15 +14,22 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "../../utils/axiosInstance.js";
 import useFormValidation from "../../hooks/useFormValidation";
 import useConfirm from "../../hooks/useConfirm";
 
-const mapGranja = (g) => (g === "Medellin" ? "med" : "ceiba");
+const GRANJA_MAP = {
+  Medellin: "Granja Acuícola Medellín",
+  "La Ceiba": "Granja Acuícola La Ceiba",
+};
 
-const displayGranja = {
-  med: "Granja Acuícola Medellín",
-  ceiba: "Granja Acuícola La Ceiba",
+const UBICACION_TO_PARAM = {
+  Medellin: "med",
+  "La Ceiba": "ceiba",
 };
 
 export default function BioBiometrias() {
@@ -32,8 +39,6 @@ export default function BioBiometrias() {
 function BioBiometriasContent() {
   const usuario_id = localStorage.getItem("usuario_id") || 1;
 
-  const [granja, setGranja] = useState("Medellin");
-
   const [data, setData] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
   const [lotes, setLotes] = useState([]);
@@ -42,13 +47,14 @@ function BioBiometriasContent() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
-    "fd_fecha", "fi_instalacion_id", "fi_lote_id", "tipo",
+    "ubicacion", "fd_fecha", "fi_instalacion_id", "fi_lote_id", "tipo",
     "fn_peso_total_gramos", "fn_organismos_muestreados",
     "fc_encargado", "fc_observaciones",
   ];
 
   /* FORMULARIO */
   const [form, setForm] = useState({
+    ubicacion: "",
     fd_fecha: "",
     fn_peso_total_gramos: "",
     fn_organismos_muestreados: "",
@@ -58,24 +64,31 @@ function BioBiometriasContent() {
     fi_instalacion_id: "",
     fi_lote_id: "",
     tipo: "",
-    fc_granja: granja,
     fi_usuario_id: usuario_id,
   });
 
   /* -----------------------------
       Cargar datos iniciales
   ------------------------------*/
-  const cargarDatos = useCallback(async () => {
-    const res = await axios.get(`${API_URL}/biometrias/${mapGranja(granja)}`);
-    setData(res.data);
-  }, [granja]);
+  const cargarDatos = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/biometrias`);
+      setData(res.data);
+    } catch {
+      alert("Error al cargar biometrías");
+    }
+  };
 
-  const cargarInstalaciones = useCallback(async () => {
-    const res = await axios.get(
-      `${API_URL}/instalaciones/granja/${displayGranja[mapGranja(granja)]}`
-    );
-    setInstalaciones(res.data);
-  }, [granja]);
+  const cargarInstalaciones = async () => {
+    if (!form.ubicacion) { setInstalaciones([]); return; }
+    try {
+      const granja = GRANJA_MAP[form.ubicacion];
+      const res = await axios.get(`${API_URL}/instalaciones/granja/${granja}`);
+      setInstalaciones(res.data);
+    } catch {
+      alert("Error al cargar instalaciones");
+    }
+  };
 
   const cargarLotes = async (instalacionId) => {
     const res = await axios.get(
@@ -84,18 +97,20 @@ function BioBiometriasContent() {
     setLotes(res.data);
   };
 
+  useEffect(() => { cargarDatos(); }, []);
+
   useEffect(() => {
-    cargarDatos();
     cargarInstalaciones();
-  }, [cargarDatos, cargarInstalaciones]);
+  }, [form.ubicacion]);
 
   /* -----------------------------
       AUTORRELLENADO
   ------------------------------*/
   const cargarInfoInstalacion = async (instalacionId) => {
     try {
+      const granjaParam = UBICACION_TO_PARAM[form.ubicacion] || "med";
       const res = await axios.get(
-        `${API_URL}/biometrias/info/${mapGranja(granja)}/${instalacionId}`
+        `${API_URL}/biometrias/info/${granjaParam}/${instalacionId}`
       );
 
       const d = res.data;
@@ -160,7 +175,12 @@ function BioBiometriasContent() {
       return;
     }
 
-    // Cambio de instalación
+    if (name === "ubicacion") {
+      setForm({ ...form, ubicacion: value, fi_instalacion_id: "", fi_lote_id: "", tipo: "" });
+      setLotes([]);
+      return;
+    }
+
     if (name === "fi_instalacion_id") {
       setForm({ ...form, fi_instalacion_id: value });
       cargarLotes(value);
@@ -179,7 +199,6 @@ function BioBiometriasContent() {
     try {
       const body = {
         ...form,
-        fc_granja: displayGranja[mapGranja(granja)],
         tipo: form.tipo?.toLowerCase(),
       };
 
@@ -206,6 +225,7 @@ function BioBiometriasContent() {
     setEditId(row.fi_id);
 
     setForm({
+      ubicacion: row.ubicacion || "",
       fd_fecha: row.fd_fecha?.split("T")[0],
       fn_peso_total_gramos: row.fn_peso_total_gramos,
       fn_organismos_muestreados: row.fn_organismos_muestreados,
@@ -215,7 +235,6 @@ function BioBiometriasContent() {
       fi_instalacion_id: row.fi_instalacion_id,
       fi_lote_id: row.fi_lote_id ?? "",
       tipo: row.tipo?.toLowerCase(),
-      fc_granja: granja,
       fi_usuario_id: usuario_id,
     });
 
@@ -237,7 +256,8 @@ function BioBiometriasContent() {
   const limpiar = () => {
     clearErrors();
     setEditId(null);
-    setForm({
+    setForm((prev) => ({
+      ubicacion: prev.ubicacion,
       fd_fecha: "",
       fn_peso_total_gramos: "",
       fn_organismos_muestreados: "",
@@ -247,9 +267,8 @@ function BioBiometriasContent() {
       fi_instalacion_id: "",
       fi_lote_id: "",
       tipo: "",
-      fc_granja: granja,
       fi_usuario_id: usuario_id,
-    });
+    }));
   };
 
   /* ----------------------------- */
@@ -264,31 +283,32 @@ function BioBiometriasContent() {
   ------------------------------*/
   return (
     <Box>
-      {/* BOTONES DE GRANJA */}
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-        <Button
-          variant={granja === "Medellin" ? "contained" : "outlined"}
-          onClick={() => setGranja("Medellin")}
-        >
-          MEDELLÍN
-        </Button>
-
-        <Button
-          variant={granja === "Ceiba" ? "contained" : "outlined"}
-          onClick={() => setGranja("Ceiba")}
-        >
-          LA CEIBA
-        </Button>
-      </Box>
-
       <Typography variant="h4" fontWeight="bold" mb={3}>
-         {granja} — Biometrías
+        Biometrías
       </Typography>
 
       {/* FORMULARIO */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
+            {/* UBICACION */}
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.ubicacion}
+                helperText={errors.ubicacion}
+              >
+                <MenuItem value="">Seleccione</MenuItem>
+                <MenuItem value="Medellin">Medellín</MenuItem>
+                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+              </TextField>
+            </Grid>
+
             {/* FECHA */}
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
@@ -460,62 +480,71 @@ function BioBiometriasContent() {
         </CardContent>
       </Card>
 
-      {/* TABLA */}
-      <Paper>
-        <Table>
-          <TableHead sx={{ background: "#E8F5E9" }}>
-            <TableRow>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Instalación</TableCell>
-              <TableCell>Lote</TableCell>
-              <TableCell>Peso Total</TableCell>
-              <TableCell>Organismos</TableCell>
-              <TableCell>Peso Promedio</TableCell>
-              <TableCell>Tipo</TableCell>
-              <TableCell>Encargado</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {data.map((row) => (
-              <TableRow key={row.fi_id}>
-                <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
-                <TableCell>{row.instalacion_nombre}</TableCell>
-                <TableCell>{row.no_lote}</TableCell>
-                <TableCell>{formatNum(row.fn_peso_total_gramos)}</TableCell>
-                <TableCell>{row.fn_organismos_muestreados}</TableCell>
-                <TableCell>{formatNum(row.fn_peso_promedio)}</TableCell>
-                <TableCell>{row.tipo}</TableCell>
-                <TableCell>{row.fc_encargado}</TableCell>
-                <TableCell>{row.fc_observaciones}</TableCell>
-
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    color="warning"
-                    onClick={() => editar(row)}
-                  >
-                    Editar
-                  </Button>
-
-                  <Button
-                    variant="contained"
-                    size="small"
-                    sx={{ ml: 1 }}
-                    color="error"
-                    onClick={() => eliminar(row.fi_id)}
-                  >
-                    Eliminar
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
+      {/* TABLAS POR UBICACION */}
+      {[
+        { label: "Medellín", rows: data.filter(r => r.ubicacion === "Medellin") },
+        { label: "La Ceiba", rows: data.filter(r => r.ubicacion === "La Ceiba") },
+      ].map(({ label, rows }) => (
+        <Accordion key={label} defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight="bold">{label} ({rows.length})</Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 0 }}>
+            <Paper>
+              <Table>
+                <TableHead sx={{ background: "#E8F5E9" }}>
+                  <TableRow>
+                    <TableCell>Fecha</TableCell>
+                    <TableCell>Instalación</TableCell>
+                    <TableCell>Lote</TableCell>
+                    <TableCell>Peso Total</TableCell>
+                    <TableCell>Organismos</TableCell>
+                    <TableCell>Peso Promedio</TableCell>
+                    <TableCell>Tipo</TableCell>
+                    <TableCell>Encargado</TableCell>
+                    <TableCell>Observaciones</TableCell>
+                    <TableCell>Acciones</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.map((row) => (
+                    <TableRow key={row.fi_id}>
+                      <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
+                      <TableCell>{row.instalacion_nombre}</TableCell>
+                      <TableCell>{row.no_lote}</TableCell>
+                      <TableCell>{formatNum(row.fn_peso_total_gramos)}</TableCell>
+                      <TableCell>{row.fn_organismos_muestreados}</TableCell>
+                      <TableCell>{formatNum(row.fn_peso_promedio)}</TableCell>
+                      <TableCell>{row.tipo}</TableCell>
+                      <TableCell>{row.fc_encargado}</TableCell>
+                      <TableCell>{row.fc_observaciones}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          color="warning"
+                          onClick={() => editar(row)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{ ml: 1 }}
+                          color="error"
+                          onClick={() => eliminar(row.fi_id)}
+                        >
+                          Eliminar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Paper>
+          </AccordionDetails>
+        </Accordion>
+      ))}
       {ConfirmModal}
     </Box>
   );
