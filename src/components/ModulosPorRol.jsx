@@ -19,6 +19,8 @@ import Stack from "@mui/material/Stack";
 import Divider from "@mui/material/Divider";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -40,6 +42,11 @@ export default function RolesModulos() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [rolEditando, setRolEditando] = useState(null);
   const [modulosSeleccionados, setModulosSeleccionados] = useState([]);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   useEffect(() => {
     obtenerRoles();
@@ -145,11 +152,11 @@ export default function RolesModulos() {
         [rolEditando.fi_rol_id]: modulosSeleccionados
       }));
 
-      alert("Módulos actualizados correctamente");
+      setSnackbar({ open: true, message: "Módulos actualizados correctamente", severity: "success" });
       cerrarDrawer();
     } catch (error) {
       console.error("Error al actualizar módulos:", error);
-      alert("Error al actualizar módulos");
+      setSnackbar({ open: true, message: "Error al actualizar módulos", severity: "error" });
     }
   };
 
@@ -286,6 +293,21 @@ export default function RolesModulos() {
           </>
         )}
       </Drawer>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={2500}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
