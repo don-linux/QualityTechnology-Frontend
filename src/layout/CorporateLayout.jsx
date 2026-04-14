@@ -55,6 +55,12 @@ export default function CorporateLayout() {
   const [drawerOpen, setDrawerOpen] = React.useState(true);
   const toggleDrawer = () => setDrawerOpen(!drawerOpen);
 
+  React.useEffect(() => {
+    if (location.pathname.startsWith("/registro-operativo")) {
+      setOpenBitacora(true);
+    }
+  }, [location.pathname]);
+
   const nombre = (localStorage.getItem("nombre") || "Usuario").trim();
   const rolRaw = localStorage.getItem("rol") || "";
   const modulosGuardados = JSON.parse(localStorage.getItem("modulos") || "[]");
@@ -88,6 +94,20 @@ export default function CorporateLayout() {
   }
 
   const mostrarNombre = rolLegible;
+
+  const navSx = (path, { exact = true, pl } = {}) => {
+    const active = exact
+      ? location.pathname === path
+      : location.pathname.startsWith(path);
+    return {
+      borderRadius: 1,
+      mb: 0.5,
+      ...(pl !== undefined ? { pl } : {}),
+      backgroundColor: active ? "rgba(255,255,255,0.18)" : "transparent",
+      "&:hover": { backgroundColor: active ? "rgba(255,255,255,0.24)" : "#43A047" },
+      justifyContent: drawerOpen ? "flex-start" : "center",
+    };
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -205,15 +225,7 @@ export default function CorporateLayout() {
           <ListItemButton
             component={Link}
             to="/"
-            selected={location.pathname === "/"}
-            sx={{
-              borderRadius: 1,
-              mb: 0.5,
-              backgroundColor:
-                location.pathname === "/" ? "#388E3C" : "transparent",
-              "&:hover": { backgroundColor: "#43A047" },
-              justifyContent: drawerOpen ? "flex-start" : "center",
-            }}
+            sx={navSx("/")}
           >
             <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
               <Dashboard />
@@ -224,14 +236,7 @@ export default function CorporateLayout() {
           <ListItemButton
             component={Link}
             to="/mi-perfil"
-            sx={{
-              borderRadius: 1,
-              mb: 0.5,
-              backgroundColor:
-                location.pathname === "/mi-perfil" ? "#388E3C" : "transparent",
-              "&:hover": { backgroundColor: "#43A047" },
-              justifyContent: drawerOpen ? "flex-start" : "center",
-            }}
+            sx={navSx("/mi-perfil")}
           >
             <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
               <AccountCircle />
@@ -251,9 +256,7 @@ export default function CorporateLayout() {
 
             <ListItemButton
               onClick={() => setOpenBitacora(!openBitacora)}
-              sx={{
-                justifyContent: drawerOpen ? "flex-start" : "center",
-              }}
+              sx={navSx("/registro-operativo", { exact: false })}
             >
               <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                 <Assignment />
@@ -264,75 +267,28 @@ export default function CorporateLayout() {
 
             <Collapse in={openBitacora && drawerOpen} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
-                <ListItemButton component={Link} to="/registro-operativo/plagas" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <BugReport />
-                  </ListItemIcon>
-                  <ListItemText primary="Control de Plagas" />
-                </ListItemButton>
-
-                <ListItemButton component={Link} to="/registro-operativo/recepcion-insumos" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <ReceiptLong />
-                  </ListItemIcon>
-                  <ListItemText primary="Recepción de Insumos" />
-                </ListItemButton>
-
-                <ListItemButton component={Link} to="/registro-operativo/visitas" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <People />
-                  </ListItemIcon>
-                  <ListItemText primary="Control de Visitas" />
-                </ListItemButton>
-
-                <ListItemButton component={Link} to="/registro-operativo/limpieza-banos" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <CleaningServices />
-                  </ListItemIcon>
-                  <ListItemText primary="Limpieza de Baños" />
-                </ListItemButton>
-
-                <ListItemButton component={Link} to="/registro-operativo/parametros" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <Biotech />
-                  </ListItemIcon>
-                  <ListItemText primary="Parámetros Físico-Químicos" />
-                </ListItemButton>
-
-                <ListItemButton component={Link} to="/registro-operativo/medicamentos" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <LocalHospital />
-                  </ListItemIcon>
-                  <ListItemText primary="Aplicación de Medicamentos" />
-                </ListItemButton>
-
-                <ListItemButton component={Link} to="/registro-operativo/recambios" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <ScienceOutlined />
-                  </ListItemIcon>
-                  <ListItemText primary="Recambios" />
-                </ListItemButton>
-
-                <ListItemButton component={Link} to="/registro-operativo/biometrias" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <Science />
-                  </ListItemIcon>
-                  <ListItemText primary="Biometrías" />
-                </ListItemButton>
-
-                <ListItemButton component={Link} to="/registro-operativo/alimentacion" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <Grass />
-                  </ListItemIcon>
-                  <ListItemText primary="Alimentación" />
-                </ListItemButton>
-                
-                <ListItemButton component={Link} to="/registro-operativo/insumos" sx={{ pl: 5 }}>
-                  <ListItemIcon sx={{ color: "white" }}>
-                    <Inventory />
-                  </ListItemIcon>
-                  <ListItemText primary="Ingresos / Egresos Insumos" />
-                </ListItemButton>
+                {[
+                  { to: "/registro-operativo/plagas",            icon: <BugReport />,        label: "Control de Plagas" },
+                  { to: "/registro-operativo/recepcion-insumos", icon: <ReceiptLong />,       label: "Recepción de Insumos" },
+                  { to: "/registro-operativo/visitas",           icon: <People />,            label: "Control de Visitas" },
+                  { to: "/registro-operativo/limpieza-banos",    icon: <CleaningServices />,  label: "Limpieza de Baños" },
+                  { to: "/registro-operativo/parametros",        icon: <Biotech />,           label: "Parámetros Físico-Químicos" },
+                  { to: "/registro-operativo/medicamentos",      icon: <LocalHospital />,     label: "Aplicación de Medicamentos" },
+                  { to: "/registro-operativo/recambios",         icon: <ScienceOutlined />,   label: "Recambios" },
+                  { to: "/registro-operativo/biometrias",        icon: <Science />,           label: "Biometrías" },
+                  { to: "/registro-operativo/alimentacion",      icon: <Grass />,             label: "Alimentación" },
+                  { to: "/registro-operativo/insumos",           icon: <Inventory />,         label: "Ingresos / Egresos Insumos" },
+                ].map(({ to, icon, label }) => (
+                  <ListItemButton
+                    key={to}
+                    component={Link}
+                    to={to}
+                    sx={navSx(to, { pl: 5 })}
+                  >
+                    <ListItemIcon sx={{ color: "white" }}>{icon}</ListItemIcon>
+                    <ListItemText primary={label} />
+                  </ListItemButton>
+                ))}
               </List>
             </Collapse>
             </>
@@ -364,33 +320,17 @@ export default function CorporateLayout() {
                 </Typography>
               )}
 
-              <ListItemButton component={Link} to="/inventarios/lotes" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <EggAltIcon />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Control Reproductivo" />}
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/inventarios/piletas" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <Science />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Alevinaje" />}
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/inventarios/reproductores" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <Biotech />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Reproductores" />}
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/inventarios/engorda" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <Grass />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Engorda" />}
-              </ListItemButton>
+              {[
+                { to: "/inventarios/lotes",         icon: <EggAltIcon />, label: "Control Reproductivo" },
+                { to: "/inventarios/piletas",        icon: <Science />,    label: "Alevinaje" },
+                { to: "/inventarios/reproductores",  icon: <Biotech />,    label: "Reproductores" },
+                { to: "/inventarios/engorda",        icon: <Grass />,      label: "Engorda" },
+              ].map(({ to, icon, label }) => (
+                <ListItemButton key={to} component={Link} to={to} sx={navSx(to)}>
+                  <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>{icon}</ListItemIcon>
+                  {drawerOpen && <ListItemText primary={label} />}
+                </ListItemButton>
+              ))}
 
               {/*  OTROS INVENTARIOS */}
               {drawerOpen && (
@@ -408,26 +348,16 @@ export default function CorporateLayout() {
                 </Typography>
               )}
 
-              <ListItemButton component={Link} to="/inventarios/instalaciones" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <HomeWorkIcon />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Instalaciones" />}
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/inventarios/alimentos" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <LocalMall />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Alimento e Insumos" />}
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/inventarios/registro-operativo" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <Handyman />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Equipo y Herramientas" />}
-              </ListItemButton>
+              {[
+                { to: "/inventarios/instalaciones",       icon: <HomeWorkIcon />, label: "Instalaciones" },
+                { to: "/inventarios/alimentos",           icon: <LocalMall />,    label: "Alimento e Insumos" },
+                { to: "/inventarios/registro-operativo",  icon: <Handyman />,     label: "Equipo y Herramientas" },
+              ].map(({ to, icon, label }) => (
+                <ListItemButton key={to} component={Link} to={to} sx={navSx(to)}>
+                  <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>{icon}</ListItemIcon>
+                  {drawerOpen && <ListItemText primary={label} />}
+                </ListItemButton>
+              ))}
             </>
           )}
           {modulos.has("Ventas") && (
@@ -441,26 +371,16 @@ export default function CorporateLayout() {
               </Typography>
             )}
 
-            <ListItemButton component={Link} to="/ventas/lista-espera" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                <Store />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Próximas Ventas" />}
-            </ListItemButton>
-
-            <ListItemButton component={Link} to="/ventas/registro" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                <LocalAtm />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Registro de Ventas" />}
-            </ListItemButton>
-
-            <ListItemButton component={Link} to="registro/cliente" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                <People />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Clientes" />}
-            </ListItemButton>
+            {[
+              { to: "/ventas/lista-espera", icon: <Store />,    label: "Próximas Ventas" },
+              { to: "/ventas/registro",     icon: <LocalAtm />, label: "Registro de Ventas" },
+              { to: "/registro/cliente",    icon: <People />,   label: "Clientes" },
+            ].map(({ to, icon, label }) => (
+              <ListItemButton key={to} component={Link} to={to} sx={navSx(to)}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>{icon}</ListItemIcon>
+                {drawerOpen && <ListItemText primary={label} />}
+              </ListItemButton>
+            ))}
             </>
           )}
           {modulos.has("Finanzas") && (
@@ -474,26 +394,16 @@ export default function CorporateLayout() {
                 </Typography>
               )}
 
-              <ListItemButton component={Link} to="/ventas/flujo-caja" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <AccountBalance />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Flujo de Caja" />}
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/ventas/tesoreria" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <AccountBalance />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Tesorería General" />}
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/proveedores" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <Store />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Proveedores" />}
-              </ListItemButton>
+              {[
+                { to: "/ventas/flujo-caja", icon: <AccountBalance />, label: "Flujo de Caja" },
+                { to: "/ventas/tesoreria",  icon: <AccountBalance />, label: "Tesorería General" },
+                { to: "/proveedores",       icon: <Store />,          label: "Proveedores" },
+              ].map(({ to, icon, label }) => (
+                <ListItemButton key={to} component={Link} to={to} sx={navSx(to)}>
+                  <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>{icon}</ListItemIcon>
+                  {drawerOpen && <ListItemText primary={label} />}
+                </ListItemButton>
+              ))}
             </>
           )}
           {modulos.has("RRHH") && (
@@ -507,44 +417,17 @@ export default function CorporateLayout() {
                 </Typography>
               )}
 
-              <ListItemButton component={Link} to="/nomina" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <Person />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Nómina" />}
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/empleados" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <Badge />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Empleados" />}
-              </ListItemButton>
-
-              <ListItemButton
-                component={Link}
-                to="/vacaciones"
-                sx={{
-                  borderRadius: 1,
-                  mb: 0.5,
-                  backgroundColor:
-                    location.pathname === "/vacaciones" ? "#388E3C" : "transparent",
-                  "&:hover": { backgroundColor: "#43A047" },
-                  justifyContent: drawerOpen ? "flex-start" : "center",
-                }}
-              >
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <EventAvailableIcon />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Vacaciones y Ausencias" />}
-              </ListItemButton>
-
-              <ListItemButton component={Link} to="/caja-ahorro" sx={{ justifyContent: drawerOpen ? "flex-start" : "center" }}>
-                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                  <Savings />
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary="Caja de Ahorro" />}
-              </ListItemButton>
+              {[
+                { to: "/nomina",     icon: <Person />,             label: "Nómina" },
+                { to: "/empleados",  icon: <Badge />,              label: "Empleados" },
+                { to: "/vacaciones", icon: <EventAvailableIcon />, label: "Vacaciones y Ausencias" },
+                { to: "/caja-ahorro",icon: <Savings />,            label: "Caja de Ahorro" },
+              ].map(({ to, icon, label }) => (
+                <ListItemButton key={to} component={Link} to={to} sx={navSx(to)}>
+                  <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>{icon}</ListItemIcon>
+                  {drawerOpen && <ListItemText primary={label} />}
+                </ListItemButton>
+              ))}
             </>
           )}
         </List>
@@ -559,77 +442,17 @@ export default function CorporateLayout() {
               </Typography>
             )}
 
-            <ListItemButton
-              component={Link}
-              to="/usuarios"
-              sx={{
-                borderRadius: 1,
-                mb: 0.5,
-                backgroundColor:
-                  location.pathname === "/usuarios" ? "#388E3C" : "transparent",
-                "&:hover": { backgroundColor: "#43A047" },
-                justifyContent: drawerOpen ? "flex-start" : "center",
-              }}
-            >
-              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                <People />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Usuarios" />}
-            </ListItemButton>
-
-            <ListItemButton
-              component={Link}
-              to="/roles"
-              sx={{
-                borderRadius: 1,
-                mb: 0.5,
-                backgroundColor:
-                  location.pathname === "/roles" ? "#388E3C" : "transparent",
-                "&:hover": { backgroundColor: "#43A047" },
-                justifyContent: drawerOpen ? "flex-start" : "center",
-              }}
-            >
-              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                <Assignment />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Roles" />}
-            </ListItemButton>
-
-            <ListItemButton
-              component={Link}
-              to="/departamentos"
-              sx={{
-                borderRadius: 1,
-                mb: 0.5,
-                backgroundColor:
-                  location.pathname === "/departamentos" ? "#388E3C" : "transparent",
-                "&:hover": { backgroundColor: "#43A047" },
-                justifyContent: drawerOpen ? "flex-start" : "center",
-              }}
-            >
-              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                <Business />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Departamentos" />}
-            </ListItemButton>
-
-            <ListItemButton
-              component={Link}
-              to="/puestos"
-              sx={{
-                borderRadius: 1,
-                mb: 0.5,
-                backgroundColor:
-                  location.pathname === "/puestos" ? "#388E3C" : "transparent",
-                "&:hover": { backgroundColor: "#43A047" },
-                justifyContent: drawerOpen ? "flex-start" : "center",
-              }}
-            >
-              <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
-                <Work />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Puestos" />}
-            </ListItemButton>
+            {[
+              { to: "/usuarios",     icon: <People />,     label: "Usuarios" },
+              { to: "/roles",        icon: <Assignment />, label: "Roles" },
+              { to: "/departamentos",icon: <Business />,   label: "Departamentos" },
+              { to: "/puestos",      icon: <Work />,       label: "Puestos" },
+            ].map(({ to, icon, label }) => (
+              <ListItemButton key={to} component={Link} to={to} sx={navSx(to)}>
+                <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>{icon}</ListItemIcon>
+                {drawerOpen && <ListItemText primary={label} />}
+              </ListItemButton>
+            ))}
           </>
         )}
         {/* ===================== SEGURIDAD ===================== */}
@@ -646,14 +469,7 @@ export default function CorporateLayout() {
             <ListItemButton
               component={Link}
               to="/seguridad/roles-modulos"
-              sx={{
-                borderRadius: 1,
-                mb: 0.5,
-                backgroundColor:
-                  location.pathname === "/seguridad/roles-modulos" ? "#388E3C" : "transparent",
-                "&:hover": { backgroundColor: "#43A047" },
-                justifyContent: drawerOpen ? "flex-start" : "center",
-              }}
+              sx={navSx("/seguridad/roles-modulos")}
             >
               <ListItemIcon sx={{ color: "white", minWidth: 0, mr: drawerOpen ? 2 : 0 }}>
                 <People />
