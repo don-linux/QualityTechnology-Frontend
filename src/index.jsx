@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App from "@app/App";
 
 // IMPORTANTE: agrega estos dos imports 
 import { ThemeProvider, createTheme } from "@mui/material/styles";

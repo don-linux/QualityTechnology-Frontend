@@ -6,7 +6,7 @@ This file records conventions that are **evident from repository configuration a
 
 - **Language:** JavaScript with **JSX** (`.jsx` files). There is no TypeScript configuration in the project root **verified** from the inspected manifests.
 - **Module system:** ESM via Vite (`import` / `export`).
-- **Component files:** React screens and shared UI use **PascalCase** filenames (e.g. `Usuarios.jsx`, `CorporateLayout.jsx`). Utility modules under `utils/` and `hooks/` use **camelCase** (e.g. `axiosInstance.js`, `useFormValidation.js`).
+- **Component files:** React screens and shared UI use **PascalCase** filenames (e.g. `Usuarios.jsx`, `CorporateLayout.jsx`). Service and utility modules use **camelCase** (e.g. `axiosInstance.js`, `useFormValidation.js`, `usuariosService.js`). Page wrappers use **PascalCase** with a `Page` suffix (e.g. `UsuariosPage.jsx`).
 
 ## Formatting (observed in source, not enforced by repo config)
 
@@ -21,7 +21,7 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 ## React patterns
 
 - **Functional components** and hooks (observed across `App.jsx`, layouts, and utilities).
-- **Lazy loading** of route-level components with **`Suspense`** and a shared fallback (`src/App.jsx`).
+- **Lazy loading** of route-level pages with **`Suspense`** and a shared fallback (`src/app/router.jsx`). Page files in `src/pages/` serve as thin re-export boundaries for code splitting.
 
 ## MUI usage
 
@@ -30,18 +30,20 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 
 ## Routing and URLs
 
-- Route path segments use **kebab-case** in multiple places (e.g. `registro-operativo/recepcion-insumos`, `ventas/flujo-caja` in `src/App.jsx`). New routes should follow existing naming in `App.jsx` and navigation links in `CorporateLayout.jsx`.
+- Route path segments use **kebab-case** (e.g. `registro-operativo/recepcion-insumos`, `ventas/flujo-caja`). New routes should follow existing naming in `src/app/router.jsx` and navigation links in `CorporateLayout.jsx`.
 
 ## API and configuration
 
-- **Environment:** Vite exposes variables prefixed with **`VITE_`**. Backend base URL is read as **`VITE_API_URL`** in `src/utils/config.js` (falls back to `http://localhost:5000`).
-- **HTTP helpers:** Use `axiosInstance` from `src/utils/axiosInstance.js` for all HTTP calls. Import as `import axios from "../utils/axiosInstance.js"`. For file download URLs with authentication, use `getUploadUrl` from `src/utils/uploadUrl.js`.
+- **Environment:** Vite exposes variables prefixed with **`VITE_`**. Backend base URL is read as **`VITE_API_URL`** in `src/shared/lib/config.js` (falls back to `http://localhost:5000`).
+- **Service layer:** Each domain has service files under `features/<domain>/services/` that encapsulate all HTTP calls. Prefer importing service functions (`import { listUsuarios } from "../services/usuariosService"`) rather than using `axiosInstance` directly in components.
+- **HTTP instance:** `axiosInstance` lives at `@shared/lib/axiosInstance`. Service files already import it; components should not need to import it directly.
+- **Upload URLs:** Use `getUploadUrl` from `@shared/lib/uploadUrl` for authenticated file download/upload URLs.
 
 ## Testing
 
 - **Runner:** Vitest (see `package.json` and `vite.config.js`).
 - **Environment:** `jsdom`, **`globals: true`**, setup file **`src/setupTests.js`** (imports `@testing-library/jest-dom`).
-- **Location / naming:** At least one test uses the pattern **`src/App.test.jsx`** (Vitest picks up tests per `vite.config.js` defaults). There is no custom `include`/`exclude` in `vite.config.js` beyond Vitest defaults.
+- **Location / naming:** At least one test uses the pattern **`src/app/App.test.jsx`** (Vitest picks up tests per `vite.config.js` defaults). There is no custom `include`/`exclude` in `vite.config.js` beyond Vitest defaults.
 
 ## Docker / toolchain
 
@@ -52,4 +54,4 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 
 ## Static assets
 
-- `src/components/Login.jsx` uses absolute paths such as **`/images/ceiba.png`**. In this project, that pattern resolves from the **`public/`** directory through Vite’s static asset handling. Match that approach when adding shared static images.
+- `src/features/auth/components/Login.jsx` uses absolute paths such as **`/images/ceiba.png`**. In this project, that pattern resolves from the **`public/`** directory through Vite’s static asset handling. Match that approach when adding shared static images.

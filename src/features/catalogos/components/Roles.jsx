@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { API_URL } from "../utils/config.js";
-import useFormValidation from "../hooks/useFormValidation";
+import { API_URL } from "@shared/lib/config";
+import useFormValidation from "@shared/hooks/useFormValidation";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -16,7 +16,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import axios from "../utils/axiosInstance.js";
+import axios from "@shared/lib/axiosInstance";
 
 export default function Roles() {
   const [form, setForm] = useState({ rol_id: '', nombre: '' });

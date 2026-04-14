@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { logout } from "../utils/auth";
+import { logout } from "@shared/lib/auth";
 
 const PanelEmpresa = () => {
   const [nombreGranja, setNombreGranja] = useState("");

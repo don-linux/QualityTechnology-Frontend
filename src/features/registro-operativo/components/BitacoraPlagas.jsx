@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { API_URL } from "../../utils/config.js";
+import { API_URL } from "@shared/lib/config";
 import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -22,9 +22,9 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Divider from "@mui/material/Divider";
 import SearchIcon from "@mui/icons-material/Search";
-import axiosInstance from "../../utils/axiosInstance";
-import useFormValidation from "../../hooks/useFormValidation";
-import useConfirm from "../../hooks/useConfirm";
+import axiosInstance from "@shared/lib/axiosInstance";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>

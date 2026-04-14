@@ -12,7 +12,7 @@ import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
-import axios from "../utils/axiosInstance.js";
+import axios from "@shared/lib/axiosInstance";
 
 export default function DocumentosEmpleado({ empleadoId, selfService = false }) {
   const [documentos, setDocumentos] = useState([]);

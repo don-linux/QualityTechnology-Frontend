@@ -1,6 +1,6 @@
 // src/components/CuentasDialog.jsx
 import React, { useState } from "react";
-import { API_URL } from "../utils/config.js";
+import { API_URL } from "@shared/lib/config";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -18,10 +18,10 @@ import TableRow from "@mui/material/TableRow";
 import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import Save from "@mui/icons-material/Save";
-import axios from "../utils/axiosInstance.js";
+import axios from "@shared/lib/axiosInstance";
 
-import useFormValidation from "../hooks/useFormValidation";
-import useConfirm from "../hooks/useConfirm";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 
 const requiredFields = ["nombre"];
 

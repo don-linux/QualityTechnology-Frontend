@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "../utils/axiosInstance.js";
+import axios from "@shared/lib/axiosInstance";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -14,8 +14,8 @@ import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
-import useFormValidation from "../hooks/useFormValidation";
-import useConfirm from "../hooks/useConfirm";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 
 /* ============================================================
    NORMALIZAR GRANJA PARA BACKEND (SIN ACENTOS Y CORRECTO)

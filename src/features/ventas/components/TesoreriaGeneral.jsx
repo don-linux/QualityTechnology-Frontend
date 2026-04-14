@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { API_URL } from "../utils/config.js";
+import { API_URL } from "@shared/lib/config";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -13,7 +13,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
-import axios from "../utils/axiosInstance.js";
+import axios from "@shared/lib/axiosInstance";
 
 const API_TESORERIA = `${API_URL}/tesoreria`;
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];

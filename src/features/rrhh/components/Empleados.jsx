@@ -16,8 +16,8 @@ import TableBody from "@mui/material/TableBody";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
-import axios from "../utils/axiosInstance.js";
-import useConfirm from "../hooks/useConfirm";
+import axios from "@shared/lib/axiosInstance";
+import useConfirm from "@shared/hooks/useConfirm";
 import DocumentosEmpleado from "./DocumentosEmpleado";
 
 export default function Empleados() {

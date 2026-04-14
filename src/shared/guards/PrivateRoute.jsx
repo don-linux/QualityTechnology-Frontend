@@ -1,7 +1,7 @@
 // src/components/PrivateRoute.jsx
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { isAuthenticated } from "../utils/auth";
+import { isAuthenticated } from "@shared/lib/auth";
 
 const PrivateRoute = ({ rolesPermitidos, modulo }) => {
   const auth = isAuthenticated();

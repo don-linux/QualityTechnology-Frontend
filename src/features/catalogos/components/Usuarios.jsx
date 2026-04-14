@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "../utils/axiosInstance.js";
-import useFormValidation from "../hooks/useFormValidation";
+import axios from "@shared/lib/axiosInstance";
+import useFormValidation from "@shared/hooks/useFormValidation";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -20,8 +20,8 @@ import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import PasswordField from "./PasswordField";
-import useConfirm from "../hooks/useConfirm";
+import PasswordField from "@shared/components/PasswordField";
+import useConfirm from "@shared/hooks/useConfirm";
 
 export default function UsuariosRegistro() {
   const [form, setForm] = useState({

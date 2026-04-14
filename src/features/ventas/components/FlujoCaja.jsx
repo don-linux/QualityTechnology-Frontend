@@ -18,13 +18,13 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import axios from "../utils/axiosInstance.js";
+import axios from "@shared/lib/axiosInstance";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
-import { API_URL } from "../utils/config.js";
-import { getUploadUrl } from "../utils/uploadUrl.js";
-import useFormValidation from "../hooks/useFormValidation";
-import useConfirm from "../hooks/useConfirm";
+import { API_URL } from "@shared/lib/config";
+import { getUploadUrl } from "@shared/lib/uploadUrl";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
 const API = API_URL;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from "../utils/config.js";
+import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
@@ -22,9 +22,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import AddIcon from "@mui/icons-material/Add";
-import axios from "../utils/axiosInstance.js";
-import useFormValidation from "../hooks/useFormValidation";
-import useConfirm from "../hooks/useConfirm";
+import axios from "@shared/lib/axiosInstance";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 import FormHelperText from "@mui/material/FormHelperText";
 
 export default function ListaEspera() {

@@ -1,6 +1,6 @@
 // src/components/Login.jsx
 import React, { useState } from "react";
-import axios from "../utils/axiosInstance.js";
+import axios from "@shared/lib/axiosInstance";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -12,8 +12,8 @@ import Person from "@mui/icons-material/Person";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-import useFormValidation from "../hooks/useFormValidation";
-import PasswordField from "./PasswordField";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import PasswordField from "@shared/components/PasswordField";
 
 const requiredFields = ["usuario", "password"];
 

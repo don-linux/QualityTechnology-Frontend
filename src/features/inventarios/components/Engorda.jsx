@@ -15,9 +15,9 @@ import CardContent from "@mui/material/CardContent";
 import MenuItem from "@mui/material/MenuItem";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
-import axios from "../utils/axiosInstance.js";
-import useFormValidation from "../hooks/useFormValidation";
-import useConfirm from "../hooks/useConfirm";
+import axios from "@shared/lib/axiosInstance";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 
 const normalizarGranja = (g) => {
   if (!g) return "Granja Acu\u00EDcola Medellin";

@@ -44,7 +44,7 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import { Link, useLocation, Outlet } from "react-router-dom";
-import { logout } from "../utils/auth";
+import { logout } from "@shared/lib/auth";
 import EggAltIcon from "@mui/icons-material/EggAlt";
 
 const drawerWidth = 270;

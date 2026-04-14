@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "../utils/config.js";
+import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
@@ -13,10 +13,10 @@ import TableBody from "@mui/material/TableBody";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import Paper from "@mui/material/Paper";
-import axios from "../utils/axiosInstance.js";
+import axios from "@shared/lib/axiosInstance";
 import Edit from "@mui/icons-material/Edit";
 import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
-import useFormValidation from "../hooks/useFormValidation";
+import useFormValidation from "@shared/hooks/useFormValidation";
 
 export default function Nomina() {
   const [form, setForm] = useState({

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "../utils/config.js";
+import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -24,9 +24,9 @@ import Business from "@mui/icons-material/Business";
 import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
 import Save from "@mui/icons-material/Save";
 import Close from "@mui/icons-material/Close";
-import axios from "../utils/axiosInstance.js";
-import useFormValidation from "../hooks/useFormValidation";
-import useConfirm from "../hooks/useConfirm";
+import axios from "@shared/lib/axiosInstance";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 
 const api = `${API_URL}/proveedores`;
 

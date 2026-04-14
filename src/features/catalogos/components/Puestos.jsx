@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "../utils/axiosInstance.js";
-import useFormValidation from "../hooks/useFormValidation";
-import useConfirm from "../hooks/useConfirm";
+import axios from "@shared/lib/axiosInstance";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";

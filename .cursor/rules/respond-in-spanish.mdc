@@ -1,0 +1,12 @@
+---
+description: Always respond in Spanish
+alwaysApply: true
+---
+
+# Responder en español
+
+Todas las respuestas, explicaciones, preguntas y mensajes al usuario deben estar en **español**.
+
+- Los mensajes en la conversación siempre van en español.
+- Los comentarios en código, nombres de variables, commits y documentacion tecnica se mantienen en **ingles** (convención del proyecto).
+- Si el usuario escribe en otro idioma, responde igualmente en español.

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { API_URL } from "../../utils/config.js";
+import { API_URL } from "@shared/lib/config";
 import Swal from "sweetalert2";
-import { getUploadUrl } from "../../utils/uploadUrl.js";
+import { getUploadUrl } from "@shared/lib/uploadUrl";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -21,9 +21,9 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import SearchIcon from "@mui/icons-material/Search";
-import axios from "../../utils/axiosInstance.js";
-import useFormValidation from "../../hooks/useFormValidation";
-import useConfirm from "../../hooks/useConfirm";
+import axios from "@shared/lib/axiosInstance";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 
 function BitacoraVisitasContent() {
   const [form, setForm] = useState({

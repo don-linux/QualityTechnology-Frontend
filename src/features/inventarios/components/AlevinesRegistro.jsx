@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
-import { API_URL } from "../utils/config.js";
+import { API_URL } from "@shared/lib/config";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -22,14 +22,14 @@ import FormHelperText from "@mui/material/FormHelperText";
 import Divider from "@mui/material/Divider";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import axios from "../utils/axiosInstance.js";
+import axios from "@shared/lib/axiosInstance";
 import dayjs from "dayjs";
 import "dayjs/locale/es"; //  Importar español
 import Add from "@mui/icons-material/Add";
 import Edit from "@mui/icons-material/Edit";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
-import useFormValidation from "../hooks/useFormValidation";
+import useFormValidation from "@shared/hooks/useFormValidation";
 
 const AlevinesChart = lazy(() => import("./AlevinesChart"));
 

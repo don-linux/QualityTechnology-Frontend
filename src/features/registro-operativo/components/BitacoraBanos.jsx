@@ -14,9 +14,9 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
-import axios from "../../utils/axiosInstance.js";
-import useFormValidation from "../../hooks/useFormValidation";
-import useConfirm from "../../hooks/useConfirm";
+import axios from "@shared/lib/axiosInstance";
+import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
 
 const getTipoBanio = (row) => {
   return row.fc_tipo_banio || "";
