@@ -31,6 +31,7 @@ function BitacoraBanosContent() {
     fc_realizo: "",
     fc_observaciones: "",
     fi_usuario_id: 1,
+    ubicacion: "",
   });
 
   const [data, setData] = useState([]);
@@ -41,7 +42,12 @@ function BitacoraBanosContent() {
 
   const requiredFields = [
     "fc_mes", "fc_dia", "fc_tipo_banio",
-    "fc_regadera", "fc_realizo", "fc_observaciones",
+    "fc_regadera", "fc_realizo", "fc_observaciones", "ubicacion",
+  ];
+
+  const ubicaciones = [
+    { value: "medellin", label: "Medellín" },
+    { value: "ceiba", label: "La Ceiba" },
   ];
 
   const handleChange = (e) => {
@@ -93,6 +99,7 @@ function BitacoraBanosContent() {
         fc_realizo: "",
         fc_observaciones: "",
         fi_usuario_id: 1,
+        ubicacion: form.ubicacion,
       });
       setEditId(null);
       cargarDatos();
@@ -113,6 +120,7 @@ function BitacoraBanosContent() {
       fc_realizo: row.fc_realizo,
       fc_observaciones: row.fc_observaciones,
       fi_usuario_id: row.fi_usuario_id,
+      ubicacion: row.ubicacion || "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -184,13 +192,31 @@ function BitacoraBanosContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-         Medellín — Baños
+        Bitacora de Baños
       </Typography>
 
       {/* FORMULARIO */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.ubicacion}
+                helperText={errors.ubicacion}
+              >
+                {ubicaciones.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 select
@@ -321,6 +347,7 @@ function BitacoraBanosContent() {
               <TableCell>Tipo de Baño</TableCell>
               <TableCell>Regadera</TableCell>
               <TableCell>Realizó</TableCell>
+              <TableCell>Ubicación</TableCell>
               <TableCell>Observaciones</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
@@ -333,6 +360,7 @@ function BitacoraBanosContent() {
                 <TableCell>{getTipoBanio(r)}</TableCell>
                 <TableCell>{r.fc_regadera}</TableCell>
                 <TableCell>{r.fc_realizo}</TableCell>
+                <TableCell>{ubicaciones.find((u) => u.value === r.ubicacion)?.label ?? r.ubicacion}</TableCell>
                 <TableCell>{r.fc_observaciones}</TableCell>
                 <TableCell>
                   <Button
