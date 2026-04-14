@@ -201,8 +201,8 @@ function BitacoraPlagasContent() {
 
   return (
     <Box>
-      <Typography variant="h5" fontWeight="bold" mb={2}>
-         {ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion} — Control de Plagas
+      <Typography variant="h4" fontWeight="bold" mb={3}>
+        Control de Plagas
       </Typography>
 
       {/* Filtros compactos */}
