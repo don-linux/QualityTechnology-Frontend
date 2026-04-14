@@ -1,6 +1,4 @@
-// src/components/FormDialog.jsx
 import React, { useState, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -9,7 +7,11 @@ import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listClientesFlujo,
+  listProveedoresFlujo,
+  listCuentas,
+} from "../services/flujoCajaService";
 
 const FormDialog = React.memo(
   ({ open, onClose, onSubmit, formData, setFormData, editId, errors = {}, clearFieldError, clearErrors, validate, requiredFields = [] }) => {
@@ -20,9 +22,9 @@ const FormDialog = React.memo(
     const fetchDatos = useCallback(async () => {
       try {
         const [resClientes, resProveedores, resCuentas] = await Promise.all([
-          axios.get(`${API_URL}/flujo-caja/clientes`),
-          axios.get(`${API_URL}/flujo-caja/proveedores`),
-          axios.get(`${API_URL}/cuentas`),
+          listClientesFlujo(),
+          listProveedoresFlujo(),
+          listCuentas(),
         ]);
         setClientes(resClientes.data);
         setProveedores(resProveedores.data);

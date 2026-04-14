@@ -1,4 +1,3 @@
-// src/components/Login.jsx
 import React, { useState } from "react";
 import axios from "@shared/lib/axiosInstance";
 import Box from "@mui/material/Box";
@@ -14,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
 import PasswordField from "@shared/components/PasswordField";
+import useAuth from "@app/providers/AuthProvider";
 
 const requiredFields = ["usuario", "password"];
 
@@ -23,6 +23,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const auth = useAuth();
   const { errors, validate, clearFieldError } = useFormValidation();
 
   const handleLogin = async () => {
@@ -46,25 +47,7 @@ const Login = () => {
       if (!usuarioId)
         throw new Error("El servidor no devolvió un ID de usuario válido.");
 
-      const rolTexto = data.usuario.rol || data.usuario.rol_nombre || "";
-      const rolNormalizado = rolTexto
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .trim();
-
-      localStorage.setItem("auth", "true");
-      localStorage.setItem("token", data.token || "");
-      localStorage.setItem("refreshToken", data.refreshToken || "");
-      localStorage.setItem("rol", rolNormalizado);
-      localStorage.setItem("nombre", data.usuario.nombre || "Usuario");
-      localStorage.setItem("usuario_id", usuarioId.toString());
-      localStorage.setItem("modulos", JSON.stringify(data.modulos || []));
-
-      let granjaAsignada = "ALL";
-      if (rolNormalizado.toLowerCase().includes("gam")) granjaAsignada = "Medellin";
-      if (rolNormalizado.toLowerCase().includes("gac")) granjaAsignada = "La Ceiba";
-      localStorage.setItem("granja", granjaAsignada);
-
+      auth.login(data);
       setTimeout(() => navigate("/"), 800);
     } catch (err) {
       console.error("Error en login:", err);

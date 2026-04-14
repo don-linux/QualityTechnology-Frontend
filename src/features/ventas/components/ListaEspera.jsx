@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
@@ -22,19 +21,31 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import AddIcon from "@mui/icons-material/Add";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listLista,
+  listClientes,
+  createRegistro,
+  updateRegistro,
+  removeRegistro,
+  convertirAVenta,
+  createClienteRapido,
+} from "../services/listaEsperaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import FormHelperText from "@mui/material/FormHelperText";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 export default function ListaEspera() {
   return <ListaEsperaContent />;
 }
 
 function ListaEsperaContent() {
-  const rol = localStorage.getItem("rol") || "";
-  const nombreUsuario = localStorage.getItem("nombre") || "";
-  const usuarioId = localStorage.getItem("usuario_id") || "";
+  const showSnackbar = useSnackbar();
+  const auth = useAuth();
+  const rol = auth.rol;
+  const nombreUsuario = auth.nombre;
+  const usuarioId = auth.usuarioId || "";
 
   const granjaDefault =
     rol === "Jefe GAM" ? "Medellin" : rol === "Jefe GAC" ? "La Ceiba" : "";
@@ -81,7 +92,7 @@ function ListaEsperaContent() {
 
   const cargarLista = async () => {
     try {
-      const res = await axios.get(`${API_URL}/lista-espera`);
+      const res = await listLista();
       setLista(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error al cargar lista de espera:", err);
@@ -91,7 +102,7 @@ function ListaEsperaContent() {
 
   const cargarClientes = async () => {
     try {
-      const res = await axios.get(`${API_URL}/clientes`);
+      const res = await listClientes();
       setClientes(res.data);
     } catch (err) {
       console.error("Error al cargar clientes:", err);
@@ -112,13 +123,13 @@ function ListaEsperaContent() {
     if (!validate(form, requiredFields)) return;
 
     if (!form.fd_fecha_entrega) {
-      alert("Debes seleccionar una fecha de entrega.");
+      showSnackbar("Debes seleccionar una fecha de entrega.", "error");
       return;
     }
 
     try {
-      await axios.post(`${API_URL}/lista-espera`, form);
-      alert("Registrado en Lista de Espera");
+      await createRegistro(form);
+      showSnackbar("Registrado en Lista de Espera", "success");
       setForm(emptyForm);
       cargarLista();
     } catch (err) {
@@ -136,8 +147,8 @@ function ListaEsperaContent() {
     if (!validate(form, requiredFields)) return;
 
     try {
-      await axios.put(`${API_URL}/lista-espera/${editId}`, form);
-      alert("Actualizado correctamente");
+      await updateRegistro(editId, form);
+      showSnackbar("Actualizado correctamente", "success");
       setEditId(null);
       setForm(emptyForm);
       cargarLista();
@@ -150,8 +161,8 @@ function ListaEsperaContent() {
     if (!await confirm("¿Eliminar este registro?")) return;
 
     try {
-      await axios.delete(`${API_URL}/lista-espera/${id}`);
-      alert("Eliminado");
+      await removeRegistro(id);
+      showSnackbar("Eliminado", "success");
       cargarLista();
     } catch (err) {
       console.error("Error al eliminar en lista de espera:", err);
@@ -162,18 +173,18 @@ function ListaEsperaContent() {
     if (!await confirm("¿Convertir a venta real?")) return;
 
     try {
-      await axios.post(`${API_URL}/lista-espera/convertir/${id}`);
-      alert("Convertido a venta correctamente");
+      await convertirAVenta(id);
+      showSnackbar("Convertido a venta correctamente", "success");
       cargarLista();
     } catch (err) {
       const message = err?.response?.data?.error || err.message;
-      alert("Error al convertir: " + message);
+      showSnackbar("Error al convertir: " + message, "error");
     }
   };
 
   const registrarClienteRapido = async () => {
     try {
-      await axios.post(`${API_URL}/clientes`, nuevoCliente);
+      await createClienteRapido(nuevoCliente);
       await cargarClientes();
       setOpenCliente(false);
       setNuevoCliente({
@@ -185,7 +196,7 @@ function ListaEsperaContent() {
         fi_usuario_id: usuarioId,
       });
     } catch (err) {
-      alert("Error al registrar cliente");
+      showSnackbar("Error al registrar cliente", "error");
     }
   };
 

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "@shared/lib/config";
 import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -19,7 +18,13 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MenuItem from "@mui/material/MenuItem";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listMedicamentos,
+  createMedicamento,
+  updateMedicamento,
+  removeMedicamento,
+  removeAllMedicamentos,
+} from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 
@@ -54,7 +59,7 @@ function BitacoraMedicamentosContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/medicamentos`);
+      const res = await listMedicamentos();
       setData(res.data);
     } catch {
       Swal.fire({ icon: "error", title: "Error", text: "Error al cargar registros." });
@@ -68,8 +73,8 @@ function BitacoraMedicamentosContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId)
-        await axios.put(`${API_URL}/medicamentos/${editId}`, form);
-      else await axios.post(`${API_URL}/medicamentos`, form);
+        await updateMedicamento(editId, form);
+      else await createMedicamento(form);
 
       setEditId(null);
       setForm({
@@ -106,14 +111,14 @@ function BitacoraMedicamentosContent() {
   //  Eliminar uno
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/medicamentos/${id}`);
+    await removeMedicamento(id);
     cargarDatos();
   };
 
   //  Eliminar todos
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`${API_URL}/medicamentos`);
+    await removeAllMedicamentos();
     cargarDatos();
   };
 

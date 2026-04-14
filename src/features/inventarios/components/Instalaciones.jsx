@@ -1,5 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listByGranja,
+  createInstalacion,
+  updateInstalacion,
+  removeInstalacion,
+} from "../services/instalacionesService";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -16,13 +21,14 @@ import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useAuth from "@app/providers/AuthProvider";
 
 export default function Instalaciones() {
   return <InstalacionesContent />;
 }
 
 function InstalacionesContent() {
-  const usuario_id = localStorage.getItem("usuario_id");
+  const usuario_id = auth.usuarioId;
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
   const requiredFields = [
@@ -41,6 +47,7 @@ function InstalacionesContent() {
   });
 
   const { confirm, ConfirmModal } = useConfirm();
+  const auth = useAuth();
 
   const [instalaciones, setInstalaciones] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
@@ -58,7 +65,7 @@ function InstalacionesContent() {
   ========================================================= */
   const obtenerInstalaciones = useCallback(async () => {
     try {
-      const { data } = await axios.get(`/instalaciones/granja/${granja}`);
+      const { data } = await listByGranja(granja);
 
       if (!Array.isArray(data)) {
         setInstalaciones([]);
@@ -126,7 +133,7 @@ function InstalacionesContent() {
   const registrarInstalacion = async () => {
     if (!validate(form, requiredFields)) return;
     try {
-      await axios.post("/instalaciones", {
+      await createInstalacion({
         ...form,
         fi_usuario_id: usuario_id,
         fc_granja: granja,
@@ -144,7 +151,7 @@ function InstalacionesContent() {
   const actualizarInstalacion = async () => {
     if (!validate(form, requiredFields)) return;
     try {
-      await axios.put(`/instalaciones/${seleccionado}`, {
+      await updateInstalacion(seleccionado, {
         ...form,
         fi_usuario_id: usuario_id,
         fc_granja: granja,
@@ -162,7 +169,7 @@ function InstalacionesContent() {
   const eliminarInstalacion = async () => {
     if (!await confirm("¿Estás seguro de que deseas eliminar esta instalación?", "Confirmar eliminación")) return;
     try {
-      await axios.delete(`/instalaciones/${seleccionado}`);
+      await removeInstalacion(seleccionado);
 
       mostrarMensaje("Instalación eliminada correctamente.");
       limpiarFormulario();

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
@@ -13,17 +12,24 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Autocomplete from "@mui/material/Autocomplete";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listVentas,
+  listClientes,
+  listEncargados,
+  createVenta,
+  updateVenta,
+  removeVenta,
+} from "../services/ventasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
-
-const API = `${API_URL}/ventas`;
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function Venta() {
   return <VentaContent />;
 }
 
 function VentaContent() {
+  const showSnackbar = useSnackbar();
   /* ============================================================
       ESTADOS PRINCIPALES
   ============================================================ */
@@ -75,7 +81,7 @@ function VentaContent() {
       CARGAR VENTAS POR EMPRESA
   ============================================================ */
   const obtenerVentas = useCallback(async () => {
-    const res = await axios.get(API);
+    const res = await listVentas();
     setVentas(res.data.filter((v) => v.fc_empresa === empresa));
   }, [empresa]);
 
@@ -91,7 +97,7 @@ function VentaContent() {
   }, []);
 
   const obtenerClientes = async () => {
-    const res = await axios.get(`${API}/clientes`);
+    const res = await listClientes();
     setClientes(res.data);
   };
 
@@ -100,7 +106,7 @@ function VentaContent() {
   ============================================================ */
   const obtenerEncargados = useCallback(async () => {
     try {
-      const res = await axios.get(`${API}/encargados/${empresa}`);
+      const res = await listEncargados(empresa);
       setExpedientes(res.data);
     } catch (err) {
       console.error(err);
@@ -150,7 +156,7 @@ function VentaContent() {
     if (!validate(form, requiredFields)) return;
 
     if (!form.fc_cliente || !form.fc_encargado_venta) {
-      alert("Debe seleccionar un cliente y un encargado.");
+      showSnackbar("Debe seleccionar un cliente y un encargado.", "success");
       return;
     }
 
@@ -161,18 +167,18 @@ function VentaContent() {
 
     try {
       if (editando) {
-        await axios.put(`${API}/${idEditando}`, payload);
-        alert("Venta actualizada");
+        await updateVenta(idEditando, payload);
+        showSnackbar("Venta actualizada", "success");
       } else {
-        await axios.post(API, payload);
-        alert("Venta registrada");
+        await createVenta(payload);
+        showSnackbar("Venta registrada", "success");
       }
 
       limpiar();
       obtenerVentas();
     } catch (err) {
       console.error(err);
-      alert("Error al guardar. Ver consola.");
+      showSnackbar("Error al guardar. Ver consola.", "error");
     }
   };
 
@@ -225,7 +231,7 @@ function VentaContent() {
   ============================================================ */
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar venta?")) return;
-    await axios.delete(`${API}/${id}`);
+    await removeVenta(id);
     obtenerVentas();
   };
 

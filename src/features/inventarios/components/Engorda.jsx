@@ -15,9 +15,18 @@ import CardContent from "@mui/material/CardContent";
 import MenuItem from "@mui/material/MenuItem";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listInstalacionesEngorda,
+  listLotes,
+  listEngordas,
+  listMovimientos,
+  createEngorda,
+  removeEngorda,
+  removeMovimiento,
+} from "../services/engordaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 const normalizarGranja = (g) => {
   if (!g) return "Granja Acu\u00EDcola Medellin";
@@ -27,6 +36,7 @@ const normalizarGranja = (g) => {
 };
 
 export default function Engorda() {
+  const showSnackbar = useSnackbar();
   return <EngordaContent />;
 }
 
@@ -62,7 +72,7 @@ function EngordaContent() {
   const obtenerInstalaciones = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const { data } = await axios.get(`/instalaciones/tipo/Engorda/${granja}`);
+      const { data } = await listInstalacionesEngorda(granja);
       setInstalaciones(data || []);
     } catch (err) {
       console.error(" Error al obtener instalaciones:", err);
@@ -72,7 +82,7 @@ function EngordaContent() {
   const obtenerLotes = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const { data } = await axios.get(`/piletas/inventario/${granja}`);
+      const { data } = await listLotes(granja);
       setLotes(data || []);
     } catch (err) {
       console.error(" Error al obtener lotes:", err);
@@ -82,7 +92,7 @@ function EngordaContent() {
   const obtenerEngordas = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const { data } = await axios.get(`/engorda/granja/${granja}`);
+      const { data } = await listEngordas(granja);
       setEngordas(data || []);
     } catch (err) {
       console.error("Error al obtener engordas:", err);
@@ -91,7 +101,7 @@ function EngordaContent() {
 
   const obtenerMovimientos = useCallback(async () => {
     try {
-      const { data } = await axios.get(`/engorda/movimientos/${usuario_id}`);
+      const { data } = await listMovimientos(usuario_id);
       setMovimientos(data || []);
     } catch (err) {
       console.error("Error al obtener movimientos:", err);
@@ -152,18 +162,18 @@ function EngordaContent() {
     if (!validate(form, requiredFields)) return;
 
     try {
-      await axios.post("/engorda", {
+      await createEngorda({
         ...form,
         origen_id: form.origen_instalacion,
         fi_instalacion_id: form.fi_instalacion_id,
       });
 
-      alert(" Registro agregado correctamente");
+      showSnackbar(" Registro agregado correctamente", "success");
       obtenerEngordas();
       obtenerLotes(); // Refrescar lotes por si cambió el inventario
       limpiarFormulario();
     } catch (err) {
-      alert("Error al registrar engorda: " + (err.response?.data?.error || err.message));
+      showSnackbar("Error al registrar engorda: " + (err.response?.data?.error || err.message), "error");
     }
   };
 
@@ -171,24 +181,24 @@ function EngordaContent() {
     if (!seleccionado) return;
     if (!validate(form, requiredFields)) return;
     try {
-      await axios.post("/engorda", {
+      await createEngorda({
         ...form,
         fi_engorda_id: seleccionado,
       });
 
-      alert(" Registro actualizado");
+      showSnackbar(" Registro actualizado", "success");
       obtenerEngordas();
       limpiarFormulario();
     } catch (err) {
-      alert("Error al actualizar");
+      showSnackbar("Error al actualizar", "error");
     }
   };
 
   const eliminarEngorda = async () => {
     if (!await confirm("¿Eliminar este registro?")) return;
     try {
-      await axios.delete(`/engorda/${seleccionado}`);
-      alert(" Eliminado");
+      await removeEngorda(seleccionado);
+      showSnackbar(" Eliminado", "error");
       obtenerEngordas();
       limpiarFormulario();
     } catch (err) {
@@ -216,7 +226,7 @@ function EngordaContent() {
   const eliminarMovimiento = async (id) => {
     if (!await confirm("¿Eliminar este movimiento?")) return;
     try {
-      await axios.delete(`/engorda/movimientos/${id}`);
+      await removeMovimiento(id);
       obtenerMovimientos();
     } catch (err) {
       console.error(err);

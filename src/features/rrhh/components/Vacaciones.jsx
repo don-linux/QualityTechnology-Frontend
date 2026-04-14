@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from "@shared/lib/config";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
@@ -22,13 +21,19 @@ import Delete from "@mui/icons-material/Delete";
 import Add from "@mui/icons-material/Add";
 import DeleteForever from "@mui/icons-material/DeleteForever";
 import Edit from "@mui/icons-material/Edit";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listVacaciones,
+  createVacaciones,
+  updateVacaciones,
+  removeVacaciones,
+  removeAllVacaciones,
+} from "../services/vacacionesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
-
-const api = `${API_URL}/vacaciones`;
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function Vacaciones() {
+  const showSnackbar = useSnackbar();
   const [vacaciones, setVacaciones] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [editandoId, setEditandoId] = useState(null);
@@ -49,7 +54,7 @@ export default function Vacaciones() {
 
   const obtenerDatos = async () => {
     try {
-      const res = await axios.get(api);
+      const res = await listVacaciones();
       setVacaciones(res.data);
     } catch (err) {
       console.error("Error al cargar vacaciones:", err);
@@ -86,12 +91,12 @@ export default function Vacaciones() {
     if (!validate(nuevoForm, requiredFields)) return;
     const idEmpleado = Number(nuevoForm.idEmpleado);
     if (Number.isNaN(idEmpleado)) {
-      alert("El ID del empleado debe ser numérico.");
+      showSnackbar("El ID del empleado debe ser numérico.", "success");
       return;
     }
 
     try {
-      await axios.post(api, {
+      await createVacaciones({
         fc_nombre_empleado: nuevoForm.nombre.trim(),
         fi_empleado_id: idEmpleado,
         fc_departamento: nuevoForm.departamento || "General",
@@ -101,19 +106,19 @@ export default function Vacaciones() {
       setOpenNuevo(false);
       obtenerDatos();
     } catch (err) {
-      alert(" Error al crear registro.");
+      showSnackbar(" Error al crear registro.", "error");
     }
   };
 
   const eliminarRegistro = async (id) => {
     if (!await confirm("¿Eliminar este registro?")) return;
-    await axios.delete(`${api}/${id}`);
+    await removeVacaciones(id);
     obtenerDatos();
   };
 
   const eliminarTodos = async () => {
     if (!await confirm(" Eliminar TODOS los registros?")) return;
-    await axios.delete(api);
+    await removeAllVacaciones();
     obtenerDatos();
   };
 
@@ -123,7 +128,7 @@ export default function Vacaciones() {
 
   const guardarCambios = async () => {
     try {
-      await axios.put(`${api}/${editandoId}`, tempData);
+      await updateVacaciones(editandoId, tempData);
       setEditandoId(null);
       setTempData({});
       obtenerDatos();

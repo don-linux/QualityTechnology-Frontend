@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "@shared/lib/config";
 import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -19,7 +18,13 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import MenuItem from "@mui/material/MenuItem";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listInventario,
+  createInventario,
+  updateInventario,
+  removeInventario,
+  removeAllInventario,
+} from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 
@@ -53,7 +58,7 @@ function BitacoraInventarioContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/inventario`);
+      const res = await listInventario();
       setData(res.data);
     } catch (err) {
       console.error("Error al cargar inventario:", err.message);
@@ -68,12 +73,9 @@ function BitacoraInventarioContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId)
-        await axios.put(
-          `${API_URL}/inventario/${editId}`,
-          form
-        );
+        await updateInventario(editId, form);
       else
-        await axios.post(`${API_URL}/inventario`, form);
+        await createInventario(form);
 
       setEditId(null);
       setForm({
@@ -107,7 +109,7 @@ function BitacoraInventarioContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/inventario/${id}`);
+    await removeInventario(id);
     cargarDatos();
   };
 
@@ -115,7 +117,7 @@ function BitacoraInventarioContent() {
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
     try {
-      await axios.delete(`${API_URL}/inventario`);
+      await removeAllInventario();
       cargarDatos();
       Swal.fire({ icon: "success", title: "Listo", text: "Todos los registros fueron eliminados correctamente." });
     } catch (err) {

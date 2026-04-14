@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "@shared/lib/axiosInstance";
+import { listDepartamentos, createDepartamento, updateDepartamento, deactivateDepartamento } from "@features/catalogos/services/departamentosService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import Container from "@mui/material/Container";
@@ -18,8 +18,10 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function Departamentos() {
+  const showSnackbar = useSnackbar();
   const [form, setForm] = useState({ fi_departamento_id: null, fc_nombre: "" });
   const [departamentos, setDepartamentos] = useState([]);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -28,7 +30,7 @@ export default function Departamentos() {
   useEffect(() => { obtenerDepartamentos(); }, []);
 
   const obtenerDepartamentos = async () => {
-    try { const { data } = await axios.get("/departamentos"); setDepartamentos(data); } catch (e) { console.error(e); }
+    try { const { data } = await listDepartamentos(); setDepartamentos(data); } catch (e) { console.error(e); }
   };
 
   const handleChange = (e) => {
@@ -41,26 +43,26 @@ export default function Departamentos() {
   const registrar = async () => {
     if (!validate(form, ["fc_nombre"])) return;
     try {
-      await axios.post("/departamentos", { fc_nombre: form.fc_nombre });
+      await createDepartamento(form.fc_nombre);
       obtenerDepartamentos();
       limpiar();
-    } catch (e) { console.error(e); alert("Error al registrar departamento"); }
+    } catch (e) { console.error(e); showSnackbar("Error al registrar departamento", "error"); }
   };
 
   const actualizar = async () => {
     if (!form.fi_departamento_id) return;
     if (!validate(form, ["fc_nombre"])) return;
     try {
-      await axios.put(`/departamentos/${form.fi_departamento_id}`, { fc_nombre: form.fc_nombre, fb_activo: true });
+      await updateDepartamento(form.fi_departamento_id, form.fc_nombre);
       obtenerDepartamentos();
       limpiar();
-    } catch (e) { console.error(e); alert("Error al actualizar departamento"); }
+    } catch (e) { console.error(e); showSnackbar("Error al actualizar departamento", "error"); }
   };
 
   const desactivar = async (id, nombre) => {
     if (!await confirm(`¿Desactivar el departamento "${nombre}"?`)) return;
     try {
-      await axios.patch(`/departamentos/${id}/deactivate`);
+      await deactivateDepartamento(id);
       obtenerDepartamentos();
       limpiar();
     } catch (e) { console.error(e); }

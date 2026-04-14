@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from "@shared/lib/config";
+import { listClientes, createCliente, updateCliente, removeCliente } from "@features/catalogos/services/clientesService";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -16,13 +16,16 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
-import axios from "@shared/lib/axiosInstance";
 import dayjs from "dayjs";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 export default function Cliente() {
-  const usuarioId = localStorage.getItem("usuario_id") || "";
+  const showSnackbar = useSnackbar();
+  const auth = useAuth();
+  const usuarioId = auth.usuarioId || "";
   const [form, setForm] = useState({
     fi_cliente_id: null,
     fc_nombre: "",
@@ -46,7 +49,7 @@ export default function Cliente() {
 
   const obtenerClientes = async () => {
     try {
-      const res = await axios.get(`${API_URL}/clientes`);
+      const res = await listClientes();
       setClientes(res.data);
     } catch (error) {
       console.error("Error al obtener clientes", error);
@@ -74,38 +77,38 @@ export default function Cliente() {
   const registrarCliente = async () => {
     if (!validate(form, requiredFields)) return;
     try {
-      await axios.post(`${API_URL}/clientes`, form);
+      await createCliente(form);
       obtenerClientes();
       limpiarFormulario();
     } catch (error) {
       console.error("Error al registrar cliente", error);
-      alert(" Error al registrar cliente");
+      showSnackbar(" Error al registrar cliente", "error");
     }
   };
 
   const actualizarCliente = async () => {
-    if (!form.fi_cliente_id) return alert("Selecciona un cliente para actualizar");
+    if (!form.fi_cliente_id) return showSnackbar("Selecciona un cliente para actualizar", "error");
     if (!validate(form, requiredFields)) return;
     try {
-      await axios.put(`${API_URL}/clientes/${form.fi_cliente_id}`, form);
+      await updateCliente(form.fi_cliente_id, form);
       obtenerClientes();
       limpiarFormulario();
     } catch (error) {
       console.error("Error al actualizar cliente", error);
-      alert(" Error al actualizar cliente");
+      showSnackbar(" Error al actualizar cliente", "error");
     }
   };
 
   const eliminarCliente = async () => {
-    if (!form.fi_cliente_id) return alert("Selecciona un cliente para eliminar");
+    if (!form.fi_cliente_id) return showSnackbar("Selecciona un cliente para eliminar", "error");
     if (!await confirm("¿Seguro que deseas eliminar este cliente?")) return;
     try {
-      await axios.delete(`${API_URL}/clientes/${form.fi_cliente_id}`);
+      await removeCliente(form.fi_cliente_id);
       obtenerClientes();
       limpiarFormulario();
     } catch (error) {
       console.error("Error al eliminar cliente", error);
-      alert(" Error al eliminar cliente");
+      showSnackbar(" Error al eliminar cliente", "error");
     }
   };
 

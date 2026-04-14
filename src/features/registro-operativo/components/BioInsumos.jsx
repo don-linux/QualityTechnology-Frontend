@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -18,9 +17,16 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import MenuItem from "@mui/material/MenuItem";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listInsumos,
+  createInsumo,
+  updateInsumo,
+  removeInsumo,
+  removeAllInsumos,
+} from "../services/biometriasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 function BioInsumosContent() {
   const [form, setForm] = useState({
@@ -53,10 +59,10 @@ function BioInsumosContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/insumos`);
+      const res = await listInsumos();
       setData(res.data);
     } catch {
-      alert("Error cargando registros.");
+      showSnackbar("Error cargando registros.", "error");
     }
   };
 
@@ -68,11 +74,11 @@ function BioInsumosContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
-        await axios.put(`${API_URL}/insumos/${editId}`, form);
-        alert("Registro actualizado");
+        await updateInsumo(editId, form);
+        showSnackbar("Registro actualizado", "success");
       } else {
-        await axios.post(`${API_URL}/insumos`, form);
-        alert("Registro guardado");
+        await createInsumo(form);
+        showSnackbar("Registro guardado", "success");
       }
       setForm({
         ubicacion: "",
@@ -88,7 +94,7 @@ function BioInsumosContent() {
       setEditId(null);
       cargarDatos();
     } catch {
-      alert("Error guardando registro.");
+      showSnackbar("Error guardando registro.", "error");
     }
   };
 
@@ -111,13 +117,13 @@ function BioInsumosContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/insumos/${id}`);
+    await removeInsumo(id);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`${API_URL}/insumos`);
+    await removeAllInsumos();
     cargarDatos();
   };
 
@@ -386,5 +392,6 @@ function BioInsumosContent() {
 }
 
 export default function BioInsumos() {
+  const showSnackbar = useSnackbar();
   return <BioInsumosContent />;
 }

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "@shared/lib/config";
 import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -19,7 +18,13 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MenuItem from "@mui/material/MenuItem";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listParametros,
+  createParametro,
+  updateParametro,
+  removeParametro,
+  removeAllParametros,
+} from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 
@@ -54,7 +59,7 @@ function BitacoraParametrosContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/parametros`);
+      const res = await listParametros();
       setData(res.data);
     } catch {
       Swal.fire({ icon: "error", title: "Error", text: "Error al cargar registros." });
@@ -66,8 +71,8 @@ function BitacoraParametrosContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId)
-        await axios.put(`${API_URL}/parametros/${editId}`, form);
-      else await axios.post(`${API_URL}/parametros`, form);
+        await updateParametro(editId, form);
+      else await createParametro(form);
 
       setEditId(null);
       setForm({
@@ -98,14 +103,14 @@ function BitacoraParametrosContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/parametros/${id}`);
+    await removeParametro(id);
     cargarDatos();
   };
 
   //  Eliminar todos los registros
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`${API_URL}/parametros`);
+    await removeAllParametros();
     cargarDatos();
   };
 

@@ -16,11 +16,19 @@ import TableBody from "@mui/material/TableBody";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listEmpleados,
+  listDepartamentosActivos,
+  listPuestosActivos,
+  updateEmpleado,
+  toggleEmpleadoActivo,
+} from "../services/empleadosService";
 import useConfirm from "@shared/hooks/useConfirm";
 import DocumentosEmpleado from "./DocumentosEmpleado";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function Empleados() {
+  const showSnackbar = useSnackbar();
   const [empleados, setEmpleados] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
   const [puestos, setPuestos] = useState([]);
@@ -43,9 +51,9 @@ export default function Empleados() {
     setLoading(true);
     try {
       const [empRes, depRes, pueRes] = await Promise.all([
-        axios.get("/empleados"),
-        axios.get("/departamentos/activos"),
-        axios.get("/puestos/activos"),
+        listEmpleados(),
+        listDepartamentosActivos(),
+        listPuestosActivos(),
       ]);
       setEmpleados(empRes.data);
       setDepartamentos(depRes.data);
@@ -92,18 +100,17 @@ export default function Empleados() {
   const actualizarEmpleado = async () => {
     if (!seleccionado) return;
     try {
-      await axios.put(`/empleados/${seleccionado.fi_empleado_id}`, form);
+      await updateEmpleado(seleccionado.fi_empleado_id, form);
       await cargarDatos();
       limpiar();
-    } catch (e) { console.error(e); alert("Error al actualizar"); }
+    } catch (e) { console.error(e); showSnackbar("Error al actualizar", "error"); }
   };
 
   const toggleActivo = async (emp) => {
     const accion = emp.fb_activo ? "desactivar" : "activar";
     if (!await confirm(`¿Seguro que deseas ${accion} a ${emp.fc_nombre} ${emp.fc_apellido_paterno}?`)) return;
     try {
-      const endpoint = emp.fb_activo ? "deactivate" : "activate";
-      await axios.patch(`/empleados/${emp.fi_empleado_id}/${endpoint}`);
+      await toggleEmpleadoActivo(emp.fi_empleado_id, !emp.fb_activo);
       await cargarDatos();
     } catch (e) { console.error(e); }
   };

@@ -10,10 +10,12 @@ import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
-import axios from "@shared/lib/axiosInstance";
+import { getPerfil, updatePerfil } from "../services/perfilService";
 import DocumentosEmpleado from "./DocumentosEmpleado";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function MiPerfil() {
+  const showSnackbar = useSnackbar();
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +31,7 @@ export default function MiPerfil() {
   const cargarPerfil = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("/empleados/mi-perfil");
+      const { data } = await getPerfil();
       setPerfil(data);
       setForm({
         fc_nombre: data.fc_nombre || "",
@@ -55,13 +57,13 @@ export default function MiPerfil() {
 
   const guardar = async () => {
     if (!form.fc_nombre || !form.fc_apellido_paterno || !form.fc_apellido_materno) {
-      return alert("Nombre y apellidos son obligatorios");
+      return showSnackbar("Nombre y apellidos son obligatorios", "success");
     }
     try {
-      await axios.put("/empleados/mi-perfil", form);
-      alert("Perfil actualizado correctamente");
+      await updatePerfil(form);
+      showSnackbar("Perfil actualizado correctamente", "success");
       await cargarPerfil();
-    } catch (e) { console.error(e); alert("Error al actualizar perfil"); }
+    } catch (e) { console.error(e); showSnackbar("Error al actualizar perfil", "error"); }
   };
 
   if (loading) return <Typography textAlign="center" sx={{ mt: 4 }}>Cargando...</Typography>;

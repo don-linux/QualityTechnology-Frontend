@@ -1,4 +1,3 @@
-// src/utils/auth.js
 import axiosInstance from "./axiosInstance";
 
 export const isAuthenticated = () => {

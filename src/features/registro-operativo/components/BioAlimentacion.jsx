@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -18,9 +17,17 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listAlimentacion,
+  getOrigenes,
+  createAlimentacion,
+  updateAlimentacion,
+  removeAlimentacion,
+  removeAllAlimentacion,
+} from "../services/biometriasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 function BioAlimentacionContent() {
   const [form, setForm] = useState({
@@ -62,10 +69,10 @@ function BioAlimentacionContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/alimentacion`);
+      const res = await listAlimentacion();
       setData(res.data);
     } catch {
-      alert("Error al cargar registros.");
+      showSnackbar("Error al cargar registros.", "error");
     }
   };
 
@@ -75,10 +82,10 @@ function BioAlimentacionContent() {
       const granja = form.ubicacion === "La Ceiba"
         ? "Granja Acuicola La Ceiba"
         : "Granja Acuicola Medellin";
-      const res = await axios.get(`${API_URL}/piletas/origen/${encodeURIComponent(granja)}`);
+      const res = await getOrigenes(granja);
       setOrigenes(res.data || []);
     } catch {
-      alert("Error al cargar orígenes.");
+      showSnackbar("Error al cargar orígenes.", "error");
     }
   };
 
@@ -109,14 +116,11 @@ function BioAlimentacionContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
-        await axios.put(
-          `${API_URL}/alimentacion/${editId}`,
-          form
-        );
-        alert("Registro actualizado");
+        await updateAlimentacion(editId, form);
+        showSnackbar("Registro actualizado", "success");
       } else {
-        await axios.post(`${API_URL}/alimentacion`, form);
-        alert("Registro guardado");
+        await createAlimentacion(form);
+        showSnackbar("Registro guardado", "success");
       }
 
       setForm({
@@ -140,7 +144,7 @@ function BioAlimentacionContent() {
       setEditId(null);
       cargarDatos();
     } catch {
-      alert("Error al guardar registro.");
+      showSnackbar("Error al guardar registro.", "error");
     }
   };
 
@@ -169,7 +173,7 @@ function BioAlimentacionContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/alimentacion/${id}`);
+    await removeAlimentacion(id);
     cargarDatos();
   };
 
@@ -238,7 +242,7 @@ function BioAlimentacionContent() {
   //  Eliminar todos los registros
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`${API_URL}/alimentacion`);
+    await removeAllAlimentacion();
     cargarDatos();
   };
 
@@ -591,5 +595,6 @@ function BioAlimentacionContent() {
 }
 
 export default function BioAlimentacion() {
+  const showSnackbar = useSnackbar();
   return <BioAlimentacionContent />;
 }

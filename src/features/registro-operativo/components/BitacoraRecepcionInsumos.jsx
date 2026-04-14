@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
 import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -20,7 +19,13 @@ import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import SearchIcon from "@mui/icons-material/Search";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listRecepcionInsumos,
+  createRecepcionInsumo,
+  updateRecepcionInsumo,
+  removeRecepcionInsumo,
+  removeAllRecepcionInsumos,
+} from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 
@@ -70,7 +75,7 @@ function RecepcionInsumosContent() {
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/recepcion_insumos?ubicacion=${form.ubicacion}`);
+      const res = await listRecepcionInsumos(form.ubicacion);
       const filtrados = res.data.filter((r) => {
         if (!busqueda) return true;
         return (
@@ -93,8 +98,8 @@ function RecepcionInsumosContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId)
-        await axios.put(`${API_URL}/recepcion_insumos/${editId}`, form);
-      else await axios.post(`${API_URL}/recepcion_insumos`, form);
+        await updateRecepcionInsumo(editId, form);
+      else await createRecepcionInsumo(form);
 
       setEditId(null);
       setForm({
@@ -125,13 +130,13 @@ function RecepcionInsumosContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/recepcion_insumos/${id}`);
+    await removeRecepcionInsumo(id);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!await confirm("Advertencia: ¿Eliminar todos los registros de esta ubicación?")) return;
-    await axios.delete(`${API_URL}/recepcion_insumos?ubicacion=${form.ubicacion}`);
+    await removeAllRecepcionInsumos(form.ubicacion);
     cargarDatos();
   };
 

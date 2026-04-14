@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "@shared/lib/axiosInstance";
+import { listPuestos, createPuesto, updatePuesto, deactivatePuesto } from "@features/catalogos/services/puestosService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import Container from "@mui/material/Container";
@@ -18,8 +18,10 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function Puestos() {
+  const showSnackbar = useSnackbar();
   const [form, setForm] = useState({ fi_puesto_id: null, fc_nombre: "" });
   const [puestos, setPuestos] = useState([]);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -28,7 +30,7 @@ export default function Puestos() {
   useEffect(() => { obtenerPuestos(); }, []);
 
   const obtenerPuestos = async () => {
-    try { const { data } = await axios.get("/puestos"); setPuestos(data); } catch (e) { console.error(e); }
+    try { const { data } = await listPuestos(); setPuestos(data); } catch (e) { console.error(e); }
   };
 
   const handleChange = (e) => {
@@ -41,26 +43,26 @@ export default function Puestos() {
   const registrar = async () => {
     if (!validate(form, ["fc_nombre"])) return;
     try {
-      await axios.post("/puestos", { fc_nombre: form.fc_nombre });
+      await createPuesto(form.fc_nombre);
       obtenerPuestos();
       limpiar();
-    } catch (e) { console.error(e); alert("Error al registrar puesto"); }
+    } catch (e) { console.error(e); showSnackbar("Error al registrar puesto", "error"); }
   };
 
   const actualizar = async () => {
     if (!form.fi_puesto_id) return;
     if (!validate(form, ["fc_nombre"])) return;
     try {
-      await axios.put(`/puestos/${form.fi_puesto_id}`, { fc_nombre: form.fc_nombre, fb_activo: true });
+      await updatePuesto(form.fi_puesto_id, form.fc_nombre);
       obtenerPuestos();
       limpiar();
-    } catch (e) { console.error(e); alert("Error al actualizar puesto"); }
+    } catch (e) { console.error(e); showSnackbar("Error al actualizar puesto", "error"); }
   };
 
   const desactivar = async (id, nombre) => {
     if (!await confirm(`¿Desactivar el puesto "${nombre}"?`)) return;
     try {
-      await axios.patch(`/puestos/${id}/deactivate`);
+      await deactivatePuesto(id);
       obtenerPuestos();
       limpiar();
     } catch (e) { console.error(e); }

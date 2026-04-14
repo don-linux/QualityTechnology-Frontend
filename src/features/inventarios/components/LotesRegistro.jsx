@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
+import {
+  getFamiliaPorInstalacion,
+  listInstalaciones,
+  listLotes,
+  createLote,
+  updateLote,
+  removeLote,
+} from "../services/lotesService";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
@@ -18,11 +25,12 @@ import Divider from "@mui/material/Divider";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 
 // *** IMPORTANTE: USAR AXIOS INSTANCE CON TOKEN ***
-import axios from "@shared/lib/axiosInstance";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 const LotesRegistro = () => {
+  const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
@@ -75,7 +83,7 @@ const LotesRegistro = () => {
 
     try {
 
-      const fam = await axios.get(`/lotes/familia-por-instalacion/${value}`);
+      const fam = await getFamiliaPorInstalacion(value);
 
       if (fam.data) {
 
@@ -103,7 +111,7 @@ const LotesRegistro = () => {
   -------------------------------------------------------- */
   const cargarInstalaciones = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/lotes/instalaciones/${granja}`);
+      const res = await listInstalaciones(granja);
       setInstalaciones(res.data);
     } catch (err) {
       console.error("Error cargando instalaciones:", err);
@@ -115,7 +123,7 @@ const LotesRegistro = () => {
   -------------------------------------------------------- */
   const cargarLotes = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/lotes/granja/${granja}`);
+      const res = await listLotes(granja);
       setLotes(res.data);
     } catch (err) {
       console.error("Error cargando lotes:", err);
@@ -136,7 +144,7 @@ const LotesRegistro = () => {
   const registrarLote = async () => {
     if (!validate(formData, requiredFields)) return;
     try {
-      await axios.post(`${API_URL}/lotes`, {
+      await createLote({
         fecha: formData.fecha,
         familia: formData.familia,
         fc_instalacion_id: formData.fi_instalacion_id,
@@ -149,12 +157,12 @@ const LotesRegistro = () => {
         alevines_inicial: Number(formData.alevines_inicial || 0),
       });
 
-      alert("Lote registrado correctamente");
+      showSnackbar("Lote registrado correctamente", "success");
       resetFormulario();
       actualizarTabla();
     } catch (err) {
       console.error(" Error al registrar lote:", err);
-      alert("Error al registrar el lote");
+      showSnackbar("Error al registrar el lote", "error");
     }
   };
 
@@ -186,7 +194,7 @@ const LotesRegistro = () => {
   const actualizarLote = async () => {
     if (!validate(formData, requiredFields)) return;
     try {
-      await axios.put(`${API_URL}/lotes/${loteSeleccionado.fi_lote_id}`, {
+      await updateLote(loteSeleccionado.fi_lote_id, {
         fecha: formData.fecha,
         familia: formData.familia,
         fc_instalacion_id: formData.fi_instalacion_id,
@@ -199,13 +207,13 @@ const LotesRegistro = () => {
         alevines_inicial: Number(formData.alevines_inicial || 0),
       });
 
-      alert("Lote actualizado correctamente");
+      showSnackbar("Lote actualizado correctamente", "success");
 
       resetEdicion();
       actualizarTabla();
     } catch (err) {
       console.error(" Error al actualizar lote:", err);
-      alert("No se pudo actualizar el lote");
+      showSnackbar("No se pudo actualizar el lote", "error");
     }
   };
 
@@ -216,13 +224,13 @@ const LotesRegistro = () => {
     if (!await confirm("¿Seguro que deseas eliminar este lote?")) return;
 
     try {
-      await axios.delete(`${API_URL}/lotes/${id}`);
-      alert("Lote eliminado correctamente");
+      await removeLote(id);
+      showSnackbar("Lote eliminado correctamente", "success");
       actualizarTabla();
       resetEdicion();
     } catch (err) {
       console.error(" Error al eliminar lote:", err);
-      alert("No se pudo eliminar");
+      showSnackbar("No se pudo eliminar", "error");
     }
   };
 

@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listByGranja as listReproductoresByGranja,
+  getMovimientos as getReproductoresMovimientos,
+  createReproductor,
+  updateReproductor,
+  removeReproductor,
+} from "../services/reproductoresService";
+import { listByGranja as listInstalacionesByGranja } from "../services/instalacionesService";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -21,6 +28,7 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 const REPRODUCTOR_BASE_REQUIRED = [
   "fc_instalacion",
@@ -62,6 +70,7 @@ const CirculoNumero = ({ color, value }) => (
 );
 
 export default function Reproductores() {
+  const showSnackbar = useSnackbar();
   return <ReproductoresContent />;
 }
 
@@ -133,7 +142,7 @@ const colorDias = (dias) => {
 
   const obtenerReproductores = useCallback(async () => {
     const granja = encodeURIComponent(granjaActiva);
-    const { data } = await axios.get(`/reproductores/granja/${granja}`);
+    const { data } = await listReproductoresByGranja(granja);
     setReproductores(data || []);
     setTotalOrganismos(
       data?.reduce(
@@ -148,13 +157,13 @@ const colorDias = (dias) => {
       ? "Granja Acuícola La Ceiba"
       : "Granja Acuícola Medellin";
     const granja = encodeURIComponent(granjaNormalizada);
-    const { data } = await axios.get(`/instalaciones/granja/${granja}`);
+    const { data } = await listInstalacionesByGranja(granja);
     setInstalaciones(data || []);
     setTotalInstalaciones(data?.length || 0);
   }, [granjaActiva]);
 
   const obtenerTrazabilidad = useCallback(async () => {
-    const { data } = await axios.get(`/reproductores/movimientos/${granjaActiva}`);
+    const { data } = await getReproductoresMovimientos(granjaActiva);
     setRastreos(data || []);
   }, [granjaActiva]);
 
@@ -236,7 +245,7 @@ const colorDias = (dias) => {
     if (!validate(form, getReproductorRequiredFields(origenTipo))) return;
 
     try {
-      await axios.post("/reproductores", {
+      await createReproductor({
         ...form,
         origen_texto: form.origen_instalacion || form.origen_texto,
         fi_usuario_id: usuario_id,
@@ -248,7 +257,7 @@ const colorDias = (dias) => {
       obtenerTrazabilidad();
     } catch (err) {
       console.error("Error al registrar reproductor:", err);
-      alert(err.response?.data?.error || err.message || "No se pudo registrar el reproductor.");
+      showSnackbar(err.response?.data?.error || err.message || "No se pudo registrar el reproductor.", "error");
     }
   };
 
@@ -281,7 +290,7 @@ const colorDias = (dias) => {
   const guardarEdicion = async () => {
     if (!validate(form, getReproductorRequiredFields(origenTipo))) return;
     try {
-      await axios.put(`/reproductores/${seleccionado.fi_reproductor_id}`, {
+      await updateReproductor(seleccionado.fi_reproductor_id, {
         ...form,
         origen_texto: form.origen_instalacion || form.origen_texto,
         fi_usuario_id: usuario_id,
@@ -292,24 +301,24 @@ const colorDias = (dias) => {
       obtenerTrazabilidad();
     } catch (err) {
       console.error("Error al guardar reproductor:", err);
-      alert(err.response?.data?.error || err.message || "No se pudo guardar el reproductor.");
+      showSnackbar(err.response?.data?.error || err.message || "No se pudo guardar el reproductor.", "error");
     }
   };
 
   const eliminarReproductor = async (id) => {
     if (!await confirm("¿Eliminar este reproductor?")) return;
     try {
-      await axios.delete(`/reproductores/${id}`);
+      await removeReproductor(id);
       obtenerReproductores();
       obtenerTrazabilidad();
     } catch (err) {
-      alert("Error al eliminar: " + (err.response?.data?.error || err.message));
+      showSnackbar("Error al eliminar: " + (err.response?.data?.error || err.message), "error");
     }
   };
 
   const trazarReproductor = (r) => {
-    alert(`Movimiento desde ${r.fc_instalacion}.
-Pronto conectaremos este botón con traspasos internos.`);
+    showSnackbar(`Movimiento desde ${r.fc_instalacion}.
+Pronto conectaremos este botón con traspasos internos.`, "error");
   };
 
   /* ===================== RENDER ===================== */

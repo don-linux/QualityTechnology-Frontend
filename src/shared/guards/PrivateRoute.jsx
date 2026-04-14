@@ -1,66 +1,28 @@
-// src/components/PrivateRoute.jsx
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { isAuthenticated } from "@shared/lib/auth";
+import useAuth from "@app/providers/AuthProvider";
 
 const PrivateRoute = ({ rolesPermitidos, modulo }) => {
-  const auth = isAuthenticated();
-  const rol = (localStorage.getItem("rol") || "")
-    .normalize("NFD") // elimina acentos
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
-  
-  let modulos = [];
-  const rawModulos = localStorage.getItem("modulos");
-  if (rawModulos) {
-    try {
-      const parsed = JSON.parse(rawModulos);
-      if (Array.isArray(parsed)) {
-        modulos = parsed;
-      }
-    } catch (e) {
-      modulos = [];
-    }
-  }
+  const { isAuthenticated, rol, hasModulo } = useAuth();
 
-  // Si no está autenticado → redirige a login
-  if (!auth) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Si tiene rol pero no pertenece a la lista permitida → sin acceso
-  if (rolesPermitidos && !rolesPermitidos.includes(rol)) {
-    return <Navigate to="/sin-acceso" replace />;
-  }
-
-  // Validación por módulo
-  if (modulo) {
-    const normalizedModulo = modulo
+  if (rolesPermitidos) {
+    const normalizedRol = (rol || "")
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .trim()
-      .toLowerCase();
-
-    const tieneModulo =
-      Array.isArray(modulos) &&
-      modulos.some((m) => {
-        if (!m || typeof m.fc_nombre !== "string") {
-          return false;
-        }
-        const nombreNormalizado = m.fc_nombre
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .trim()
-          .toLowerCase();
-        return nombreNormalizado === normalizedModulo;
-      });
-
-    if (!tieneModulo) {
+      .trim();
+    if (!rolesPermitidos.includes(normalizedRol)) {
       return <Navigate to="/sin-acceso" replace />;
     }
   }
 
-  // Si todo está bien → muestra el contenido
+  if (modulo && !hasModulo(modulo)) {
+    return <Navigate to="/sin-acceso" replace />;
+  }
+
   return <Outlet />;
 };
 

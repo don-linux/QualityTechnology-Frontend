@@ -1,26 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { logout } from "@shared/lib/auth";
+import useAuth from "@app/providers/AuthProvider";
+
+const EMPRESAS = { "1": "Granja Acuícola Medellín", "2": "Granja Acuícola La Ceiba" };
 
 const PanelEmpresa = () => {
-  const [nombreGranja, setNombreGranja] = useState("");
-
-  useEffect(() => {
-    const empresaId = localStorage.getItem("empresa_id");
-
-    // Muestra el nombre según el ID de la empresa
-    if (empresaId === "1") {
-      setNombreGranja("Granja Acuícola Medellín");
-    } else if (empresaId === "2") {
-      setNombreGranja("Granja Acuícola La Ceiba");
-    } else {
-      setNombreGranja("Granja desconocida");
-    }
-  }, []);
-
-  const handleCerrarSesion = () => logout();
+  const { empresaId, logout } = useAuth();
+  const nombreGranja = useMemo(() => EMPRESAS[empresaId] || "Granja desconocida", [empresaId]);
 
   return (
     <Box sx={{ p: 4, textAlign: "center" }}>
@@ -31,7 +19,7 @@ const PanelEmpresa = () => {
         {nombreGranja}
       </Typography>
 
-      <Button variant="contained" color="error" onClick={handleCerrarSesion}>
+      <Button variant="contained" color="error" onClick={logout}>
         Cerrar sesión
       </Button>
     </Box>

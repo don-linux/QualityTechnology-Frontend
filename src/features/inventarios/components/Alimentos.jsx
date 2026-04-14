@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
+import {
+  listAlimentos,
+  createAlimento,
+  removeAlimento,
+  listReproductoresByGranja,
+  listPiletasByGranja,
+  listEngordaByGranja,
+} from "../services/alimentosService";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -21,20 +28,22 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import axios from "@shared/lib/axiosInstance";
 import FormHelperText from "@mui/material/FormHelperText";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 export default function Alimentos() {
+  const showSnackbar = useSnackbar();
   return <AlimentosContent />;
 }
 
 function AlimentosContent() {
-  const usuario_id = localStorage.getItem("usuario_id");
+  const usuario_id = auth.usuarioId;
   const [tab, setTab] = useState("alevinaje");
   const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
 
@@ -51,6 +60,7 @@ function AlimentosContent() {
   const [engorda, setEngorda] = useState([]);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const auth = useAuth();
 
   const safeNumber = (val, decimals = 2) =>
     !isNaN(Number(val)) ? Number(val).toFixed(decimals) : "—";
@@ -60,7 +70,7 @@ function AlimentosContent() {
   // =======================================
   const obtenerRegistros = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/alimentos`);
+      const res = await listAlimentos();
       setRegistros(res.data);
     } catch (error) {
       console.error("Error al obtener alimentos:", error);
@@ -70,7 +80,7 @@ function AlimentosContent() {
   const obtenerReproductores = useCallback(async () => {
     try {
       const granja = encodeURIComponent(granjaActiva);
-      const res = await axios.get(`${API_URL}/reproductores/granja/${granja}`);
+      const res = await listReproductoresByGranja(granja);
       setReproductores(res.data);
     } catch (error) {
       console.error("Error al obtener reproductores:", error);
@@ -80,7 +90,7 @@ function AlimentosContent() {
   const obtenerPiletas = useCallback(async () => {
     try {
       const granja = encodeURIComponent(granjaActiva);
-      const res = await axios.get(`${API_URL}/piletas/inventario/${granja}`);
+      const res = await listPiletasByGranja(granja);
       setPiletas(res.data);
     } catch (error) {
       console.error("Error al obtener piletas:", error);
@@ -90,7 +100,7 @@ function AlimentosContent() {
   const obtenerEngorda = useCallback(async () => {
     try {
       const granja = encodeURIComponent(granjaActiva);
-      const res = await axios.get(`${API_URL}/engorda/granja/${granja}`);
+      const res = await listEngordaByGranja(granja);
       setEngorda(res.data);
     } catch (error) {
       console.error("Error al obtener engorda:", error);
@@ -123,7 +133,7 @@ function AlimentosContent() {
   };
 
   const registrar = async () => {
-    if (!usuario_id) return alert("Vuelve a iniciar sesión.");
+    if (!usuario_id) return showSnackbar("Vuelve a iniciar sesión.", "error");
 
     const currentField = tab === "alevinaje" ? "fi_pileta_id"
       : tab === "engorda" ? "fi_engorda_id"
@@ -137,20 +147,20 @@ function AlimentosContent() {
     if (tab === "reproductores") payload.fi_reproductor_id = form.fi_reproductor_id || null;
 
     try {
-      await axios.post(`${API_URL}/alimentos`, payload);
-      alert("Registro agregado ");
+      await createAlimento(payload);
+      showSnackbar("Registro agregado ", "success");
       obtenerRegistros();
       limpiarFormulario();
     } catch (error) {
       console.error("Error al registrar alimento:", error);
-      alert("Error al registrar alimento ");
+      showSnackbar("Error al registrar alimento ", "error");
     }
   };
 
   const eliminar = async (id) => {
     if (!await confirm("¿Seguro que deseas eliminar este registro?")) return;
     try {
-      await axios.delete(`${API_URL}/alimentos/${id}`);
+      await removeAlimento(id);
       obtenerRegistros();
     } catch (error) {
       console.error("Error al eliminar alimento:", error);

@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -13,9 +12,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
-import axios from "@shared/lib/axiosInstance";
+import { getDatos } from "../services/tesoreriaService";
 
-const API_TESORERIA = `${API_URL}/tesoreria`;
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
 
 export default function TesoreriaGeneral() {
@@ -26,7 +24,7 @@ export default function TesoreriaGeneral() {
   const obtenerDatos = useCallback(async () => {
     try {
       const granjaActual = GRANJAS[tab];
-      const res = await axios.get(`${API_TESORERIA}?anio=${anioSeleccionado}&granja=${granjaActual}`);
+      const res = await getDatos(anioSeleccionado, granjaActual);
       setDatos(res.data || []);
     } catch (err) {
       console.error(" Error al obtener datos de tesoreria:", err);

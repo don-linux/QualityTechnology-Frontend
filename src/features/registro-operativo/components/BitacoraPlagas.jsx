@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
 import Swal from "sweetalert2";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -22,7 +21,13 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Divider from "@mui/material/Divider";
 import SearchIcon from "@mui/icons-material/Search";
-import axiosInstance from "@shared/lib/axiosInstance";
+import {
+  listPlagas,
+  createPlaga,
+  updatePlaga,
+  removePlaga,
+  removeAllPlagas,
+} from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 
@@ -77,7 +82,7 @@ function BitacoraPlagasContent() {
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
     try {
-      const res = await axiosInstance.get(`/plagas?ubicacion=${form.ubicacion}`);
+      const res = await listPlagas(form.ubicacion);
       const filtrados = res.data.filter((r) => {
         if (!busqueda) return true;
         return (
@@ -100,8 +105,8 @@ function BitacoraPlagasContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId)
-        await axiosInstance.put(`/plagas/${editId}`, form);
-      else await axiosInstance.post(`/plagas`, form);
+        await updatePlaga(editId, form);
+      else await createPlaga(form);
 
       setEditId(null);
       setForm({
@@ -132,13 +137,13 @@ function BitacoraPlagasContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axiosInstance.delete(`/plagas/${id}`);
+    await removePlaga(id);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Eliminar todos los registros de esta ubicación?")) return;
-    await axiosInstance.delete(`/plagas?ubicacion=${form.ubicacion}`);
+    await removeAllPlagas(form.ubicacion);
     cargarDatos();
   };
 

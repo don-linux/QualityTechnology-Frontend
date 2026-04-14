@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listRoles,
+  listModulos,
+  listModulosByRol,
+  updateModulosByRol,
+} from "../services/seguridadService";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -19,9 +24,8 @@ import Stack from "@mui/material/Stack";
 import Divider from "@mui/material/Divider";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
+import useSnackbar from "@shared/hooks/useSnackbar";
 import CloseIcon from "@mui/icons-material/Close";
 
 const MENUS_PRINCIPALES = new Set([
@@ -42,11 +46,7 @@ export default function RolesModulos() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [rolEditando, setRolEditando] = useState(null);
   const [modulosSeleccionados, setModulosSeleccionados] = useState([]);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const showSnackbar = useSnackbar();
 
   useEffect(() => {
     obtenerRoles();
@@ -66,7 +66,7 @@ export default function RolesModulos() {
   // ================================
   const obtenerRoles = async () => {
     try {
-      const { data } = await axios.get("/roles");
+      const { data } = await listRoles();
       setRoles(data);
     } catch (error) {
       console.error("Error al obtener roles:", error);
@@ -78,7 +78,7 @@ export default function RolesModulos() {
   // ================================
   const obtenerModulos = async () => {
     try {
-      const { data } = await axios.get("/modulos");
+      const { data } = await listModulos();
       setModulos(data);
     } catch (error) {
       console.error("Error al obtener módulos:", error);
@@ -90,7 +90,7 @@ export default function RolesModulos() {
   // ================================
   const obtenerModulosRol = async (rolId) => {
     try {
-      const { data } = await axios.get(`/roles-modulos/${rolId}/modulos`);
+      const { data } = await listModulosByRol(rolId);
       const ids = data.map((m) => m.fi_modulo_id);
       
       setRolesModulos(prev => ({
@@ -142,9 +142,7 @@ export default function RolesModulos() {
     if (!rolEditando) return;
 
     try {
-      await axios.put(`/roles-modulos/${rolEditando.fi_rol_id}/modulos`, {
-        modulosIds: modulosSeleccionados,
-      });
+      await updateModulosByRol(rolEditando.fi_rol_id, modulosSeleccionados);
 
       // Actualizar estado local
       setRolesModulos(prev => ({
@@ -152,11 +150,11 @@ export default function RolesModulos() {
         [rolEditando.fi_rol_id]: modulosSeleccionados
       }));
 
-      setSnackbar({ open: true, message: "Módulos actualizados correctamente", severity: "success" });
+      showSnackbar("Módulos actualizados correctamente", "success");
       cerrarDrawer();
     } catch (error) {
       console.error("Error al actualizar módulos:", error);
-      setSnackbar({ open: true, message: "Error al actualizar módulos", severity: "error" });
+      showSnackbar("Error al actualizar módulos", "error");
     }
   };
 
@@ -294,20 +292,6 @@ export default function RolesModulos() {
         )}
       </Drawer>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={2500}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          severity={snackbar.severity}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 }

@@ -1,4 +1,3 @@
-// src/components/FlujoCaja.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
@@ -14,20 +13,22 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listMovimientos,
+  createMovimiento,
+  updateMovimiento,
+  removeMovimiento,
+} from "../services/flujoCajaService";
 import FormDialog from "./FormDialog"; 
 import CuentasDialog from "./CuentasDialog"; 
-import { API_URL } from "@shared/lib/config";
 import { getUploadUrl } from "@shared/lib/uploadUrl";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
-const API = API_URL;
 
 function TablaMovimientos({ movimientos, onEdit, onDelete }) {
   return (
@@ -135,7 +136,7 @@ export default function FlujoCaja() {
   const [openCuentas, setOpenCuentas] = useState(false);
   const [formData, setFormData] = useState({});
   const [editId, setEditId] = useState(null);
-  const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
+  const showSnackbar = useSnackbar();
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -150,11 +151,11 @@ export default function FlujoCaja() {
   // =====================================================
   const obtenerMovimientos = useCallback(async () => {
     try {
-      const res = await axios.get(`${API}/flujo-caja/${GRANJAS[subTab]}`);
+      const res = await listMovimientos(GRANJAS[subTab]);
       setMovimientos(res.data || []);
     } catch (err) {
       console.error(" Error al obtener movimientos:", err);
-      mostrarAlerta("Error al obtener los movimientos", "error");
+      showSnackbar("Error al obtener los movimientos", "error");
     }
   }, [subTab]);
 
@@ -216,43 +217,31 @@ export default function FlujoCaja() {
     try {
       const payload = { ...data, fc_granja: GRANJAS[subTab] };
       if (editId) {
-        await axios.put(`${API}/flujo-caja/${editId}`, payload);
-        mostrarAlerta("Movimiento actualizado correctamente ", "success");
+        await updateMovimiento(editId, payload);
+        showSnackbar("Movimiento actualizado correctamente ", "success");
       } else {
-        await axios.post(`${API}/flujo-caja`, payload);
-        mostrarAlerta("Movimiento agregado correctamente ", "success");
+        await createMovimiento(payload);
+        showSnackbar("Movimiento agregado correctamente ", "success");
       }
       setOpen(false);
       obtenerMovimientos();
     } catch (err) {
       console.error(" Error al guardar:", err);
-      mostrarAlerta("Error al guardar el movimiento ", "error");
+      showSnackbar("Error al guardar el movimiento ", "error");
     }
   };
 
   const handleDelete = async (id) => {
     if (!await confirm("¿Eliminar este registro?")) return;
     try {
-      await axios.delete(`${API}/flujo-caja/${id}`);
+      await removeMovimiento(id);
       obtenerMovimientos();
-      mostrarAlerta("Movimiento eliminado correctamente ", "success");
+      showSnackbar("Movimiento eliminado correctamente ", "success");
     } catch (err) {
       console.error(" Error al eliminar:", err);
-      mostrarAlerta("Error al eliminar el movimiento ", "error");
+      showSnackbar("Error al eliminar el movimiento ", "error");
     }
   };
-
-  // =====================================================
-  //  Snackbar
-  // =====================================================
-  const mostrarAlerta = (message, severity) => {
-    setSnack({ open: true, message, severity });
-  };
-
-  const cerrarAlerta = () => {
-    setSnack((prev) => ({ ...prev, open: false }));
-  };
-
 
   // =====================================================
   //  Render Principal
@@ -313,16 +302,6 @@ export default function FlujoCaja() {
         onClose={() => setOpenCuentas(false)}
       />
 
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3000}
-        onClose={cerrarAlerta}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert onClose={cerrarAlerta} severity={snack.severity} sx={{ width: "100%" }}>
-          {snack.message}
-        </Alert>
-      </Snackbar>
       {ConfirmModal}
     </Container>
   );

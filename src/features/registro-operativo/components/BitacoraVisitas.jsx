@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
 import Swal from "sweetalert2";
 import { getUploadUrl } from "@shared/lib/uploadUrl";
 import Box from "@mui/material/Box";
@@ -21,7 +20,13 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import SearchIcon from "@mui/icons-material/Search";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listVisitas,
+  createVisita,
+  updateVisita,
+  removeVisita,
+  removeAllVisitas,
+} from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 
@@ -69,7 +74,7 @@ function BitacoraVisitasContent() {
 
   const cargarDatos = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/visitas?ubicacion=${form.ubicacion}&filtro=${busqueda}`);
+      const res = await listVisitas(form.ubicacion, busqueda);
       setData(res.data);
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
@@ -104,9 +109,9 @@ function BitacoraVisitasContent() {
       appendIfValue("ubicacion", form.ubicacion);
 
       if (editId) {
-        await axios.put(`${API_URL}/visitas/${editId}`, formData);
+        await updateVisita(editId, formData);
       } else {
-        await axios.post(`${API_URL}/visitas`, formData);
+        await createVisita(formData);
       }
       setEditId(null);
       setForm({
@@ -136,13 +141,13 @@ function BitacoraVisitasContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/visitas/${id}`);
+    await removeVisita(id);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`${API_URL}/visitas`);
+    await removeAllVisitas();
     cargarDatos();
   };
 

@@ -14,7 +14,14 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Paper from "@mui/material/Paper";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listBanos,
+  listEmpleadosBanos,
+  createBano,
+  updateBano,
+  removeBano,
+  removeAllBanos,
+} from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 
@@ -58,7 +65,7 @@ function BitacoraBanosContent() {
   //  Cargar datos
   const cargarDatos = async () => {
     try {
-      const res = await axios.get("/banos");
+      const res = await listBanos();
       setData(res.data);
     } catch {
       Swal.fire({ icon: "error", title: "Error", text: "Error al cargar registros." });
@@ -67,7 +74,7 @@ function BitacoraBanosContent() {
 
   const cargarEmpleados = async () => {
     try {
-      const res = await axios.get("/banos/empleados");
+      const res = await listEmpleadosBanos();
       setEmpleados(res.data);
     } catch {
       Swal.fire({ icon: "error", title: "Error", text: "Error al cargar empleados." });
@@ -84,10 +91,10 @@ function BitacoraBanosContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
-        await axios.put(`/banos/${editId}`, form);
+        await updateBano(editId, form);
         Swal.fire({ icon: "success", title: "Listo", text: "Registro actualizado." });
       } else {
-        await axios.post("/banos", form);
+        await createBano(form);
         Swal.fire({ icon: "success", title: "Listo", text: "Registro guardado." });
       }
 
@@ -128,14 +135,14 @@ function BitacoraBanosContent() {
   //  Eliminar uno
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`/banos/${id}`);
+    await removeBano(id);
     cargarDatos();
   };
 
   //  Eliminar todos
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer.")) return;
-    await axios.delete(`/banos`);
+    await removeAllBanos();
     cargarDatos();
   };
 

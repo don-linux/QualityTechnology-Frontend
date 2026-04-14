@@ -1,5 +1,17 @@
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "@shared/lib/axiosInstance";
+import {
+  getInventario,
+  getLotes,
+  getDestinos,
+  getOrigenes,
+  getMovimientos,
+  registrarMovimiento,
+  registrarSiembra,
+  removePileta,
+  filtrarMovimientos,
+  eliminarMovimiento,
+  eliminarTodosMovimientos,
+} from "../services/piletasService";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -16,6 +28,8 @@ import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 /* ============================================================
    NORMALIZAR GRANJA PARA BACKEND (SIN ACENTOS Y CORRECTO)
@@ -35,13 +49,15 @@ const normalizarGranja = (g) => {
 
 
 export default function Pileta() {
+  const showSnackbar = useSnackbar();
   return <PiletaContent />;
 }
 
 function PiletaContent() {
-  const usuario_id = localStorage.getItem("usuario_id");
+  const usuario_id = auth.usuarioId;
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const auth = useAuth();
 
   const getRequiredFields = (tipoOrigen) => {
     const base = [
@@ -96,7 +112,7 @@ function PiletaContent() {
   const obtenerInventario = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const { data } = await axios.get(`/piletas/inventario/${granja}`);
+      const { data } = await getInventario(granja);
       setInventario(data || []);
     } catch (error) {
       console.error(" Error inventario:", error);
@@ -106,7 +122,7 @@ function PiletaContent() {
   const obtenerLotes = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const { data } = await axios.get(`/piletas/lotes/${granja}`);
+      const { data } = await getLotes(granja);
       setLotes(data || []);
     } catch (error) {
       console.error(" Error lotes:", error);
@@ -116,7 +132,7 @@ function PiletaContent() {
   const obtenerInstalaciones = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const { data } = await axios.get(`/piletas/destino/${granja}`);
+      const { data } = await getDestinos(granja);
       setInstalaciones(data || []);
     } catch (error) {
       console.error(" Error instalaciones:", error);
@@ -126,7 +142,7 @@ function PiletaContent() {
   const obtenerOrigenes = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const { data } = await axios.get(`/piletas/origen/${granja}`);
+      const { data } = await getOrigenes(granja);
       setOrigenesDisponibles(data || []);
     } catch (error) {
       console.error(" Error origenes:", error);
@@ -136,7 +152,7 @@ function PiletaContent() {
   const obtenerRastreos = useCallback(async () => {
     try {
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
-      const { data } = await axios.get(`/piletas/movimientos/${usuario_id}/${granja}`);
+      const { data } = await getMovimientos(usuario_id, granja);
       setRastreos(data || []);
     } catch (error) {
       console.error("Error trazabilidad:", error);
@@ -243,16 +259,16 @@ function PiletaContent() {
         fc_granja: granjaActiva,
       };
 
-      const { data: response } = await axios.post("/piletas/movimientos/registrar", dataPayload);
+      const { data: response } = await registrarMovimiento(dataPayload);
 
       if (response.error) throw new Error(response.error);
 
-      alert("Siembra registrada correctamente");
+      showSnackbar("Siembra registrada correctamente", "error");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
     } catch (err) {
-      alert("Error: " + err.message);
+      showSnackbar("Error: " + err.message, "error");
     }
   };
 
@@ -260,7 +276,7 @@ function PiletaContent() {
       ACTUALIZAR
   ============================================================ */
   const actualizarPileta = async () => {
-    if (!seleccionado) return alert("Seleccione un registro");
+    if (!seleccionado) return showSnackbar("Seleccione un registro", "success");
     if (!validate(form, getRequiredFields(form.tipo_origen))) return;
 
     try {
@@ -270,16 +286,16 @@ function PiletaContent() {
         fi_usuario_id: usuario_id,
       };
 
-      const { data: response } = await axios.post("/piletas/siembra", dataPayload);
+      const { data: response } = await registrarSiembra(dataPayload);
 
       if (response.error) throw new Error(response.error);
 
-      alert("Registro actualizado");
+      showSnackbar("Registro actualizado", "error");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
     } catch (err) {
-      alert(err.message);
+      showSnackbar(err.message, "error");
     }
   };
 
@@ -287,11 +303,11 @@ function PiletaContent() {
       ELIMINAR
   ============================================================ */
   const eliminarPileta = async () => {
-    if (!seleccionado) return alert("Seleccione una pileta");
+    if (!seleccionado) return showSnackbar("Seleccione una pileta", "success");
 
     try {
-      await axios.delete(`/piletas/${seleccionado}`);
-      alert("Pileta eliminada");
+      await removePileta(seleccionado);
+      showSnackbar("Pileta eliminada", "success");
       limpiarFormulario();
       obtenerInventario();
       obtenerRastreos();
@@ -334,9 +350,7 @@ function PiletaContent() {
 
       const granja = encodeURIComponent(normalizarGranja(granjaActiva));
 
-      const { data } = await axios.get(
-        `/piletas/movimientos/filtro/${usuario_id}/${granja}?${params}`
-      );
+      const { data } = await filtrarMovimientos(usuario_id, granja, params);
 
       setRastreos(data);
     } catch (error) {
@@ -348,9 +362,7 @@ function PiletaContent() {
     if (!await confirm("¿Eliminar este movimiento?")) return;
 
     try {
-      await axios.delete("/piletas/movimientos/eliminar", {
-        data: { movimiento_id: id },
-      });
+      await eliminarMovimiento(id);
       filtrarRastreabilidad();
     } catch (err) {
       console.error(err);
@@ -362,9 +374,7 @@ function PiletaContent() {
       return;
 
     try {
-      await axios.delete("/piletas/movimientos/eliminar", {
-        data: { eliminar_todos: true, granja: granjaActiva },
-      });
+      await eliminarTodosMovimientos(granjaActiva);
 
       setRastreos([]);
     } catch (err) {

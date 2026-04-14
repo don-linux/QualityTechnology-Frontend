@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -18,9 +17,19 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listBiometrias,
+  getInstalaciones,
+  getLotesByInstalacion,
+  getInfoInstalacion,
+  createBiometria,
+  updateBiometria,
+  removeBiometria,
+} from "../services/biometriasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useAuth from "@app/providers/AuthProvider";
 
 const GRANJA_MAP = {
   Medellin: "Granja Acuícola Medellín",
@@ -33,11 +42,12 @@ const UBICACION_TO_PARAM = {
 };
 
 export default function BioBiometrias() {
+  const showSnackbar = useSnackbar();
   return <BioBiometriasContent />;
 }
 
 function BioBiometriasContent() {
-  const usuario_id = localStorage.getItem("usuario_id") || 1;
+  const usuario_id = auth.usuarioId || 1;
 
   const [data, setData] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
@@ -45,6 +55,7 @@ function BioBiometriasContent() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const auth = useAuth();
 
   const requiredFields = [
     "ubicacion", "fd_fecha", "fi_instalacion_id", "fi_lote_id", "tipo",
@@ -72,10 +83,10 @@ function BioBiometriasContent() {
   ------------------------------*/
   const cargarDatos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/biometrias`);
+      const res = await listBiometrias();
       setData(res.data);
     } catch {
-      alert("Error al cargar biometrías");
+      showSnackbar("Error al cargar biometrías", "error");
     }
   };
 
@@ -83,17 +94,15 @@ function BioBiometriasContent() {
     if (!form.ubicacion) { setInstalaciones([]); return; }
     try {
       const granja = GRANJA_MAP[form.ubicacion];
-      const res = await axios.get(`${API_URL}/instalaciones/granja/${granja}`);
+      const res = await getInstalaciones(granja);
       setInstalaciones(res.data);
     } catch {
-      alert("Error al cargar instalaciones");
+      showSnackbar("Error al cargar instalaciones", "error");
     }
   };
 
   const cargarLotes = async (instalacionId) => {
-    const res = await axios.get(
-      `${API_URL}/lotes/instalacion/${instalacionId}`
-    );
+    const res = await getLotesByInstalacion(instalacionId);
     setLotes(res.data);
   };
 
@@ -109,9 +118,7 @@ function BioBiometriasContent() {
   const cargarInfoInstalacion = async (instalacionId) => {
     try {
       const granjaParam = UBICACION_TO_PARAM[form.ubicacion] || "med";
-      const res = await axios.get(
-        `${API_URL}/biometrias/info/${granjaParam}/${instalacionId}`
-      );
+      const res = await getInfoInstalacion(granjaParam, instalacionId);
 
       const d = res.data;
 
@@ -203,17 +210,17 @@ function BioBiometriasContent() {
       };
 
       if (editId) {
-        await axios.put(`${API_URL}/biometrias/${editId}`, body);
-        alert("Registro actualizado");
+        await updateBiometria(editId, body);
+        showSnackbar("Registro actualizado", "success");
       } else {
-        await axios.post(`${API_URL}/biometrias/`, body);
-        alert("Registro creado");
+        await createBiometria(body);
+        showSnackbar("Registro creado", "success");
       }
 
       limpiar();
       cargarDatos();
     } catch {
-      alert("Error guardando biometría");
+      showSnackbar("Error guardando biometría", "error");
     }
   };
 
@@ -246,7 +253,7 @@ function BioBiometriasContent() {
   ------------------------------*/
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await axios.delete(`${API_URL}/biometrias/${id}`);
+    await removeBiometria(id);
     cargarDatos();
   };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_URL } from "@shared/lib/config";
+import { listRoles, createRol, updateRol, removeRol } from "@features/catalogos/services/rolesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -16,7 +16,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import axios from "@shared/lib/axiosInstance";
 
 export default function Roles() {
   const [form, setForm] = useState({ rol_id: '', nombre: '' });
@@ -31,7 +30,7 @@ export default function Roles() {
 
   const obtenerRoles = async () => {
     try {
-      const res = await axios.get(`${API_URL}/roles`);
+      const res = await listRoles();
       setRoles(res.data);
     } catch (error) {
       console.error('Error al obtener roles', error);
@@ -52,7 +51,7 @@ export default function Roles() {
   const registrarRol = async () => {
     if (!validate(form, requiredFields)) return;
     try {
-      await axios.post(`${API_URL}/roles`, { nombre: form.nombre });
+      await createRol(form.nombre);
       setMensaje(' Rol registrado correctamente');
       limpiarFormulario();
       obtenerRoles();
@@ -66,7 +65,7 @@ export default function Roles() {
     if (!form.rol_id) return setMensaje(' Selecciona un rol para actualizar');
     if (!validate(form, requiredFields)) return;
     try {
-      await axios.put(`${API_URL}/roles/${form.rol_id}`, { nombre: form.nombre });
+      await updateRol(form.rol_id, form.nombre);
       setMensaje(' Rol actualizado correctamente');
       limpiarFormulario();
       obtenerRoles();
@@ -79,7 +78,7 @@ export default function Roles() {
   const eliminarRol = async () => {
     if (!form.rol_id) return setMensaje(' Selecciona un rol para eliminar');
     try {
-      await axios.delete(`${API_URL}/roles/${form.rol_id}`);
+      await removeRol(form.rol_id);
       setMensaje(' Rol eliminado correctamente');
       limpiarFormulario();
       obtenerRoles();

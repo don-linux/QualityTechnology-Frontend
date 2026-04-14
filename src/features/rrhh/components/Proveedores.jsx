@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -24,13 +23,18 @@ import Business from "@mui/icons-material/Business";
 import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
 import Save from "@mui/icons-material/Save";
 import Close from "@mui/icons-material/Close";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listProveedores,
+  createProveedor,
+  updateProveedor,
+  removeProveedor,
+} from "../services/proveedoresService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
-
-const api = `${API_URL}/proveedores`;
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function Proveedores() {
+  const showSnackbar = useSnackbar();
   const [proveedores, setProveedores] = useState([]);
   const [busqueda, setBusqueda] = useState("");
 
@@ -61,7 +65,7 @@ export default function Proveedores() {
   // ============================
   const obtenerDatos = async () => {
     try {
-      const res = await axios.get(api);
+      const res = await listProveedores();
       setProveedores(res.data);
     } catch (err) {
       console.error(err);
@@ -128,25 +132,25 @@ export default function Proveedores() {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.correo && !emailRegex.test(formData.correo)) {
-      alert(" El correo no tiene un formato válido.");
+      showSnackbar(" El correo no tiene un formato válido.", "success");
       return;
     }
     if (formData.telefono && isNaN(formData.telefono)) {
-      alert(" El teléfono debe contener solo números.");
+      showSnackbar(" El teléfono debe contener solo números.", "success");
       return;
     }
 
     try {
       if (formData.id) {
-        await axios.put(`${api}/${formData.id}`, formData);
+        await updateProveedor(formData.id, formData);
       } else {
-        await axios.post(api, formData);
+        await createProveedor(formData);
       }
       setOpen(false);
       obtenerDatos();
     } catch (err) {
       console.error("Error al guardar:", err);
-      alert(" Error al guardar el proveedor.");
+      showSnackbar(" Error al guardar el proveedor.", "error");
     }
   };
 
@@ -155,7 +159,7 @@ export default function Proveedores() {
   // ============================
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar proveedor?")) return;
-    await axios.delete(`${api}/${id}`);
+    await removeProveedor(id);
     obtenerDatos();
   };
 

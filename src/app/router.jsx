@@ -96,7 +96,7 @@ export default function AppRouter() {
           <Route element={<CorporateLayout />}>
             <Route path="ventas/tesoreria" element={<TesoreriaGeneral />} />
             <Route path="ventas/flujo-caja" element={<FlujoCaja />} />
-            <Route path="/proveedores" element={<Proveedores />} />
+            <Route path="proveedores" element={<Proveedores />} />
           </Route>
         </Route>
 
@@ -105,7 +105,7 @@ export default function AppRouter() {
             <Route path="empleados" element={<Empleados />} />
             <Route path="nomina" element={<Nomina />} />
             <Route path="vacaciones" element={<Vacaciones />} />
-            <Route path="/caja-ahorro" element={<CajaAhorro />} />
+            <Route path="caja-ahorro" element={<CajaAhorro />} />
           </Route>
         </Route>
 
@@ -126,7 +126,7 @@ export default function AppRouter() {
             <Route path="inventarios/alimentos" element={<Alimentos />} />
             <Route path="inventarios/engorda" element={<Engorda />} />
             <Route path="inventarios/lotes" element={<LotesRegistro />} />
-            <Route path="inventarios/registro-operativo" element={<Equipos />} />
+            <Route path="inventarios/equipos" element={<Equipos />} />
           </Route>
         </Route>
 

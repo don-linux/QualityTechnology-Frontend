@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
+import {
+  listEquipos,
+  createEquipo,
+  updateEquipo,
+  removeEquipo,
+  listMantenimientos,
+  createMantenimiento,
+} from "../services/equiposService";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -18,16 +25,14 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import MenuItem from "@mui/material/MenuItem";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
 import Add from "@mui/icons-material/Add";
 import Edit from "@mui/icons-material/Edit";
 import Delete from "@mui/icons-material/Delete";
 import Build from "@mui/icons-material/Build";
 import Close from "@mui/icons-material/Close";
-import axios from "@shared/lib/axiosInstance";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 function EquiposContent() {
   const usuario_id = localStorage.getItem("usuario_id");
@@ -52,11 +57,7 @@ function EquiposContent() {
   const [editId, setEditId] = useState(null);
   const [mantenimientos, setMantenimientos] = useState([]);
   const [openMantenimiento, setOpenMantenimiento] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const showSnackbar = useSnackbar();
 
   const [nuevoMantenimiento, setNuevoMantenimiento] = useState({
     fd_fecha: "",
@@ -87,8 +88,6 @@ function EquiposContent() {
     "fn_costo", "fc_estado_post", "fd_proximo_mantenimiento",
   ];
 
-  const api = `${API_URL}/equipos`;
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     clearFieldError(e.target.name);
@@ -98,14 +97,10 @@ function EquiposContent() {
   const cargarDatos = useCallback(async () => {
     if (!usuario_id) return;
     try {
-      const res = await axios.get(`${api}/${usuario_id}`);
+      const res = await listEquipos(usuario_id);
       setData(res.data);
     } catch {
-      setSnackbar({
-        open: true,
-        message: "Error al cargar equipos",
-        severity: "error",
-      });
+      showSnackbar("Error al cargar equipos", "error");
     }
   }, [usuario_id]);
 
@@ -118,28 +113,16 @@ function EquiposContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
-        await axios.put(`${api}/${editId}`, form);
-        setSnackbar({
-          open: true,
-          message: " Equipo actualizado correctamente",
-          severity: "success",
-        });
+        await updateEquipo(editId, form);
+        showSnackbar(" Equipo actualizado correctamente", "success");
       } else {
-        await axios.post(api, { ...form, fi_usuario_id: usuario_id });
-        setSnackbar({
-          open: true,
-          message: " Equipo registrado correctamente",
-          severity: "success",
-        });
+        await createEquipo({ ...form, fi_usuario_id: usuario_id });
+        showSnackbar(" Equipo registrado correctamente", "success");
       }
       limpiar();
       cargarDatos();
     } catch {
-      setSnackbar({
-        open: true,
-        message: " Error al guardar el registro",
-        severity: "error",
-      });
+      showSnackbar(" Error al guardar el registro", "error");
     }
   };
 
@@ -164,24 +147,16 @@ function EquiposContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar este equipo?")) return;
-    await axios.delete(`${api}/${id}`);
+    await removeEquipo(id);
     cargarDatos();
-    setSnackbar({
-      open: true,
-      message: " Equipo eliminado correctamente",
-      severity: "info",
-    });
+    showSnackbar(" Equipo eliminado correctamente", "info");
   };
 
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Eliminar todos los equipos?")) return;
-    await Promise.all(data.map((r) => axios.delete(`${api}/${r.fi_equipo_id}`)));
+    await Promise.all(data.map((r) => removeEquipo(r.fi_equipo_id)));
     cargarDatos();
-    setSnackbar({
-      open: true,
-      message: " Todos los equipos fueron eliminados",
-      severity: "warning",
-    });
+    showSnackbar(" Todos los equipos fueron eliminados", "warning");
   };
 
   const limpiar = () => {
@@ -200,16 +175,12 @@ function EquiposContent() {
     });
     setEditId(null);
     clearErrors();
-    setSnackbar({
-      open: true,
-      message: "Formulario limpiado correctamente",
-      severity: "info",
-    });
+    showSnackbar("Formulario limpiado correctamente", "info");
   };
 
   //  Mantenimientos
   const abrirMantenimientos = async (id) => {
-    const res = await axios.get(`${api}/${id}/mantenimientos`);
+    const res = await listMantenimientos(id);
     setMantenimientos(res.data);
     setOpenMantenimiento(true);
     setEditId(id);
@@ -218,14 +189,10 @@ function EquiposContent() {
   const agregarMantenimiento = async () => {
     if (!validateMant(nuevoMantenimiento, mantRequiredFields)) return;
     try {
-      await axios.post(`${api}/${editId}/mantenimientos`, nuevoMantenimiento);
-      const res = await axios.get(`${api}/${editId}/mantenimientos`);
+      await createMantenimiento(editId, nuevoMantenimiento);
+      const res = await listMantenimientos(editId);
       setMantenimientos(res.data);
-      setSnackbar({
-        open: true,
-        message: " Mantenimiento registrado correctamente",
-        severity: "success",
-      });
+      showSnackbar(" Mantenimiento registrado correctamente", "success");
       clearMantErrors();
       setNuevoMantenimiento({
         fd_fecha: "",
@@ -237,11 +204,7 @@ function EquiposContent() {
         fd_proximo_mantenimiento: "",
       });
     } catch {
-      setSnackbar({
-        open: true,
-        message: " Error al guardar mantenimiento",
-        severity: "error",
-      });
+      showSnackbar(" Error al guardar mantenimiento", "error");
     }
   };
 
@@ -722,21 +685,6 @@ function EquiposContent() {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar de feedback */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={2500}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          severity={snackbar.severity}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
       {ConfirmModal}
     </Box>
   );

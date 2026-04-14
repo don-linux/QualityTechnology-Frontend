@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -21,13 +20,19 @@ import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import DeleteForever from "@mui/icons-material/DeleteForever";
 import EventAvailable from "@mui/icons-material/EventAvailable";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listByGranja,
+  createCategoria,
+  updateCampo,
+  removeRegistro,
+  removeAllByGranja,
+} from "../services/cajaAhorroService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
-
-const api = `${API_URL}/caja-ahorro`;
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function CajaAhorro() {
+  const showSnackbar = useSnackbar();
   const [registros, setRegistros] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [granja, setGranja] = useState("Ceiba");
@@ -44,7 +49,7 @@ export default function CajaAhorro() {
      ========================================================= */
   const obtenerDatos = useCallback(async () => {
     try {
-      const res = await axios.get(`${api}/${granja}`);
+      const res = await listByGranja(granja);
       setRegistros(res.data);
     } catch (err) {
       console.error(" Error al cargar caja de ahorro:", err);
@@ -80,11 +85,11 @@ export default function CajaAhorro() {
   const guardarNuevaCategoria = async () => {
     if (!validate({ nuevaCategoria }, requiredFields)) return;
     try {
-      await axios.post(api, { categoria: nuevaCategoria.trim(), granja });
+      await createCategoria({ categoria: nuevaCategoria.trim(), granja });
       setOpenNuevo(false);
       obtenerDatos();
     } catch (err) {
-      alert(" Error al crear categoría.");
+      showSnackbar(" Error al crear categoría.", "error");
     }
   };
 
@@ -93,7 +98,7 @@ export default function CajaAhorro() {
      ========================================================= */
   const actualizarCampo = async (id, campo, valor) => {
     try {
-      await axios.put(`${api}/${id}`, { [campo]: valor });
+      await updateCampo(id, { [campo]: valor });
       obtenerDatos();
     } catch (err) {
       console.error("Error al actualizar:", err);
@@ -105,7 +110,7 @@ export default function CajaAhorro() {
      ========================================================= */
   const eliminarRegistro = async (id) => {
     if (!await confirm("¿Eliminar esta categoría?")) return;
-    await axios.delete(`${api}/${id}`);
+    await removeRegistro(id);
     obtenerDatos();
   };
 
@@ -114,7 +119,7 @@ export default function CajaAhorro() {
      ========================================================= */
   const eliminarTodo = async () => {
     if (!await confirm(` Eliminar TODOS los registros de ${granja}?`)) return;
-    await axios.delete(`${api}?granja=${granja}`);
+    await removeAllByGranja(granja);
     obtenerDatos();
   };
 

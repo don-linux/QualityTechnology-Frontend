@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_URL } from "@shared/lib/config";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
@@ -13,12 +12,19 @@ import TableBody from "@mui/material/TableBody";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import Paper from "@mui/material/Paper";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listNomina,
+  createNomina,
+  updateNomina,
+  buscarNomina,
+} from "../services/nominaService";
 import Edit from "@mui/icons-material/Edit";
 import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
 import useFormValidation from "@shared/hooks/useFormValidation";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function Nomina() {
+  const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
     fc_nombre_empleado: "",
     fi_empleado_id: "",
@@ -34,8 +40,6 @@ export default function Nomina() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState({ nombre: "", fecha: "" });
-
-  const api = `${API_URL}/nomina`;
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
@@ -56,7 +60,7 @@ export default function Nomina() {
   };
 
   const cargarDatos = async () => {
-    const res = await axios.get(api);
+    const res = await listNomina();
     setData(res.data);
   };
 
@@ -65,7 +69,7 @@ export default function Nomina() {
   const prepararPayload = () => {
     const empleadoId = form.fi_empleado_id ? Number(form.fi_empleado_id) : null;
     if (form.fi_empleado_id && Number.isNaN(empleadoId)) {
-      alert("El ID del empleado debe ser numérico.");
+      showSnackbar("El ID del empleado debe ser numérico.", "success");
       return null;
     }
 
@@ -90,9 +94,9 @@ export default function Nomina() {
     if (!payload) return;
 
     if (editId) {
-      await axios.put(`${api}/${editId}`, payload);
+      await updateNomina(editId, payload);
     } else {
-      await axios.post(api, payload);
+      await createNomina(payload);
     }
     limpiar();
     cargarDatos();
@@ -115,10 +119,7 @@ export default function Nomina() {
   };
 
   const buscar = async () => {
-    const params = new URLSearchParams();
-    if (busqueda.nombre) params.append("nombre", busqueda.nombre);
-    if (busqueda.fecha) params.append("fecha", busqueda.fecha);
-    const res = await axios.get(`${api}?${params.toString()}`);
+    const res = await buscarNomina({ nombre: busqueda.nombre, fecha: busqueda.fecha });
     setData(res.data);
   };
 

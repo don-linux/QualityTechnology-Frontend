@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import axios from "@shared/lib/axiosInstance";
+import React, { useState } from "react";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -18,10 +17,9 @@ import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
 import PasswordField from "@shared/components/PasswordField";
 import useConfirm from "@shared/hooks/useConfirm";
+import useUsuarios from "../hooks/useUsuarios";
 
 export default function UsuariosRegistro() {
   const [form, setForm] = useState({
@@ -35,18 +33,10 @@ export default function UsuariosRegistro() {
     fi_puesto_id: "",
   });
 
-  const [usuarios, setUsuarios] = useState([]);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
-  const [roles, setRoles] = useState([]);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [puestos, setPuestos] = useState([]);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const { usuarios, roles, departamentos, puestos, crearUsuario, actualizarUsuario, toggleActivo } = useUsuarios();
 
   const rolSeleccionado = roles.find((r) => r.fi_rol_id === Number(form.rol_id));
   const esRoot = rolSeleccionado?.fb_es_root === true;
@@ -55,26 +45,6 @@ export default function UsuariosRegistro() {
     ? ["nombre", "contraseña", "rol_id"]
     : ["nombre", "contraseña", "rol_id", "fc_nombre_empleado", "fc_apellido_paterno", "fc_apellido_materno", "fi_departamento_id"];
 
-  useEffect(() => {
-    obtenerUsuarios();
-    obtenerRoles();
-    obtenerDepartamentos();
-    obtenerPuestos();
-  }, []);
-
-  const obtenerUsuarios = async () => {
-    try { const { data } = await axios.get("/usuarios"); setUsuarios(data); } catch (e) { console.error(e); }
-  };
-  const obtenerRoles = async () => {
-    try { const { data } = await axios.get("/roles"); setRoles(data); } catch (e) { console.error(e); }
-  };
-  const obtenerDepartamentos = async () => {
-    try { const { data } = await axios.get("/departamentos/activos"); setDepartamentos(data); } catch (e) { console.error(e); }
-  };
-  const obtenerPuestos = async () => {
-    try { const { data } = await axios.get("/puestos/activos"); setPuestos(data); } catch (e) { console.error(e); }
-  };
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     clearFieldError(e.target.name);
@@ -82,46 +52,24 @@ export default function UsuariosRegistro() {
 
   const handleSubmit = async () => {
     if (!validate(form, requiredFields)) return;
-    try {
-      await axios.post("/usuarios", form);
-      setSnackbar({ open: true, message: "Usuario registrado correctamente", severity: "success" });
-      limpiarFormulario();
-      obtenerUsuarios();
-    } catch (error) {
-      console.error("Error al registrar usuario:", error);
-      setSnackbar({ open: true, message: "Error al registrar usuario", severity: "error" });
-    }
+    if (await crearUsuario(form)) limpiarFormulario();
   };
 
   const handleUpdate = async () => {
     if (!usuarioSeleccionado) return;
     if (!validate(form, ["nombre", "contraseña", "rol_id"])) return;
-    try {
-      await axios.put(`/usuarios/${usuarioSeleccionado.fi_usuario_id}`, {
-        nombre: form.nombre,
-        contraseña: form.contraseña,
-        rol_id: form.rol_id,
-      });
-      setSnackbar({ open: true, message: "Usuario actualizado correctamente", severity: "success" });
-      limpiarFormulario();
-      obtenerUsuarios();
-    } catch (error) {
-      console.error("Error al actualizar usuario:", error);
-      setSnackbar({ open: true, message: "Error al actualizar usuario", severity: "error" });
-    }
+    const ok = await actualizarUsuario(usuarioSeleccionado.fi_usuario_id, {
+      nombre: form.nombre,
+      contraseña: form.contraseña,
+      rol_id: form.rol_id,
+    });
+    if (ok) limpiarFormulario();
   };
 
   const handleToggleActive = async (usuario) => {
     const accion = usuario.fb_activo ? "desactivar" : "activar";
     if (!await confirm(`¿Seguro que deseas ${accion} al usuario "${usuario.fc_nombre}"?`)) return;
-    try {
-      const endpoint = usuario.fb_activo ? "deactivate" : "activate";
-      await axios.patch(`/usuarios/${usuario.fi_usuario_id}/${endpoint}`);
-      obtenerUsuarios();
-    } catch (error) {
-      console.error(`Error al ${accion} usuario:`, error);
-      setSnackbar({ open: true, message: `Error al ${accion} usuario`, severity: "error" });
-    }
+    await toggleActivo(usuario);
   };
 
   const seleccionarUsuario = (usuario) => {
@@ -278,20 +226,6 @@ export default function UsuariosRegistro() {
         </Table>
       </TableContainer>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={2500}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          severity={snackbar.severity}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
       {ConfirmModal}
     </Container>
   );

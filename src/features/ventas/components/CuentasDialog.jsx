@@ -1,6 +1,4 @@
-// src/components/CuentasDialog.jsx
 import React, { useState } from "react";
-import { API_URL } from "@shared/lib/config";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -18,7 +16,12 @@ import TableRow from "@mui/material/TableRow";
 import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import Save from "@mui/icons-material/Save";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listCuentas,
+  createCuenta,
+  updateCuenta,
+  removeCuenta,
+} from "../services/flujoCajaService";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -33,7 +36,7 @@ const CuentasDialog = ({ open, onClose }) => {
 
   const obtenerCuentas = async () => {
     try {
-      const res = await axios.get(`${API_URL}/cuentas`);
+      const res = await listCuentas();
       setCuentas(res.data);
     } catch (err) {
       console.error(" Error al obtener cuentas:", err);
@@ -44,7 +47,7 @@ const CuentasDialog = ({ open, onClose }) => {
     if (!validate(nuevaCuenta, requiredFields)) return;
 
     try {
-      await axios.post(`${API_URL}/cuentas`, {
+      await createCuenta({
         nombre: nuevaCuenta.nombre,
         saldo: Number(nuevaCuenta.saldo) || 0,
       });
@@ -58,7 +61,7 @@ const CuentasDialog = ({ open, onClose }) => {
 
   const handleUpdateSaldo = async (cuenta) => {
     try {
-      await axios.put(`${API_URL}/cuentas/${cuenta.id}`, {
+      await updateCuenta(cuenta.id, {
         nombre: cuenta.nombre,
         saldo: Number(cuenta.saldo),
       });
@@ -71,7 +74,7 @@ const CuentasDialog = ({ open, onClose }) => {
   const handleDeleteCuenta = async (id) => {
     if (!await confirm("¿Eliminar esta cuenta?")) return;
     try {
-      await axios.delete(`${API_URL}/cuentas/${id}`);
+      await removeCuenta(id);
       obtenerCuentas();
     } catch (err) {
       console.error(" Error al eliminar cuenta:", err);

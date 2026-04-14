@@ -12,9 +12,15 @@ import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
-import axios from "@shared/lib/axiosInstance";
+import {
+  listDocumentos,
+  listTiposDocumento,
+  uploadDocumento,
+} from "../services/documentosService";
+import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function DocumentosEmpleado({ empleadoId, selfService = false }) {
+  const showSnackbar = useSnackbar();
   const [documentos, setDocumentos] = useState([]);
   const [tiposDocumento, setTiposDocumento] = useState([]);
   const [tipoSeleccionado, setTipoSeleccionado] = useState("");
@@ -22,17 +28,14 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
 
   const cargarDocumentos = useCallback(async () => {
     try {
-      const endpoint = selfService
-        ? "/documentos-empleado/mis-documentos"
-        : `/documentos-empleado/${empleadoId}`;
-      const { data } = await axios.get(endpoint);
+      const { data } = await listDocumentos(selfService ? null : empleadoId);
       setDocumentos(data);
     } catch (e) { console.error(e); }
   }, [empleadoId, selfService]);
 
   const cargarTipos = useCallback(async () => {
     try {
-      const { data } = await axios.get("/tipos-documento/activos");
+      const { data } = await listTiposDocumento();
       setTiposDocumento(data);
     } catch (e) { console.error(e); }
   }, []);
@@ -43,24 +46,20 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
   }, [cargarDocumentos, cargarTipos]);
 
   const subirArchivo = async () => {
-    if (!archivo || !tipoSeleccionado) return alert("Selecciona tipo y archivo");
+    if (!archivo || !tipoSeleccionado) return showSnackbar("Selecciona tipo y archivo", "error");
 
     const formData = new FormData();
     formData.append("archivo", archivo);
     formData.append("fi_tipo_documento_id", tipoSeleccionado);
 
-    const endpoint = selfService
-      ? "/documentos-empleado/mis-documentos/upload"
-      : `/documentos-empleado/${empleadoId}/upload`;
-
     try {
-      await axios.post(endpoint, formData);
+      await uploadDocumento(selfService ? null : empleadoId, formData);
       setArchivo(null);
       setTipoSeleccionado("");
       await cargarDocumentos();
     } catch (e) {
       console.error(e);
-      alert("Error al subir documento");
+      showSnackbar("Error al subir documento", "error");
     }
   };
 

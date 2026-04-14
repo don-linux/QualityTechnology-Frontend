@@ -1,29 +1,30 @@
 import axios from "@shared/lib/axiosInstance";
+import { API_URL } from "@shared/lib/config";
 
 export function listLista() {
-  return axios.get("/lista-espera");
+  return axios.get(`${API_URL}/lista-espera`);
 }
 
 export function listClientes() {
-  return axios.get("/clientes");
+  return axios.get(`${API_URL}/clientes`);
 }
 
-export function createRegistro(data) {
-  return axios.post("/lista-espera", data);
+export function createRegistro(form) {
+  return axios.post(`${API_URL}/lista-espera`, form);
 }
 
-export function updateRegistro(id, data) {
-  return axios.put(`/lista-espera/${id}`, data);
+export function updateRegistro(id, form) {
+  return axios.put(`${API_URL}/lista-espera/${id}`, form);
 }
 
 export function removeRegistro(id) {
-  return axios.delete(`/lista-espera/${id}`);
+  return axios.delete(`${API_URL}/lista-espera/${id}`);
 }
 
 export function convertirAVenta(id) {
-  return axios.post(`/lista-espera/convertir/${id}`);
+  return axios.post(`${API_URL}/lista-espera/convertir/${id}`);
 }
 
 export function createClienteRapido(data) {
-  return axios.post("/clientes", data);
+  return axios.post(`${API_URL}/clientes`, data);
 }
