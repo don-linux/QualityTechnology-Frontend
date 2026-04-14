@@ -50,7 +50,10 @@ function BitacoraVisitasContent() {
     "fc_observaciones", "fd_entrada", "fd_salida",
   ];
 
-  const ubicaciones = ["medellin", "ceiba"];
+  const ubicaciones = [
+    { value: "medellin", label: "Medellín" },
+    { value: "ceiba", label: "La Ceiba" },
+  ];
 
   const handleChange = (e) => {
     clearFieldError(e.target.name);
@@ -155,7 +158,8 @@ function BitacoraVisitasContent() {
     } catch {}
 
     doc.setFontSize(14);
-    doc.text(`Bitácora de Visitas — ${form.ubicacion.charAt(0).toUpperCase() + form.ubicacion.slice(1)}`, 45, 20);
+    const ubicLabel = ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion;
+    doc.text(`Bitácora de Visitas — ${ubicLabel}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Registro de visitas, motivos y observaciones", 45, 26);
 
@@ -187,7 +191,7 @@ function BitacoraVisitasContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Visitas — {form.ubicacion.charAt(0).toUpperCase() + form.ubicacion.slice(1)}
+        Visitas — {ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion}
       </Typography>
 
       {/* Filtro superior */}
@@ -200,8 +204,8 @@ function BitacoraVisitasContent() {
             onChange={handleChange}
           >
             {ubicaciones.map((op) => (
-              <MenuItem key={op} value={op}>
-                {op.charAt(0).toUpperCase() + op.slice(1)}
+              <MenuItem key={op.value} value={op.value}>
+                {op.label}
               </MenuItem>
             ))}
           </Select>

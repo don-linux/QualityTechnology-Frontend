@@ -53,7 +53,10 @@ function RecepcionInsumosContent() {
 
   //  Opciones para selects
   const unidadesMedida = ["Kg", "Litros", "Piezas", "Bultos", "Otro"];
-  const ubicaciones = ["medellin", "ceiba"];
+  const ubicaciones = [
+    { value: "medellin", label: "Medellín" },
+    { value: "ceiba", label: "La Ceiba" },
+  ];
 
   const handleChange = (e) => {
     clearFieldError(e.target.name);
@@ -152,7 +155,7 @@ function RecepcionInsumosContent() {
 
     doc.setFontSize(14);
     doc.text(
-      `Bitácora de Recepción de Insumos — ${form.ubicacion.toUpperCase()}`,
+      `Bitácora de Recepción de Insumos — ${ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion}`,
       45,
       20
     );
@@ -198,7 +201,7 @@ function RecepcionInsumosContent() {
   return (
     <Box>
       <Typography variant="h5" fontWeight="bold" mb={2}>
-         {form.ubicacion.charAt(0).toUpperCase() + form.ubicacion.slice(1)} — Recepción de Insumos
+         {ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion} — Recepción de Insumos
       </Typography>
 
       {/* Filtro compacto */}
@@ -211,8 +214,8 @@ function RecepcionInsumosContent() {
             onChange={handleChange}
           >
             {ubicaciones.map((op) => (
-              <MenuItem key={op} value={op}>
-                {op.charAt(0).toUpperCase() + op.slice(1)}
+              <MenuItem key={op.value} value={op.value}>
+                {op.label}
               </MenuItem>
             ))}
           </Select>

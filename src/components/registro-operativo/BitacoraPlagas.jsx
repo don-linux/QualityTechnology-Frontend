@@ -54,6 +54,10 @@ function BitacoraPlagasContent() {
   const tiposMalla = ["Buena", "Dañada", "Sin Malla"];
   const tiposVeneno = ["Rodenticida", "Gel", "Granulado", "Líquido", "Ninguno"];
   const unidadesProduccion = ["Engorda", "Alevinaje", "Reproductores"];
+  const ubicaciones = [
+    { value: "medellin", label: "Medellín" },
+    { value: "ceiba", label: "La Ceiba" },
+  ];
 
   const handleChange = (e) => {
     clearFieldError(e.target.name);
@@ -152,7 +156,7 @@ function BitacoraPlagasContent() {
 
     doc.setFontSize(14);
     doc.text(
-      `Bitácora de Control de Plagas — ${form.ubicacion.toUpperCase()}`,
+      `Bitácora de Control de Plagas — ${ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion}`,
       45,
       20
     );
@@ -198,7 +202,7 @@ function BitacoraPlagasContent() {
   return (
     <Box>
       <Typography variant="h5" fontWeight="bold" mb={2}>
-         {form.ubicacion.charAt(0).toUpperCase() + form.ubicacion.slice(1)} — Control de Plagas
+         {ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion} — Control de Plagas
       </Typography>
 
       {/* Filtros compactos */}
@@ -212,8 +216,11 @@ function BitacoraPlagasContent() {
           size="small"
           sx={{ width: 200 }}
         >
-          <MenuItem value="medellin">Medellín</MenuItem>
-          <MenuItem value="ceiba">La Ceiba</MenuItem>
+          {ubicaciones.map((op) => (
+            <MenuItem key={op.value} value={op.value}>
+              {op.label}
+            </MenuItem>
+          ))}
         </TextField>
 
         <TextField
