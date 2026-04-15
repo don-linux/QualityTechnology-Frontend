@@ -277,7 +277,7 @@ export default function BioAlimentacion() {
             <TableCell>Amonio</TableCell>
             <TableCell>pH</TableCell>
             <TableCell>Observaciones</TableCell>
-            <TableCell>Acciones</TableCell>
+            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -298,24 +298,28 @@ export default function BioAlimentacion() {
               <TableCell sx={{ maxWidth: 160 }}>
                 <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
               </TableCell>
-              <TableCell sx={{ minWidth: 150 }}>
-                <Button
-                  variant="contained"
-                  color="warning"
-                  size="small"
-                  sx={{ mr: 1 }}
-                  onClick={() => editar(row)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  size="small"
-                  onClick={() => eliminar(row.fi_id)}
-                >
-                  Eliminar
-                </Button>
+              <TableCell
+                align="center"
+                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+              >
+                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    size="small"
+                    onClick={() => editar(row)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="small"
+                    onClick={() => eliminar(row.fi_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
               </TableCell>
             </TableRow>
           ))}

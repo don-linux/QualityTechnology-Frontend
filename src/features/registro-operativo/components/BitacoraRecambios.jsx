@@ -278,7 +278,7 @@ const exportarPDF = async () => {
             <TableCell>Instalación</TableCell>
             <TableCell>Fechas y Tipos</TableCell>
             <TableCell>Responsable</TableCell>
-            <TableCell>Acciones</TableCell>
+            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -297,24 +297,28 @@ const exportarPDF = async () => {
                   .join(", ")}
               </TableCell>
               <TableCell>{r.fc_responsable}</TableCell>
-              <TableCell>
-                <Button
-                  size="small"
-                  variant="contained"
-                  color="warning"
-                  sx={{ mr: 1 }}
-                  onClick={() => editar(r)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  size="small"
-                  variant="contained"
-                  color="error"
-                  onClick={() => eliminar(r.fi_id)}
-                >
-                  Eliminar
-                </Button>
+              <TableCell
+                align="center"
+                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+              >
+                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="warning"
+                    onClick={() => editar(r)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    onClick={() => eliminar(r.fi_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
               </TableCell>
             </TableRow>
           ))}

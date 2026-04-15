@@ -11,6 +11,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
@@ -398,8 +399,9 @@ function RecepcionInsumosContent() {
       </Card>
 
       {/* TABLA */}
-      <Paper>
-        <Table>
+      <Paper sx={{ width: "100%" }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table sx={{ minWidth: 1180 }}>
           <TableHead>
             <TableRow>
               <TableCell>Fecha</TableCell>
@@ -411,7 +413,7 @@ function RecepcionInsumosContent() {
               <TableCell>Condiciones de entrega</TableCell>
               <TableCell>Verificó</TableCell>
               <TableCell>Observaciones</TableCell>
-              <TableCell>Acciones</TableCell>
+              <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -432,18 +434,24 @@ function RecepcionInsumosContent() {
                 <TableCell sx={{ maxWidth: 160 }}>
                   <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
                 </TableCell>
-                <TableCell>
-                  <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
-                    Editar
-                  </Button>
-                  <Button size="small" variant="contained" color="error" onClick={() => eliminar(r.fi_id)}>
-                    Eliminar
-                  </Button>
+                <TableCell
+                  align="center"
+                  sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                >
+                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                    <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
+                      Editar
+                    </Button>
+                    <Button size="small" variant="contained" color="error" onClick={() => eliminar(r.fi_id)}>
+                      Eliminar
+                    </Button>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+          </Table>
+        </TableContainer>
       </Paper>
       {ConfirmModal}
     </Box>

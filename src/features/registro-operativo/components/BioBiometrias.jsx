@@ -551,7 +551,7 @@ export default function BioBiometrias() {
                     <TableCell>Tipo</TableCell>
                     <TableCell>Encargado</TableCell>
                     <TableCell>Observaciones</TableCell>
-                    <TableCell>Acciones</TableCell>
+                    <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -570,24 +570,28 @@ export default function BioBiometrias() {
                       <TableCell sx={{ maxWidth: 160 }}>
                         <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
                       </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color="warning"
-                          onClick={() => editar(row)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          sx={{ ml: 1 }}
-                          color="error"
-                          onClick={() => eliminar(row.fi_id)}
-                        >
-                          Eliminar
-                        </Button>
+                      <TableCell
+                        align="center"
+                        sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                      >
+                        <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            color="warning"
+                            onClick={() => editar(row)}
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            color="error"
+                            onClick={() => eliminar(row.fi_id)}
+                          >
+                            Eliminar
+                          </Button>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}

@@ -357,7 +357,7 @@ function BitacoraMedicamentosContent() {
                     <TableCell>Forma Aplicación</TableCell>
                     <TableCell>Última Dosis</TableCell>
                     <TableCell>Responsable</TableCell>
-                    <TableCell>Acciones</TableCell>
+                    <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -379,15 +379,18 @@ function BitacoraMedicamentosContent() {
                       <TableCell sx={{ maxWidth: 160 }}>
                         <span title={r.fc_responsable}>{truncar(r.fc_responsable)}</span>
                       </TableCell>
-                      <TableCell>
-                        <Button size="small" color="warning" variant="contained"
-                          sx={{ mr: 1 }} onClick={() => editar(r)}>
-                          Editar
-                        </Button>
-                        <Button size="small" color="error" variant="contained"
-                          onClick={() => eliminar(r.fi_id)}>
-                          Eliminar
-                        </Button>
+                      <TableCell
+                        align="center"
+                        sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                      >
+                        <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                          <Button size="small" color="warning" variant="contained" onClick={() => editar(r)}>
+                            Editar
+                          </Button>
+                          <Button size="small" color="error" variant="contained" onClick={() => eliminar(r.fi_id)}>
+                            Eliminar
+                          </Button>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
