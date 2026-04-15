@@ -30,6 +30,12 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
 
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
+const MAX_FC_OBSERVACIONES = 500;
+
 export default function BioAlimentacion() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
@@ -146,8 +152,9 @@ export default function BioAlimentacion() {
 
       setEditId(null);
       cargarDatos();
-    } catch {
-      showSnackbar("Error al guardar registro.", "error");
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || "Error al guardar registro.";
+      showSnackbar(msg, "error");
     }
   };
 
@@ -288,15 +295,8 @@ export default function BioAlimentacion() {
               <TableCell>{row.fn_temp_agua}</TableCell>
               <TableCell>{row.fn_amonio}</TableCell>
               <TableCell>{row.fn_ph}</TableCell>
-              <TableCell
-                sx={{
-                  minWidth: 220,
-                  maxWidth: 320,
-                  whiteSpace: "normal",
-                  wordBreak: "break-word",
-                }}
-              >
-                {row.fc_observaciones}
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
               </TableCell>
               <TableCell sx={{ minWidth: 150 }}>
                 <Button
@@ -545,7 +545,8 @@ export default function BioAlimentacion() {
                 value={form.fc_observaciones}
                 onChange={handleChange}
                 error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones}
+                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/${MAX_FC_OBSERVACIONES}`}
+                inputProps={{ maxLength: MAX_FC_OBSERVACIONES }}
               />
             </Grid>
           </Grid>
