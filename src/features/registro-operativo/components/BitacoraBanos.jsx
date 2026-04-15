@@ -26,6 +26,13 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
 
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
+const MAX_FC_REGADERA = 100;
+const MAX_FC_OBSERVACIONES = 500;
+
 const getTipoBanio = (row) => {
   return row.fc_tipo_banio || "";
 };
@@ -113,8 +120,9 @@ function BitacoraBanosContent() {
       });
       setEditId(null);
       cargarDatos();
-    } catch {
-      showSnackbar("Error al guardar registro.", "error");
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || "Error al guardar registro.";
+      showSnackbar(msg, "error");
     }
   };
 
@@ -283,7 +291,16 @@ function BitacoraBanosContent() {
               </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Regadera" name="fc_regadera" value={form.fc_regadera} onChange={handleChange} fullWidth error={!!errors.fc_regadera} helperText={errors.fc_regadera} />
+              <TextField
+                label="Regadera"
+                name="fc_regadera"
+                value={form.fc_regadera}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_regadera}
+                helperText={errors.fc_regadera || `${String(form.fc_regadera).length}/${MAX_FC_REGADERA}`}
+                inputProps={{ maxLength: MAX_FC_REGADERA }}
+              />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
@@ -317,7 +334,8 @@ function BitacoraBanosContent() {
                 value={form.fc_observaciones}
                 onChange={handleChange}
                 error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones}
+                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/${MAX_FC_OBSERVACIONES}`}
+                inputProps={{ maxLength: MAX_FC_OBSERVACIONES }}
               />
             </Grid>
           </Grid>
@@ -365,13 +383,29 @@ function BitacoraBanosContent() {
           <TableBody>
             {data.map((r) => (
               <TableRow key={r.fi_id}>
-                <TableCell>{r.fc_mes}</TableCell>
-                <TableCell>{r.fc_dia}</TableCell>
-                <TableCell>{getTipoBanio(r)}</TableCell>
-                <TableCell>{r.fc_regadera}</TableCell>
-                <TableCell>{r.fc_realizo}</TableCell>
-                <TableCell>{ubicaciones.find((u) => u.value === r.ubicacion)?.label ?? r.ubicacion}</TableCell>
-                <TableCell>{r.fc_observaciones}</TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_mes}>{truncar(r.fc_mes)}</span>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={String(r.fc_dia ?? "")}>{truncar(String(r.fc_dia ?? ""))}</span>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={getTipoBanio(r)}>{truncar(getTipoBanio(r))}</span>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_regadera}>{truncar(r.fc_regadera)}</span>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_realizo}>{truncar(r.fc_realizo)}</span>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={ubicaciones.find((u) => u.value === r.ubicacion)?.label ?? r.ubicacion}>
+                    {truncar(ubicaciones.find((u) => u.value === r.ubicacion)?.label ?? r.ubicacion)}
+                  </span>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+                </TableCell>
                 <TableCell>
                   <Button
                     size="small"
