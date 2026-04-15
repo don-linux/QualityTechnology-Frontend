@@ -72,6 +72,9 @@ export function removeAllBanos() {
 }
 
 // -- Parametros --
+export function listEmpleadosParametros() {
+  return axios.get("/parametros/empleados");
+}
 export function listParametros() {
   return axios.get("/parametros");
 }

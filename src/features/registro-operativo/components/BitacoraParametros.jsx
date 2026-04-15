@@ -19,6 +19,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MenuItem from "@mui/material/MenuItem";
 import {
   listParametros,
+  listEmpleadosParametros,
   createParametro,
   updateParametro,
   removeParametro,
@@ -46,6 +47,7 @@ function BitacoraParametrosContent() {
     fi_usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -68,7 +70,20 @@ function BitacoraParametrosContent() {
       showSnackbar("Error al cargar registros.", "error");
     }
   };
-  useEffect(() => { cargarDatos(); }, []);
+
+  const cargarEmpleados = async () => {
+    try {
+      const res = await listEmpleadosParametros();
+      setEmpleados(res.data);
+    } catch {
+      showSnackbar("Error al cargar empleados.", "error");
+    }
+  };
+
+  useEffect(() => {
+    cargarDatos();
+    cargarEmpleados();
+  }, []);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
@@ -305,6 +320,7 @@ function BitacoraParametrosContent() {
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
+                select
                 label="Responsable"
                 name="fc_responsable"
                 value={form.fc_responsable}
@@ -312,7 +328,17 @@ function BitacoraParametrosContent() {
                 fullWidth
                 error={!!errors.fc_responsable}
                 helperText={errors.fc_responsable}
-              />
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
+                    {empleado.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
+                  <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
+                )}
+              </TextField>
             </Grid>
           </Grid>
 
