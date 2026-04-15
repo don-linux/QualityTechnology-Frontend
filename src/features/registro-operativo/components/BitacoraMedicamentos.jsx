@@ -19,6 +19,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MenuItem from "@mui/material/MenuItem";
 import {
   listMedicamentos,
+  listEmpleadosMedicamentos,
   createMedicamento,
   updateMedicamento,
   removeMedicamento,
@@ -28,6 +29,14 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
+const MAX_FC_DIAGNOSIS = 500;
+const MAX_FC_TRATAMIENTO = 500;
+const MAX_FC_DOSIS = 100;
 
 function BitacoraMedicamentosContent() {
   const { usuarioId } = useAuth();
@@ -45,6 +54,7 @@ function BitacoraMedicamentosContent() {
     fi_usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -69,7 +79,19 @@ function BitacoraMedicamentosContent() {
     }
   };
 
-  useEffect(() => { cargarDatos(); }, []);
+  const cargarEmpleados = async () => {
+    try {
+      const res = await listEmpleadosMedicamentos();
+      setEmpleados(res.data);
+    } catch {
+      showSnackbar("Error al cargar empleados.", "error");
+    }
+  };
+
+  useEffect(() => {
+    cargarDatos();
+    cargarEmpleados();
+  }, []);
 
   //  Guardar / Actualizar
   const guardar = async () => {
@@ -93,8 +115,9 @@ function BitacoraMedicamentosContent() {
         fi_usuario_id: usuarioId,
       });
       cargarDatos();
-    } catch {
-      showSnackbar("Error al guardar registro.", "error");
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || "Error al guardar registro.";
+      showSnackbar(msg, "error");
     }
   };
 
@@ -213,18 +236,44 @@ function BitacoraMedicamentosContent() {
                 value={form.fn_num_estanque} onChange={handleChange} fullWidth error={!!errors.fn_num_estanque} helperText={errors.fn_num_estanque} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField label="Diagnóstico" name="fc_diagnosis"
-                value={form.fc_diagnosis} onChange={handleChange} fullWidth error={!!errors.fc_diagnosis} helperText={errors.fc_diagnosis} />
+              <TextField
+                label="Diagnóstico"
+                name="fc_diagnosis"
+                value={form.fc_diagnosis}
+                onChange={handleChange}
+                fullWidth
+                multiline
+                rows={2}
+                error={!!errors.fc_diagnosis}
+                helperText={errors.fc_diagnosis || `${form.fc_diagnosis.length}/${MAX_FC_DIAGNOSIS}`}
+                inputProps={{ maxLength: MAX_FC_DIAGNOSIS }}
+              />
             </Grid>
             <Grid size={12}>
-              <TextField label="Tratamiento" name="fc_tratamiento"
-                value={form.fc_tratamiento} onChange={handleChange}
-                multiline rows={2} fullWidth error={!!errors.fc_tratamiento} helperText={errors.fc_tratamiento} />
+              <TextField
+                label="Tratamiento"
+                name="fc_tratamiento"
+                value={form.fc_tratamiento}
+                onChange={handleChange}
+                multiline
+                rows={2}
+                fullWidth
+                error={!!errors.fc_tratamiento}
+                helperText={errors.fc_tratamiento || `${form.fc_tratamiento.length}/${MAX_FC_TRATAMIENTO}`}
+                inputProps={{ maxLength: MAX_FC_TRATAMIENTO }}
+              />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Dosis" name="fc_dosis"
-                type="number" inputProps={{ min: 0, step: "any" }}
-                value={form.fc_dosis} onChange={handleChange} fullWidth error={!!errors.fc_dosis} helperText={errors.fc_dosis} />
+              <TextField
+                label="Dosis"
+                name="fc_dosis"
+                value={form.fc_dosis}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_dosis}
+                helperText={errors.fc_dosis || `${String(form.fc_dosis).length}/${MAX_FC_DOSIS}`}
+                inputProps={{ maxLength: MAX_FC_DOSIS }}
+              />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Forma Aplicación" name="fc_forma_aplicacion"
@@ -236,8 +285,26 @@ function BitacoraMedicamentosContent() {
                 value={form.fd_fecha_ultima_dosis} onChange={handleChange} fullWidth error={!!errors.fd_fecha_ultima_dosis} helperText={errors.fd_fecha_ultima_dosis} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Responsable" name="fc_responsable"
-                value={form.fc_responsable} onChange={handleChange} fullWidth error={!!errors.fc_responsable} helperText={errors.fc_responsable} />
+              <TextField
+                select
+                label="Responsable"
+                name="fc_responsable"
+                value={form.fc_responsable}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_responsable}
+                helperText={errors.fc_responsable}
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
+                    {empleado.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
+                  <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
+                )}
+              </TextField>
             </Grid>
           </Grid>
 
@@ -296,12 +363,20 @@ function BitacoraMedicamentosContent() {
                     <TableRow key={r.fi_id}>
                       <TableCell>{r.fd_fecha_hora?.split("T")[0]}</TableCell>
                       <TableCell>{r.fn_num_estanque}</TableCell>
-                      <TableCell>{r.fc_diagnosis}</TableCell>
-                      <TableCell>{r.fc_tratamiento}</TableCell>
-                      <TableCell>{r.fc_dosis}</TableCell>
+                      <TableCell sx={{ maxWidth: 160 }}>
+                        <span title={r.fc_diagnosis}>{truncar(r.fc_diagnosis)}</span>
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 160 }}>
+                        <span title={r.fc_tratamiento}>{truncar(r.fc_tratamiento)}</span>
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 160 }}>
+                        <span title={r.fc_dosis}>{truncar(r.fc_dosis)}</span>
+                      </TableCell>
                       <TableCell>{r.fc_forma_aplicacion}</TableCell>
                       <TableCell>{r.fd_fecha_ultima_dosis?.split("T")[0]}</TableCell>
-                      <TableCell>{r.fc_responsable}</TableCell>
+                      <TableCell sx={{ maxWidth: 160 }}>
+                        <span title={r.fc_responsable}>{truncar(r.fc_responsable)}</span>
+                      </TableCell>
                       <TableCell>
                         <Button size="small" color="warning" variant="contained"
                           sx={{ mr: 1 }} onClick={() => editar(r)}>

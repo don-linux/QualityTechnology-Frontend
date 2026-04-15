@@ -92,6 +92,9 @@ export function removeAllParametros() {
 }
 
 // -- Medicamentos --
+export function listEmpleadosMedicamentos() {
+  return axios.get("/medicamentos/empleados");
+}
 export function listMedicamentos() {
   return axios.get("/medicamentos");
 }
