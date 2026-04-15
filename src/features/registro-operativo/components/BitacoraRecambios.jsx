@@ -19,6 +19,7 @@ import MenuItem from "@mui/material/MenuItem";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   listRecambios,
+  listEmpleadosRecambios,
   createRecambio,
   updateRecambio,
   removeRecambio,
@@ -52,6 +53,7 @@ function BitacoraRecambiosContent() {
     fi_usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -79,8 +81,18 @@ function BitacoraRecambiosContent() {
     }
   };
 
+  const cargarEmpleados = async () => {
+    try {
+      const res = await listEmpleadosRecambios();
+      setEmpleados(res.data);
+    } catch {
+      showSnackbar("Error al cargar empleados.", "error");
+    }
+  };
+
   useEffect(() => {
     cargarDatos();
+    cargarEmpleados();
   }, []);
 
   const guardar = async () => {
@@ -391,6 +403,7 @@ const exportarPDF = async () => {
 
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
+                select
                 label="Responsable"
                 name="fc_responsable"
                 value={form.fc_responsable}
@@ -398,7 +411,17 @@ const exportarPDF = async () => {
                 fullWidth
                 error={!!errors.fc_responsable}
                 helperText={errors.fc_responsable}
-              />
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
+                    {empleado.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
+                  <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
+                )}
+              </TextField>
             </Grid>
           </Grid>
 

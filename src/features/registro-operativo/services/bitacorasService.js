@@ -112,6 +112,9 @@ export function removeAllMedicamentos() {
 }
 
 // -- Recambios --
+export function listEmpleadosRecambios() {
+  return axios.get("/recambios/empleados");
+}
 export function listRecambios() {
   return axios.get("/recambios");
 }
