@@ -47,6 +47,9 @@ export function removeAllAlimentacion() {
 }
 
 // -- Insumos --
+export function listEmpleadosInsumos() {
+  return axios.get("/insumos/empleados");
+}
 export function listInsumos() {
   return axios.get("/insumos");
 }

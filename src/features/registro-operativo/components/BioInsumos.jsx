@@ -11,6 +11,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -19,6 +20,7 @@ import MenuItem from "@mui/material/MenuItem";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   listInsumos,
+  listEmpleadosInsumos,
   createInsumo,
   updateInsumo,
   removeInsumo,
@@ -28,6 +30,13 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
+const MAX_FC_DESCRIPCION = 300;
+const MAX_FC_OBSERVACIONES = 500;
 
 export default function BioInsumos() {
   const { usuarioId } = useAuth();
@@ -45,6 +54,7 @@ export default function BioInsumos() {
   });
 
   const [data, setData] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -69,8 +79,18 @@ export default function BioInsumos() {
     }
   };
 
+  const cargarEmpleados = async () => {
+    try {
+      const res = await listEmpleadosInsumos();
+      setEmpleados(res.data);
+    } catch {
+      showSnackbar("Error al cargar empleados.", "error");
+    }
+  };
+
   useEffect(() => {
     cargarDatos();
+    cargarEmpleados();
   }, []);
 
   const guardar = async () => {
@@ -96,8 +116,9 @@ export default function BioInsumos() {
       });
       setEditId(null);
       cargarDatos();
-    } catch {
-      showSnackbar("Error guardando registro.", "error");
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || "Error guardando registro.";
+      showSnackbar(msg, "error");
     }
   };
 
@@ -183,8 +204,9 @@ export default function BioInsumos() {
   const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
 
   const renderTablaInsumos = (rows) => (
-    <Paper>
-      <Table>
+    <Paper sx={{ width: "100%" }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table sx={{ minWidth: 1040 }}>
         <TableHead sx={{ background: "#E8F5E9" }}>
           <TableRow>
             <TableCell>Fecha</TableCell>
@@ -194,7 +216,7 @@ export default function BioInsumos() {
             <TableCell>Observaciones</TableCell>
             <TableCell>Entrega</TableCell>
             <TableCell>Recepción</TableCell>
-            <TableCell>Acciones</TableCell>
+            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
           </TableRow>
         </TableHead>
 
@@ -204,33 +226,46 @@ export default function BioInsumos() {
               <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
               <TableCell>{row.fc_cantidad_udm}</TableCell>
               <TableCell>{row.fc_num_lote}</TableCell>
-              <TableCell>{row.fc_descripcion}</TableCell>
-              <TableCell>{row.fc_observaciones}</TableCell>
-              <TableCell>{row.fc_encargado_entrega}</TableCell>
-              <TableCell>{row.fc_encargado_recepcion}</TableCell>
-              <TableCell>
-                <Button
-                  variant="contained"
-                  color="warning"
-                  size="small"
-                  sx={{ mr: 1 }}
-                  onClick={() => editar(row)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  size="small"
-                  onClick={() => eliminar(row.fi_id)}
-                >
-                  Eliminar
-                </Button>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={row.fc_descripcion}>{truncar(row.fc_descripcion)}</span>
+              </TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
+              </TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={row.fc_encargado_entrega}>{truncar(row.fc_encargado_entrega)}</span>
+              </TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={row.fc_encargado_recepcion}>{truncar(row.fc_encargado_recepcion)}</span>
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+              >
+                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    size="small"
+                    onClick={() => editar(row)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="small"
+                    onClick={() => eliminar(row.fi_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
-      </Table>
+        </Table>
+      </TableContainer>
     </Paper>
   );
 
@@ -282,6 +317,7 @@ export default function BioInsumos() {
                 fullWidth
                 error={!!errors.fc_cantidad_udm}
                 helperText={errors.fc_cantidad_udm}
+                inputProps={{ maxLength: 100 }}
               />
             </Grid>
 
@@ -294,6 +330,7 @@ export default function BioInsumos() {
                 fullWidth
                 error={!!errors.fc_num_lote}
                 helperText={errors.fc_num_lote}
+                inputProps={{ maxLength: 100 }}
               />
             </Grid>
 
@@ -304,8 +341,11 @@ export default function BioInsumos() {
                 value={form.fc_descripcion}
                 onChange={handleChange}
                 fullWidth
+                multiline
+                rows={2}
                 error={!!errors.fc_descripcion}
-                helperText={errors.fc_descripcion}
+                helperText={errors.fc_descripcion || `${form.fc_descripcion.length}/${MAX_FC_DESCRIPCION}`}
+                inputProps={{ maxLength: MAX_FC_DESCRIPCION }}
               />
             </Grid>
 
@@ -319,7 +359,8 @@ export default function BioInsumos() {
                 onChange={handleChange}
                 fullWidth
                 error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones}
+                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/${MAX_FC_OBSERVACIONES}`}
+                inputProps={{ maxLength: MAX_FC_OBSERVACIONES }}
               />
             </Grid>
 
@@ -332,11 +373,13 @@ export default function BioInsumos() {
                 fullWidth
                 error={!!errors.fc_encargado_entrega}
                 helperText={errors.fc_encargado_entrega}
+                inputProps={{ maxLength: 100 }}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
+                select
                 label="Encargado de Recepción"
                 name="fc_encargado_recepcion"
                 value={form.fc_encargado_recepcion}
@@ -344,7 +387,17 @@ export default function BioInsumos() {
                 fullWidth
                 error={!!errors.fc_encargado_recepcion}
                 helperText={errors.fc_encargado_recepcion}
-              />
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
+                    {empleado.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_encargado_recepcion && !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado_recepcion) && (
+                  <MenuItem value={form.fc_encargado_recepcion}>{form.fc_encargado_recepcion}</MenuItem>
+                )}
+              </TextField>
             </Grid>
           </Grid>
 
@@ -376,7 +429,7 @@ export default function BioInsumos() {
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography fontWeight="bold">Medellín</Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ px: 0 }}>
+        <AccordionDetails sx={{ p: 0 }}>
           {renderTablaInsumos(datosMedellin)}
         </AccordionDetails>
       </Accordion>
@@ -385,7 +438,7 @@ export default function BioInsumos() {
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography fontWeight="bold">La Ceiba</Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ px: 0 }}>
+        <AccordionDetails sx={{ p: 0 }}>
           {renderTablaInsumos(datosCeiba)}
         </AccordionDetails>
       </Accordion>
