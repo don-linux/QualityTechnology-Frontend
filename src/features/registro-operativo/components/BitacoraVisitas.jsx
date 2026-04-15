@@ -31,6 +31,10 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
 
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
 function BitacoraVisitasContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
@@ -290,8 +294,9 @@ function BitacoraVisitasContent() {
                 onChange={handleChange}
                 fullWidth
                 multiline
+                inputProps={{ maxLength: 300 }}
                 error={!!errors.fc_motivo}
-                helperText={errors.fc_motivo}
+                helperText={errors.fc_motivo || `${form.fc_motivo.length}/300`}
               />
             </Grid>
 
@@ -304,8 +309,9 @@ function BitacoraVisitasContent() {
                 fullWidth
                 multiline
                 rows={2}
+                inputProps={{ maxLength: 500 }}
                 error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones}
+                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/500`}
               />
             </Grid>
 
@@ -434,7 +440,9 @@ function BitacoraVisitasContent() {
                 <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
                 <TableCell>{r.fc_nombre_completo}</TableCell>
                 <TableCell>{r.fc_origen}</TableCell>
-                <TableCell>{r.fc_motivo}</TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_motivo}>{truncar(r.fc_motivo)}</span>
+                </TableCell>
                 <TableCell>
                   {r.fc_foto_identificacion ? (
                     <a
@@ -452,7 +460,9 @@ function BitacoraVisitasContent() {
                 <TableCell>{r.fd_entrada}</TableCell>
                 <TableCell>{r.fd_salida}</TableCell>
                 <TableCell>{ubicaciones.find((u) => u.value === r.ubicacion)?.label ?? r.ubicacion}</TableCell>
-                <TableCell>{r.fc_observaciones}</TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+                </TableCell>
                 <TableCell>
                   <Button
                     size="small"
