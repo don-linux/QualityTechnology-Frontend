@@ -1,6 +1,9 @@
 import axios from "@shared/lib/axiosInstance";
 
 // -- Biometrias --
+export function listEmpleadosBiometrias() {
+  return axios.get("/biometrias/empleados");
+}
 export function listBiometrias() {
   return axios.get("/biometrias");
 }

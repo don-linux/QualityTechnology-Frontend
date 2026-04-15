@@ -19,6 +19,7 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   listBiometrias,
+  listEmpleadosBiometrias,
   getInstalaciones,
   getLotesByInstalacion,
   getInfoInstalacion,
@@ -41,12 +42,19 @@ const UBICACION_TO_PARAM = {
   "La Ceiba": "ceiba",
 };
 
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
+const MAX_FC_OBSERVACIONES = 500;
+
 export default function BioBiometrias() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId || "";
   const showSnackbar = useSnackbar();
 
   const [data, setData] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [editId, setEditId] = useState(null);
@@ -107,7 +115,19 @@ export default function BioBiometrias() {
     }
   };
 
-  useEffect(() => { cargarDatos(); }, []);
+  const cargarEmpleados = async () => {
+    try {
+      const res = await listEmpleadosBiometrias();
+      setEmpleados(res.data);
+    } catch {
+      showSnackbar("Error al cargar empleados", "error");
+    }
+  };
+
+  useEffect(() => {
+    cargarDatos();
+    cargarEmpleados();
+  }, []);
 
   useEffect(() => {
     cargarInstalaciones();
@@ -220,8 +240,9 @@ export default function BioBiometrias() {
 
       limpiar();
       cargarDatos();
-    } catch {
-      showSnackbar("Error guardando biometría", "error");
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || "Error guardando biometría";
+      showSnackbar(msg, "error");
     }
   };
 
@@ -450,6 +471,7 @@ export default function BioBiometrias() {
             {/* ENCARGADO */}
             <Grid size={{ xs: 12, md: 8 }}>
               <TextField
+                select
                 label="Encargado"
                 name="fc_encargado"
                 value={form.fc_encargado}
@@ -457,7 +479,17 @@ export default function BioBiometrias() {
                 fullWidth
                 error={!!errors.fc_encargado}
                 helperText={errors.fc_encargado}
-              />
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
+                    {empleado.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_encargado && !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado) && (
+                  <MenuItem value={form.fc_encargado}>{form.fc_encargado}</MenuItem>
+                )}
+              </TextField>
             </Grid>
 
             {/* OBSERVACIONES */}
@@ -471,7 +503,8 @@ export default function BioBiometrias() {
                 multiline
                 rows={2}
                 error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones}
+                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/${MAX_FC_OBSERVACIONES}`}
+                inputProps={{ maxLength: MAX_FC_OBSERVACIONES }}
               />
             </Grid>
           </Grid>
@@ -529,8 +562,12 @@ export default function BioBiometrias() {
                       <TableCell>{row.fn_organismos_muestreados}</TableCell>
                       <TableCell>{formatNum(row.fn_peso_promedio)}</TableCell>
                       <TableCell>{row.tipo}</TableCell>
-                      <TableCell>{row.fc_encargado}</TableCell>
-                      <TableCell>{row.fc_observaciones}</TableCell>
+                      <TableCell sx={{ maxWidth: 160 }}>
+                        <span title={row.fc_encargado}>{truncar(row.fc_encargado)}</span>
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 160 }}>
+                        <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
+                      </TableCell>
                       <TableCell>
                         <Button
                           variant="contained"
