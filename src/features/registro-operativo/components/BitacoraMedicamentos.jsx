@@ -11,6 +11,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -343,8 +344,9 @@ function BitacoraMedicamentosContent() {
             <Typography fontWeight="bold">{label} ({rows.length})</Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
-            <Paper>
-              <Table>
+            <Paper sx={{ width: "100%" }}>
+              <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+                <Table sx={{ minWidth: 1240 }}>
                 <TableHead sx={{ background: "#FFF3E0" }}>
                   <TableRow>
                     <TableCell>Fecha</TableCell>
@@ -390,7 +392,8 @@ function BitacoraMedicamentosContent() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+                </Table>
+              </TableContainer>
             </Paper>
           </AccordionDetails>
         </Accordion>

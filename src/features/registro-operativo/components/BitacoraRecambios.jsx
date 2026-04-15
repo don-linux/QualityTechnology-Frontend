@@ -11,6 +11,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -268,8 +269,9 @@ const exportarPDF = async () => {
   const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
 
   const renderTablaRecambios = (rows) => (
-    <Paper>
-      <Table>
+    <Paper sx={{ width: "100%" }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table sx={{ minWidth: 920 }}>
         <TableHead sx={{ background: "#E3F2FD" }}>
           <TableRow>
             <TableCell>Mes</TableCell>
@@ -317,7 +319,8 @@ const exportarPDF = async () => {
             </TableRow>
           ))}
         </TableBody>
-      </Table>
+        </Table>
+      </TableContainer>
     </Paper>
   );
 

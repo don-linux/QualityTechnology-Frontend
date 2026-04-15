@@ -11,6 +11,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -377,8 +378,9 @@ function BitacoraParametrosContent() {
             <Typography fontWeight="bold">{label} ({rows.length})</Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
-            <Paper>
-              <Table>
+            <Paper sx={{ width: "100%" }}>
+              <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+                <Table sx={{ minWidth: 1100 }}>
                 <TableHead sx={{ background: "#FFFDE7" }}>
                   <TableRow>
                     <TableCell>Fecha</TableCell>
@@ -390,7 +392,7 @@ function BitacoraParametrosContent() {
                     <TableCell>Nitritos</TableCell>
                     <TableCell>Nitratos</TableCell>
                     <TableCell>Responsable</TableCell>
-                    <TableCell>Acciones</TableCell>
+                    <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -427,7 +429,8 @@ function BitacoraParametrosContent() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+                </Table>
+              </TableContainer>
             </Paper>
           </AccordionDetails>
         </Accordion>

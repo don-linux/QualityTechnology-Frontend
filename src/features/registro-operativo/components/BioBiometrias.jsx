@@ -12,6 +12,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -536,8 +537,9 @@ export default function BioBiometrias() {
             <Typography fontWeight="bold">{label} ({rows.length})</Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
-            <Paper>
-              <Table>
+            <Paper sx={{ width: "100%" }}>
+              <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+                <Table sx={{ minWidth: 1120 }}>
                 <TableHead sx={{ background: "#E8F5E9" }}>
                   <TableRow>
                     <TableCell>Fecha</TableCell>
@@ -590,7 +592,8 @@ export default function BioBiometrias() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+                </Table>
+              </TableContainer>
             </Paper>
           </AccordionDetails>
         </Accordion>

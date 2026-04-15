@@ -12,6 +12,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import {
   listBanos,
@@ -366,8 +367,9 @@ function BitacoraBanosContent() {
       </Card>
 
       {/* TABLA */}
-      <Paper>
-        <Table>
+      <Paper sx={{ width: "100%" }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table sx={{ minWidth: 960 }}>
           <TableHead sx={{ background: "#E3F2FD" }}>
             <TableRow>
               <TableCell>Mes</TableCell>
@@ -377,7 +379,7 @@ function BitacoraBanosContent() {
               <TableCell>Realizó</TableCell>
               <TableCell>Ubicación</TableCell>
               <TableCell>Observaciones</TableCell>
-              <TableCell>Acciones</TableCell>
+              <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -406,29 +408,34 @@ function BitacoraBanosContent() {
                 <TableCell sx={{ maxWidth: 160 }}>
                   <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
                 </TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="warning"
-                    onClick={() => editar(r)}
-                    sx={{ mr: 1 }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="error"
-                    onClick={() => eliminar(r.fi_id)}
-                  >
-                    Eliminar
-                  </Button>
+                <TableCell
+                  align="center"
+                  sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                >
+                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="warning"
+                      onClick={() => editar(r)}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="error"
+                      onClick={() => eliminar(r.fi_id)}
+                    >
+                      Eliminar
+                    </Button>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+          </Table>
+        </TableContainer>
       </Paper>
       {ConfirmModal}
     </Box>
