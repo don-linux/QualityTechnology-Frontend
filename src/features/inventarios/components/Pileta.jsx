@@ -21,6 +21,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
@@ -30,6 +31,15 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+
+const MAX_NUMERICO = 15;
+const MAX_OBSERVACION = 500;
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
+const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
+const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 
 /* ============================================================
    NORMALIZAR GRANJA PARA BACKEND (SIN ACENTOS Y CORRECTO)
@@ -224,6 +234,20 @@ export default function Pileta() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "cantidad") {
+      if (!soloEntero(value)) return;
+      setForm({ ...form, cantidad: value });
+      clearFieldError(name);
+      return;
+    }
+
+    if (name === "talla_gr") {
+      if (!soloDecimal(value)) return;
+      setForm({ ...form, talla_gr: value });
+      clearFieldError(name);
+      return;
+    }
 
     if (name === "origen_externo") {
       setForm({
@@ -535,8 +559,12 @@ export default function Pileta() {
                   value={form.cantidad}
                   onChange={handleChange}
                   fullWidth
+                  inputProps={{ maxLength: MAX_NUMERICO, inputMode: "numeric" }}
                   error={!!errors.cantidad}
-                  helperText={errors.cantidad}
+                  helperText={
+                    errors.cantidad ||
+                    `${String(form.cantidad ?? "").length}/${MAX_NUMERICO}`
+                  }
                 />
               </Grid>
 
@@ -548,8 +576,12 @@ export default function Pileta() {
                   value={form.talla_gr}
                   onChange={handleChange}
                   fullWidth
+                  inputProps={{ maxLength: MAX_NUMERICO, inputMode: "decimal" }}
                   error={!!errors.talla_gr}
-                  helperText={errors.talla_gr}
+                  helperText={
+                    errors.talla_gr ||
+                    `${String(form.talla_gr ?? "").length}/${MAX_NUMERICO}`
+                  }
                 />
               </Grid>
 
@@ -561,8 +593,14 @@ export default function Pileta() {
                   value={form.observacion}
                   onChange={handleChange}
                   fullWidth
+                  multiline
+                  rows={2}
+                  inputProps={{ maxLength: MAX_OBSERVACION }}
                   error={!!errors.observacion}
-                  helperText={errors.observacion}
+                  helperText={
+                    errors.observacion ||
+                    `${String(form.observacion ?? "").length}/${MAX_OBSERVACION}`
+                  }
                 />
               </Grid>
 
@@ -633,54 +671,61 @@ export default function Pileta() {
         Inventario
       </Typography>
 
-      <Paper sx={{ borderRadius: 3, overflow: "hidden", mb: 4, p: 2 }}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell>Instalación</TableCell>
-              <TableCell>Cantidad</TableCell>
-              <TableCell>Talla</TableCell>
-              <TableCell>Lote</TableCell>
-              <TableCell>Observación</TableCell>
-              <TableCell>Fecha Siembra</TableCell>
-              <TableCell>Días en pila</TableCell>
-              <TableCell>Última Biometría</TableCell>
-              <TableCell>Días transcurridos</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {inventario.map((p) => (
-              <TableRow key={p.fi_pileta_id} hover onClick={() => seleccionarPileta(p)}>
-                <TableCell>{p.nombre_instalacion}</TableCell>
-                <TableCell>{formatNumber(p.cantidad)}</TableCell>
-                <TableCell>{formatNumber(p.talla_gr)}</TableCell>
-                <TableCell>{p.no_lote}</TableCell>
-               <TableCell>{p.etapa_hormonal || p.observacion}</TableCell>
-                <TableCell>
-                  {p.fecha_siembra
-                    ? new Date(p.fecha_siembra).toLocaleDateString("es-MX")
-                    : "—"}
-                </TableCell>
-                <TableCell>{p.dias_en_pila}</TableCell>
-                <TableCell>
-                  {p.fecha_ultima_biometria
-                    ? new Date(p.fecha_ultima_biometria).toLocaleDateString("es-MX")
-                    : "—"}
-                </TableCell>
-                <TableCell>
-                  {p.dias_transcurridos !== null ? (
-                    <span style={getBadgeStyle(p.dias_transcurridos)}>
-                      {p.dias_transcurridos}
-                    </span>
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
+      <Paper sx={{ width: "100%", mb: 4 }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table stickyHeader sx={{ minWidth: 1200 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Instalación</TableCell>
+                <TableCell>Cantidad</TableCell>
+                <TableCell>Talla</TableCell>
+                <TableCell>Lote</TableCell>
+                <TableCell>Observación</TableCell>
+                <TableCell>Fecha Siembra</TableCell>
+                <TableCell>Días en pila</TableCell>
+                <TableCell>Última Biometría</TableCell>
+                <TableCell>Días transcurridos</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+
+            <TableBody>
+              {inventario.map((p) => {
+                const textoObs = p.etapa_hormonal || p.observacion || "";
+                return (
+                  <TableRow key={p.fi_pileta_id} hover onClick={() => seleccionarPileta(p)}>
+                    <TableCell>{p.nombre_instalacion}</TableCell>
+                    <TableCell>{formatNumber(p.cantidad)}</TableCell>
+                    <TableCell>{formatNumber(p.talla_gr)}</TableCell>
+                    <TableCell>{p.no_lote}</TableCell>
+                    <TableCell sx={{ maxWidth: 160 }}>
+                      <span title={textoObs}>{truncar(textoObs)}</span>
+                    </TableCell>
+                    <TableCell>
+                      {p.fecha_siembra
+                        ? new Date(p.fecha_siembra).toLocaleDateString("es-MX")
+                        : "—"}
+                    </TableCell>
+                    <TableCell>{p.dias_en_pila}</TableCell>
+                    <TableCell>
+                      {p.fecha_ultima_biometria
+                        ? new Date(p.fecha_ultima_biometria).toLocaleDateString("es-MX")
+                        : "—"}
+                    </TableCell>
+                    <TableCell>
+                      {p.dias_transcurridos !== null ? (
+                        <span style={getBadgeStyle(p.dias_transcurridos)}>
+                          {p.dias_transcurridos}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
 
       {/* TRAZABILIDAD */}
@@ -743,46 +788,56 @@ export default function Pileta() {
         </Grid>
       </Grid>
 
-      <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell>Origen</TableCell>
-              <TableCell>Destino</TableCell>
-              <TableCell>Trasladados</TableCell>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Observación</TableCell>
-              <TableCell>Acción</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {rastreos.map((r) => (
-              <TableRow key={r.fi_movimiento_id}>
-                <TableCell>{r.origen_nombre || "—"}</TableCell>
-                <TableCell>{r.destino_nombre || "—"}</TableCell>
-                <TableCell>{r.cantidad}</TableCell>
-                <TableCell>
-                  {r.fecha_movimiento
-                    ? new Date(r.fecha_movimiento).toLocaleDateString("es-MX")
-                    : "—"}
-                </TableCell>
-                <TableCell>{r.observacion}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="small"
-                    onClick={() => eliminarUno(r.fi_movimiento_id)}
-                   >
-                    Eliminar
-                  </Button>
+      <Paper sx={{ width: "100%" }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table stickyHeader sx={{ minWidth: 1000 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Origen</TableCell>
+                <TableCell>Destino</TableCell>
+                <TableCell>Trasladados</TableCell>
+                <TableCell>Fecha</TableCell>
+                <TableCell>Observación</TableCell>
+                <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>
+                  Acciones
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
+            </TableHead>
 
-        </Table>
+            <TableBody>
+              {rastreos.map((r) => (
+                <TableRow key={r.fi_movimiento_id}>
+                  <TableCell>{r.origen_nombre || "—"}</TableCell>
+                  <TableCell>{r.destino_nombre || "—"}</TableCell>
+                  <TableCell>{r.cantidad}</TableCell>
+                  <TableCell>
+                    {r.fecha_movimiento
+                      ? new Date(r.fecha_movimiento).toLocaleDateString("es-MX")
+                      : "—"}
+                  </TableCell>
+                  <TableCell sx={{ maxWidth: 160 }}>
+                    <span title={r.observacion}>{truncar(r.observacion)}</span>
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                  >
+                    <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        onClick={() => eliminarUno(r.fi_movimiento_id)}
+                      >
+                        Eliminar
+                      </Button>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
       {ConfirmModal}
     </Box>
