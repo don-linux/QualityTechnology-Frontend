@@ -42,8 +42,7 @@ function BitacoraBanosContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
   const [form, setForm] = useState({
-    fc_mes: "",
-    fc_dia: "",
+    fd_fecha: "",
     fc_tipo_banio: "",
     fc_regadera: "",
     fc_realizo: "",
@@ -59,7 +58,7 @@ function BitacoraBanosContent() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
-    "fc_mes", "fc_dia", "fc_tipo_banio",
+    "fd_fecha", "fc_tipo_banio",
     "fc_regadera", "fc_realizo", "fc_observaciones", "ubicacion",
   ];
 
@@ -110,8 +109,7 @@ function BitacoraBanosContent() {
       }
 
       setForm({
-        fc_mes: "",
-        fc_dia: "",
+        fd_fecha: "",
         fc_tipo_banio: "",
         fc_regadera: "",
         fc_realizo: "",
@@ -132,8 +130,7 @@ function BitacoraBanosContent() {
     clearErrors();
     setEditId(row.fi_id);
     setForm({
-      fc_mes: row.fc_mes,
-      fc_dia: row.fc_dia,
+      fd_fecha: row.fd_fecha?.split("T")[0] || "",
       fc_tipo_banio: getTipoBanio(row),
       fc_regadera: row.fc_regadera,
       fc_realizo: row.fc_realizo,
@@ -173,8 +170,7 @@ function BitacoraBanosContent() {
     doc.text("Control de limpieza y mantenimiento de baños y regaderas", 45, 26);
 
     const columnas = [
-      "Mes",
-      "Día",
+      "Fecha",
       "Tipo de Baño",
       "Regadera",
       "Realizó",
@@ -182,8 +178,7 @@ function BitacoraBanosContent() {
     ];
 
     const filas = data.map((r) => [
-      r.fc_mes,
-      r.fc_dia,
+      r.fd_fecha?.split("T")[0] || "",
       getTipoBanio(r),
       r.fc_regadera,
       r.fc_realizo,
@@ -238,41 +233,15 @@ function BitacoraBanosContent() {
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
-                select
-                label="Mes"
-                name="fc_mes"
-                value={form.fc_mes}
+                label="Fecha"
+                type="date"
+                name="fd_fecha"
+                InputLabelProps={{ shrink: true }}
+                value={form.fd_fecha}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_mes}
-                helperText={errors.fc_mes}
-              >
-                <MenuItem value="">Selecciona un mes</MenuItem>
-                <MenuItem value="Enero">Enero</MenuItem>
-                <MenuItem value="Febrero">Febrero</MenuItem>
-                <MenuItem value="Marzo">Marzo</MenuItem>
-                <MenuItem value="Abril">Abril</MenuItem>
-                <MenuItem value="Mayo">Mayo</MenuItem>
-                <MenuItem value="Junio">Junio</MenuItem>
-                <MenuItem value="Julio">Julio</MenuItem>
-                <MenuItem value="Agosto">Agosto</MenuItem>
-                <MenuItem value="Septiembre">Septiembre</MenuItem>
-                <MenuItem value="Octubre">Octubre</MenuItem>
-                <MenuItem value="Noviembre">Noviembre</MenuItem>
-                <MenuItem value="Diciembre">Diciembre</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
-                label="Día"
-                name="fc_dia"
-                type="number"
-                value={form.fc_dia}
-                onChange={handleChange}
-                fullWidth
-                error={!!errors.fc_dia}
-                helperText={errors.fc_dia}
-                inputProps={{ min: 1, max: 31 }}
+                error={!!errors.fd_fecha}
+                helperText={errors.fd_fecha}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -372,8 +341,7 @@ function BitacoraBanosContent() {
           <Table sx={{ minWidth: 960 }}>
           <TableHead sx={{ background: "#E3F2FD" }}>
             <TableRow>
-              <TableCell>Mes</TableCell>
-              <TableCell>Día</TableCell>
+              <TableCell>Fecha</TableCell>
               <TableCell>Tipo de Baño</TableCell>
               <TableCell>Regadera</TableCell>
               <TableCell>Realizó</TableCell>
@@ -386,10 +354,7 @@ function BitacoraBanosContent() {
             {data.map((r) => (
               <TableRow key={r.fi_id}>
                 <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_mes}>{truncar(r.fc_mes)}</span>
-                </TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={String(r.fc_dia ?? "")}>{truncar(String(r.fc_dia ?? ""))}</span>
+                  {r.fd_fecha?.split("T")[0]}
                 </TableCell>
                 <TableCell sx={{ maxWidth: 160 }}>
                   <span title={getTipoBanio(r)}>{truncar(getTipoBanio(r))}</span>
