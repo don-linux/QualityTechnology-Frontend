@@ -16,6 +16,9 @@ import TableBody from "@mui/material/TableBody";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import ArrowBack from "@mui/icons-material/ArrowBack";
 import {
   listEmpleados,
   listDepartamentosActivos,
@@ -129,9 +132,16 @@ export default function Empleados() {
       {seleccionado && (
         <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
           <CardContent>
-            <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-              Editando: {seleccionado.fc_nombre} {seleccionado.fc_apellido_paterno}
-            </Typography>
+            <Box display="flex" alignItems="center" mb={2}>
+              <Tooltip title="Regresar">
+                <IconButton onClick={limpiar} sx={{ mr: 1 }} aria-label="Regresar">
+                  <ArrowBack />
+                </IconButton>
+              </Tooltip>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Editando: {seleccionado.fc_nombre} {seleccionado.fc_apellido_paterno}
+              </Typography>
+            </Box>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField name="fc_nombre" label="Nombre" fullWidth value={form.fc_nombre} onChange={handleChange} />
