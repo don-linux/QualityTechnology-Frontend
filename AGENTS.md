@@ -22,9 +22,42 @@ From **`package.json`**:
 
 Also available: `start` (`vite preview`, after a build), `test:watch` (Vitest watch).
 
+## Project structure (feature-based)
+
+```
+src/
+├── app/          # Bootstrap: App.jsx (providers), router.jsx (routes)
+├── pages/        # Thin re-export wrappers per route (lazy loading boundaries)
+├── features/     # Domain logic organized by business area
+│   ├── auth/           components/ + services/
+│   ├── catalogos/      components/ + services/
+│   ├── inventarios/    components/ + services/
+│   ├── ventas/         components/ + services/
+│   ├── rrhh/           components/ + services/
+│   ├── registro-operativo/  components/ + services/
+│   └── seguridad/      components/ + services/
+├── shared/       # Cross-cutting: components/, layout/, guards/, hooks/, lib/, styles/
+├── index.jsx
+└── setupTests.js
+```
+
+## Vite path aliases
+
+| Alias | Path |
+|-------|------|
+| `@app` | `src/app` |
+| `@pages` | `src/pages` |
+| `@features` | `src/features` |
+| `@shared` | `src/shared` |
+
+Use these aliases for imports between modules. Avoid fragile relative paths across feature boundaries.
+
 ## Key folders
 
-- **`src/`** — Application entry (`index.jsx`, `App.jsx`), feature UI under **`components/`** (including **`registro-operativo/`**), shell in **`layout/`**, shared logic in **`hooks/`** and **`utils/`**.
+- **`src/app/`** — App bootstrap (`App.jsx`, `router.jsx`).
+- **`src/features/`** — Domain components and API service files.
+- **`src/shared/`** — Shared infrastructure (axiosInstance, auth, hooks, layout, guards, styles).
+- **`src/pages/`** — One file per route, re-exporting from features for lazy loading.
 - **`public/`** — Static assets served as-is (e.g. paths like `/images/...`).
 - **`docs/`** — Architecture, conventions, and commands (see below).
 
