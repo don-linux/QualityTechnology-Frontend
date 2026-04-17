@@ -9,7 +9,11 @@ export function createDepartamento(fc_nombre) {
 }
 
 export function updateDepartamento(id, fc_nombre) {
-  return axios.put(`/departamentos/${id}`, { fc_nombre, fb_activo: true });
+  return axios.put(`/departamentos/${id}`, { fc_nombre });
+}
+
+export function activateDepartamento(id) {
+  return axios.patch(`/departamentos/${id}/activate`);
 }
 
 export function deactivateDepartamento(id) {
