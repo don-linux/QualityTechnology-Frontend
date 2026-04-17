@@ -8,6 +8,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
@@ -27,6 +28,11 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+
+const MAX_OBSERVACION = 500;
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 const normalizarGranja = (g) => {
   if (!g) return "Granja Acu\u00EDcola Medellin";
@@ -336,7 +342,21 @@ function EngordaContent() {
                 </Grid>
 
                 <Grid size={12}>
-                  <TextField label="Observación" name="observacion" value={form.observacion || ""} onChange={handleChange} fullWidth multiline rows={2} error={!!errors.observacion} helperText={errors.observacion} />
+                  <TextField
+                    label="Observación"
+                    name="observacion"
+                    value={form.observacion || ""}
+                    onChange={handleChange}
+                    fullWidth
+                    multiline
+                    rows={2}
+                    inputProps={{ maxLength: MAX_OBSERVACION }}
+                    error={!!errors.observacion}
+                    helperText={
+                      errors.observacion ||
+                      `${String(form.observacion ?? "").length}/${MAX_OBSERVACION}`
+                    }
+                  />
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 6 }}>
@@ -392,35 +412,51 @@ function EngordaContent() {
 
       {/*  TRAZABILIDAD */}
       <Typography variant="h6" mt={5} mb={2} color="#E65100"> Historial de Movimientos de Engorda</Typography>
-      <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell>Origen</TableCell>
-              <TableCell>Destino</TableCell>
-              <TableCell>Cantidad</TableCell>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Observación</TableCell>
-              <TableCell>Acción</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {movimientos.map((m) => (
-              <TableRow key={m.fi_movimiento_id}>
-                <TableCell>{m.origen_nombre || "Siembra Lote"}</TableCell>
-                <TableCell>{m.destino_nombre}</TableCell>
-                <TableCell>{formatNumber(m.cantidad_trasladada)}</TableCell>
-                <TableCell>{m.fecha_movimiento}</TableCell>
-                <TableCell>{m.observacion}</TableCell>
-                <TableCell>
-                  <Button variant="outlined" color="error" size="small" onClick={() => eliminarMovimiento(m.fi_movimiento_id)}>
-                    <Delete />
-                  </Button>
-                </TableCell>
+      <Paper sx={{ width: "100%", borderRadius: 3 }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table stickyHeader sx={{ minWidth: 1000 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Origen</TableCell>
+                <TableCell>Destino</TableCell>
+                <TableCell>Cantidad</TableCell>
+                <TableCell>Fecha</TableCell>
+                <TableCell>Observación</TableCell>
+                <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {movimientos.map((m) => (
+                <TableRow key={m.fi_movimiento_id}>
+                  <TableCell>{m.origen_nombre || "Siembra Lote"}</TableCell>
+                  <TableCell>{m.destino_nombre}</TableCell>
+                  <TableCell>{formatNumber(m.cantidad_trasladada)}</TableCell>
+                  <TableCell>{m.fecha_movimiento}</TableCell>
+                  <TableCell sx={{ maxWidth: 160 }}>
+                    <span title={m.observacion || ""}>
+                      {m.observacion ? truncar(m.observacion) : "—"}
+                    </span>
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                  >
+                    <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        onClick={() => eliminarMovimiento(m.fi_movimiento_id)}
+                      >
+                        <Delete />
+                      </Button>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
       {ConfirmModal}
     </Box>
