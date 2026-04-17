@@ -29,6 +29,14 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 
+const MAX_NUMERICO = 15;
+const MAX_OBSERVACION = 500;
+const TRUNCAR_MAX = 40;
+
+const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
 const LotesRegistro = () => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -70,6 +78,13 @@ const LotesRegistro = () => {
 
   if (name === "no_lote") {
     setFormData({ ...formData, no_lote: validarNoLote(value) });
+    clearFieldError(name);
+    return;
+  }
+
+  if (name === "huevos_ml") {
+    if (!soloDecimal(value)) return;
+    setFormData({ ...formData, huevos_ml: value });
     clearFieldError(name);
     return;
   }
@@ -386,8 +401,12 @@ const LotesRegistro = () => {
                 value={formData.huevos_ml}
                 onChange={handleChange}
                 fullWidth
+                inputProps={{ maxLength: MAX_NUMERICO, inputMode: "decimal" }}
                 error={!!errors.huevos_ml}
-                helperText={errors.huevos_ml}
+                helperText={
+                  errors.huevos_ml ||
+                  `${String(formData.huevos_ml ?? "").length}/${MAX_NUMERICO}`
+                }
               />
             </Grid>
 
@@ -427,8 +446,13 @@ const LotesRegistro = () => {
                 onChange={handleChange}
                 fullWidth
                 multiline
+                rows={2}
+                inputProps={{ maxLength: MAX_OBSERVACION }}
                 error={!!errors.observacion}
-                helperText={errors.observacion}
+                helperText={
+                  errors.observacion ||
+                  `${String(formData.observacion ?? "").length}/${MAX_OBSERVACION}`
+                }
               />
             </Grid>
 
@@ -453,57 +477,71 @@ const LotesRegistro = () => {
         Lotes registrados — {granja}
       </Typography>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
-        <Table>
-          <TableHead sx={{ backgroundColor: "#006d77" }}>
-            <TableRow>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Familia</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Instalación</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Huevos (ml)</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ovadas</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Alevines</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>No. Lote</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad %</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {lotes.length === 0 ? (
+      <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table sx={{ minWidth: 1200 }}>
+            <TableHead sx={{ backgroundColor: "#006d77" }}>
               <TableRow>
-                <TableCell colSpan={10} align="center">
-                  No hay registros.
-                </TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Familia</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Instalación</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Huevos (ml)</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ovadas</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Alevines</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>No. Lote</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad %</TableCell>
               </TableRow>
-            ) : (
-              lotes.map((l) => (
-                <TableRow
-                  key={l.fi_lote_id}
-                  onClick={() => setLoteSeleccionado(l)}
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor:
-                      loteSeleccionado?.fi_lote_id === l.fi_lote_id ? "#e0f7fa" : "transparent",
-                  }}
-                >
-                  <TableCell>{formatearFecha(l.fecha)}</TableCell>
-                  <TableCell>{l.familia}</TableCell>
-                  <TableCell>{l.nombre_instalacion}</TableCell>
-                 <TableCell>{formatNumber(l.huevos_ml)}</TableCell>
-                  <TableCell>{l.ovadas}</TableCell>
-                  <TableCell>{formatNumber(l.alevines_inicial || 0)}</TableCell>
-                  <TableCell>{l.no_lote}</TableCell>
-                  <TableCell>{l.observacion}</TableCell>
-                  <TableCell>{formatNumber(l.mortalidad || 0)}</TableCell>
-                  <TableCell>{Number(l.mortalidad_porcentaje || 0).toFixed(2)}%</TableCell>
+            </TableHead>
+
+            <TableBody>
+              {lotes.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={10} align="center">
+                    No hay registros.
+                  </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              ) : (
+                lotes.map((l) => (
+                  <TableRow
+                    key={l.fi_lote_id}
+                    onClick={() => setLoteSeleccionado(l)}
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor:
+                        loteSeleccionado?.fi_lote_id === l.fi_lote_id ? "#e0f7fa" : "transparent",
+                    }}
+                  >
+                    <TableCell>{formatearFecha(l.fecha)}</TableCell>
+                    <TableCell sx={{ maxWidth: 160 }}>
+                      <span title={l.familia || ""}>
+                        {l.familia ? truncar(l.familia) : "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 160 }}>
+                      <span title={l.nombre_instalacion || ""}>
+                        {l.nombre_instalacion ? truncar(l.nombre_instalacion) : "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell>{formatNumber(l.huevos_ml)}</TableCell>
+                    <TableCell>{l.ovadas}</TableCell>
+                    <TableCell>{formatNumber(l.alevines_inicial || 0)}</TableCell>
+                    <TableCell>{l.no_lote}</TableCell>
+                    <TableCell sx={{ maxWidth: 160 }}>
+                      <span title={l.observacion || ""}>
+                        {l.observacion ? truncar(l.observacion) : "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell>{formatNumber(l.mortalidad || 0)}</TableCell>
+                    <TableCell>{Number(l.mortalidad_porcentaje || 0).toFixed(2)}%</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
 
       {/* ----------------- BOTONES EDITAR / ELIMINAR ----------------- */}
       {loteSeleccionado && (
