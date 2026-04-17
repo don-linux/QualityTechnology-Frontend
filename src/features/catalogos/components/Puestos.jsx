@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { listPuestos, createPuesto, updatePuesto, deactivatePuesto } from "@features/catalogos/services/puestosService";
+import { listPuestos, createPuesto, updatePuesto, activatePuesto, deactivatePuesto } from "@features/catalogos/services/puestosService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import Container from "@mui/material/Container";
@@ -79,6 +79,15 @@ export default function Puestos() {
     } catch (e) { console.error(e); showSnackbar("Error al desactivar puesto", "error"); }
   };
 
+  const activar = async (id, nombre) => {
+    if (!await confirm(`¿Activar el puesto "${nombre}"?`)) return;
+    try {
+      await activatePuesto(id);
+      obtenerPuestos();
+      limpiar();
+    } catch (e) { console.error(e); showSnackbar("Error al activar puesto", "error"); }
+  };
+
   const seleccionar = (p) => {
     setForm({ fi_puesto_id: p.fi_puesto_id, fc_nombre: p.fc_nombre });
     clearErrors();
@@ -138,10 +147,14 @@ export default function Puestos() {
                     <Chip label={p.fb_activo ? "Activo" : "Inactivo"} color={p.fb_activo ? "success" : "default"} size="small" />
                   </TableCell>
                   <TableCell align="center">
-                    <Button size="small" variant="outlined" sx={{ mr: 1 }} onClick={() => seleccionar(p)}>Seleccionar</Button>
-                    {p.fb_activo && (
-                      <Button size="small" variant="outlined" color="error" onClick={() => desactivar(p.fi_puesto_id, p.fc_nombre)}>Desactivar</Button>
-                    )}
+                    <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                      <Button size="small" variant="outlined" onClick={() => seleccionar(p)}>Seleccionar</Button>
+                      {p.fb_activo ? (
+                        <Button size="small" variant="outlined" color="error" onClick={() => desactivar(p.fi_puesto_id, p.fc_nombre)}>Desactivar</Button>
+                      ) : (
+                        <Button size="small" variant="outlined" color="success" onClick={() => activar(p.fi_puesto_id, p.fc_nombre)}>Activar</Button>
+                      )}
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}

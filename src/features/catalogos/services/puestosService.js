@@ -9,7 +9,11 @@ export function createPuesto(fc_nombre) {
 }
 
 export function updatePuesto(id, fc_nombre) {
-  return axios.put(`/puestos/${id}`, { fc_nombre, fb_activo: true });
+  return axios.put(`/puestos/${id}`, { fc_nombre });
+}
+
+export function activatePuesto(id) {
+  return axios.patch(`/puestos/${id}/activate`);
 }
 
 export function deactivatePuesto(id) {
