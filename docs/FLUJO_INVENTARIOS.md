@@ -60,6 +60,8 @@ Guía paso a paso del orden correcto para capturar datos en el módulo **Inventa
 **Archivo:** `src/features/inventarios/components/Instalaciones.jsx`
 **Servicio:** `src/features/inventarios/services/instalacionesService.js`
 
+![Módulo Instalaciones](./images/inventarios/01-instalaciones.png)
+
 ### Qué representa
 La infraestructura física (tinas, piletas, estanques) donde se colocan los organismos. Es el **cimiento** de todo lo demás.
 
@@ -92,6 +94,8 @@ La infraestructura física (tinas, piletas, estanques) donde se colocan los orga
 **Archivo:** `src/features/inventarios/components/Reproductores.jsx`
 **Servicio:** `src/features/inventarios/services/reproductoresService.js`
 
+![Módulo Reproductores](./images/inventarios/02-reproductores.png)
+
 ### Qué representa
 Los peces reproductores (machos y hembras) alojados en instalaciones tipo *Reproductores*. Generan los huevos que derivan en los lotes.
 
@@ -123,6 +127,8 @@ Al menos una instalación tipo **`Reproductores`** creada en la granja activa.
 **Ruta:** `/inventarios/lotes`
 **Archivo:** `src/features/inventarios/components/LotesRegistro.jsx`
 **Servicio:** `src/features/inventarios/services/lotesService.js`
+
+![Módulo Lotes](./images/inventarios/03-lotes.png)
 
 ### Qué representa
 Cada lote es una **camada** producida por los reproductores: número de lote, ovadas, cantidad de huevos por ml, alevines disponibles y mortalidad.
@@ -158,6 +164,8 @@ Al menos un **reproductor** registrado, cuya instalación aparezca en `listInsta
 **Ruta:** `/inventarios/piletas`
 **Archivo:** `src/features/inventarios/components/Pileta.jsx`
 **Servicio:** `src/features/inventarios/services/piletasService.js`
+
+![Módulo Piletas / Alevinaje](./images/inventarios/04-piletas.png)
 
 ### Qué representa
 El control del **alevinaje**: cuántos alevines hay en cada pileta, de qué lote vienen y sus biometrías.
@@ -201,6 +209,8 @@ El control del **alevinaje**: cuántos alevines hay en cada pileta, de qué lote
 **Archivo:** `src/features/inventarios/components/Engorda.jsx`
 **Servicio:** `src/features/inventarios/services/engordaService.js`
 
+![Módulo Engorda](./images/inventarios/05-engorda.png)
+
 ### Qué representa
 El traslado de organismos desde el inventario de alevinaje (piletas) hacia instalaciones tipo *Engorda*, donde crecerán hasta la talla de cosecha.
 
@@ -235,6 +245,8 @@ El traslado de organismos desde el inventario de alevinaje (piletas) hacia insta
 **Archivo:** `src/features/inventarios/components/Alimentos.jsx`
 **Servicio:** `src/features/inventarios/services/alimentosService.js`
 
+![Módulo Alimentos](./images/inventarios/06-alimentos.png)
+
 ### Qué representa
 El registro de **alimentación diaria** por unidad productiva. Tiene tres pestañas independientes: `Alevines`, `Engorda`, `Reproductores`.
 
@@ -266,6 +278,8 @@ Crea un registro en la tabla `alimentos` vinculado a `fi_pileta_id` / `fi_engord
 **Ruta:** `/inventarios/equipos`
 **Archivo:** `src/features/inventarios/components/Equipos.jsx`
 **Servicio:** `src/features/inventarios/services/equiposService.js`
+
+![Módulo Equipos](./images/inventarios/07-equipos.png)
 
 ### Qué representa
 Inventario de **equipos y herramientas** del usuario logueado (bombas, redes, sensores, etc.) con su historial de mantenimientos.
@@ -320,3 +334,70 @@ Si no ves datos que sabes que existen, lo primero a revisar es que el botón de 
 | Servicios HTTP | `src/features/inventarios/services/*.js` |
 | Axios base | `src/shared/lib/axiosInstance.js` |
 | Hooks compartidos | `src/shared/hooks/useFormValidation.js`, `useConfirm.js`, `useSnackbar.jsx` |
+
+## 13. Regenerar capturas
+
+Las capturas viven en `docs/images/inventarios/` (`01-instalaciones.png` … `07-equipos.png`). Fueron tomadas con una sesión logueada sobre `http://localhost:3000`, viewport `1440×900`, `deviceScaleFactor: 1.25`, en `fullPage`.
+
+Si cambia la UI y hay que actualizarlas, se puede hacer con Playwright siguiendo estos pasos:
+
+```bash
+mkdir -p /tmp/inv-screenshots && cd /tmp/inv-screenshots
+bun init -y && bun add -d playwright && bunx playwright install chromium
+```
+
+Crear `capture.mjs` con el siguiente contenido (mismo script que se usó originalmente):
+
+```javascript
+import { chromium } from "playwright";
+import { mkdirSync } from "node:fs";
+
+const BASE = process.env.APP_URL || "http://localhost:3000";
+const USER = process.env.APP_USER;
+const PASS = process.env.APP_PASS;
+const OUT = process.env.OUT_DIR;
+
+mkdirSync(OUT, { recursive: true });
+
+const routes = [
+  { slug: "01-instalaciones", path: "/inventarios/instalaciones" },
+  { slug: "02-reproductores", path: "/inventarios/reproductores" },
+  { slug: "03-lotes", path: "/inventarios/lotes" },
+  { slug: "04-piletas", path: "/inventarios/piletas" },
+  { slug: "05-engorda", path: "/inventarios/engorda" },
+  { slug: "06-alimentos", path: "/inventarios/alimentos" },
+  { slug: "07-equipos", path: "/inventarios/equipos" },
+];
+
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({
+  viewport: { width: 1440, height: 900 },
+  deviceScaleFactor: 1.25,
+});
+const page = await context.newPage();
+
+await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+await page.getByRole("textbox", { name: /usuario/i }).fill(USER);
+await page.locator('input[type="password"]').fill(PASS);
+await page.getByRole("button", { name: /acceder/i }).click();
+await page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 15000 });
+
+for (const r of routes) {
+  await page.goto(`${BASE}${r.path}`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: `${OUT}/${r.slug}.png`, fullPage: true });
+}
+
+await browser.close();
+```
+
+Ejecutar:
+
+```bash
+APP_USER='tu_usuario' \
+APP_PASS='tu_password' \
+OUT_DIR='/ruta/absoluta/a/QualityTechnology-Frontend/docs/images/inventarios' \
+bun capture.mjs
+```
+
+> El dev server del frontend debe estar corriendo (`bun run dev`) y el usuario debe tener acceso al módulo `Inventarios`. Usa credenciales de **pruebas**, nunca de producción.
