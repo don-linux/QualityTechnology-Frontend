@@ -23,23 +23,3 @@ export function listClientesFlujo() {
 export function listProveedoresFlujo() {
   return axios.get("/flujo-caja/proveedores");
 }
-
-export function listCuentas() {
-  return axios.get("/cuentas");
-}
-
-export function createCuenta(data) {
-  return axios.post("/cuentas", data);
-}
-
-export function updateCuenta(id, data) {
-  return axios.put(`/cuentas/${id}`, data);
-}
-
-export function removeCuenta(id) {
-  return axios.delete(`/cuentas/${id}`);
-}
-
-export function updateSaldo(id, data) {
-  return axios.put(`/cuentas/actualizar-saldo/${id}`, data);
-}
