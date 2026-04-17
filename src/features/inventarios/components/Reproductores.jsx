@@ -16,6 +16,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
@@ -29,6 +30,15 @@ import Tooltip from "@mui/material/Tooltip";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+
+const MAX_NUMERICO = 15;
+const MAX_OBSERVACION = 500;
+const TRUNCAR_MAX = 40;
+
+const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
+const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 const REPRODUCTOR_BASE_REQUIRED = [
   "fc_instalacion",
@@ -217,6 +227,14 @@ const colorDias = (dias) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "fn_machos" || name === "fn_hembras") {
+      if (!soloEntero(value)) return;
+    }
+
+    if (name === "fn_talla") {
+      if (!soloDecimal(value)) return;
+    }
 
     let updated = { ...form, [name]: value };
 
@@ -478,8 +496,12 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                     value={form.fn_machos}
                     onChange={handleChange}
                     fullWidth
+                    inputProps={{ maxLength: MAX_NUMERICO, inputMode: "numeric" }}
                     error={!!errors.fn_machos}
-                    helperText={errors.fn_machos}
+                    helperText={
+                      errors.fn_machos ||
+                      `${String(form.fn_machos ?? "").length}/${MAX_NUMERICO}`
+                    }
                   />
                 </Grid>
                 <Grid size={4}>
@@ -490,8 +512,12 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                     value={form.fn_hembras}
                     onChange={handleChange}
                     fullWidth
+                    inputProps={{ maxLength: MAX_NUMERICO, inputMode: "numeric" }}
                     error={!!errors.fn_hembras}
-                    helperText={errors.fn_hembras}
+                    helperText={
+                      errors.fn_hembras ||
+                      `${String(form.fn_hembras ?? "").length}/${MAX_NUMERICO}`
+                    }
                   />
                 </Grid>
                 <Grid size={4}>
@@ -513,8 +539,12 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                     value={form.fn_talla}
                     onChange={handleChange}
                     fullWidth
+                    inputProps={{ maxLength: MAX_NUMERICO, inputMode: "decimal" }}
                     error={!!errors.fn_talla}
-                    helperText={errors.fn_talla}
+                    helperText={
+                      errors.fn_talla ||
+                      `${String(form.fn_talla ?? "").length}/${MAX_NUMERICO}`
+                    }
                   />
                 </Grid>
 
@@ -595,8 +625,14 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                     value={form.fc_observacion}
                     onChange={handleChange}
                     fullWidth
+                    multiline
+                    rows={2}
+                    inputProps={{ maxLength: MAX_OBSERVACION }}
                     error={!!errors.fc_observacion}
-                    helperText={errors.fc_observacion}
+                    helperText={
+                      errors.fc_observacion ||
+                      `${String(form.fc_observacion ?? "").length}/${MAX_OBSERVACION}`
+                    }
                   />
                 </Grid>
               </Grid>
@@ -764,8 +800,9 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
         LIMPIAR
       </Button>
     </Box>
-    <Paper sx={{ mb: 6, overflowX: "auto", boxShadow: 2 }}>
-        <Table stickyHeader>
+    <Paper sx={{ width: "100%", mb: 6, boxShadow: 2 }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table stickyHeader sx={{ minWidth: 960 }}>
           <TableHead>
             <TableRow>
               <TableCell>Origen</TableCell>
@@ -783,11 +820,16 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                 <TableCell>{r.destino || "—"}</TableCell>
                 <TableCell>{formatNumber(r.cantidad_trasladada)}</TableCell>
                 <TableCell>{formatFecha(r.fecha_movimiento)}</TableCell>
-                <TableCell>{r.observacion || "—"}</TableCell>
+                <TableCell sx={{ maxWidth: 160 }}>
+                  <span title={r.observacion || ""}>
+                    {r.observacion ? truncar(r.observacion) : "—"}
+                  </span>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
+      </TableContainer>
       </Paper>
       {ConfirmModal}
     </Box>
