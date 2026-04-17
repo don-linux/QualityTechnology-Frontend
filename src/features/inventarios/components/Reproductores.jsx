@@ -658,93 +658,118 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
       </Paper>
 
       {/* TABLA PRINCIPAL */}
-      <Paper sx={{ mb: 6, overflowX: "auto", p: 1 }}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell>Instalación</TableCell>
-              <TableCell>Cantidad</TableCell>
-              <TableCell>Talla</TableCell>
-              <TableCell>Machos</TableCell>
-              <TableCell>Hembras</TableCell>
-              <TableCell>Ratio</TableCell>
-              <TableCell>Línea</TableCell>
-              <TableCell>Familia</TableCell>
-              <TableCell>Observación</TableCell>
-              <TableCell>Fecha siembra</TableCell>
-              <TableCell>Días en pila</TableCell>
-              <TableCell>Últ. biometría</TableCell>
-              <TableCell>Días transcurridos</TableCell>
-              <TableCell>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {reproductores.map((r) => {
-              const diasPila = calcularDias(r.fd_fecha_siembra);
-              const diasBiometria = calcularDias(r.fd_fecha_biometria);
-
-              return (
-                <TableRow key={r.fi_reproductor_id}>
-
-                  <TableCell>{r.fc_instalacion}</TableCell>
-                  <TableCell>{formatNumber(r.fn_cantidad)}</TableCell>
-                  <TableCell>{formatNumber(r.fn_talla)}</TableCell>
-                  <TableCell>{formatNumber(r.fn_machos)}</TableCell>
-                  <TableCell>{formatNumber(r.fn_hembras)}</TableCell>
-                  <TableCell>{r.fc_ratio || "—"}</TableCell>
-                  <TableCell>{r.fc_linea || "—"}</TableCell>
-                  <TableCell>{r.fc_familia || "—"}</TableCell>
-                  <TableCell>{r.fc_observacion || "—"}</TableCell>
-
-                  <TableCell>{formatFecha(r.fd_fecha_siembra)}</TableCell>
-
-                  {/* DÍAS EN PILA (SIN SEMÁFORO) */}
-                  <TableCell
-                    sx={{
-                      fontWeight: "bold",
-                      textAlign: "center",
-                    }}
-                  >
-                    {diasPila ?? "—"}
-                  </TableCell>
-
-                  {/* FECHA BIOMETRÍA */}
-                  <TableCell>{formatFecha(r.fd_fecha_biometria)}</TableCell>
-
-                  {/* DÍAS TRANSCURRIDOS (CON SEMÁFORO) */}
-                  <TableCell sx={{ textAlign: "center" }}>
-                  {diasBiometria !== null ? (
-                    <CirculoNumero color={colorDias(diasBiometria)} value={diasBiometria} />
-                  ) : "—"}
+      <Paper sx={{ width: "100%", mb: 6 }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table stickyHeader sx={{ minWidth: 1350 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Instalación</TableCell>
+                <TableCell>Cantidad</TableCell>
+                <TableCell>Talla</TableCell>
+                <TableCell>Machos</TableCell>
+                <TableCell>Hembras</TableCell>
+                <TableCell>Ratio</TableCell>
+                <TableCell>Línea</TableCell>
+                <TableCell>Familia</TableCell>
+                <TableCell>Observación</TableCell>
+                <TableCell>Fecha siembra</TableCell>
+                <TableCell>Días en pila</TableCell>
+                <TableCell>Últ. biometría</TableCell>
+                <TableCell>Días transcurridos</TableCell>
+                <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>
+                  Acciones
                 </TableCell>
+              </TableRow>
+            </TableHead>
 
-                  {/* ACCIONES */}
-                  <TableCell>
-                    <Tooltip title="Editar">
-                      <IconButton color="primary" onClick={() => editarReproductor(r)}>
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
+            <TableBody>
+              {reproductores.map((r) => {
+                const diasPila = calcularDias(r.fd_fecha_siembra);
+                const diasBiometria = calcularDias(r.fd_fecha_biometria);
 
-                    <Tooltip title="Eliminar">
-                      <IconButton color="error" onClick={() => eliminarReproductor(r.fi_reproductor_id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
+                return (
+                  <TableRow key={r.fi_reproductor_id}>
 
-                    <Tooltip title="Trazar movimiento">
-                      <IconButton color="success" onClick={() => trazarReproductor(r)}>
-                        <SyncAltIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+                    <TableCell sx={{ maxWidth: 160 }}>
+                      <span title={r.fc_instalacion || ""}>
+                        {truncar(r.fc_instalacion) || "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell>{formatNumber(r.fn_cantidad)}</TableCell>
+                    <TableCell>{formatNumber(r.fn_talla)}</TableCell>
+                    <TableCell>{formatNumber(r.fn_machos)}</TableCell>
+                    <TableCell>{formatNumber(r.fn_hembras)}</TableCell>
+                    <TableCell>{r.fc_ratio || "—"}</TableCell>
+                    <TableCell sx={{ maxWidth: 160 }}>
+                      <span title={r.fc_linea || ""}>
+                        {r.fc_linea ? truncar(r.fc_linea) : "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 160 }}>
+                      <span title={r.fc_familia || ""}>
+                        {r.fc_familia ? truncar(r.fc_familia) : "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 160 }}>
+                      <span title={r.fc_observacion || ""}>
+                        {r.fc_observacion ? truncar(r.fc_observacion) : "—"}
+                      </span>
+                    </TableCell>
 
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                    <TableCell>{formatFecha(r.fd_fecha_siembra)}</TableCell>
+
+                    {/* DÍAS EN PILA (SIN SEMÁFORO) */}
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        textAlign: "center",
+                      }}
+                    >
+                      {diasPila ?? "—"}
+                    </TableCell>
+
+                    {/* FECHA BIOMETRÍA */}
+                    <TableCell>{formatFecha(r.fd_fecha_biometria)}</TableCell>
+
+                    {/* DÍAS TRANSCURRIDOS (CON SEMÁFORO) */}
+                    <TableCell sx={{ textAlign: "center" }}>
+                      {diasBiometria !== null ? (
+                        <CirculoNumero color={colorDias(diasBiometria)} value={diasBiometria} />
+                      ) : "—"}
+                    </TableCell>
+
+                    {/* ACCIONES */}
+                    <TableCell
+                      align="center"
+                      sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                    >
+                      <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                        <Tooltip title="Editar">
+                          <IconButton color="primary" onClick={() => editarReproductor(r)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Eliminar">
+                          <IconButton color="error" onClick={() => eliminarReproductor(r.fi_reproductor_id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Trazar movimiento">
+                          <IconButton color="success" onClick={() => trazarReproductor(r)}>
+                            <SyncAltIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
 
       {/* TRAZABILIDAD */}
