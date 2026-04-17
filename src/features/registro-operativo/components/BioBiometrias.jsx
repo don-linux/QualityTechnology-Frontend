@@ -70,7 +70,7 @@ export default function BioBiometrias() {
 
   /* FORMULARIO */
   const [form, setForm] = useState({
-    ubicacion: "",
+    ubicacion: "Medellin",
     fd_fecha: "",
     fn_peso_total_gramos: "",
     fn_organismos_muestreados: "",

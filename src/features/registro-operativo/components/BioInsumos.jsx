@@ -42,7 +42,7 @@ export default function BioInsumos() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
-    ubicacion: "",
+    ubicacion: "Medellin",
     fd_fecha: "",
     fc_cantidad_udm: "",
     fc_num_lote: "",
@@ -104,7 +104,7 @@ export default function BioInsumos() {
         showSnackbar("Registro guardado", "success");
       }
       setForm({
-        ubicacion: "",
+        ubicacion: form.ubicacion,
         fd_fecha: "",
         fc_cantidad_udm: "",
         fc_num_lote: "",

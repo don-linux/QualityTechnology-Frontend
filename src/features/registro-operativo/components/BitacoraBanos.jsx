@@ -48,7 +48,7 @@ function BitacoraBanosContent() {
     fc_realizo: "",
     fc_observaciones: "",
     fi_usuario_id: usuarioId,
-    ubicacion: "",
+    ubicacion: "Medellin",
   });
 
   const [data, setData] = useState([]);

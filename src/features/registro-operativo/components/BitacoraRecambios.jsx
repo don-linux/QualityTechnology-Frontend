@@ -35,7 +35,7 @@ function BitacoraRecambiosContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
-    ubicacion: "",
+    ubicacion: "Medellin",
     fc_mes: "",
     fn_num_instalacion: "",
     fd_fecha1: "",
@@ -105,7 +105,7 @@ function BitacoraRecambiosContent() {
 
       setEditId(null);
       setForm({
-        ubicacion: "",
+        ubicacion: form.ubicacion,
         fc_mes: "",
         fn_num_instalacion: "",
         fd_fecha1: "",
