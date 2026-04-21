@@ -24,20 +24,25 @@ import Business from "@mui/icons-material/Business";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import EggAltIcon from "@mui/icons-material/EggAlt";
+import MenuBook from "@mui/icons-material/MenuBook";
+import Security from "@mui/icons-material/Security";
+import Groups from "@mui/icons-material/Groups";
 
-export const FIXED_ITEMS = [
-  { to: "/", icon: <Dashboard />, label: "Inicio" },
-  { to: "/mi-perfil", icon: <AccountCircle />, label: "Mi Perfil" },
-];
+export const DASHBOARD_SECTION = {
+  modulo: "Dashboard",
+  label: "DASHBOARD",
+  moduleIcon: <Dashboard />,
+  items: [
+    { to: "/", icon: <Dashboard />, label: "Inicio" },
+    { to: "/mi-perfil", icon: <AccountCircle />, label: "Mi Perfil" },
+  ],
+};
 
 export const MENU_SECTIONS = [
   {
     modulo: "Operaciones",
-    label: "OPERACIONES",
-    collapsible: true,
-    collapseIcon: <Assignment />,
-    collapseLabel: "Bitácoras",
-    collapsePath: "/registro-operativo",
+    label: "OPERACIONES / BITÁCORAS",
+    moduleIcon: <Assignment />,
     items: [
       { to: "/registro-operativo/plagas", icon: <BugReport />, label: "Control de Plagas" },
       { to: "/registro-operativo/recepcion-insumos", icon: <ReceiptLong />, label: "Recepción de Insumos" },
@@ -54,6 +59,7 @@ export const MENU_SECTIONS = [
   {
     modulo: "Inventarios",
     label: "INVENTARIOS",
+    moduleIcon: <Inventory />,
     subsections: [
       {
         sublabel: "Inventario de Organismos",
@@ -79,6 +85,7 @@ export const MENU_SECTIONS = [
   {
     modulo: "Ventas",
     label: "VENTAS",
+    moduleIcon: <Store />,
     items: [
       { to: "/ventas/lista-espera", icon: <Store />, label: "Próximas Ventas" },
       { to: "/ventas/registro", icon: <LocalAtm />, label: "Registro de Ventas" },
@@ -88,6 +95,7 @@ export const MENU_SECTIONS = [
   {
     modulo: "Finanzas",
     label: "ADMIN Y FINANZAS",
+    moduleIcon: <AccountBalance />,
     items: [
       { to: "/ventas/flujo-caja", icon: <AccountBalance />, label: "Flujo de Caja" },
       { to: "/ventas/tesoreria", icon: <AccountBalance />, label: "Tesorería General" },
@@ -97,6 +105,7 @@ export const MENU_SECTIONS = [
   {
     modulo: "RRHH",
     label: "RRHH",
+    moduleIcon: <Groups />,
     items: [
       { to: "/nomina", icon: <Person />, label: "Nómina" },
       { to: "/empleados", icon: <Badge />, label: "Empleados" },
@@ -107,6 +116,7 @@ export const MENU_SECTIONS = [
   {
     modulo: "Catálogos",
     label: "CATÁLOGOS",
+    moduleIcon: <MenuBook />,
     items: [
       { to: "/usuarios", icon: <People />, label: "Usuarios" },
       { to: "/roles", icon: <Assignment />, label: "Roles" },
@@ -117,6 +127,7 @@ export const MENU_SECTIONS = [
   {
     modulo: "Seguridad",
     label: "SEGURIDAD",
+    moduleIcon: <Security />,
     items: [
       { to: "/seguridad/roles-modulos", icon: <People />, label: "Módulos por rol" },
     ],
