@@ -51,7 +51,7 @@ function BitacoraMedicamentosContent() {
     fc_forma_aplicacion: "",
     fd_fecha_ultima_dosis: "",
     fc_responsable: "",
-    ubicacion: "",
+    ubicacion: "Medellin",
     fi_usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
@@ -112,7 +112,7 @@ function BitacoraMedicamentosContent() {
         fc_forma_aplicacion: "",
         fd_fecha_ultima_dosis: "",
         fc_responsable: "",
-        ubicacion: "",
+        ubicacion: form.ubicacion,
         fi_usuario_id: usuarioId,
       });
       cargarDatos();

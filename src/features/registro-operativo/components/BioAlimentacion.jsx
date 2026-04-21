@@ -40,7 +40,7 @@ export default function BioAlimentacion() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
-    ubicacion: "",
+    ubicacion: "Medellin",
     fc_mes: "",
     fn_num_instalacion: "",
     fn_peso_promedio_entrada: "",
@@ -133,7 +133,7 @@ export default function BioAlimentacion() {
       }
 
       setForm({
-        ubicacion: "",
+        ubicacion: form.ubicacion,
         fc_mes: "",
         fn_num_instalacion: "",
         fn_peso_promedio_entrada: "",

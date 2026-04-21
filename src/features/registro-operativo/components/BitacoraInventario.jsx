@@ -33,7 +33,7 @@ function BitacoraInventarioContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
-    ubicacion: "",
+    ubicacion: "Medellin",
     fn_num_instalacion: "",
     fn_cantidad: "",
     fn_talla: "",
@@ -82,7 +82,7 @@ function BitacoraInventarioContent() {
 
       setEditId(null);
       setForm({
-        ubicacion: "",
+        ubicacion: form.ubicacion,
         fn_num_instalacion: "",
         fn_cantidad: "",
         fn_talla: "",

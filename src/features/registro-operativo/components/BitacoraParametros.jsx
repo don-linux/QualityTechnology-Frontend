@@ -35,7 +35,7 @@ function BitacoraParametrosContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
-    ubicacion: "",
+    ubicacion: "Medellin",
     fd_fecha: "",
     fn_num_estanque: "",
     fn_oxigeno: "",
@@ -95,7 +95,7 @@ function BitacoraParametrosContent() {
 
       setEditId(null);
       setForm({
-        ubicacion: "",
+        ubicacion: form.ubicacion,
         fd_fecha: "",
         fn_num_estanque: "",
         fn_oxigeno: "",

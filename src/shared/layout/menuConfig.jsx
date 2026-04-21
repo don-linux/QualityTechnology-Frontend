@@ -100,6 +100,7 @@ export const MENU_SECTIONS = [
       { to: "/ventas/flujo-caja", icon: <AccountBalance />, label: "Flujo de Caja" },
       { to: "/ventas/tesoreria", icon: <AccountBalance />, label: "Tesorería General" },
       { to: "/proveedores", icon: <Store />, label: "Proveedores" },
+      { to: "/cuentas", icon: <AccountBalance />, label: "Cuentas" },
     ],
   },
   {

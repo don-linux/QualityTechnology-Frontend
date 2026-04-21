@@ -10,8 +10,8 @@ import MenuItem from "@mui/material/MenuItem";
 import {
   listClientesFlujo,
   listProveedoresFlujo,
-  listCuentas,
 } from "../services/flujoCajaService";
+import { listCuentasActivas } from "@features/catalogos/services/cuentasService";
 
 const FormDialog = React.memo(
   ({ open, onClose, onSubmit, formData, setFormData, editId, errors = {}, clearFieldError, clearErrors, validate, requiredFields = [] }) => {
@@ -24,7 +24,7 @@ const FormDialog = React.memo(
         const [resClientes, resProveedores, resCuentas] = await Promise.all([
           listClientesFlujo(),
           listProveedoresFlujo(),
-          listCuentas(),
+          listCuentasActivas(),
         ]);
         setClientes(resClientes.data);
         setProveedores(resProveedores.data);
@@ -76,8 +76,8 @@ const FormDialog = React.memo(
                 helperText={errors.fc_cuenta}
               >
                 {cuentas.map((cuenta) => (
-                  <MenuItem key={cuenta.id} value={cuenta.nombre}>
-                    {cuenta.nombre} — ${parseFloat(cuenta.saldo).toLocaleString("es-MX")}
+                  <MenuItem key={cuenta.fi_cuenta_id} value={cuenta.fc_nombre}>
+                    {cuenta.fc_nombre} — ${parseFloat(cuenta.fn_saldo_actual).toLocaleString("es-MX")}
                   </MenuItem>
                 ))}
               </TextField>
@@ -206,8 +206,8 @@ const FormDialog = React.memo(
 
                 {Number(formData.fn_egreso) > 0 &&
                   proveedores.map((prov) => (
-                    <MenuItem key={prov.nombre} value={prov.nombre}>
-                      {prov.nombre}
+                    <MenuItem key={prov.razon_social} value={prov.razon_social}>
+                      {prov.razon_social}
                     </MenuItem>
                   ))}
               </TextField>

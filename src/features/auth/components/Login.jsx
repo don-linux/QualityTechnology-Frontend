@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
 import PasswordField from "@shared/components/PasswordField";
+import Copyright from "@shared/components/Copyright";
 import useAuth from "@app/providers/AuthProvider";
 
 const requiredFields = ["usuario", "password"];
@@ -190,12 +191,7 @@ const Login = () => {
                 Acceder
               </Button>
 
-              <Typography
-                variant="body2"
-                sx={{ mt: 2, color: "text.secondary", fontSize: 13 }}
-              >
-                © 2025 Quality Technology . Medellin . Ceiba  .
-              </Typography>
+              <Copyright />
             </>
           )}
         </Paper>

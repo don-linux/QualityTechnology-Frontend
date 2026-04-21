@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -10,15 +10,17 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 import Grid from "@mui/material/Grid";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
 import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import Edit from "@mui/icons-material/Edit";
-import CleaningServices from "@mui/icons-material/CleaningServices";
 import Business from "@mui/icons-material/Business";
 import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
 import Save from "@mui/icons-material/Save";
@@ -32,6 +34,39 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import { ESTADOS_MX } from "@shared/constants/estadosMx";
+
+const EMPTY_FORM = {
+  razon_social: "",
+  rfc: "",
+  udn: "",
+  nombre_contacto: "",
+  telefono: "",
+  correo: "",
+  localidad: "",
+  estado: "",
+  ejecutivo: "",
+  precio_venta: 0,
+};
+
+const REQUIRED_FIELDS = [
+  "razon_social", "rfc", "udn", "nombre_contacto",
+  "telefono", "correo", "localidad", "estado",
+  "ejecutivo", "precio_venta",
+];
+
+const CAMPOS_FORM = [
+  { label: "Razón Social", name: "razon_social" },
+  { label: "RFC", name: "rfc" },
+  { label: "UdN", name: "udn" },
+  { label: "Nombre del contacto", name: "nombre_contacto" },
+  { label: "Teléfono", name: "telefono" },
+  { label: "Correo Electrónico", name: "correo" },
+  { label: "Localidad", name: "localidad" },
+  { label: "Estado", name: "estado", select: true },
+  { label: "Ejecutivo", name: "ejecutivo" },
+  { label: "Precio de venta", name: "precio_venta", type: "number" },
+];
 
 export default function Proveedores() {
   const showSnackbar = useSnackbar();
@@ -39,30 +74,11 @@ export default function Proveedores() {
   const [busqueda, setBusqueda] = useState("");
 
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(EMPTY_FORM);
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
-  const requiredFields = [
-    "nombre", "empresa", "rfc", "categoria", "contacto",
-    "telefono", "correo", "direccion", "forma_pago",
-    "plazo_credito", "ultima_compra", "monto_promedio",
-  ];
-
-  const normalizarFechaInput = (valor) => {
-    if (!valor) return "";
-    if (typeof valor === "string" && /^\d{4}-\d{2}-\d{2}$/.test(valor)) {
-      return valor;
-    }
-    const fecha = new Date(valor);
-    if (Number.isNaN(fecha.getTime())) return "";
-    return fecha.toISOString().split("T")[0];
-  };
-
-  // ============================
-  //  Cargar datos
-  // ============================
   const obtenerDatos = async () => {
     try {
       const res = await listProveedores();
@@ -76,67 +92,60 @@ export default function Proveedores() {
     obtenerDatos();
   }, []);
 
-  // ============================
-  //  Buscar proveedor
-  // ============================
-  const buscar = () => {
-    if (busqueda.trim() === "") obtenerDatos();
-    else {
-      setProveedores(
-        proveedores.filter((p) =>
-          p.nombre.toLowerCase().includes(busqueda.toLowerCase())
-        )
-      );
-    }
-  };
+  const proveedoresFiltrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return proveedores;
+    return proveedores.filter((p) =>
+      [
+        p.id,
+        p.razon_social,
+        p.rfc,
+        p.udn,
+        p.nombre_contacto,
+        p.telefono,
+        p.correo,
+        p.localidad,
+        p.estado,
+        p.ejecutivo,
+        p.precio_venta,
+      ].some((v) => String(v ?? "").toLowerCase().includes(q))
+    );
+  }, [proveedores, busqueda]);
 
-  // ============================
-  //  Crear nuevo proveedor
-  // ============================
   const crear = () => {
     clearErrors();
-    setFormData({
-      nombre: "",
-      empresa: "",
-      rfc: "",
-      categoria: "",
-      contacto: "",
-      telefono: "",
-      correo: "",
-      direccion: "",
-      forma_pago: "",
-      plazo_credito: "",
-      ultima_compra: "",
-      monto_promedio: 0,
-    });
+    setFormData({ ...EMPTY_FORM });
     setOpen(true);
   };
 
-  // ============================
-  //  Editar proveedor
-  // ============================
   const editar = (p) => {
     clearErrors();
     setFormData({
-      ...p,
-      ultima_compra: normalizarFechaInput(p.ultima_compra),
+      id: p.id,
+      razon_social: p.razon_social || "",
+      rfc: p.rfc || "",
+      udn: p.udn || "",
+      nombre_contacto: p.nombre_contacto || "",
+      telefono: p.telefono || "",
+      correo: p.correo || "",
+      localidad: p.localidad || "",
+      estado: p.estado || "",
+      ejecutivo: p.ejecutivo || "",
+      precio_venta: p.precio_venta ?? 0,
     });
     setOpen(true);
   };
 
-  // ============================
-  //  Guardar (crear o actualizar)
-  // ============================
   const guardar = async () => {
-    if (!validate(formData, requiredFields)) return;
+    if (!validate(formData, REQUIRED_FIELDS)) return;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.correo && !emailRegex.test(formData.correo)) {
-      showSnackbar(" El correo no tiene un formato válido.", "success");
+      showSnackbar("El correo no tiene un formato válido.", "error");
       return;
     }
     if (formData.telefono && isNaN(formData.telefono)) {
-      showSnackbar(" El teléfono debe contener solo números.", "success");
+      showSnackbar("El teléfono debe contener solo números.", "error");
       return;
     }
 
@@ -150,22 +159,16 @@ export default function Proveedores() {
       obtenerDatos();
     } catch (err) {
       console.error("Error al guardar:", err);
-      showSnackbar(" Error al guardar el proveedor.", "error");
+      showSnackbar("Error al guardar el proveedor.", "error");
     }
   };
 
-  // ============================
-  //  Eliminar proveedor
-  // ============================
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar proveedor?")) return;
     await removeProveedor(id);
     obtenerDatos();
   };
 
-  // ============================
-  //  Exportar PDF
-  // ============================
   const exportarPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
@@ -176,36 +179,34 @@ export default function Proveedores() {
     doc.setFontSize(14);
     doc.text("Listado de Proveedores - Sistema de Salud Animal", 45, 20);
     doc.setFontSize(10);
-    doc.text("Módulo de Administración y Finanzas / Control de Proveedores", 45, 26);
+    doc.text("Catálogo general de proveedores (Quality y granjas)", 45, 26);
 
     const columnas = [
       "ID",
-      "Nombre",
-      "Empresa",
-      "Categoría",
-      "Persona de contacto",
+      "Razón Social",
+      "RFC",
+      "UdN",
+      "Nombre del contacto",
       "Teléfono",
       "Correo",
-      "RFC",
-      "Forma de pago",
-      "Última compra",
-      "Monto promedio",
+      "Localidad",
+      "Estado",
+      "Ejecutivo",
+      "Precio de venta",
     ];
 
-    const filas = proveedores.map((p) => [
+    const filas = proveedoresFiltrados.map((p) => [
       p.id,
-      p.nombre,
-      p.empresa || "-",
-      p.categoria || "-",
-      p.contacto || "-",
+      p.razon_social || "-",
+      p.rfc || "-",
+      p.udn || "-",
+      p.nombre_contacto || "-",
       p.telefono || "-",
       p.correo || "-",
-      p.rfc || "-",
-      p.forma_pago || "-",
-      p.ultima_compra
-        ? new Date(p.ultima_compra).toLocaleDateString()
-        : "-",
-      `$${parseFloat(p.monto_promedio || 0).toFixed(2)}`,
+      p.localidad || "-",
+      p.estado || "-",
+      p.ejecutivo || "-",
+      `$${parseFloat(p.precio_venta || 0).toFixed(2)}`,
     ]);
 
     autoTable(doc, {
@@ -226,9 +227,6 @@ export default function Proveedores() {
     doc.save(`Proveedores_${fecha}.pdf`);
   };
 
-  // ============================
-  //  Manejo de cambios
-  // ============================
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -240,7 +238,7 @@ export default function Proveedores() {
       <Typography
         variant="h5"
         sx={{
-          mb: 2,
+          mb: 0.5,
           display: "flex",
           alignItems: "center",
           fontWeight: "bold",
@@ -249,36 +247,33 @@ export default function Proveedores() {
       >
         <Business sx={{ mr: 1 }} /> Control de Proveedores
       </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        El catálogo de proveedores es general para Quality y granjas.
+      </Typography>
 
-      {/* Barra de acciones */}
       <Paper sx={{ p: 2, mb: 3, background: "#f8f9fa" }}>
         <Grid container spacing={2} alignItems="center">
           <Grid>
             <TextField
-              label="Buscar proveedor"
+              label="Buscar"
               size="small"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              sx={{ width: 250 }}
-            />
-          </Grid>
-          <Grid>
-            <Button variant="contained" onClick={buscar}>
-              BUSCAR
-            </Button>
-          </Grid>
-          <Grid>
-            <Button
-              variant="outlined"
-              color="secondary"
-              startIcon={<CleaningServices />}
-              onClick={() => {
-                setBusqueda("");
-                obtenerDatos();
+              sx={{ width: 320 }}
+              InputProps={{
+                endAdornment: busqueda ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => setBusqueda("")}
+                      aria-label="Limpiar búsqueda"
+                    >
+                      <Close fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
               }}
-            >
-              LIMPIAR
-            </Button>
+            />
           </Grid>
           <Grid>
             <Button
@@ -303,23 +298,22 @@ export default function Proveedores() {
         </Grid>
       </Paper>
 
-      {/* Tabla de proveedores */}
       <TableContainer component={Paper} sx={{ border: "1px solid #ccc" }}>
         <Table size="small">
           <TableHead sx={{ backgroundColor: "#1565c0" }}>
             <TableRow>
               {[
                 "ID",
-                "Nombre",
-                "Empresa",
-                "Categoría",
-                "Persona de contacto",
+                "Razón Social",
+                "RFC",
+                "UdN",
+                "Nombre del contacto",
                 "Teléfono",
                 "Correo",
-                "RFC",
-                "Forma de pago",
-                "Última compra",
-                "Monto promedio",
+                "Localidad",
+                "Estado",
+                "Ejecutivo",
+                "Precio de venta",
                 "Acciones",
               ].map((head) => (
                 <TableCell
@@ -337,7 +331,7 @@ export default function Proveedores() {
           </TableHead>
 
           <TableBody>
-            {proveedores.map((p, i) => (
+            {proveedoresFiltrados.map((p, i) => (
               <TableRow
                 key={p.id}
                 sx={{
@@ -346,21 +340,17 @@ export default function Proveedores() {
                 }}
               >
                 <TableCell align="center">{p.id}</TableCell>
-                <TableCell>{p.nombre}</TableCell>
-                <TableCell>{p.empresa || "-"}</TableCell>
-                <TableCell>{p.categoria || "-"}</TableCell>
-                <TableCell>{p.contacto || "-"}</TableCell>
+                <TableCell>{p.razon_social || "-"}</TableCell>
+                <TableCell>{p.rfc || "-"}</TableCell>
+                <TableCell>{p.udn || "-"}</TableCell>
+                <TableCell>{p.nombre_contacto || "-"}</TableCell>
                 <TableCell>{p.telefono || "-"}</TableCell>
                 <TableCell>{p.correo || "-"}</TableCell>
-                <TableCell>{p.rfc || "-"}</TableCell>
-                <TableCell>{p.forma_pago || "-"}</TableCell>
-                <TableCell>
-                  {p.ultima_compra
-                    ? new Date(p.ultima_compra).toLocaleDateString()
-                    : "-"}
-                </TableCell>
+                <TableCell>{p.localidad || "-"}</TableCell>
+                <TableCell>{p.estado || "-"}</TableCell>
+                <TableCell>{p.ejecutivo || "-"}</TableCell>
                 <TableCell align="right">
-                  ${parseFloat(p.monto_promedio || 0).toFixed(2)}
+                  ${parseFloat(p.precio_venta || 0).toFixed(2)}
                 </TableCell>
                 <TableCell align="center">
                   <Button
@@ -389,39 +379,33 @@ export default function Proveedores() {
         </Table>
       </TableContainer>
 
-      {/* Modal de edición / creación */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontWeight: "bold", color: "#0d47a1" }}>
           {formData.id ? "Editar Proveedor" : "Nuevo Proveedor"}
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            {[
-              { label: "Nombre", name: "nombre" },
-              { label: "Empresa", name: "empresa" },
-              { label: "RFC", name: "rfc" },
-              { label: "Categoría", name: "categoria" },
-              { label: "Persona de contacto", name: "contacto" },
-              { label: "Teléfono", name: "telefono" },
-              { label: "Correo", name: "correo" },
-              { label: "Dirección", name: "direccion" },
-              { label: "Forma de pago", name: "forma_pago" },
-              { label: "Plazo crédito (días)", name: "plazo_credito" },
-              { label: "Última compra", name: "ultima_compra", type: "date" },
-              { label: "Monto promedio", name: "monto_promedio", type: "number" },
-            ].map((f) => (
+            {CAMPOS_FORM.map((f) => (
               <Grid size={6} key={f.name}>
                 <TextField
+                  select={f.select || false}
                   label={f.label}
                   name={f.name}
                   type={f.type || "text"}
-                  value={formData[f.name] || ""}
+                  value={formData[f.name] ?? ""}
                   onChange={handleChange}
                   fullWidth
                   size="small"
                   error={!!errors[f.name]}
                   helperText={errors[f.name]}
-                />
+                >
+                  {f.select &&
+                    ESTADOS_MX.map((estado) => (
+                      <MenuItem key={estado} value={estado}>
+                        {estado}
+                      </MenuItem>
+                    ))}
+                </TextField>
               </Grid>
             ))}
           </Grid>

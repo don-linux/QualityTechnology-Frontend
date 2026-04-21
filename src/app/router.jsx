@@ -30,6 +30,7 @@ const Venta = lazy(() => import("@pages/ventas/VentaPage"));
 const FlujoCaja = lazy(() => import("@pages/ventas/FlujoCajaPage"));
 const ListaEspera = lazy(() => import("@pages/ventas/ListaEsperaPage"));
 const TesoreriaGeneral = lazy(() => import("@pages/ventas/TesoreriaGeneralPage"));
+const Cuentas = lazy(() => import("@pages/catalogos/CuentasPage"));
 
 // Registro Operativo
 const BitacoraPlagas = lazy(() => import("@pages/registro-operativo/BitacoraPlagasPage"));
@@ -99,6 +100,7 @@ export default function AppRouter() {
             <Route path="ventas/tesoreria" element={<TesoreriaGeneral />} />
             <Route path="ventas/flujo-caja" element={<FlujoCaja />} />
             <Route path="proveedores" element={<Proveedores />} />
+            <Route path="cuentas" element={<Cuentas />} />
           </Route>
         </Route>
 

@@ -21,8 +21,7 @@ import {
   updateMovimiento,
   removeMovimiento,
 } from "../services/flujoCajaService";
-import FormDialog from "./FormDialog"; 
-import CuentasDialog from "./CuentasDialog"; 
+import FormDialog from "./FormDialog";
 import { getUploadUrl } from "@shared/lib/uploadUrl";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -133,7 +132,6 @@ export default function FlujoCaja() {
   const [subTab, setSubTab] = useState(0);
   const [movimientos, setMovimientos] = useState([]);
   const [open, setOpen] = useState(false);
-  const [openCuentas, setOpenCuentas] = useState(false);
   const [formData, setFormData] = useState({});
   const [editId, setEditId] = useState(null);
   const showSnackbar = useSnackbar();
@@ -268,14 +266,6 @@ export default function FlujoCaja() {
           <Button variant="contained" sx={{ background: "#1D5C42" }} onClick={exportarExcel}>
             Exportar Excel
           </Button>
-          {/*  Nuevo botón para abrir las cuentas */}
-          <Button
-            variant="contained"
-            sx={{ backgroundColor: "#00695c" }}
-            onClick={() => setOpenCuentas(true)}
-          >
-             Ver Cuentas
-          </Button>
         </Box>
 
         <TablaMovimientos movimientos={movimientos} onEdit={handleOpen} onDelete={handleDelete} />
@@ -294,12 +284,6 @@ export default function FlujoCaja() {
         clearErrors={clearErrors}
         validate={validate}
         requiredFields={requiredFields}
-      />
-
-      {/*  Modal de cuentas */}
-      <CuentasDialog
-        open={openCuentas}
-        onClose={() => setOpenCuentas(false)}
       />
 
       {ConfirmModal}
