@@ -6,7 +6,6 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Collapse from "@mui/material/Collapse";
-import Typography from "@mui/material/Typography";
 import Tooltip from "@mui/material/Tooltip";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
@@ -55,6 +54,19 @@ function moduleHeaderSx(hasActive) {
   };
 }
 
+function subHeaderSx(hasActive) {
+  return {
+    borderRadius: 1,
+    ml: 2,
+    mt: 0.5,
+    mb: 0.25,
+    px: 1,
+    py: 0.5,
+    backgroundColor: hasActive ? "rgba(255,255,255,0.06)" : "transparent",
+    "&:hover": { backgroundColor: "rgba(255,255,255,0.12)" },
+  };
+}
+
 function NavItem({ to, icon, label, drawerOpen, pathname, pl }) {
   const content = (
     <ListItemButton component={Link} to={to} sx={navItemSx(pathname, to, drawerOpen, { pl })}>
@@ -68,6 +80,52 @@ function NavItem({ to, icon, label, drawerOpen, pathname, pl }) {
     <Tooltip title={label} placement="right" arrow>
       {content}
     </Tooltip>
+  );
+}
+
+function SubSection({ sub, drawerOpen, pathname }) {
+  const hasActive = useMemo(
+    () => sub.items.some((item) => isPathActive(pathname, item.to)),
+    [sub, pathname]
+  );
+  const [open, setOpen] = useState(hasActive);
+
+  useEffect(() => {
+    if (hasActive) setOpen(true);
+  }, [hasActive]);
+
+  return (
+    <>
+      <ListItemButton onClick={() => setOpen((prev) => !prev)} sx={subHeaderSx(hasActive)}>
+        <ListItemText
+          primary={sub.sublabel}
+          primaryTypographyProps={{
+            fontWeight: "bold",
+            color: sub.sublabelColor,
+            fontSize: 13,
+          }}
+        />
+        {open ? (
+          <ExpandLess sx={{ color: sub.sublabelColor, fontSize: 20 }} />
+        ) : (
+          <ExpandMore sx={{ color: sub.sublabelColor, fontSize: 20 }} />
+        )}
+      </ListItemButton>
+
+      <Collapse in={open} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          {sub.items.map((item) => (
+            <NavItem
+              key={item.to}
+              {...item}
+              drawerOpen={drawerOpen}
+              pathname={pathname}
+              pl={5}
+            />
+          ))}
+        </List>
+      </Collapse>
+    </>
   );
 }
 
@@ -131,29 +189,12 @@ function ModuleSection({ section, drawerOpen, pathname }) {
 
           {section.subsections &&
             section.subsections.map((sub) => (
-              <React.Fragment key={sub.sublabel}>
-                <Typography
-                  sx={{
-                    fontWeight: "bold",
-                    color: sub.sublabelColor,
-                    ml: 3,
-                    mt: 1,
-                    mb: 0.5,
-                    fontSize: "13px",
-                  }}
-                >
-                  {sub.sublabel}
-                </Typography>
-                {sub.items.map((item) => (
-                  <NavItem
-                    key={item.to}
-                    {...item}
-                    drawerOpen={drawerOpen}
-                    pathname={pathname}
-                    pl={4}
-                  />
-                ))}
-              </React.Fragment>
+              <SubSection
+                key={sub.sublabel}
+                sub={sub}
+                drawerOpen={drawerOpen}
+                pathname={pathname}
+              />
             ))}
         </List>
       </Collapse>
