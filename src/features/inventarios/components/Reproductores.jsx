@@ -41,7 +41,7 @@ const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 const REPRODUCTOR_BASE_REQUIRED = [
-  "fc_instalacion",
+  "fi_instalacion_id",
   "fn_machos",
   "fn_hembras",
   "fn_talla",
@@ -80,11 +80,11 @@ const CirculoNumero = ({ color, value }) => (
 );
 
 export default function Reproductores() {
-  const showSnackbar = useSnackbar();
   return <ReproductoresContent />;
 }
 
 function ReproductoresContent() {
+  const showSnackbar = useSnackbar();
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -105,7 +105,7 @@ function ReproductoresContent() {
   const [form, setForm] = useState({
     origen_instalacion: "",
     origen_texto: "",
-    fc_instalacion: "",
+    fi_instalacion_id: "",
     fn_machos: "",
     fn_hembras: "",
     fn_cantidad: "",
@@ -207,7 +207,7 @@ const colorDias = (dias) => {
     setForm({
       origen_instalacion: "",
       origen_texto: "",
-      fc_instalacion: "",
+      fi_instalacion_id: "",
       fn_machos: "",
       fn_hembras: "",
       fn_cantidad: "",
@@ -289,7 +289,7 @@ const colorDias = (dias) => {
     setForm({
       origen_instalacion: r.origen_instalacion || "",
       origen_texto: r.origen_texto || "",
-      fc_instalacion: r.fc_instalacion,
+      fi_instalacion_id: r.fi_instalacion_id,
       fn_machos: r.fn_machos,
       fn_hembras: r.fn_hembras,
       fn_cantidad: r.fn_cantidad,
@@ -335,7 +335,7 @@ const colorDias = (dias) => {
   };
 
   const trazarReproductor = (r) => {
-    showSnackbar(`Movimiento desde ${r.fc_instalacion}.
+    showSnackbar(`Movimiento desde ${r.nombre_instalacion}.
 Pronto conectaremos este botón con traspasos internos.`, "error");
   };
 
@@ -468,18 +468,18 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                     select
                     size="small"
                     label="Destino"
-                    name="fc_instalacion"
-                    value={form.fc_instalacion}
+                    name="fi_instalacion_id"
+                    value={form.fi_instalacion_id}
                     onChange={handleChange}
                     fullWidth
-                    error={!!errors.fc_instalacion}
-                    helperText={errors.fc_instalacion}
+                    error={!!errors.fi_instalacion_id}
+                    helperText={errors.fi_instalacion_id}
                   >
                     <MenuItem value="">Seleccione</MenuItem>
                     {instalaciones.map((i) => (
                       <MenuItem
                         key={i.fi_instalacion_id}
-                        value={i.nombre_instalacion}
+                        value={i.fi_instalacion_id}
                       >
                         {i.nombre_instalacion}
                       </MenuItem>
@@ -691,8 +691,8 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                   <TableRow key={r.fi_reproductor_id}>
 
                     <TableCell sx={{ maxWidth: 160 }}>
-                      <span title={r.fc_instalacion || ""}>
-                        {truncar(r.fc_instalacion) || "—"}
+                      <span title={r.nombre_instalacion || ""}>
+                        {truncar(r.nombre_instalacion) || "—"}
                       </span>
                     </TableCell>
                     <TableCell>{formatNumber(r.fn_cantidad)}</TableCell>
