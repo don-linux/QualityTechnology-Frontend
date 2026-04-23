@@ -36,12 +36,22 @@ const truncar = (texto) =>
 
 const MAX_FC_OBSERVACIONES = 500;
 
+const MESES = [
+  "", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+
+const mesDesdefecha = (fecha) => {
+  if (!fecha) return "";
+  const mes = new Date(fecha + "T00:00:00").getMonth() + 1;
+  return MESES[mes] || "";
+};
+
 export default function BioAlimentacion() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState({
     ubicacion: "Medellin",
-    fc_mes: "",
     fn_num_instalacion: "",
     fn_peso_promedio_entrada: "",
     fd_fecha_siembra: "",
@@ -65,7 +75,7 @@ export default function BioAlimentacion() {
 
   const requiredFields = [
     "ubicacion",
-    "fc_mes", "fn_num_instalacion", "fn_peso_promedio_entrada",
+    "fn_num_instalacion", "fn_peso_promedio_entrada",
     "fd_fecha_siembra", "fc_origen_alevines", "fd_fecha",
     "fn_total_alimento_kg", "fn_mortalidad", "fc_recambio_agua",
     "fn_temp_agua", "fn_amonio", "fn_ph", "fc_observaciones",
@@ -124,17 +134,17 @@ export default function BioAlimentacion() {
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
     try {
+      const body = { ...form, fc_mes: mesDesdefecha(form.fd_fecha) };
       if (editId) {
-        await updateAlimentacion(editId, form);
+        await updateAlimentacion(editId, body);
         showSnackbar("Registro actualizado", "success");
       } else {
-        await createAlimentacion(form);
+        await createAlimentacion(body);
         showSnackbar("Registro guardado", "success");
       }
 
       setForm({
         ubicacion: form.ubicacion,
-        fc_mes: "",
         fn_num_instalacion: "",
         fn_peso_promedio_entrada: "",
         fd_fecha_siembra: "",
@@ -163,7 +173,6 @@ export default function BioAlimentacion() {
     setEditId(row.fi_id);
     setForm({
       ubicacion: row.ubicacion || "",
-      fc_mes: row.fc_mes,
       fn_num_instalacion: row.fn_num_instalacion,
       fn_peso_promedio_entrada: row.fn_peso_promedio_entrada,
       fd_fecha_siembra: row.fd_fecha_siembra?.split("T")[0],
@@ -353,33 +362,6 @@ export default function BioAlimentacion() {
               >
                 <MenuItem value="Medellin">Medellín</MenuItem>
                 <MenuItem value="La Ceiba">La Ceiba</MenuItem>
-              </TextField>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
-                select
-                label="Mes"
-                name="fc_mes"
-                value={form.fc_mes}
-                onChange={handleChange}
-                fullWidth
-                error={!!errors.fc_mes}
-                helperText={errors.fc_mes}
-              >
-                <MenuItem value="">Selecciona un mes</MenuItem>
-                <MenuItem value="Enero">Enero</MenuItem>
-                <MenuItem value="Febrero">Febrero</MenuItem>
-                <MenuItem value="Marzo">Marzo</MenuItem>
-                <MenuItem value="Abril">Abril</MenuItem>
-                <MenuItem value="Mayo">Mayo</MenuItem>
-                <MenuItem value="Junio">Junio</MenuItem>
-                <MenuItem value="Julio">Julio</MenuItem>
-                <MenuItem value="Agosto">Agosto</MenuItem>
-                <MenuItem value="Septiembre">Septiembre</MenuItem>
-                <MenuItem value="Octubre">Octubre</MenuItem>
-                <MenuItem value="Noviembre">Noviembre</MenuItem>
-                <MenuItem value="Diciembre">Diciembre</MenuItem>
               </TextField>
             </Grid>
 
