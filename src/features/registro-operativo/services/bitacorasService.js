@@ -1,6 +1,9 @@
 import axios from "@shared/lib/axiosInstance";
 
 // -- Plagas --
+export function listEmpleadosPlagas() {
+  return axios.get("/plagas/empleados");
+}
 export function listPlagas(ubicacion) {
   return axios.get(`/plagas?ubicacion=${ubicacion}`);
 }
@@ -18,6 +21,9 @@ export function removeAllPlagas(ubicacion) {
 }
 
 // -- Recepcion Insumos --
+export function listEmpleadosRecepcionInsumos() {
+  return axios.get("/recepcion_insumos/empleados");
+}
 export function listRecepcionInsumos(ubicacion) {
   return axios.get(`/recepcion_insumos?ubicacion=${ubicacion}`);
 }

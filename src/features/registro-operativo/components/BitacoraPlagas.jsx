@@ -23,6 +23,7 @@ import Divider from "@mui/material/Divider";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   listPlagas,
+  listEmpleadosPlagas,
   createPlaga,
   updatePlaga,
   removePlaga,
@@ -55,6 +56,7 @@ function BitacoraPlagasContent() {
   });
 
   const [data, setData] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [registroDetalle, setRegistroDetalle] = useState(null);
@@ -83,6 +85,15 @@ function BitacoraPlagasContent() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const cargarEmpleados = async () => {
+    try {
+      const res = await listEmpleadosPlagas();
+      setEmpleados(res.data);
+    } catch {
+      showSnackbar("Error al cargar empleados.", "error");
+    }
+  };
+
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
     try {
@@ -99,6 +110,10 @@ function BitacoraPlagasContent() {
       console.error("Error al cargar datos:", err.message);
     }
   }, [form.ubicacion, busqueda]);
+
+  useEffect(() => {
+    cargarEmpleados();
+  }, []);
 
   useEffect(() => {
     cargarDatos();
@@ -362,6 +377,7 @@ function BitacoraPlagasContent() {
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
+                select
                 label="Verificó"
                 name="fc_verifico"
                 value={form.fc_verifico}
@@ -370,7 +386,17 @@ function BitacoraPlagasContent() {
                 size="small"
                 error={!!errors.fc_verifico}
                 helperText={errors.fc_verifico}
-              />
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
+                    {empleado.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_verifico && !empleados.some((e) => e.fc_nombre_completo === form.fc_verifico) && (
+                  <MenuItem value={form.fc_verifico}>{form.fc_verifico}</MenuItem>
+                )}
+              </TextField>
             </Grid>
 
             <Grid size={12}>
