@@ -34,7 +34,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
 
 const GRANJA_MAP = {
-  Medellin: "Granja Acuícola Medellín",
+  Medellin: "Granja Acuícola Medellin",
   "La Ceiba": "Granja Acuícola La Ceiba",
 };
 
@@ -160,9 +160,9 @@ export default function BioBiometrias() {
       // Sí hay datos → autorrellenar
         setForm((prev) => ({
           ...prev,
-          tipo: d.tipo.toLowerCase(),
+          tipo: d.tipo ? d.tipo.toUpperCase() : "",
           fi_lote_id: d.fi_lote_id ?? "",
-          fn_organismos_muestreados: d.organismos,
+          fn_organismos_muestreados: d.organismos ?? "",
           fn_peso_total_gramos: "",
           fn_peso_promedio: "",
         }));
@@ -228,7 +228,7 @@ export default function BioBiometrias() {
     try {
       const body = {
         ...form,
-        tipo: form.tipo?.toLowerCase(),
+        tipo: form.tipo?.toUpperCase(),
       };
 
       if (editId) {
@@ -264,7 +264,7 @@ export default function BioBiometrias() {
       fc_encargado: row.fc_encargado,
       fi_instalacion_id: row.fi_instalacion_id,
       fi_lote_id: row.fi_lote_id ?? "",
-      tipo: row.tipo?.toLowerCase(),
+      tipo: row.tipo || "",
       fi_usuario_id: usuario_id,
     });
 
@@ -416,16 +416,16 @@ export default function BioBiometrias() {
                   input: {
                     readOnly:
                       form.fi_lote_id !== "" &&
-                      (form.tipo === "alevinaje" ||
-                        form.tipo === "engorda" ||
-                        form.tipo === "reproductores"),
+                      (form.tipo === "ALEVINAJE" ||
+                        form.tipo === "ENGORDA" ||
+                        form.tipo === "REPRODUCTORES"),
                   },
                 }}
               >
                 <MenuItem value="">Seleccionar</MenuItem>
-                <MenuItem value="alevinaje">Alevinaje</MenuItem>
-                <MenuItem value="engorda">Engorda</MenuItem>
-                <MenuItem value="reproductores">Reproductores</MenuItem>
+                <MenuItem value="ALEVINAJE">Alevinaje</MenuItem>
+                <MenuItem value="ENGORDA">Engorda</MenuItem>
+                <MenuItem value="REPRODUCTORES">Reproductores</MenuItem>
               </TextField>
             </Grid>
 
