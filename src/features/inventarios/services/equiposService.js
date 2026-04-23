@@ -1,5 +1,9 @@
 import axios from "@shared/lib/axiosInstance";
 
+export function listEmpleadosEquipos() {
+  return axios.get("/equipos/empleados");
+}
+
 export function listEquipos(usuarioId) {
   return axios.get(`/equipos/${usuarioId}`);
 }

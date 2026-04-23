@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   listEquipos,
+  listEmpleadosEquipos,
   createEquipo,
   updateEquipo,
   removeEquipo,
@@ -54,6 +55,7 @@ function EquiposContent() {
   });
 
   const [data, setData] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const [mantenimientos, setMantenimientos] = useState([]);
   const [openMantenimiento, setOpenMantenimiento] = useState(false);
@@ -104,8 +106,18 @@ function EquiposContent() {
     }
   }, [usuario_id]);
 
+  const cargarEmpleados = async () => {
+    try {
+      const res = await listEmpleadosEquipos();
+      setEmpleados(res.data);
+    } catch {
+      showSnackbar("Error al cargar empleados", "error");
+    }
+  };
+
   useEffect(() => {
     cargarDatos();
+    cargarEmpleados();
   }, [cargarDatos]);
 
   //  Guardar / actualizar
@@ -372,6 +384,7 @@ function EquiposContent() {
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
+                select
                 label="Responsable"
                 name="fc_responsable"
                 value={form.fc_responsable}
@@ -379,7 +392,17 @@ function EquiposContent() {
                 fullWidth
                 error={!!errors.fc_responsable}
                 helperText={errors.fc_responsable}
-              />
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((emp) => (
+                  <MenuItem key={emp.fi_empleado_id} value={emp.fc_nombre_completo}>
+                    {emp.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
+                  <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
+                )}
+              </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
@@ -552,6 +575,7 @@ function EquiposContent() {
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
+                select
                 label="Responsable"
                 name="fc_responsable"
                 value={nuevoMantenimiento.fc_responsable}
@@ -565,7 +589,17 @@ function EquiposContent() {
                 fullWidth
                 error={!!mantErrors.fc_responsable}
                 helperText={mantErrors.fc_responsable}
-              />
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((emp) => (
+                  <MenuItem key={emp.fi_empleado_id} value={emp.fc_nombre_completo}>
+                    {emp.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {nuevoMantenimiento.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === nuevoMantenimiento.fc_responsable) && (
+                  <MenuItem value={nuevoMantenimiento.fc_responsable}>{nuevoMantenimiento.fc_responsable}</MenuItem>
+                )}
+              </TextField>
             </Grid>
             <Grid size={12}>
               <TextField
