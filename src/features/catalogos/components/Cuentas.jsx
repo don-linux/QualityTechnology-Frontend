@@ -6,7 +6,8 @@ import {
   activateCuenta,
   deactivateCuenta,
 } from "@features/catalogos/services/cuentasService";
-import { UDN_OPTIONS, TIPO_CUENTA_OPTIONS } from "@shared/constants/cuentas";
+import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
+import { TIPO_CUENTA_OPTIONS } from "@shared/constants/cuentas";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
@@ -34,8 +35,8 @@ const EMPTY_FORM = {
   fc_udn: "",
   fc_nombre: "",
   fc_numero_cuenta: "",
+  fc_banco: "",
   fc_tipo: "",
-  fn_saldo_inicial: "",
 };
 
 const formatoMoneda = (valor) => {
@@ -48,18 +49,18 @@ export default function Cuentas() {
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState(EMPTY_FORM);
   const [cuentas, setCuentas] = useState([]);
+  const [unidadesNegocio, setUnidadesNegocio] = useState([]);
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
   const esEdicion = !!form.fi_cuenta_id;
 
-  const requiredFields = esEdicion
-    ? ["fc_udn", "fc_nombre", "fc_tipo"]
-    : ["fc_udn", "fc_nombre", "fc_tipo", "fn_saldo_inicial"];
+  const requiredFields = ["fc_udn", "fc_nombre", "fc_tipo"];
 
   useEffect(() => {
     obtenerCuentas();
+    obtenerUnidadesNegocio();
   }, []);
 
   const obtenerCuentas = async () => {
@@ -72,6 +73,16 @@ export default function Cuentas() {
       showSnackbar("Error al cargar cuentas", "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const obtenerUnidadesNegocio = async () => {
+    try {
+      const { data } = await listUnidadesNegocioActivas();
+      setUnidadesNegocio(data);
+    } catch (e) {
+      console.error(e);
+      showSnackbar("Error al cargar unidades de negocio", "error");
     }
   };
 
@@ -89,21 +100,14 @@ export default function Cuentas() {
     fc_udn: form.fc_udn,
     fc_nombre: form.fc_nombre.trim(),
     fc_numero_cuenta: form.fc_numero_cuenta?.trim() || null,
+    fc_banco: form.fc_banco?.trim() || null,
     fc_tipo: form.fc_tipo,
   });
 
   const registrar = async () => {
     if (!validate(form, requiredFields)) return;
-    const saldo = Number(form.fn_saldo_inicial);
-    if (Number.isNaN(saldo) || saldo < 0) {
-      showSnackbar("El saldo inicial debe ser un número mayor o igual a 0", "error");
-      return;
-    }
     try {
-      await createCuenta({
-        ...construirPayload(),
-        fn_saldo_inicial: saldo,
-      });
+      await createCuenta(construirPayload());
       await obtenerCuentas();
       limpiar();
       showSnackbar("Cuenta registrada correctamente", "success");
@@ -159,8 +163,8 @@ export default function Cuentas() {
       fc_udn: cuenta.fc_udn || "",
       fc_nombre: cuenta.fc_nombre || "",
       fc_numero_cuenta: cuenta.fc_numero_cuenta || "",
+      fc_banco: cuenta.fc_banco || "",
       fc_tipo: cuenta.fc_tipo || "",
-      fn_saldo_inicial: cuenta.fn_saldo_inicial ?? "",
     });
     clearErrors();
   };
@@ -192,8 +196,10 @@ export default function Cuentas() {
                 error={!!errors.fc_udn}
                 helperText={errors.fc_udn}
               >
-                {UDN_OPTIONS.map((opt) => (
-                  <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                {unidadesNegocio.map((u) => (
+                  <MenuItem key={u.fi_unidad_negocio_id} value={u.fc_nombre}>
+                    {u.fc_nombre}
+                  </MenuItem>
                 ))}
               </TextField>
             </Grid>
@@ -239,19 +245,14 @@ export default function Cuentas() {
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                name="fn_saldo_inicial"
-                label="Saldo inicial"
-                type="number"
+                name="fc_banco"
+                label="Nombre del banco"
                 fullWidth
-                value={form.fn_saldo_inicial}
+                value={form.fc_banco}
                 onChange={handleChange}
-                disabled={esEdicion}
-                error={!!errors.fn_saldo_inicial}
-                helperText={
-                  errors.fn_saldo_inicial ||
-                  (esEdicion ? "El saldo inicial no es editable" : "")
-                }
-                slotProps={{ htmlInput: { step: "0.01", min: "0" } }}
+                error={!!errors.fc_banco}
+                helperText={errors.fc_banco || "Opcional. Máximo 150 caracteres."}
+                inputProps={{ maxLength: 150 }}
               />
             </Grid>
           </Grid>
@@ -286,8 +287,8 @@ export default function Cuentas() {
                   <TableCell>UdN</TableCell>
                   <TableCell>Nombre</TableCell>
                   <TableCell>Número</TableCell>
+                  <TableCell>Banco</TableCell>
                   <TableCell>Tipo</TableCell>
-                  <TableCell align="right">Saldo inicial</TableCell>
                   <TableCell align="right">Saldo actual</TableCell>
                   <TableCell>Estado</TableCell>
                   <TableCell align="center">Acciones</TableCell>
@@ -300,8 +301,8 @@ export default function Cuentas() {
                     <TableCell>{cuenta.fc_udn}</TableCell>
                     <TableCell>{cuenta.fc_nombre}</TableCell>
                     <TableCell>{cuenta.fc_numero_cuenta || "—"}</TableCell>
+                    <TableCell>{cuenta.fc_banco || "—"}</TableCell>
                     <TableCell>{cuenta.fc_tipo}</TableCell>
-                    <TableCell align="right">{formatoMoneda(cuenta.fn_saldo_inicial)}</TableCell>
                     <TableCell align="right">{formatoMoneda(cuenta.fn_saldo_actual)}</TableCell>
                     <TableCell>
                       <Chip

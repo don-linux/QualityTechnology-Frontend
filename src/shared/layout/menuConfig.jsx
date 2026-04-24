@@ -123,6 +123,7 @@ export const MENU_SECTIONS = [
       { to: "/roles", icon: <Assignment />, label: "Roles" },
       { to: "/departamentos", icon: <Business />, label: "Departamentos" },
       { to: "/puestos", icon: <Work />, label: "Puestos" },
+      { to: "/unidades-negocio", icon: <Business />, label: "Unidades de Negocio" },
     ],
   },
   {
