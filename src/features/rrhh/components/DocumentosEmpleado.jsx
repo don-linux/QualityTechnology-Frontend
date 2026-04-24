@@ -16,11 +16,39 @@ import {
   listDocumentos,
   listTiposDocumento,
   uploadDocumento,
+  viewDocumento,
+  downloadDocumento,
+  removeDocumento,
 } from "../services/documentosService";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useConfirm from "@shared/hooks/useConfirm";
+
+const PREVIEWABLE_EXTENSIONS = /\.(pdf|png|jpe?g|gif|webp)$/i;
+
+function canPreviewFile(fileName) {
+  return PREVIEWABLE_EXTENSIONS.test(fileName || "");
+}
+
+function openBlobInNewTab(blob) {
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank", "noopener,noreferrer");
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function downloadBlob(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName || "documento";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
 
 export default function DocumentosEmpleado({ empleadoId, selfService = false }) {
   const showSnackbar = useSnackbar();
+  const { confirm, ConfirmModal } = useConfirm();
   const [documentos, setDocumentos] = useState([]);
   const [tiposDocumento, setTiposDocumento] = useState([]);
   const [tipoSeleccionado, setTipoSeleccionado] = useState("");
@@ -59,11 +87,41 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
       await cargarDocumentos();
     } catch (e) {
       console.error(e);
-      showSnackbar("Error al subir documento", "error");
+      showSnackbar(e.response?.data?.error || "Error al subir documento", "error");
     }
   };
 
-  const tiposSubidos = new Set(documentos.map((d) => d.fi_tipo_documento_id));
+  const verDocumento = async (doc) => {
+    try {
+      const { data } = await viewDocumento(doc.fi_documento_id, selfService);
+      openBlobInNewTab(data);
+    } catch (e) {
+      console.error(e);
+      showSnackbar("Error al abrir documento", "error");
+    }
+  };
+
+  const descargarDocumento = async (doc) => {
+    try {
+      const { data } = await downloadDocumento(doc.fi_documento_id, selfService);
+      downloadBlob(data, doc.fc_nombre_original);
+    } catch (e) {
+      console.error(e);
+      showSnackbar("Error al descargar documento", "error");
+    }
+  };
+
+  const eliminarDocumento = async (doc) => {
+    if (!await confirm(`¿Eliminar el documento "${doc.fc_nombre_original}"?`)) return;
+    try {
+      await removeDocumento(doc.fi_documento_id, selfService);
+      await cargarDocumentos();
+      showSnackbar("Documento eliminado correctamente", "success");
+    } catch (e) {
+      console.error(e);
+      showSnackbar("Error al eliminar documento", "error");
+    }
+  };
 
   return (
     <Box>
@@ -101,6 +159,7 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
               <TableCell>Archivo</TableCell>
               <TableCell>Fecha</TableCell>
               <TableCell>Obligatorio</TableCell>
+              <TableCell align="center">Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -118,12 +177,30 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
                   </TableCell>
                   <TableCell>{doc?.fd_fecha_carga || "-"}</TableCell>
                   <TableCell>{tipo.fb_obligatorio ? "Si" : "No"}</TableCell>
+                  <TableCell align="center">
+                    {doc ? (
+                      <>
+                        {canPreviewFile(doc.fc_nombre_original) && (
+                          <Button size="small" variant="outlined" sx={{ mr: 1 }} onClick={() => verDocumento(doc)}>
+                            Ver
+                          </Button>
+                        )}
+                        <Button size="small" variant="outlined" sx={{ mr: 1 }} onClick={() => descargarDocumento(doc)}>
+                          Descargar
+                        </Button>
+                        <Button size="small" variant="outlined" color="error" onClick={() => eliminarDocumento(doc)}>
+                          Eliminar
+                        </Button>
+                      </>
+                    ) : "-"}
+                  </TableCell>
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
       </TableContainer>
+      {ConfirmModal}
     </Box>
   );
 }

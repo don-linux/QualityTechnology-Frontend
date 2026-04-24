@@ -31,12 +31,13 @@ export default function UsuariosRegistro() {
     fc_apellido_materno: "",
     fi_departamento_id: "",
     fi_puesto_id: "",
+    fi_unidad_negocio_id: "",
   });
 
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const { usuarios, roles, departamentos, puestos, crearUsuario, actualizarUsuario, toggleActivo } = useUsuarios();
+  const { usuarios, roles, departamentos, puestos, unidadesNegocio, crearUsuario, actualizarUsuario, toggleActivo } = useUsuarios();
 
   const rolSeleccionado = roles.find((r) => r.fi_rol_id === Number(form.rol_id));
   const esRoot = rolSeleccionado?.fb_es_root === true;
@@ -83,6 +84,7 @@ export default function UsuariosRegistro() {
       fc_apellido_materno: "",
       fi_departamento_id: "",
       fi_puesto_id: "",
+      fi_unidad_negocio_id: "",
     });
     clearErrors();
   };
@@ -91,7 +93,7 @@ export default function UsuariosRegistro() {
     setForm({
       nombre: "", contraseña: "", rol_id: "",
       fc_nombre_empleado: "", fc_apellido_paterno: "", fc_apellido_materno: "",
-      fi_departamento_id: "", fi_puesto_id: "",
+      fi_departamento_id: "", fi_puesto_id: "", fi_unidad_negocio_id: "",
     });
     setUsuarioSeleccionado(null);
     clearErrors();
@@ -162,6 +164,14 @@ export default function UsuariosRegistro() {
                     <MenuItem value="">Sin asignar</MenuItem>
                     {puestos.map((p) => (
                       <MenuItem key={p.fi_puesto_id} value={p.fi_puesto_id}>{p.fc_nombre}</MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField select name="fi_unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.fi_unidad_negocio_id} onChange={handleChange}>
+                    <MenuItem value="">Sin asignar</MenuItem>
+                    {unidadesNegocio.map((u) => (
+                      <MenuItem key={u.fi_unidad_negocio_id} value={u.fi_unidad_negocio_id}>{u.fc_nombre}</MenuItem>
                     ))}
                   </TextField>
                 </Grid>

@@ -18,12 +18,23 @@ export function uploadDocumento(empleadoId, formData) {
   return axios.post(path, formData);
 }
 
-export function downloadDocumento(documentoId) {
-  return axios.get(`/documentos-empleado/download/${documentoId}`, {
-    responseType: "blob",
-  });
+export function viewDocumento(documentoId, selfService = false) {
+  const path = selfService
+    ? `/documentos-empleado/mis-documentos/view/${documentoId}`
+    : `/documentos-empleado/view/${documentoId}`;
+  return axios.get(path, { responseType: "blob" });
 }
 
-export function removeDocumento(documentoId) {
-  return axios.delete(`/documentos-empleado/${documentoId}`);
+export function downloadDocumento(documentoId, selfService = false) {
+  const path = selfService
+    ? `/documentos-empleado/mis-documentos/download/${documentoId}`
+    : `/documentos-empleado/download/${documentoId}`;
+  return axios.get(path, { responseType: "blob" });
+}
+
+export function removeDocumento(documentoId, selfService = false) {
+  const path = selfService
+    ? `/documentos-empleado/mis-documentos/${documentoId}`
+    : `/documentos-empleado/${documentoId}`;
+  return axios.delete(path);
 }

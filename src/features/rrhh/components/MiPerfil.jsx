@@ -145,7 +145,13 @@ export default function MiPerfil() {
               <TextField label="Departamento" fullWidth value={perfil.departamento_nombre || "-"} slotProps={{ input: { readOnly: true } }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField label="Unidad de Negocio" fullWidth value={perfil.unidad_negocio_nombre || "-"} slotProps={{ input: { readOnly: true } }} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField label="Fecha Contratacion" fullWidth value={perfil.fd_fecha_contratacion ? perfil.fd_fecha_contratacion.substring(0, 10) : "-"} slotProps={{ input: { readOnly: true } }} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField label="Fecha Baja" fullWidth value={perfil.fd_fecha_baja ? perfil.fd_fecha_baja.substring(0, 10) : "-"} slotProps={{ input: { readOnly: true } }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField label="Uniformes" fullWidth value={perfil.fn_uniformes ? "Entregado" : "Sin uniforme"} slotProps={{ input: { readOnly: true } }} />

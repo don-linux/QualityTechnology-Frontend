@@ -4,6 +4,7 @@ import {
   listRoles,
   listDepartamentosActivos,
   listPuestosActivos,
+  listUnidadesNegocioActivas,
   createUsuario,
   updateUsuario,
   toggleUsuarioActivo,
@@ -15,6 +16,7 @@ export default function useUsuarios() {
   const [roles, setRoles] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
   const [puestos, setPuestos] = useState([]);
+  const [unidadesNegocio, setUnidadesNegocio] = useState([]);
   const showSnackbar = useSnackbar();
 
   const obtenerUsuarios = useCallback(async () => {
@@ -53,12 +55,22 @@ export default function useUsuarios() {
     }
   }, []);
 
+  const obtenerUnidadesNegocio = useCallback(async () => {
+    try {
+      const { data } = await listUnidadesNegocioActivas();
+      setUnidadesNegocio(data);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
   useEffect(() => {
     obtenerUsuarios();
     obtenerRoles();
     obtenerDepartamentos();
     obtenerPuestos();
-  }, [obtenerUsuarios, obtenerRoles, obtenerDepartamentos, obtenerPuestos]);
+    obtenerUnidadesNegocio();
+  }, [obtenerUsuarios, obtenerRoles, obtenerDepartamentos, obtenerPuestos, obtenerUnidadesNegocio]);
 
   const crearUsuario = useCallback(
     async (form) => {
@@ -111,6 +123,7 @@ export default function useUsuarios() {
     roles,
     departamentos,
     puestos,
+    unidadesNegocio,
     obtenerUsuarios,
     crearUsuario,
     actualizarUsuario,

@@ -16,6 +16,7 @@ import TableBody from "@mui/material/TableBody";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import ArrowBack from "@mui/icons-material/ArrowBack";
@@ -28,13 +29,19 @@ import {
 } from "../services/empleadosService";
 import useConfirm from "@shared/hooks/useConfirm";
 import DocumentosEmpleado from "./DocumentosEmpleado";
+import ActasAdministrativas from "./ActasAdministrativas";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
+
+const todayString = () => new Date().toISOString().slice(0, 10);
+const formatDate = (value) => value ? value.substring(0, 10) : "-";
 
 export default function Empleados() {
   const showSnackbar = useSnackbar();
   const [empleados, setEmpleados] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
   const [puestos, setPuestos] = useState([]);
+  const [unidadesNegocio, setUnidadesNegocio] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [loading, setLoading] = useState(false);
   const { confirm, ConfirmModal } = useConfirm();
@@ -44,8 +51,8 @@ export default function Empleados() {
     fc_genero: "", fd_fecha_nacimiento: "", fc_estado: "",
     fc_ciudad: "", fc_calle: "", fc_codigo_postal: "",
     fc_referencias: "", ft_comentarios_adicionales: "",
-    fi_departamento_id: "", fi_puesto_id: "",
-    fd_fecha_contratacion: "", fn_uniformes: 0,
+    fi_departamento_id: "", fi_puesto_id: "", fi_unidad_negocio_id: "",
+    fd_fecha_contratacion: "", fd_fecha_baja: "", fn_uniformes: 0,
   });
 
   useEffect(() => { cargarDatos(); }, []);
@@ -53,14 +60,16 @@ export default function Empleados() {
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      const [empRes, depRes, pueRes] = await Promise.all([
+      const [empRes, depRes, pueRes, udnRes] = await Promise.all([
         listEmpleados(),
         listDepartamentosActivos(),
         listPuestosActivos(),
+        listUnidadesNegocioActivas(),
       ]);
       setEmpleados(empRes.data);
       setDepartamentos(depRes.data);
       setPuestos(pueRes.data);
+      setUnidadesNegocio(udnRes.data);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
@@ -83,7 +92,9 @@ export default function Empleados() {
       ft_comentarios_adicionales: e.ft_comentarios_adicionales || "",
       fi_departamento_id: e.fi_departamento_id || "",
       fi_puesto_id: e.fi_puesto_id || "",
+      fi_unidad_negocio_id: e.fi_unidad_negocio_id || "",
       fd_fecha_contratacion: e.fd_fecha_contratacion ? e.fd_fecha_contratacion.substring(0, 10) : "",
+      fd_fecha_baja: e.fd_fecha_baja ? e.fd_fecha_baja.substring(0, 10) : "",
       fn_uniformes: e.fn_uniformes ?? 0,
     });
   };
@@ -95,8 +106,8 @@ export default function Empleados() {
       fc_genero: "", fd_fecha_nacimiento: "", fc_estado: "",
       fc_ciudad: "", fc_calle: "", fc_codigo_postal: "",
       fc_referencias: "", ft_comentarios_adicionales: "",
-      fi_departamento_id: "", fi_puesto_id: "",
-      fd_fecha_contratacion: "", fn_uniformes: 0,
+      fi_departamento_id: "", fi_puesto_id: "", fi_unidad_negocio_id: "",
+      fd_fecha_contratacion: "", fd_fecha_baja: "", fn_uniformes: 0,
     });
   };
 
@@ -113,7 +124,16 @@ export default function Empleados() {
     const accion = emp.fb_activo ? "desactivar" : "activar";
     if (!await confirm(`¿Seguro que deseas ${accion} a ${emp.fc_nombre} ${emp.fc_apellido_paterno}?`)) return;
     try {
-      await toggleEmpleadoActivo(emp.fi_empleado_id, !emp.fb_activo);
+      if (emp.fb_activo) {
+        const fechaBaja = window.prompt("Fecha de baja (YYYY-MM-DD)", todayString());
+        if (fechaBaja === null) return;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaBaja)) {
+          return showSnackbar("Fecha de baja invalida", "error");
+        }
+        await toggleEmpleadoActivo(emp.fi_empleado_id, false, { fd_fecha_baja: fechaBaja });
+      } else {
+        await toggleEmpleadoActivo(emp.fi_empleado_id, true);
+      }
       await cargarDatos();
     } catch (e) { console.error(e); }
   };
@@ -166,6 +186,9 @@ export default function Empleados() {
                 <TextField name="fd_fecha_contratacion" label="Fecha Contratacion" type="date" fullWidth value={form.fd_fecha_contratacion} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField name="fd_fecha_baja" label="Fecha Baja" type="date" fullWidth value={form.fd_fecha_baja} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField select name="fi_departamento_id" label="Departamento" fullWidth value={form.fi_departamento_id} onChange={handleChange}>
                   {departamentos.map((d) => (
                     <MenuItem key={d.fi_departamento_id} value={d.fi_departamento_id}>{d.fc_nombre}</MenuItem>
@@ -177,6 +200,14 @@ export default function Empleados() {
                   <MenuItem value="">Sin asignar</MenuItem>
                   {puestos.map((p) => (
                     <MenuItem key={p.fi_puesto_id} value={p.fi_puesto_id}>{p.fc_nombre}</MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <TextField select name="fi_unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.fi_unidad_negocio_id} onChange={handleChange}>
+                  <MenuItem value="">Sin asignar</MenuItem>
+                  {unidadesNegocio.map((u) => (
+                    <MenuItem key={u.fi_unidad_negocio_id} value={u.fi_unidad_negocio_id}>{u.fc_nombre}</MenuItem>
                   ))}
                 </TextField>
               </Grid>
@@ -213,6 +244,8 @@ export default function Empleados() {
             {seleccionado && (
               <Box sx={{ mt: 3 }}>
                 <DocumentosEmpleado empleadoId={seleccionado.fi_empleado_id} />
+                <Divider sx={{ my: 3 }} />
+                <ActasAdministrativas empleadoId={seleccionado.fi_empleado_id} />
               </Box>
             )}
           </CardContent>
@@ -229,7 +262,9 @@ export default function Empleados() {
                 <TableCell>Nombre</TableCell>
                 <TableCell>Puesto</TableCell>
                 <TableCell>Departamento</TableCell>
+                <TableCell>UdN</TableCell>
                 <TableCell>Estado</TableCell>
+                <TableCell>Fecha Baja</TableCell>
                 <TableCell>Perfil</TableCell>
                 <TableCell align="center">Acciones</TableCell>
               </TableRow>
@@ -240,6 +275,7 @@ export default function Empleados() {
                   <TableCell>{e.fc_nombre} {e.fc_apellido_paterno} {e.fc_apellido_materno}</TableCell>
                   <TableCell>{e.puesto_nombre || "-"}</TableCell>
                   <TableCell>{e.departamento_nombre || "-"}</TableCell>
+                  <TableCell>{e.unidad_negocio_nombre || "-"}</TableCell>
                   <TableCell>
                     <Chip
                       label={e.fb_activo ? "Activo" : "Inactivo"}
@@ -247,6 +283,7 @@ export default function Empleados() {
                       size="small"
                     />
                   </TableCell>
+                  <TableCell>{formatDate(e.fd_fecha_baja)}</TableCell>
                   <TableCell>
                     {perfilIncompleto(e) && (
                       <Chip label="Incompleto" color="warning" size="small" variant="outlined" />

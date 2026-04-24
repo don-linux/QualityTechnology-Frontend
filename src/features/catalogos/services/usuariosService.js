@@ -16,6 +16,10 @@ export function listPuestosActivos() {
   return axios.get("/puestos/activos");
 }
 
+export function listUnidadesNegocioActivas() {
+  return axios.get("/unidades-negocio/activos");
+}
+
 export function createUsuario(data) {
   return axios.post("/usuarios", data);
 }

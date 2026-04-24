@@ -24,7 +24,7 @@ export function removeEmpleado(id) {
   return axios.delete(`/empleados/${id}`);
 }
 
-export function toggleEmpleadoActivo(id, activate) {
+export function toggleEmpleadoActivo(id, activate, data = {}) {
   const endpoint = activate ? "activate" : "deactivate";
-  return axios.patch(`/empleados/${id}/${endpoint}`);
+  return axios.patch(`/empleados/${id}/${endpoint}`, data);
 }
