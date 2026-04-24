@@ -47,6 +47,7 @@ function RecepcionInsumosContent() {
     fc_cantidad: "",
     fc_unidad_medida: "",
     fc_condiciones_entrega: "",
+    fc_encargado_entrega: "",
     fc_verifico: "",
     fc_observaciones: "",
     fi_usuario_id: usuarioId,
@@ -63,7 +64,7 @@ function RecepcionInsumosContent() {
   const requiredFields = [
     "fd_fecha", "fc_proveedor", "fc_producto", "fc_lote",
     "fc_cantidad", "fc_unidad_medida", "fc_condiciones_entrega",
-    "fc_verifico", "fc_observaciones",
+    "fc_encargado_entrega", "fc_verifico", "fc_observaciones",
   ];
 
   //  Opciones para selects
@@ -129,6 +130,7 @@ function RecepcionInsumosContent() {
         fc_cantidad: "",
         fc_unidad_medida: "",
         fc_condiciones_entrega: "",
+        fc_encargado_entrega: "",
         fc_verifico: "",
         fc_observaciones: "",
         fi_usuario_id: usuarioId,
@@ -179,7 +181,9 @@ function RecepcionInsumosContent() {
 
     try {
       doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {}
+    } catch {
+      // El PDF debe generarse aunque el logo de la ubicación no esté disponible.
+    }
 
     doc.setFontSize(14);
     doc.text(
@@ -198,6 +202,7 @@ function RecepcionInsumosContent() {
       "Cantidad",
       "Unidad",
       "Condiciones de entrega",
+      "Encargado entrega",
       "Verificó",
       "Observaciones",
     ];
@@ -209,6 +214,7 @@ function RecepcionInsumosContent() {
       r.fc_cantidad,
       r.fc_unidad_medida,
       r.fc_condiciones_entrega,
+      r.fc_encargado_entrega,
       r.fc_verifico,
       r.fc_observaciones,
     ]);
@@ -371,6 +377,30 @@ function RecepcionInsumosContent() {
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 select
+                label="Encargado de Entrega"
+                name="fc_encargado_entrega"
+                value={form.fc_encargado_entrega}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                error={!!errors.fc_encargado_entrega}
+                helperText={errors.fc_encargado_entrega}
+              >
+                <MenuItem value="">Selecciona un empleado</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
+                    {empleado.fc_nombre_completo}
+                  </MenuItem>
+                ))}
+                {form.fc_encargado_entrega && !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado_entrega) && (
+                  <MenuItem value={form.fc_encargado_entrega}>{form.fc_encargado_entrega}</MenuItem>
+                )}
+              </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <TextField
+                select
                 label="Verificó"
                 name="fc_verifico"
                 value={form.fc_verifico}
@@ -427,7 +457,7 @@ function RecepcionInsumosContent() {
       {/* TABLA */}
       <Paper sx={{ width: "100%" }}>
         <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table sx={{ minWidth: 1180 }}>
+          <Table sx={{ minWidth: 1320 }}>
           <TableHead>
             <TableRow>
               <TableCell>Fecha</TableCell>
@@ -437,6 +467,7 @@ function RecepcionInsumosContent() {
               <TableCell>Cantidad</TableCell>
               <TableCell>Unidad</TableCell>
               <TableCell>Condiciones de entrega</TableCell>
+              <TableCell>Encargado entrega</TableCell>
               <TableCell>Verificó</TableCell>
               <TableCell>Observaciones</TableCell>
               <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
@@ -456,6 +487,7 @@ function RecepcionInsumosContent() {
                 <TableCell sx={{ maxWidth: 160 }}>
                   <span title={r.fc_condiciones_entrega}>{truncar(r.fc_condiciones_entrega)}</span>
                 </TableCell>
+                <TableCell>{r.fc_encargado_entrega}</TableCell>
                 <TableCell>{r.fc_verifico}</TableCell>
                 <TableCell sx={{ maxWidth: 160 }}>
                   <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
