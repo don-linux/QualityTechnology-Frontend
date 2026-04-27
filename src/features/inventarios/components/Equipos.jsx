@@ -34,11 +34,17 @@ import Close from "@mui/icons-material/Close";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useUnidadesNegocioOptions from "@features/catalogos/hooks/useUnidadesNegocioOptions";
 
 function EquiposContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const nombreUsuario =
     localStorage.getItem("usuario_nombre")?.toLowerCase() || "";
+  const {
+    ubicacionesGenericas,
+    loading: ubicacionesLoading,
+    error: ubicacionesError,
+  } = useUnidadesNegocioOptions();
 
   const [form, setForm] = useState({
     fc_nombre: "",
@@ -94,6 +100,10 @@ function EquiposContent() {
     setForm({ ...form, [e.target.name]: e.target.value });
     clearFieldError(e.target.name);
   };
+
+  const ubicacionEnCatalogo = ubicacionesGenericas.some(
+    (op) => op.value === form.fc_ubicacion
+  );
 
   //  Cargar equipos
   const cargarDatos = useCallback(async () => {
@@ -373,14 +383,29 @@ function EquiposContent() {
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
+                select
                 label="Ubicación"
                 name="fc_ubicacion"
                 value={form.fc_ubicacion}
                 onChange={handleChange}
                 fullWidth
+                disabled={ubicacionesLoading}
                 error={!!errors.fc_ubicacion}
-                helperText={errors.fc_ubicacion}
-              />
+                helperText={
+                  errors.fc_ubicacion ||
+                  (ubicacionesError ? "Error al cargar ubicaciones" : "")
+                }
+              >
+                <MenuItem value="">Selecciona una ubicación</MenuItem>
+                {ubicacionesGenericas.map((op) => (
+                  <MenuItem key={op.id || op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+                {form.fc_ubicacion && !ubicacionEnCatalogo && (
+                  <MenuItem value={form.fc_ubicacion}>{form.fc_ubicacion}</MenuItem>
+                )}
+              </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
