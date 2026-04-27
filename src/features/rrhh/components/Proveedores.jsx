@@ -31,46 +31,59 @@ import {
   updateProveedor,
   removeProveedor,
 } from "../services/proveedoresService";
+import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
 
 const EMPTY_FORM = {
-  razon_social: "",
-  rfc: "",
-  udn: "",
-  nombre_contacto: "",
-  telefono: "",
-  correo: "",
-  localidad: "",
-  estado: "",
-  ejecutivo: "",
-  precio_venta: 0,
+  fi_proveedor_id: null,
+  fc_razon_social: "",
+  fc_rfc: "",
+  fc_producto_servicio: "",
+  fi_unidad_negocio_id: "",
+  fc_nombre_contacto: "",
+  fc_telefono: "",
+  fc_correo: "",
+  fc_localidad: "",
+  fc_estado: "",
 };
 
 const REQUIRED_FIELDS = [
-  "razon_social", "rfc", "udn", "nombre_contacto",
-  "telefono", "correo", "localidad", "estado",
-  "ejecutivo", "precio_venta",
+  "fc_razon_social",
+  "fc_rfc",
+  "fc_producto_servicio",
+  "fi_unidad_negocio_id",
+  "fc_nombre_contacto",
+  "fc_telefono",
+  "fc_correo",
+  "fc_localidad",
+  "fc_estado",
 ];
 
 const CAMPOS_FORM = [
-  { label: "Razón Social", name: "razon_social" },
-  { label: "RFC", name: "rfc" },
-  { label: "UdN", name: "udn" },
-  { label: "Nombre del contacto", name: "nombre_contacto" },
-  { label: "Teléfono", name: "telefono" },
-  { label: "Correo Electrónico", name: "correo" },
-  { label: "Localidad", name: "localidad" },
-  { label: "Estado", name: "estado", select: true },
-  { label: "Ejecutivo", name: "ejecutivo" },
-  { label: "Precio de venta", name: "precio_venta", type: "number" },
+  { label: "Razón Social", name: "fc_razon_social", size: 12 },
+  { label: "RFC", name: "fc_rfc", maxLength: 20 },
+  { label: "Producto/Servicio", name: "fc_producto_servicio", size: 12 },
+  { label: "UdN", name: "fi_unidad_negocio_id", select: "udn" },
+  { label: "Nombre del contacto", name: "fc_nombre_contacto" },
+  { label: "Teléfono", name: "fc_telefono", inputMode: "numeric", maxLength: 10 },
+  { label: "Correo Electrónico", name: "fc_correo", type: "email" },
+  { label: "Localidad", name: "fc_localidad" },
+  { label: "Estado", name: "fc_estado", select: "estado" },
 ];
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function soloDigitos(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 10);
+}
 
 export default function Proveedores() {
   const showSnackbar = useSnackbar();
   const [proveedores, setProveedores] = useState([]);
+  const [unidadesNegocio, setUnidadesNegocio] = useState([]);
   const [busqueda, setBusqueda] = useState("");
 
   const [open, setOpen] = useState(false);
@@ -80,11 +93,25 @@ export default function Proveedores() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const obtenerDatos = async () => {
-    try {
-      const res = await listProveedores();
-      setProveedores(res.data);
-    } catch (err) {
-      console.error(err);
+    const [proveedoresRes, unidadesRes] = await Promise.allSettled([
+      listProveedores(),
+      listUnidadesNegocioActivas(),
+    ]);
+
+    if (proveedoresRes.status === "fulfilled") {
+      setProveedores(proveedoresRes.value.data);
+    } else {
+      console.error("Error al obtener proveedores", proveedoresRes.reason);
+      setProveedores([]);
+      showSnackbar(proveedoresRes.reason?.response?.data?.error || "Error al obtener proveedores", "error");
+    }
+
+    if (unidadesRes.status === "fulfilled") {
+      setUnidadesNegocio(unidadesRes.value.data);
+    } else {
+      console.error("Error al obtener unidades de negocio", unidadesRes.reason);
+      setUnidadesNegocio([]);
+      showSnackbar("Error al obtener unidades de negocio", "error");
     }
   };
 
@@ -97,17 +124,16 @@ export default function Proveedores() {
     if (!q) return proveedores;
     return proveedores.filter((p) =>
       [
-        p.id,
-        p.razon_social,
-        p.rfc,
-        p.udn,
-        p.nombre_contacto,
-        p.telefono,
-        p.correo,
-        p.localidad,
-        p.estado,
-        p.ejecutivo,
-        p.precio_venta,
+        p.fi_proveedor_id,
+        p.fc_razon_social,
+        p.fc_rfc,
+        p.fc_producto_servicio,
+        p.unidad_negocio_nombre,
+        p.fc_nombre_contacto,
+        p.fc_telefono,
+        p.fc_correo,
+        p.fc_localidad,
+        p.fc_estado,
       ].some((v) => String(v ?? "").toLowerCase().includes(q))
     );
   }, [proveedores, busqueda]);
@@ -121,39 +147,57 @@ export default function Proveedores() {
   const editar = (p) => {
     clearErrors();
     setFormData({
-      id: p.id,
-      razon_social: p.razon_social || "",
-      rfc: p.rfc || "",
-      udn: p.udn || "",
-      nombre_contacto: p.nombre_contacto || "",
-      telefono: p.telefono || "",
-      correo: p.correo || "",
-      localidad: p.localidad || "",
-      estado: p.estado || "",
-      ejecutivo: p.ejecutivo || "",
-      precio_venta: p.precio_venta ?? 0,
+      fi_proveedor_id: p.fi_proveedor_id,
+      fc_razon_social: p.fc_razon_social || "",
+      fc_rfc: p.fc_rfc || "",
+      fc_producto_servicio: p.fc_producto_servicio || "",
+      fi_unidad_negocio_id: p.fi_unidad_negocio_id ? String(p.fi_unidad_negocio_id) : "",
+      fc_nombre_contacto: p.fc_nombre_contacto || "",
+      fc_telefono: p.fc_telefono || "",
+      fc_correo: p.fc_correo || "",
+      fc_localidad: p.fc_localidad || "",
+      fc_estado: p.fc_estado || "",
     });
     setOpen(true);
   };
 
-  const guardar = async () => {
-    if (!validate(formData, REQUIRED_FIELDS)) return;
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.correo && !emailRegex.test(formData.correo)) {
+  const validarFormato = () => {
+    if (formData.fc_rfc.length > 20) {
+      showSnackbar("El RFC debe tener máximo 20 caracteres.", "error");
+      return false;
+    }
+    if (!/^[0-9]{1,10}$/.test(formData.fc_telefono)) {
+      showSnackbar("El teléfono debe contener solo números y máximo 10 dígitos.", "error");
+      return false;
+    }
+    if (!EMAIL_RE.test(formData.fc_correo)) {
       showSnackbar("El correo no tiene un formato válido.", "error");
-      return;
+      return false;
     }
-    if (formData.telefono && isNaN(formData.telefono)) {
-      showSnackbar("El teléfono debe contener solo números.", "error");
-      return;
-    }
+    return true;
+  };
+
+  const construirPayload = () => ({
+    fc_razon_social: formData.fc_razon_social.trim(),
+    fc_rfc: formData.fc_rfc.trim(),
+    fc_producto_servicio: formData.fc_producto_servicio.trim(),
+    fi_unidad_negocio_id: Number(formData.fi_unidad_negocio_id),
+    fc_nombre_contacto: formData.fc_nombre_contacto.trim(),
+    fc_telefono: formData.fc_telefono,
+    fc_correo: formData.fc_correo.trim(),
+    fc_localidad: formData.fc_localidad.trim(),
+    fc_estado: formData.fc_estado,
+  });
+
+  const guardar = async () => {
+    if (!validate(formData, REQUIRED_FIELDS) || !validarFormato()) return;
 
     try {
-      if (formData.id) {
-        await updateProveedor(formData.id, formData);
+      const payload = construirPayload();
+      if (formData.fi_proveedor_id) {
+        await updateProveedor(formData.fi_proveedor_id, payload);
       } else {
-        await createProveedor(formData);
+        await createProveedor(payload);
       }
       setOpen(false);
       obtenerDatos();
@@ -185,28 +229,26 @@ export default function Proveedores() {
       "ID",
       "Razón Social",
       "RFC",
+      "Producto/Servicio",
       "UdN",
       "Nombre del contacto",
       "Teléfono",
       "Correo",
       "Localidad",
       "Estado",
-      "Ejecutivo",
-      "Precio de venta",
     ];
 
     const filas = proveedoresFiltrados.map((p) => [
-      p.id,
-      p.razon_social || "-",
-      p.rfc || "-",
-      p.udn || "-",
-      p.nombre_contacto || "-",
-      p.telefono || "-",
-      p.correo || "-",
-      p.localidad || "-",
-      p.estado || "-",
-      p.ejecutivo || "-",
-      `$${parseFloat(p.precio_venta || 0).toFixed(2)}`,
+      p.fi_proveedor_id,
+      p.fc_razon_social || "-",
+      p.fc_rfc || "-",
+      p.fc_producto_servicio || "-",
+      p.unidad_negocio_nombre || "-",
+      p.fc_nombre_contacto || "-",
+      p.fc_telefono || "-",
+      p.fc_correo || "-",
+      p.fc_localidad || "-",
+      p.fc_estado || "-",
     ]);
 
     autoTable(doc, {
@@ -229,8 +271,29 @@ export default function Proveedores() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const nextValue = name === "fc_telefono" ? soloDigitos(value) : value;
+    setFormData((prev) => ({ ...prev, [name]: nextValue }));
     clearFieldError(name);
+  };
+
+  const renderOpciones = (campo) => {
+    if (campo.select === "estado") {
+      return ESTADOS_MX.map((estado) => (
+        <MenuItem key={estado} value={estado}>
+          {estado}
+        </MenuItem>
+      ));
+    }
+
+    if (campo.select === "udn") {
+      return unidadesNegocio.map((unidad) => (
+        <MenuItem key={unidad.fi_unidad_negocio_id} value={String(unidad.fi_unidad_negocio_id)}>
+          {unidad.fc_nombre}
+        </MenuItem>
+      ));
+    }
+
+    return null;
   };
 
   return (
@@ -306,14 +369,13 @@ export default function Proveedores() {
                 "ID",
                 "Razón Social",
                 "RFC",
+                "Producto/Servicio",
                 "UdN",
                 "Nombre del contacto",
                 "Teléfono",
                 "Correo",
                 "Localidad",
                 "Estado",
-                "Ejecutivo",
-                "Precio de venta",
                 "Acciones",
               ].map((head) => (
                 <TableCell
@@ -333,25 +395,22 @@ export default function Proveedores() {
           <TableBody>
             {proveedoresFiltrados.map((p, i) => (
               <TableRow
-                key={p.id}
+                key={p.fi_proveedor_id}
                 sx={{
                   backgroundColor: i % 2 === 0 ? "#f9f9f9" : "#ffffff",
                   "&:hover": { backgroundColor: "#e3f2fd" },
                 }}
               >
-                <TableCell align="center">{p.id}</TableCell>
-                <TableCell>{p.razon_social || "-"}</TableCell>
-                <TableCell>{p.rfc || "-"}</TableCell>
-                <TableCell>{p.udn || "-"}</TableCell>
-                <TableCell>{p.nombre_contacto || "-"}</TableCell>
-                <TableCell>{p.telefono || "-"}</TableCell>
-                <TableCell>{p.correo || "-"}</TableCell>
-                <TableCell>{p.localidad || "-"}</TableCell>
-                <TableCell>{p.estado || "-"}</TableCell>
-                <TableCell>{p.ejecutivo || "-"}</TableCell>
-                <TableCell align="right">
-                  ${parseFloat(p.precio_venta || 0).toFixed(2)}
-                </TableCell>
+                <TableCell align="center">{p.fi_proveedor_id}</TableCell>
+                <TableCell>{p.fc_razon_social || "-"}</TableCell>
+                <TableCell>{p.fc_rfc || "-"}</TableCell>
+                <TableCell>{p.fc_producto_servicio || "-"}</TableCell>
+                <TableCell>{p.unidad_negocio_nombre || "-"}</TableCell>
+                <TableCell>{p.fc_nombre_contacto || "-"}</TableCell>
+                <TableCell>{p.fc_telefono || "-"}</TableCell>
+                <TableCell>{p.fc_correo || "-"}</TableCell>
+                <TableCell>{p.fc_localidad || "-"}</TableCell>
+                <TableCell>{p.fc_estado || "-"}</TableCell>
                 <TableCell align="center">
                   <Button
                     size="small"
@@ -368,7 +427,7 @@ export default function Proveedores() {
                     variant="outlined"
                     color="error"
                     startIcon={<Delete />}
-                    onClick={() => eliminar(p.id)}
+                    onClick={() => eliminar(p.fi_proveedor_id)}
                   >
                     Eliminar
                   </Button>
@@ -381,14 +440,14 @@ export default function Proveedores() {
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontWeight: "bold", color: "#0d47a1" }}>
-          {formData.id ? "Editar Proveedor" : "Nuevo Proveedor"}
+          {formData.fi_proveedor_id ? "Editar Proveedor" : "Nuevo Proveedor"}
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
             {CAMPOS_FORM.map((f) => (
-              <Grid size={6} key={f.name}>
+              <Grid size={f.size || 6} key={f.name}>
                 <TextField
-                  select={f.select || false}
+                  select={!!f.select}
                   label={f.label}
                   name={f.name}
                   type={f.type || "text"}
@@ -398,13 +457,13 @@ export default function Proveedores() {
                   size="small"
                   error={!!errors[f.name]}
                   helperText={errors[f.name]}
+                  inputProps={{
+                    maxLength: f.maxLength,
+                    inputMode: f.inputMode,
+                  }}
                 >
-                  {f.select &&
-                    ESTADOS_MX.map((estado) => (
-                      <MenuItem key={estado} value={estado}>
-                        {estado}
-                      </MenuItem>
-                    ))}
+                  {f.select && <MenuItem value="">Selecciona {f.label}</MenuItem>}
+                  {renderOpciones(f)}
                 </TextField>
               </Grid>
             ))}

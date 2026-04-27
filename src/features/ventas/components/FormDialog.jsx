@@ -206,8 +206,8 @@ const FormDialog = React.memo(
 
                 {Number(formData.fn_egreso) > 0 &&
                   proveedores.map((prov) => (
-                    <MenuItem key={prov.razon_social} value={prov.razon_social}>
-                      {prov.razon_social}
+                    <MenuItem key={prov.nombre} value={prov.nombre}>
+                      {prov.nombre}
                     </MenuItem>
                   ))}
               </TextField>
