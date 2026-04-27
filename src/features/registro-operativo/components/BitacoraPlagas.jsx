@@ -150,7 +150,19 @@ function BitacoraPlagasContent() {
   const editar = (r) => {
     clearErrors();
     setEditId(r.fi_id);
-    setForm({ ...r, fd_fecha: r.fd_fecha?.split("T")[0] });
+    setForm({
+      fd_fecha: r.fd_fecha?.split("T")[0] || "",
+      fc_num_trampa: r.fc_num_trampa || "",
+      tipo_trampa: r.tipo_trampa || "",
+      fc_hallazgo: r.fc_hallazgo || "",
+      fc_malla: r.fc_malla || "",
+      fc_veneno: r.fc_veneno || "",
+      fc_observaciones: r.fc_observaciones || "",
+      fc_verifico: r.fc_verifico || "",
+      unidad_produccion: r.unidad_produccion || "",
+      fi_usuario_id: r.fi_usuario_id || usuarioId,
+      ubicacion: r.ubicacion || "medellin",
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -186,7 +198,9 @@ function BitacoraPlagasContent() {
 
     try {
       doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {}
+    } catch {
+      // Logo is optional for exported PDFs.
+    }
 
     doc.setFontSize(14);
     doc.text(

@@ -133,14 +133,23 @@ function BitacoraRecambiosContent() {
     clearErrors();
     setEditId(r.fi_id);
     setForm({
-      ...r,
       ubicacion: r.ubicacion || "",
+      fc_mes: r.fc_mes || "",
+      fn_num_instalacion: r.fn_num_instalacion || "",
       fd_fecha1: r.fd_fecha1?.split("T")[0],
+      fc_tipo1: r.fc_tipo1 || "",
       fd_fecha2: r.fd_fecha2?.split("T")[0],
+      fc_tipo2: r.fc_tipo2 || "",
       fd_fecha3: r.fd_fecha3?.split("T")[0],
+      fc_tipo3: r.fc_tipo3 || "",
       fd_fecha4: r.fd_fecha4?.split("T")[0],
+      fc_tipo4: r.fc_tipo4 || "",
       fd_fecha5: r.fd_fecha5?.split("T")[0],
+      fc_tipo5: r.fc_tipo5 || "",
       fd_fecha6: r.fd_fecha6?.split("T")[0],
+      fc_tipo6: r.fc_tipo6 || "",
+      fc_responsable: r.fc_responsable || "",
+      fi_usuario_id: r.fi_usuario_id || usuarioId,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

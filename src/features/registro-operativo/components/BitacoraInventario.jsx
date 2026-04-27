@@ -102,10 +102,15 @@ function BitacoraInventarioContent() {
     clearErrors();
     setEditId(r.fi_id);
     setForm({
-      ...r,
       ubicacion: r.ubicacion || "",
+      fn_num_instalacion: r.fn_num_instalacion ?? "",
+      fn_cantidad: r.fn_cantidad ?? "",
+      fn_talla: r.fn_talla ?? "",
+      fc_lote: r.fc_lote || "",
+      fc_observacion: r.fc_observacion || "",
       fd_fecha_siembra: r.fd_fecha_siembra?.split("T")[0],
       fd_fecha_salida_hormonado: r.fd_fecha_salida_hormonado?.split("T")[0],
+      fi_usuario_id: r.fi_usuario_id || usuarioId,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

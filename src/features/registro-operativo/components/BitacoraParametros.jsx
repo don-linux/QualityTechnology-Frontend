@@ -116,7 +116,19 @@ function BitacoraParametrosContent() {
   const editar = (r) => {
     clearErrors();
     setEditId(r.fi_id);
-    setForm({ ...r, fd_fecha: r.fd_fecha?.split("T")[0], ubicacion: r.ubicacion || "" });
+    setForm({
+      ubicacion: r.ubicacion || "",
+      fd_fecha: r.fd_fecha?.split("T")[0] || "",
+      fn_num_estanque: r.fn_num_estanque ?? "",
+      fn_oxigeno: r.fn_oxigeno ?? "",
+      fn_temperatura: r.fn_temperatura ?? "",
+      fn_ph: r.fn_ph ?? "",
+      fn_amonio: r.fn_amonio ?? "",
+      fn_nitritos: r.fn_nitritos ?? "",
+      fn_nitratos: r.fn_nitratos ?? "",
+      fc_responsable: r.fc_responsable || "",
+      fi_usuario_id: r.fi_usuario_id || usuarioId,
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

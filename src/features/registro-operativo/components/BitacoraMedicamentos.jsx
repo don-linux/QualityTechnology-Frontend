@@ -127,10 +127,16 @@ function BitacoraMedicamentosContent() {
     clearErrors();
     setEditId(r.fi_id);
     setForm({
-      ...r,
       fd_fecha_hora: r.fd_fecha_hora?.split("T")[0],
+      fn_num_estanque: r.fn_num_estanque ?? "",
+      fc_diagnosis: r.fc_diagnosis || "",
+      fc_tratamiento: r.fc_tratamiento || "",
+      fc_dosis: r.fc_dosis || "",
+      fc_forma_aplicacion: r.fc_forma_aplicacion || "",
       fd_fecha_ultima_dosis: r.fd_fecha_ultima_dosis?.split("T")[0],
+      fc_responsable: r.fc_responsable || "",
       ubicacion: r.ubicacion || "",
+      fi_usuario_id: r.fi_usuario_id || usuarioId,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

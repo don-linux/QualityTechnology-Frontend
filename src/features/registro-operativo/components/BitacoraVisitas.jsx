@@ -143,7 +143,18 @@ function BitacoraVisitasContent() {
   const editar = (r) => {
     clearErrors();
     setEditId(r.fi_id);
-    setForm({ ...r, fd_fecha: r.fd_fecha?.split("T")[0] });
+    setForm({
+      fd_fecha: r.fd_fecha?.split("T")[0] || "",
+      fc_nombre_completo: r.fc_nombre_completo || "",
+      fc_origen: r.fc_origen || "",
+      fc_motivo: r.fc_motivo || "",
+      fc_observaciones: r.fc_observaciones || "",
+      fc_foto_identificacion: r.fc_foto_identificacion || "",
+      fd_entrada: r.fd_entrada || "",
+      fd_salida: r.fd_salida || "",
+      fi_usuario_id: r.fi_usuario_id || usuarioId,
+      ubicacion: r.ubicacion || "medellin",
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -168,7 +179,9 @@ function BitacoraVisitasContent() {
 
     try {
       doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {}
+    } catch {
+      // Logo is optional for exported PDFs.
+    }
 
     doc.setFontSize(14);
     const ubicLabel = ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion;

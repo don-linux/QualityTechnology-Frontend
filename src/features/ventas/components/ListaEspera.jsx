@@ -183,7 +183,20 @@ function ListaEsperaContent() {
   const editar = (item) => {
     clearErrors();
     setEditId(item.fi_lista_id);
-    setForm(item);
+    setForm({
+      fd_fecha_entrega: item.fd_fecha_entrega || "",
+      fc_talla: item.fc_talla || "",
+      fn_cantidad: item.fn_cantidad || "",
+      fc_cliente: item.fc_cliente || "",
+      fc_lugar_entrega: item.fc_lugar_entrega || "",
+      fc_encargado_venta: item.fc_encargado_venta || nombreUsuario,
+      fc_unidad_produccion: item.fc_unidad_produccion || "",
+      fc_hora_embolsado: item.fc_hora_embolsado || "",
+      fc_hora_entrega: item.fc_hora_entrega || "",
+      fn_precio_venta: item.fn_precio_venta || "",
+      fc_uap_asignada: item.fc_uap_asignada || "",
+      fc_granja_asignada: item.fc_granja_asignada || granjaDefault,
+    });
   };
 
   const actualizar = async () => {

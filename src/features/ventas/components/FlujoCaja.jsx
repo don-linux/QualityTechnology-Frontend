@@ -183,7 +183,19 @@ export default function FlujoCaja() {
   const handleOpen = (data = null) => {
     clearErrors();
     if (data) {
-      setFormData({ ...data });
+      setFormData({
+        fd_fecha: data.fd_fecha || "",
+        fn_ingreso: data.fn_ingreso || "",
+        fn_egreso: data.fn_egreso || "",
+        fc_descripcion: data.fc_descripcion || "",
+        fc_cuenta: data.fc_cuenta || "",
+        fc_categoria: data.fc_categoria || "",
+        fc_subcategoria: data.fc_subcategoria || "",
+        fc_beneficiario: data.fc_beneficiario || "",
+        fc_noproyecto: data.fc_noproyecto || "",
+        fc_factura: data.fc_factura || "",
+        fc_estatus: data.fc_estatus || "",
+      });
       setEditId(data.fi_movimiento_id);
     } else {
       setFormData({
