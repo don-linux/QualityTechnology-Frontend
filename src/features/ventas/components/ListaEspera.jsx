@@ -30,11 +30,38 @@ import {
   convertirAVenta,
   createClienteRapido,
 } from "../services/listaEsperaService";
+import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
+import { listEmpleadosActivosClientes } from "@features/catalogos/services/clientesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import FormHelperText from "@mui/material/FormHelperText";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import { ESTADOS_MX } from "@shared/constants/estadosMx";
+
+const EMPTY_CLIENTE_RAPIDO = {
+  fc_razon_social: "",
+  fc_rfc: "",
+  fi_unidad_negocio_id: "",
+  fc_nombre_contacto: "",
+  fc_telefono: "",
+  fc_correo: "",
+  fc_localidad: "",
+  fc_estado: "",
+  fi_ejecutivo_empleado_id: "",
+};
+
+const CLIENTE_RAPIDO_REQUIRED = Object.keys(EMPTY_CLIENTE_RAPIDO);
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+function soloDigitos(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 10);
+}
+
+function nombreEmpleado(empleado) {
+  return empleado.fc_nombre_completo
+    || [empleado.fc_nombre, empleado.fc_apellido_paterno, empleado.fc_apellido_materno].filter(Boolean).join(" ");
+}
 
 export default function ListaEspera() {
   return <ListaEsperaContent />;
@@ -45,22 +72,16 @@ function ListaEsperaContent() {
   const auth = useAuth();
   const rol = auth.rol;
   const nombreUsuario = auth.nombre;
-  const usuarioId = auth.usuarioId || "";
 
   const granjaDefault =
     rol === "Jefe GAM" ? "Medellin" : rol === "Jefe GAC" ? "La Ceiba" : "";
 
   const [editId, setEditId] = useState(null);
   const [clientes, setClientes] = useState([]);
+  const [unidadesNegocio, setUnidadesNegocio] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
   const [openCliente, setOpenCliente] = useState(false);
-  const [nuevoCliente, setNuevoCliente] = useState({
-    fc_nombre: "",
-    fc_telefono: "",
-    fc_correo: "",
-    fc_localidad: "",
-    fc_cp: "",
-    fi_usuario_id: usuarioId,
-  });
+  const [nuevoCliente, setNuevoCliente] = useState(EMPTY_CLIENTE_RAPIDO);
 
   const emptyForm = {
     fd_fecha_entrega: "",
@@ -109,14 +130,36 @@ function ListaEsperaContent() {
     }
   };
 
+  const cargarOpcionesCliente = async () => {
+    try {
+      const [unidadesRes, empleadosRes] = await Promise.all([
+        listUnidadesNegocioActivas(),
+        listEmpleadosActivosClientes(),
+      ]);
+      setUnidadesNegocio(unidadesRes.data);
+      setEmpleados(empleadosRes.data);
+    } catch (err) {
+      console.error("Error al cargar opciones de cliente:", err);
+    }
+  };
+
   useEffect(() => {
     cargarLista();
     cargarClientes();
+    cargarOpcionesCliente();
   }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     clearFieldError(e.target.name);
+  };
+
+  const handleNuevoClienteChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoCliente({
+      ...nuevoCliente,
+      [name]: name === "fc_telefono" ? soloDigitos(value) : value,
+    });
   };
 
   const registrar = async () => {
@@ -183,20 +226,40 @@ function ListaEsperaContent() {
   };
 
   const registrarClienteRapido = async () => {
+    const missingField = CLIENTE_RAPIDO_REQUIRED.find((field) => !nuevoCliente[field]);
+    if (missingField) {
+      showSnackbar("Completa todos los campos del cliente", "error");
+      return;
+    }
+    if (nuevoCliente.fc_rfc.length > 20) {
+      showSnackbar("El RFC debe tener máximo 20 caracteres", "error");
+      return;
+    }
+    if (!/^[0-9]{1,10}$/.test(nuevoCliente.fc_telefono)) {
+      showSnackbar("El teléfono debe contener solo números y máximo 10 dígitos", "error");
+      return;
+    }
+    if (!EMAIL_RE.test(nuevoCliente.fc_correo)) {
+      showSnackbar("Ingresa un correo electrónico válido", "error");
+      return;
+    }
+
     try {
-      await createClienteRapido(nuevoCliente);
+      await createClienteRapido({
+        ...nuevoCliente,
+        fc_razon_social: nuevoCliente.fc_razon_social.trim(),
+        fc_rfc: nuevoCliente.fc_rfc.trim(),
+        fi_unidad_negocio_id: Number(nuevoCliente.fi_unidad_negocio_id),
+        fc_nombre_contacto: nuevoCliente.fc_nombre_contacto.trim(),
+        fc_correo: nuevoCliente.fc_correo.trim(),
+        fc_localidad: nuevoCliente.fc_localidad.trim(),
+        fi_ejecutivo_empleado_id: Number(nuevoCliente.fi_ejecutivo_empleado_id),
+      });
       await cargarClientes();
       setOpenCliente(false);
-      setNuevoCliente({
-        fc_nombre: "",
-        fc_telefono: "",
-        fc_correo: "",
-        fc_localidad: "",
-        fc_cp: "",
-        fi_usuario_id: usuarioId,
-      });
+      setNuevoCliente(EMPTY_CLIENTE_RAPIDO);
     } catch (err) {
-      showSnackbar("Error al registrar cliente", "error");
+      showSnackbar(err?.response?.data?.error || "Error al registrar cliente", "error");
     }
   };
 
@@ -242,10 +305,13 @@ function ListaEsperaContent() {
                   freeSolo
                   fullWidth
                   options={clientes}
-                  getOptionLabel={(o) => o.fc_nombre || ""}
+                  getOptionLabel={(o) => (typeof o === "string" ? o : o.fc_razon_social || "")}
                   value={form.fc_cliente}
                   onChange={(e, val) => {
-                    setForm({ ...form, fc_cliente: val?.fc_nombre || "" });
+                    setForm({
+                      ...form,
+                      fc_cliente: typeof val === "string" ? val : val?.fc_razon_social || "",
+                    });
                     clearFieldError("fc_cliente");
                   }}
                   renderInput={(params) => (
@@ -395,19 +461,46 @@ function ListaEsperaContent() {
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={12}>
-              <TextField label="Nombre o razón social" fullWidth value={nuevoCliente.fc_nombre} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_nombre: e.target.value })} />
+              <TextField name="fc_razon_social" label="Razón Social" fullWidth value={nuevoCliente.fc_razon_social} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField label="Teléfono" fullWidth value={nuevoCliente.fc_telefono} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_telefono: e.target.value })} />
+              <TextField name="fc_rfc" label="RFC" fullWidth value={nuevoCliente.fc_rfc} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 20 }} />
             </Grid>
             <Grid size={6}>
-              <TextField label="Correo" fullWidth value={nuevoCliente.fc_correo} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_correo: e.target.value })} />
+              <TextField select name="fi_unidad_negocio_id" label="UdN" fullWidth value={nuevoCliente.fi_unidad_negocio_id} onChange={handleNuevoClienteChange}>
+                <MenuItem value="">Selecciona UdN</MenuItem>
+                {unidadesNegocio.map((unidad) => (
+                  <MenuItem key={unidad.fi_unidad_negocio_id} value={unidad.fi_unidad_negocio_id}>{unidad.fc_nombre}</MenuItem>
+                ))}
+              </TextField>
             </Grid>
             <Grid size={6}>
-              <TextField label="Localidad" fullWidth value={nuevoCliente.fc_localidad} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_localidad: e.target.value })} />
+              <TextField name="fc_nombre_contacto" label="Nombre del contacto" fullWidth value={nuevoCliente.fc_nombre_contacto} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField label="Código postal" fullWidth value={nuevoCliente.fc_cp} onChange={(e) => setNuevoCliente({ ...nuevoCliente, fc_cp: e.target.value })} />
+              <TextField name="fc_telefono" label="Teléfono" fullWidth value={nuevoCliente.fc_telefono} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 10, inputMode: "numeric" }} />
+            </Grid>
+            <Grid size={6}>
+              <TextField name="fc_correo" type="email" label="Correo" fullWidth value={nuevoCliente.fc_correo} onChange={handleNuevoClienteChange} />
+            </Grid>
+            <Grid size={6}>
+              <TextField name="fc_localidad" label="Localidad" fullWidth value={nuevoCliente.fc_localidad} onChange={handleNuevoClienteChange} />
+            </Grid>
+            <Grid size={6}>
+              <TextField select name="fc_estado" label="Estado" fullWidth value={nuevoCliente.fc_estado} onChange={handleNuevoClienteChange}>
+                <MenuItem value="">Selecciona Estado</MenuItem>
+                {ESTADOS_MX.map((estado) => (
+                  <MenuItem key={estado} value={estado}>{estado}</MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid size={6}>
+              <TextField select name="fi_ejecutivo_empleado_id" label="Ejecutivo" fullWidth value={nuevoCliente.fi_ejecutivo_empleado_id} onChange={handleNuevoClienteChange}>
+                <MenuItem value="">Selecciona Ejecutivo</MenuItem>
+                {empleados.map((empleado) => (
+                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fi_empleado_id}>{nombreEmpleado(empleado)}</MenuItem>
+                ))}
+              </TextField>
             </Grid>
           </Grid>
         </DialogContent>

@@ -4,6 +4,10 @@ export function listClientes() {
   return axios.get("/clientes");
 }
 
+export function listEmpleadosActivosClientes() {
+  return axios.get("/clientes/empleados-activos");
+}
+
 export function createCliente(data) {
   return axios.post("/clientes", data);
 }
