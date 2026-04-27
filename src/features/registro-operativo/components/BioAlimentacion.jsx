@@ -29,6 +29,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -50,8 +51,9 @@ const mesDesdefecha = (fecha) => {
 export default function BioAlimentacion() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
-    ubicacion: "Medellin",
+    ubicacion: "",
     fn_num_instalacion: "",
     fn_peso_promedio_entrada: "",
     fd_fecha_siembra: "",
@@ -98,10 +100,7 @@ export default function BioAlimentacion() {
   const cargarOrigenes = async () => {
     if (!form.ubicacion) { setOrigenes([]); return; }
     try {
-      const granja = form.ubicacion === "La Ceiba"
-        ? "Granja Acuicola La Ceiba"
-        : "Granja Acuicola Medellin";
-      const res = await getOrigenes(granja);
+      const res = await getOrigenes(form.ubicacion);
       setOrigenes(res.data || []);
     } catch {
       showSnackbar("Error al cargar orígenes.", "error");
@@ -126,6 +125,12 @@ export default function BioAlimentacion() {
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   useEffect(() => {
     cargarOrigenes();
@@ -201,11 +206,15 @@ export default function BioAlimentacion() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logoCeiba = `${""}/images/ceiba.png`;
+    const logo = getLogo(form.ubicacion);
 
-    doc.addImage(logoCeiba, "PNG", 10, 8, 25, 25);
+    try {
+      doc.addImage(logo, "PNG", 10, 8, 25, 25);
+    } catch {
+      // Logo is optional for exported PDFs.
+    }
     doc.setFontSize(14);
-    doc.text("Bitácora de Alimentación - Granja Acuícola La Ceiba", 45, 20);
+    doc.text(`Bitácora de Alimentación - ${getLabel(form.ubicacion)}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Control de alimentación, parámetros y observaciones", 45, 26);
 
@@ -255,7 +264,7 @@ export default function BioAlimentacion() {
 
     const fecha = new Date().toLocaleDateString();
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Alimentacion_Ceiba_${fecha}.pdf`);
+    doc.save(`Bitacora_Alimentacion_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
   //  Eliminar todos los registros
@@ -265,8 +274,7 @@ export default function BioAlimentacion() {
     cargarDatos();
   };
 
-  const datosMedellin = data.filter(r => r.ubicacion === "Medellin");
-  const datosCeiba = data.filter(r => r.ubicacion === "La Ceiba");
+  const gruposUbicacion = getGroups(data);
 
   const tablaAlimentacion = (rows) => (
     <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
@@ -360,8 +368,11 @@ export default function BioAlimentacion() {
                 error={!!errors.ubicacion}
                 helperText={errors.ubicacion}
               >
-                <MenuItem value="Medellin">Medellín</MenuItem>
-                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
               </TextField>
             </Grid>
 
@@ -561,23 +572,16 @@ export default function BioAlimentacion() {
         </CardContent>
       </Card>
 
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography component="span" fontWeight="bold">Medellín</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          {tablaAlimentacion(datosMedellin)}
-        </AccordionDetails>
-      </Accordion>
-
-      <Accordion defaultExpanded sx={{ mt: 1 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography component="span" fontWeight="bold">La Ceiba</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          {tablaAlimentacion(datosCeiba)}
-        </AccordionDetails>
-      </Accordion>
+      {gruposUbicacion.map(({ value, label, rows }) => (
+        <Accordion key={value} defaultExpanded sx={{ mt: 1 }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography component="span" fontWeight="bold">{label}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {tablaAlimentacion(rows)}
+          </AccordionDetails>
+        </Accordion>
+      ))}
 
       {ConfirmModal}
     </Box>

@@ -1,11 +1,13 @@
 import axios from "@shared/lib/axiosInstance";
 
+const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+
 export function listByGranja(granja) {
-  return axios.get(`/instalaciones/granja/${granja}`);
+  return axios.get(`/instalaciones/granja/${pathSegment(granja)}`);
 }
 
 export function listByTipo(tipo, granja) {
-  return axios.get(`/instalaciones/tipo/${tipo}/${granja}`);
+  return axios.get(`/instalaciones/tipo/${tipo}/${pathSegment(granja)}`);
 }
 
 export function createInstalacion(data) {

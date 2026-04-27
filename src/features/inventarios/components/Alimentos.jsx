@@ -36,13 +36,15 @@ import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 export default function Alimentos() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId;
   const showSnackbar = useSnackbar();
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
   const [tab, setTab] = useState("alevinaje");
-  const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
+  const [granjaActiva, setGranjaActiva] = useState("");
 
   const [form, setForm] = useState({
     fi_alimento_id: null,
@@ -75,6 +77,7 @@ export default function Alimentos() {
   }, [showSnackbar]);
 
   const obtenerReproductores = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
       const granja = encodeURIComponent(granjaActiva);
       const res = await listReproductoresByGranja(granja);
@@ -86,6 +89,7 @@ export default function Alimentos() {
   }, [granjaActiva, showSnackbar]);
 
   const obtenerPiletas = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
       const granja = encodeURIComponent(granjaActiva);
       const res = await listPiletasByGranja(granja);
@@ -97,6 +101,7 @@ export default function Alimentos() {
   }, [granjaActiva, showSnackbar]);
 
   const obtenerEngorda = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
       const granja = encodeURIComponent(granjaActiva);
       const res = await listEngordaByGranja(granja);
@@ -108,11 +113,17 @@ export default function Alimentos() {
   }, [granjaActiva, showSnackbar]);
 
   useEffect(() => {
+    if (!granjaActiva && defaultUbicacion) {
+      setGranjaActiva(defaultUbicacion);
+      return;
+    }
+
+    if (!granjaActiva) return;
     obtenerRegistros();
     obtenerPiletas();
     obtenerReproductores();
     obtenerEngorda();
-  }, [obtenerRegistros, obtenerPiletas, obtenerReproductores, obtenerEngorda]);
+  }, [defaultUbicacion, granjaActiva, obtenerRegistros, obtenerPiletas, obtenerReproductores, obtenerEngorda]);
 
   // =======================================
   // Registro y acciones
@@ -208,20 +219,16 @@ export default function Alimentos() {
       </Typography>
 
       <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 2 }}>
-        <Button
-          variant={granjaActiva.includes("Medellin") ? "contained" : "outlined"}
-          color="primary"
-          onClick={() => setGranjaActiva("Granja Acuícola Medellin")}
-        >
-          Medellín
-        </Button>
-        <Button
-          variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"}
-          color="secondary"
-          onClick={() => setGranjaActiva("Granja Acuícola La Ceiba")}
-        >
-          La Ceiba
-        </Button>
+        {ubicacionesGranja.map((op) => (
+          <Button
+            key={op.value}
+            variant={granjaActiva === op.value ? "contained" : "outlined"}
+            color="primary"
+            onClick={() => setGranjaActiva(op.value)}
+          >
+            {op.label}
+          </Button>
+        ))}
       </Stack>
 
       {/* TABS SUPERIORES */}

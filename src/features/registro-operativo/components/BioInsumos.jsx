@@ -30,6 +30,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -41,8 +42,9 @@ const MAX_FC_OBSERVACIONES = 500;
 export default function BioInsumos() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
-    ubicacion: "Medellin",
+    ubicacion: "",
     fd_fecha: "",
     fc_cantidad_udm: "",
     fc_num_lote: "",
@@ -92,6 +94,12 @@ export default function BioInsumos() {
     cargarDatos();
     cargarEmpleados();
   }, []);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
@@ -155,11 +163,15 @@ export default function BioInsumos() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logoCeiba = `${""}/images/ceiba.png`;
+    const logo = getLogo(form.ubicacion);
 
-    doc.addImage(logoCeiba, "PNG", 10, 8, 25, 25);
+    try {
+      doc.addImage(logo, "PNG", 10, 8, 25, 25);
+    } catch {
+      // Logo is optional for exported PDFs.
+    }
     doc.setFontSize(14);
-    doc.text("Recepción de Insumos - Granja Acuícola La Ceiba", 45, 20);
+    doc.text(`Recepción de Insumos - ${getLabel(form.ubicacion)}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Control de recepción, entrega y observaciones", 45, 26);
 
@@ -197,11 +209,10 @@ export default function BioInsumos() {
 
     const fecha = new Date().toLocaleDateString();
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Recepcion_Insumos_Ceiba_${fecha}.pdf`);
+    doc.save(`Recepcion_Insumos_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
-  const datosMedellin = data.filter((r) => r.ubicacion === "Medellin");
-  const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
+  const gruposUbicacion = getGroups(data);
 
   const renderTablaInsumos = (rows) => (
     <Paper sx={{ width: "100%" }}>
@@ -289,8 +300,11 @@ export default function BioInsumos() {
                 error={!!errors.ubicacion}
                 helperText={errors.ubicacion}
               >
-                <MenuItem value="Medellin">Medellín</MenuItem>
-                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
               </TextField>
             </Grid>
 
@@ -425,23 +439,16 @@ export default function BioInsumos() {
         </CardContent>
       </Card>
 
-      <Accordion defaultExpanded sx={{ mb: 2 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">Medellín</Typography>
-        </AccordionSummary>
-        <AccordionDetails sx={{ p: 0 }}>
-          {renderTablaInsumos(datosMedellin)}
-        </AccordionDetails>
-      </Accordion>
-
-      <Accordion defaultExpanded sx={{ mb: 2 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">La Ceiba</Typography>
-        </AccordionSummary>
-        <AccordionDetails sx={{ p: 0 }}>
-          {renderTablaInsumos(datosCeiba)}
-        </AccordionDetails>
-      </Accordion>
+      {gruposUbicacion.map(({ value, label, rows }) => (
+        <Accordion key={value} defaultExpanded sx={{ mb: 2 }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight="bold">{label}</Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 0 }}>
+            {renderTablaInsumos(rows)}
+          </AccordionDetails>
+        </Accordion>
+      ))}
       {ConfirmModal}
     </Box>
   );

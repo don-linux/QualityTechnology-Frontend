@@ -1,23 +1,25 @@
 import axios from "@shared/lib/axiosInstance";
 
+const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+
 export function getInventario(granja) {
-  return axios.get(`/piletas/inventario/${granja}`);
+  return axios.get(`/piletas/inventario/${pathSegment(granja)}`);
 }
 
 export function getLotes(granja) {
-  return axios.get(`/piletas/lotes/${granja}`);
+  return axios.get(`/piletas/lotes/${pathSegment(granja)}`);
 }
 
 export function getDestinos(granja) {
-  return axios.get(`/piletas/destino/${granja}`);
+  return axios.get(`/piletas/destino/${pathSegment(granja)}`);
 }
 
 export function getOrigenes(granja) {
-  return axios.get(`/piletas/origen/${granja}`);
+  return axios.get(`/piletas/origen/${pathSegment(granja)}`);
 }
 
 export function getMovimientos(usuarioId, granja) {
-  return axios.get(`/piletas/movimientos/${usuarioId}/${granja}`);
+  return axios.get(`/piletas/movimientos/${usuarioId}/${pathSegment(granja)}`);
 }
 
 export function registrarMovimiento(data) {
@@ -33,7 +35,7 @@ export function removePileta(id) {
 }
 
 export function filtrarMovimientos(usuarioId, granja, params) {
-  return axios.get(`/piletas/movimientos/filtro/${usuarioId}/${granja}?${params}`);
+  return axios.get(`/piletas/movimientos/filtro/${usuarioId}/${pathSegment(granja)}?${params}`);
 }
 
 export function eliminarMovimiento(movimientoId) {

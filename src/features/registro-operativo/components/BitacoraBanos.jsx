@@ -26,6 +26,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -41,6 +42,7 @@ const getTipoBanio = (row) => {
 function BitacoraBanosContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo } = useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_tipo_banio: "",
@@ -48,7 +50,7 @@ function BitacoraBanosContent() {
     fc_realizo: "",
     fc_observaciones: "",
     fi_usuario_id: usuarioId,
-    ubicacion: "Medellin",
+    ubicacion: "",
   });
 
   const [data, setData] = useState([]);
@@ -60,11 +62,6 @@ function BitacoraBanosContent() {
   const requiredFields = [
     "fd_fecha", "fc_tipo_banio",
     "fc_regadera", "fc_realizo", "fc_observaciones", "ubicacion",
-  ];
-
-  const ubicaciones = [
-    { value: "Medellin", label: "Medellín" },
-    { value: "La Ceiba", label: "La Ceiba" },
   ];
 
   const handleChange = (e) => {
@@ -95,6 +92,12 @@ function BitacoraBanosContent() {
     cargarDatos();
     cargarEmpleados();
   }, []);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   //  Guardar / Actualizar
   const guardar = async () => {
@@ -160,12 +163,16 @@ function BitacoraBanosContent() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logoMedellin = `${""}/images/medellin.png`;
+    const logo = getLogo(form.ubicacion);
 
     // Encabezado
-    doc.addImage(logoMedellin, "PNG", 10, 8, 25, 25);
+    try {
+      doc.addImage(logo, "PNG", 10, 8, 25, 25);
+    } catch {
+      // Logo is optional for exported PDFs.
+    }
     doc.setFontSize(14);
-    doc.text("Bitácora de Baños - Granja Acuícola Medellín", 45, 20);
+    doc.text(`Bitácora de Baños - ${getLabel(form.ubicacion)}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Control de limpieza y mantenimiento de baños y regaderas", 45, 26);
 
@@ -200,7 +207,7 @@ function BitacoraBanosContent() {
 
     const fecha = new Date().toLocaleDateString();
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Banos_Medellin_${fecha}.pdf`);
+    doc.save(`Bitacora_Banos_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
   return (
@@ -224,7 +231,7 @@ function BitacoraBanosContent() {
                 error={!!errors.ubicacion}
                 helperText={errors.ubicacion}
               >
-                {ubicaciones.map((op) => (
+                {ubicacionesGranja.map((op) => (
                   <MenuItem key={op.value} value={op.value}>
                     {op.label}
                   </MenuItem>
@@ -366,8 +373,8 @@ function BitacoraBanosContent() {
                   <span title={r.fc_realizo}>{truncar(r.fc_realizo)}</span>
                 </TableCell>
                 <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={ubicaciones.find((u) => u.value === r.ubicacion)?.label ?? r.ubicacion}>
-                    {truncar(ubicaciones.find((u) => u.value === r.ubicacion)?.label ?? r.ubicacion)}
+                  <span title={getLabel(r.ubicacion)}>
+                    {truncar(getLabel(r.ubicacion))}
                   </span>
                 </TableCell>
                 <TableCell sx={{ maxWidth: 160 }}>

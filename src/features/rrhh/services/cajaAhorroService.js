@@ -1,7 +1,9 @@
 import axios from "@shared/lib/axiosInstance";
 
+const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+
 export function listByGranja(granja) {
-  return axios.get(`/caja-ahorro/${granja}`);
+  return axios.get(`/caja-ahorro/${pathSegment(granja)}`);
 }
 
 export function createCategoria(data) {

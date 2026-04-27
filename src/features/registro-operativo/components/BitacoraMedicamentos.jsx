@@ -30,6 +30,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -42,6 +43,7 @@ const MAX_FC_DOSIS = 100;
 function BitacoraMedicamentosContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha_hora: "",
     fn_num_estanque: "",
@@ -51,7 +53,7 @@ function BitacoraMedicamentosContent() {
     fc_forma_aplicacion: "",
     fd_fecha_ultima_dosis: "",
     fc_responsable: "",
-    ubicacion: "Medellin",
+    ubicacion: "",
     fi_usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
@@ -93,6 +95,12 @@ function BitacoraMedicamentosContent() {
     cargarDatos();
     cargarEmpleados();
   }, []);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   //  Guardar / Actualizar
   const guardar = async () => {
@@ -160,11 +168,15 @@ function BitacoraMedicamentosContent() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logoMedellin = `${""}/images/medellin.png`;
+    const logo = getLogo(form.ubicacion);
 
-    doc.addImage(logoMedellin, "PNG", 10, 8, 25, 25);
+    try {
+      doc.addImage(logo, "PNG", 10, 8, 25, 25);
+    } catch {
+      // Logo is optional for exported PDFs.
+    }
     doc.setFontSize(14);
-    doc.text("Bitácora de Medicamentos - Granja Acuícola Medellín", 45, 20);
+    doc.text(`Bitácora de Medicamentos - ${getLabel(form.ubicacion)}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Registro de tratamientos, dosis y responsables", 45, 26);
 
@@ -204,11 +216,10 @@ function BitacoraMedicamentosContent() {
 
     const fecha = new Date().toLocaleDateString();
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Medicamentos_Medellin_${fecha}.pdf`);
+    doc.save(`Bitacora_Medicamentos_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
-  const datosMedellin = data.filter((r) => r.ubicacion === "Medellin");
-  const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
+  const gruposUbicacion = getGroups(data);
 
   return (
     <Box>
@@ -229,8 +240,11 @@ function BitacoraMedicamentosContent() {
                 error={!!errors.ubicacion}
                 helperText={errors.ubicacion}
               >
-                <MenuItem value="Medellin">Medellín</MenuItem>
-                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
               </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -341,11 +355,8 @@ function BitacoraMedicamentosContent() {
       </Card>
 
       {/* TABLAS POR UBICACIÓN */}
-      {[
-        { label: "Medellín", rows: datosMedellin },
-        { label: "La Ceiba", rows: datosCeiba },
-      ].map(({ label, rows }) => (
-        <Accordion key={label} defaultExpanded>
+      {gruposUbicacion.map(({ value, label, rows }) => (
+        <Accordion key={value} defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{label} ({rows.length})</Typography>
           </AccordionSummary>

@@ -1,11 +1,13 @@
 import axios from "@shared/lib/axiosInstance";
 
+const queryValue = (value) => encodeURIComponent(String(value || ""));
+
 // -- Plagas --
 export function listEmpleadosPlagas() {
   return axios.get("/plagas/empleados");
 }
 export function listPlagas(ubicacion) {
-  return axios.get(`/plagas?ubicacion=${ubicacion}`);
+  return axios.get(`/plagas?ubicacion=${queryValue(ubicacion)}`);
 }
 export function createPlaga(data) {
   return axios.post("/plagas", data);
@@ -17,7 +19,7 @@ export function removePlaga(id) {
   return axios.delete(`/plagas/${id}`);
 }
 export function removeAllPlagas(ubicacion) {
-  return axios.delete(`/plagas?ubicacion=${ubicacion}`);
+  return axios.delete(`/plagas?ubicacion=${queryValue(ubicacion)}`);
 }
 
 // -- Recepcion Insumos --
@@ -25,7 +27,7 @@ export function listEmpleadosRecepcionInsumos() {
   return axios.get("/recepcion_insumos/empleados");
 }
 export function listRecepcionInsumos(ubicacion) {
-  return axios.get(`/recepcion_insumos?ubicacion=${ubicacion}`);
+  return axios.get(`/recepcion_insumos?ubicacion=${queryValue(ubicacion)}`);
 }
 export function createRecepcionInsumo(data) {
   return axios.post("/recepcion_insumos", data);
@@ -37,12 +39,12 @@ export function removeRecepcionInsumo(id) {
   return axios.delete(`/recepcion_insumos/${id}`);
 }
 export function removeAllRecepcionInsumos(ubicacion) {
-  return axios.delete(`/recepcion_insumos?ubicacion=${ubicacion}`);
+  return axios.delete(`/recepcion_insumos?ubicacion=${queryValue(ubicacion)}`);
 }
 
 // -- Visitas --
 export function listVisitas(ubicacion, filtro) {
-  return axios.get(`/visitas?ubicacion=${ubicacion}&filtro=${filtro}`);
+  return axios.get(`/visitas?ubicacion=${queryValue(ubicacion)}&filtro=${queryValue(filtro)}`);
 }
 export function createVisita(formData) {
   return axios.post("/visitas", formData);

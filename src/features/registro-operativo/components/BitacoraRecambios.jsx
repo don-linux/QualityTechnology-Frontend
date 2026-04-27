@@ -30,12 +30,14 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 function BitacoraRecambiosContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
-    ubicacion: "Medellin",
+    ubicacion: "",
     fc_mes: "",
     fn_num_instalacion: "",
     fd_fecha1: "",
@@ -95,6 +97,12 @@ function BitacoraRecambiosContent() {
     cargarDatos();
     cargarEmpleados();
   }, []);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
@@ -176,16 +184,20 @@ const exportarPDF = async () => {
   const { default: jsPDF } = await import("jspdf");
   const { default: autoTable } = await import("jspdf-autotable");
   const doc = new jsPDF("l", "mm", "a4");
-  const logo = `${""}/images/medellin.png`;
+  const logo = getLogo(form.ubicacion);
 
   // Logo superior
-  doc.addImage(logo, "PNG", 10, 8, 25, 25);
+  try {
+    doc.addImage(logo, "PNG", 10, 8, 25, 25);
+  } catch {
+    // Logo is optional for exported PDFs.
+  }
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.text("Registro de Recambios", 140, 20, { align: "center" });
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.text("Granja Acuícola Medellín", 140, 27, { align: "center" });
+  doc.text(getLabel(form.ubicacion), 140, 27, { align: "center" });
 
   // Línea para mes
   doc.setFontSize(10);
@@ -271,11 +283,10 @@ const exportarPDF = async () => {
 
   // Guardar
   const fecha = new Date().toLocaleDateString("es-MX");
-  doc.save(`Registro_Recambios_Medellin_${fecha}.pdf`);
+  doc.save(`Registro_Recambios_${getLabel(form.ubicacion)}_${fecha}.pdf`);
 };
 
-  const datosMedellin = data.filter((r) => r.ubicacion === "Medellin");
-  const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
+  const gruposUbicacion = getGroups(data);
 
   const renderTablaRecambios = (rows) => (
     <Paper sx={{ width: "100%" }}>
@@ -358,8 +369,11 @@ const exportarPDF = async () => {
                 error={!!errors.ubicacion}
                 helperText={errors.ubicacion}
               >
-                <MenuItem value="Medellin">Medellín</MenuItem>
-                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
               </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -466,18 +480,14 @@ const exportarPDF = async () => {
       </Card>
 
       {/* TABLAS POR UBICACIÓN */}
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">Medellín</Typography>
-        </AccordionSummary>
-        <AccordionDetails>{renderTablaRecambios(datosMedellin)}</AccordionDetails>
-      </Accordion>
-      <Accordion defaultExpanded sx={{ mt: 1 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">La Ceiba</Typography>
-        </AccordionSummary>
-        <AccordionDetails>{renderTablaRecambios(datosCeiba)}</AccordionDetails>
-      </Accordion>
+      {gruposUbicacion.map(({ value, label, rows }) => (
+        <Accordion key={value} defaultExpanded sx={{ mt: 1 }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight="bold">{label}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>{renderTablaRecambios(rows)}</AccordionDetails>
+        </Accordion>
+      ))}
       {ConfirmModal}
     </Box>
   );

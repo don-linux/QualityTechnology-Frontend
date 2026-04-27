@@ -1,5 +1,7 @@
 import axios from "@shared/lib/axiosInstance";
 
+const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+
 // -- Biometrias --
 export function listEmpleadosBiometrias() {
   return axios.get("/biometrias/empleados");
@@ -8,13 +10,13 @@ export function listBiometrias() {
   return axios.get("/biometrias");
 }
 export function getInstalaciones(granja) {
-  return axios.get(`/instalaciones/granja/${granja}`);
+  return axios.get(`/instalaciones/granja/${pathSegment(granja)}`);
 }
 export function getLotesByInstalacion(instalacionId) {
   return axios.get(`/lotes/instalacion/${instalacionId}`);
 }
 export function getInfoInstalacion(granjaParam, instalacionId) {
-  return axios.get(`/biometrias/info/${granjaParam}/${instalacionId}`);
+  return axios.get(`/biometrias/info/${pathSegment(granjaParam)}/${instalacionId}`);
 }
 export function createBiometria(data) {
   return axios.post("/biometrias/", data);
@@ -31,7 +33,7 @@ export function listAlimentacion() {
   return axios.get("/alimentacion");
 }
 export function getOrigenes(granja) {
-  return axios.get(`/piletas/origen/${granja}`);
+  return axios.get(`/piletas/origen/${pathSegment(granja)}`);
 }
 export function createAlimentacion(data) {
   return axios.post("/alimentacion", data);

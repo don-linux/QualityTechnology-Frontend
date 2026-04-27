@@ -30,12 +30,14 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 function BitacoraParametrosContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
-    ubicacion: "Medellin",
+    ubicacion: "",
     fd_fecha: "",
     fn_num_estanque: "",
     fn_oxigeno: "",
@@ -85,6 +87,12 @@ function BitacoraParametrosContent() {
     cargarDatos();
     cargarEmpleados();
   }, []);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
@@ -150,11 +158,15 @@ function BitacoraParametrosContent() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logoMedellin = `${""}/images/medellin.png`;
+    const logo = getLogo(form.ubicacion);
 
-    doc.addImage(logoMedellin, "PNG", 10, 8, 25, 25);
+    try {
+      doc.addImage(logo, "PNG", 10, 8, 25, 25);
+    } catch {
+      // Logo is optional for exported PDFs.
+    }
     doc.setFontSize(14);
-    doc.text("Bitácora de Parámetros - Granja Acuícola Medellín", 45, 20);
+    doc.text(`Bitácora de Parámetros - ${getLabel(form.ubicacion)}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Registro de oxígeno, pH, temperatura y otros indicadores", 45, 26);
 
@@ -196,11 +208,10 @@ function BitacoraParametrosContent() {
 
     const fecha = new Date().toLocaleDateString();
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Parametros_Medellin_${fecha}.pdf`);
+    doc.save(`Bitacora_Parametros_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
-  const datosMedellin = data.filter((r) => r.ubicacion === "Medellin");
-  const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
+  const gruposUbicacion = getGroups(data);
 
   return (
     <Box>
@@ -223,8 +234,11 @@ function BitacoraParametrosContent() {
                 error={!!errors.ubicacion}
                 helperText={errors.ubicacion}
               >
-                <MenuItem value="Medellin">Medellín</MenuItem>
-                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
               </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -381,11 +395,8 @@ function BitacoraParametrosContent() {
       </Card>
 
       {/* TABLAS POR UBICACIÓN */}
-      {[
-        { label: "Medellín", rows: datosMedellin },
-        { label: "La Ceiba", rows: datosCeiba },
-      ].map(({ label, rows }) => (
-        <Accordion key={label} defaultExpanded>
+      {gruposUbicacion.map(({ value, label, rows }) => (
+        <Accordion key={value} defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{label} ({rows.length})</Typography>
           </AccordionSummary>

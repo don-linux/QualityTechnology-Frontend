@@ -28,12 +28,14 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 function BitacoraInventarioContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
-    ubicacion: "Medellin",
+    ubicacion: "",
     fn_num_instalacion: "",
     fn_cantidad: "",
     fn_talla: "",
@@ -71,6 +73,12 @@ function BitacoraInventarioContent() {
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
@@ -138,11 +146,15 @@ function BitacoraInventarioContent() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = `${""}/images/medellin.png`;
+    const logo = getLogo(form.ubicacion);
 
-    doc.addImage(logo, "PNG", 10, 8, 25, 25);
+    try {
+      doc.addImage(logo, "PNG", 10, 8, 25, 25);
+    } catch {
+      // Logo is optional for exported PDFs.
+    }
     doc.setFontSize(14);
-    doc.text("Bitácora de Inventario — Granja Acuícola Medellín", 45, 20);
+    doc.text(`Bitácora de Inventario — ${getLabel(form.ubicacion)}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Control de inventario de alevines, siembras y observaciones", 45, 26);
 
@@ -179,11 +191,10 @@ function BitacoraInventarioContent() {
 
     const fecha = new Date().toLocaleDateString();
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Inventario_Medellin_${fecha}.pdf`);
+    doc.save(`Bitacora_Inventario_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
-  const datosMedellin = data.filter((r) => r.ubicacion === "Medellin");
-  const datosCeiba = data.filter((r) => r.ubicacion === "La Ceiba");
+  const gruposUbicacion = getGroups(data);
 
   const renderTablaInventario = (rows) => (
     <Paper>
@@ -257,8 +268,11 @@ function BitacoraInventarioContent() {
                 error={!!errors.ubicacion}
                 helperText={errors.ubicacion}
               >
-                <MenuItem value="Medellin">Medellín</MenuItem>
-                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
               </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -373,22 +387,16 @@ function BitacoraInventarioContent() {
       </Card>
 
       {/* TABLAS POR UBICACIÓN */}
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">Medellín</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          {renderTablaInventario(datosMedellin)}
-        </AccordionDetails>
-      </Accordion>
-      <Accordion defaultExpanded sx={{ mt: 1 }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">La Ceiba</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          {renderTablaInventario(datosCeiba)}
-        </AccordionDetails>
-      </Accordion>
+      {gruposUbicacion.map(({ value, label, rows }) => (
+        <Accordion key={value} defaultExpanded sx={{ mt: 1 }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight="bold">{label}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {renderTablaInventario(rows)}
+          </AccordionDetails>
+        </Accordion>
+      ))}
       {ConfirmModal}
     </Box>
   );

@@ -30,6 +30,7 @@ import Tooltip from "@mui/material/Tooltip";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const MAX_NUMERICO = 15;
 const MAX_OBSERVACION = 500;
@@ -88,8 +89,9 @@ function ReproductoresContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
-  const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
+  const [granjaActiva, setGranjaActiva] = useState("");
   const [reproductores, setReproductores] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
   const [rastreos, setRastreos] = useState([]);
@@ -151,6 +153,7 @@ const colorDias = (dias) => {
   /* ===================== CARGA DE DATOS ===================== */
 
   const obtenerReproductores = useCallback(async () => {
+    if (!granjaActiva) return;
     const granja = encodeURIComponent(granjaActiva);
     const { data } = await listReproductoresByGranja(granja);
     setReproductores(data || []);
@@ -163,25 +166,30 @@ const colorDias = (dias) => {
   }, [granjaActiva]);
 
   const obtenerInstalaciones = useCallback(async () => {
-    const granjaNormalizada = granjaActiva.includes("Ceiba")
-      ? "Granja Acuícola La Ceiba"
-      : "Granja Acuícola Medellin";
-    const granja = encodeURIComponent(granjaNormalizada);
+    if (!granjaActiva) return;
+    const granja = encodeURIComponent(granjaActiva);
     const { data } = await listInstalacionesByGranja(granja);
     setInstalaciones(data || []);
     setTotalInstalaciones(data?.length || 0);
   }, [granjaActiva]);
 
   const obtenerTrazabilidad = useCallback(async () => {
+    if (!granjaActiva) return;
     const { data } = await getReproductoresMovimientos(granjaActiva);
     setRastreos(data || []);
   }, [granjaActiva]);
 
   useEffect(() => {
+    if (!granjaActiva && defaultUbicacion) {
+      setGranjaActiva(defaultUbicacion);
+      return;
+    }
+
+    if (!granjaActiva) return;
     obtenerReproductores();
     obtenerInstalaciones();
     obtenerTrazabilidad();
-  }, [obtenerReproductores, obtenerInstalaciones, obtenerTrazabilidad]);
+  }, [defaultUbicacion, granjaActiva, obtenerReproductores, obtenerInstalaciones, obtenerTrazabilidad]);
 
   const rastreosFiltrados = rastreos.filter((r) => {
   const texto = filtroTexto.toLowerCase();
@@ -363,23 +371,17 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
       
      {/* Selector de granja */}
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <Button
-          variant={granjaActiva.includes("Medellin") ? "contained" : "outlined"}
-          color="primary"
-          sx={{ width: 130, fontWeight: "bold" }}
-          onClick={() => setGranjaActiva("Granja Acuícola Medellin")}
-        >
-          MEDELLÍN
-        </Button>
-
-        <Button
-          variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"}
-          color="primary"
-          sx={{ width: 130, fontWeight: "bold" }}
-          onClick={() => setGranjaActiva("Granja Acuícola La Ceiba")}
-        >
-          LA CEIBA
-        </Button>
+        {ubicacionesGranja.map((op) => (
+          <Button
+            key={op.value}
+            variant={granjaActiva === op.value ? "contained" : "outlined"}
+            color="primary"
+            sx={{ minWidth: 180, fontWeight: "bold" }}
+            onClick={() => setGranjaActiva(op.value)}
+          >
+            {op.label}
+          </Button>
+        ))}
       </Box>
 
       {/* Botón para abrir formulario */}

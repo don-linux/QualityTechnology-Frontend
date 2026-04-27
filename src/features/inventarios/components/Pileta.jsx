@@ -31,6 +31,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const MAX_NUMERICO = 15;
 const MAX_OBSERVACION = 500;
@@ -41,29 +42,13 @@ const truncar = (texto) =>
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 
-/* ============================================================
-   NORMALIZAR GRANJA PARA BACKEND (SIN ACENTOS Y CORRECTO)
- ============================================================ */
-const normalizarGranja = (g) => {
-  if (!g) return "Granja Acuícola Medellin";
-
-  const txt = g
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
-  if (txt.includes("ceib")) return "Granja Acuícola La Ceiba";
-
-  return "Granja Acuícola Medellin";
-};
-
-
 export default function Pileta() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId;
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
   const getRequiredFields = (tipoOrigen) => {
     const base = [
@@ -86,10 +71,10 @@ export default function Pileta() {
     observacion: "",
     fecha_siembra: "",
     fecha_ultima_biometria: "",
-    fc_granja: "Granja Acuícola Medellin",
+    fc_granja: "",
   });
 
-  const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellin");
+  const [granjaActiva, setGranjaActiva] = useState("");
   const [inventario, setInventario] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
@@ -116,8 +101,9 @@ export default function Pileta() {
       PETICIONES API
   ============================================================ */
   const obtenerInventario = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const granja = encodeURIComponent(granjaActiva);
       const { data } = await getInventario(granja);
       setInventario(data || []);
     } catch (error) {
@@ -126,8 +112,9 @@ export default function Pileta() {
   }, [granjaActiva]);
 
   const obtenerLotes = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const granja = encodeURIComponent(granjaActiva);
       const { data } = await getLotes(granja);
       setLotes(data || []);
     } catch (error) {
@@ -136,8 +123,9 @@ export default function Pileta() {
   }, [granjaActiva]);
 
   const obtenerInstalaciones = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const granja = encodeURIComponent(granjaActiva);
       const { data } = await getDestinos(granja);
       setInstalaciones(data || []);
     } catch (error) {
@@ -146,8 +134,9 @@ export default function Pileta() {
   }, [granjaActiva]);
 
   const obtenerOrigenes = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const granja = encodeURIComponent(granjaActiva);
       const { data } = await getOrigenes(granja);
       setOrigenesDisponibles(data || []);
     } catch (error) {
@@ -156,8 +145,9 @@ export default function Pileta() {
   }, [granjaActiva]);
 
   const obtenerRastreos = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const granja = encodeURIComponent(granjaActiva);
       const { data } = await getMovimientos(usuario_id, granja);
       setRastreos(data || []);
     } catch (error) {
@@ -189,13 +179,19 @@ export default function Pileta() {
       CARGAR TODO CUANDO CAMBIA LA GRANJA
   ============================================================ */
   useEffect(() => {
+    if (!granjaActiva && defaultUbicacion) {
+      setGranjaActiva(defaultUbicacion);
+      return;
+    }
+
+    if (!granjaActiva) return;
     limpiarFormulario();
     obtenerInventario();
     obtenerLotes();
     obtenerInstalaciones();
     obtenerOrigenes();
     obtenerRastreos();
-  }, [limpiarFormulario, obtenerInventario, obtenerLotes, obtenerInstalaciones, obtenerOrigenes, obtenerRastreos]);
+  }, [defaultUbicacion, granjaActiva, limpiarFormulario, obtenerInventario, obtenerLotes, obtenerInstalaciones, obtenerOrigenes, obtenerRastreos]);
 
   /* ============================================================
      ORIGEN = CARGAR LOTE REAL DESDE BACKEND
@@ -368,7 +364,7 @@ export default function Pileta() {
         fecha_fin: fechaFin,
       }).toString();
 
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const granja = encodeURIComponent(granjaActiva);
 
       const { data } = await filtrarMovimientos(usuario_id, granja, params);
 
@@ -420,24 +416,20 @@ export default function Pileta() {
 
       {/* BOTONES DE GRANJA */}
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <Button
-          variant={granjaActiva.includes("Medellin") ? "contained" : "outlined"}
-          onClick={() => setGranjaActiva("Granja Acuícola Medellin")}
-        >
-          MEDELLÍN
-        </Button>
-
-        <Button
-          variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"}
-          onClick={() => setGranjaActiva("Granja Acuícola La Ceiba")}
-        >
-          LA CEIBA
-        </Button>
+        {ubicacionesGranja.map((op) => (
+          <Button
+            key={op.value}
+            variant={granjaActiva === op.value ? "contained" : "outlined"}
+            onClick={() => setGranjaActiva(op.value)}
+          >
+            {op.label}
+          </Button>
+        ))}
       </Box>
 
       {/* RESUMEN */}
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD" }}>
-        <Typography><b>Granja activa:</b> {granjaActiva.replace("Granja Acuícola ", "")}</Typography>
+        <Typography><b>Granja activa:</b> {granjaActiva}</Typography>
         <Typography><b>Total instalaciones:</b> {inventario.length}</Typography>
         <Typography><b>Total organismos:</b> {totalOrganismos.toLocaleString("es-MX")}</Typography>
       </Paper>

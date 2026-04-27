@@ -32,16 +32,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
-
-const GRANJA_MAP = {
-  Medellin: "Granja Acuícola Medellin",
-  "La Ceiba": "Granja Acuícola La Ceiba",
-};
-
-const UBICACION_TO_PARAM = {
-  Medellin: "med",
-  "La Ceiba": "ceiba",
-};
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -53,6 +44,7 @@ export default function BioBiometrias() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId || "";
   const showSnackbar = useSnackbar();
+  const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
   const [data, setData] = useState([]);
   const [empleados, setEmpleados] = useState([]);
@@ -70,7 +62,7 @@ export default function BioBiometrias() {
 
   /* FORMULARIO */
   const [form, setForm] = useState({
-    ubicacion: "Medellin",
+    ubicacion: "",
     fd_fecha: "",
     fn_peso_total_gramos: "",
     fn_organismos_muestreados: "",
@@ -98,8 +90,7 @@ export default function BioBiometrias() {
   const cargarInstalaciones = async () => {
     if (!form.ubicacion) { setInstalaciones([]); return; }
     try {
-      const granja = GRANJA_MAP[form.ubicacion];
-      const res = await getInstalaciones(granja);
+      const res = await getInstalaciones(form.ubicacion);
       setInstalaciones(res.data);
     } catch {
       showSnackbar("Error al cargar instalaciones", "error");
@@ -131,6 +122,12 @@ export default function BioBiometrias() {
   }, []);
 
   useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
+
+  useEffect(() => {
     cargarInstalaciones();
   }, [form.ubicacion]);
 
@@ -139,8 +136,7 @@ export default function BioBiometrias() {
   ------------------------------*/
   const cargarInfoInstalacion = async (instalacionId) => {
     try {
-      const granjaParam = UBICACION_TO_PARAM[form.ubicacion] || "med";
-      const res = await getInfoInstalacion(granjaParam, instalacionId);
+      const res = await getInfoInstalacion(form.ubicacion, instalacionId);
 
       const d = res.data;
 
@@ -228,6 +224,7 @@ export default function BioBiometrias() {
     try {
       const body = {
         ...form,
+        fc_granja: form.ubicacion,
         tipo: form.tipo?.toUpperCase(),
       };
 
@@ -339,8 +336,11 @@ export default function BioBiometrias() {
                 helperText={errors.ubicacion}
               >
                 <MenuItem value="">Seleccione</MenuItem>
-                <MenuItem value="Medellin">Medellín</MenuItem>
-                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
               </TextField>
             </Grid>
 
@@ -528,11 +528,8 @@ export default function BioBiometrias() {
       </Card>
 
       {/* TABLAS POR UBICACION */}
-      {[
-        { label: "Medellín", rows: data.filter(r => r.ubicacion === "Medellin") },
-        { label: "La Ceiba", rows: data.filter(r => r.ubicacion === "La Ceiba") },
-      ].map(({ label, rows }) => (
-        <Accordion key={label} defaultExpanded>
+      {getGroups(data).map(({ value, label, rows }) => (
+        <Accordion key={value} defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{label} ({rows.length})</Typography>
           </AccordionSummary>

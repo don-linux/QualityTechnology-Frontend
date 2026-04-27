@@ -1,5 +1,7 @@
 import axios from "@shared/lib/axiosInstance";
 
+const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+
 export function listAlimentos() {
   return axios.get("/alimentos");
 }
@@ -13,13 +15,13 @@ export function removeAlimento(id) {
 }
 
 export function listReproductoresByGranja(granja) {
-  return axios.get(`/reproductores/granja/${granja}`);
+  return axios.get(`/reproductores/granja/${pathSegment(granja)}`);
 }
 
 export function listPiletasByGranja(granja) {
-  return axios.get(`/piletas/inventario/${granja}`);
+  return axios.get(`/piletas/inventario/${pathSegment(granja)}`);
 }
 
 export function listEngordaByGranja(granja) {
-  return axios.get(`/engorda/granja/${granja}`);
+  return axios.get(`/engorda/granja/${pathSegment(granja)}`);
 }

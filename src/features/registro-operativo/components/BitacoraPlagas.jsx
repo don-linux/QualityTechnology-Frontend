@@ -33,6 +33,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -41,6 +42,7 @@ const truncar = (texto) =>
 function BitacoraPlagasContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor } = useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_num_trampa: "",
@@ -52,7 +54,7 @@ function BitacoraPlagasContent() {
     fc_verifico: "",
     unidad_produccion: "",
     fi_usuario_id: usuarioId,
-    ubicacion: "medellin",
+    ubicacion: "",
   });
 
   const [data, setData] = useState([]);
@@ -75,10 +77,6 @@ function BitacoraPlagasContent() {
   const tiposMalla = ["Buena", "Dañada", "Sin Malla"];
   const tiposVeneno = ["Rodenticida", "Gel", "Granulado", "Líquido", "Ninguno"];
   const unidadesProduccion = ["Engorda", "Alevinaje", "Reproductores"];
-  const ubicaciones = [
-    { value: "medellin", label: "Medellín" },
-    { value: "ceiba", label: "La Ceiba" },
-  ];
 
   const handleChange = (e) => {
     clearFieldError(e.target.name);
@@ -96,6 +94,11 @@ function BitacoraPlagasContent() {
 
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
+    if (!form.ubicacion) {
+      setData([]);
+      return;
+    }
+
     try {
       const res = await listPlagas(form.ubicacion);
       const filtrados = res.data.filter((r) => {
@@ -114,6 +117,12 @@ function BitacoraPlagasContent() {
   useEffect(() => {
     cargarEmpleados();
   }, []);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   useEffect(() => {
     cargarDatos();
@@ -161,7 +170,7 @@ function BitacoraPlagasContent() {
       fc_verifico: r.fc_verifico || "",
       unidad_produccion: r.unidad_produccion || "",
       fi_usuario_id: r.fi_usuario_id || usuarioId,
-      ubicacion: r.ubicacion || "medellin",
+      ubicacion: r.ubicacion || defaultUbicacion,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -180,12 +189,7 @@ function BitacoraPlagasContent() {
 
   //  Color PDF dinámico
   const getColorPorUbicacion = () => {
-    switch (form.ubicacion) {
-      case "ceiba":
-        return [46, 125, 50];
-      default:
-        return [13, 71, 161];
-    }
+    return getColor(form.ubicacion);
   };
 
   //  Exportar PDF
@@ -193,7 +197,7 @@ function BitacoraPlagasContent() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = `${""}/images/${form.ubicacion}.png`;
+    const logo = getLogo(form.ubicacion);
     const color = getColorPorUbicacion();
 
     try {
@@ -204,7 +208,7 @@ function BitacoraPlagasContent() {
 
     doc.setFontSize(14);
     doc.text(
-      `Bitácora de Control de Plagas — ${ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion}`,
+      `Bitácora de Control de Plagas — ${getLabel(form.ubicacion)}`,
       45,
       20
     );
@@ -264,7 +268,7 @@ function BitacoraPlagasContent() {
           size="small"
           sx={{ width: 200 }}
         >
-          {ubicaciones.map((op) => (
+          {ubicacionesGranja.map((op) => (
             <MenuItem key={op.value} value={op.value}>
               {op.label}
             </MenuItem>

@@ -1,15 +1,17 @@
 import axios from "@shared/lib/axiosInstance";
 
+const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+
 export function getFamiliaPorInstalacion(instalacionId) {
   return axios.get(`/lotes/familia-por-instalacion/${instalacionId}`);
 }
 
 export function listInstalaciones(granja) {
-  return axios.get(`/lotes/instalaciones/${granja}`);
+  return axios.get(`/lotes/instalaciones/${pathSegment(granja)}`);
 }
 
 export function listLotes(granja) {
-  return axios.get(`/lotes/granja/${granja}`);
+  return axios.get(`/lotes/granja/${pathSegment(granja)}`);
 }
 
 export function createLote(data) {

@@ -22,6 +22,7 @@ import MenuItem from "@mui/material/MenuItem";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 export default function Instalaciones() {
   return <InstalacionesContent />;
@@ -31,6 +32,7 @@ function InstalacionesContent() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId;
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
     "nombre_instalacion", "largo", "ancho", "altura",
@@ -53,7 +55,7 @@ function InstalacionesContent() {
   const [seleccionado, setSeleccionado] = useState(null);
   const [mensaje, setMensaje] = useState({ texto: "", error: false });
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [granja, setGranja] = useState("Medellin");
+  const [granja, setGranja] = useState("");
   const [tipo, setTipo] = useState("Alevinaje");
 
   // filtros
@@ -64,6 +66,7 @@ function InstalacionesContent() {
       Obtener instalaciones por tipo y granja
   ========================================================= */
   const obtenerInstalaciones = useCallback(async () => {
+    if (!granja) return;
     try {
       const { data } = await listByGranja(granja);
 
@@ -99,8 +102,14 @@ function InstalacionesContent() {
   }, [tipo, granja]);
 
   useEffect(() => {
+    if (!granja && defaultUbicacion) {
+      setGranja(defaultUbicacion);
+      return;
+    }
+
+    if (!granja) return;
     obtenerInstalaciones();
-  }, [obtenerInstalaciones]);
+  }, [defaultUbicacion, granja, obtenerInstalaciones]);
 
   const mostrarMensaje = (texto, error = false) => {
     setMensaje({ texto, error });
@@ -225,19 +234,15 @@ function InstalacionesContent() {
 
       {/* Selección de granja */}
       <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 2 }}>
-        <Button
-          variant={granja === "Medellin" ? "contained" : "outlined"}
-          onClick={() => setGranja("Medellin")}
-        >
-           Medellín
-        </Button>
-        <Button
-          variant={granja === "Ceiba" ? "contained" : "outlined"}
-          color="secondary"
-          onClick={() => setGranja("Ceiba")}
-        >
-           La Ceiba
-        </Button>
+        {ubicacionesGranja.map((op) => (
+          <Button
+            key={op.value}
+            variant={granja === op.value ? "contained" : "outlined"}
+            onClick={() => setGranja(op.value)}
+          >
+            {op.label}
+          </Button>
+        ))}
       </Box>
 
       {/* TIPOS */}

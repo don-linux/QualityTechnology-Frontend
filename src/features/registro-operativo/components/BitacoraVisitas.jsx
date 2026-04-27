@@ -31,6 +31,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -39,6 +40,7 @@ const truncar = (texto) =>
 function BitacoraVisitasContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor } = useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_nombre_completo: "",
@@ -49,7 +51,7 @@ function BitacoraVisitasContent() {
     fd_entrada: "",
     fd_salida: "",
     fi_usuario_id: usuarioId,
-    ubicacion: "medellin",
+    ubicacion: "",
   });
 
   const [data, setData] = useState([]);
@@ -61,11 +63,6 @@ function BitacoraVisitasContent() {
   const requiredFields = [
     "fd_fecha", "fc_nombre_completo", "fc_origen", "fc_motivo",
     "fc_observaciones", "fd_entrada", "fd_salida",
-  ];
-
-  const ubicaciones = [
-    { value: "medellin", label: "Medellín" },
-    { value: "ceiba", label: "La Ceiba" },
   ];
 
   const handleChange = (e) => {
@@ -81,6 +78,11 @@ function BitacoraVisitasContent() {
   };
 
   const cargarDatos = useCallback(async () => {
+    if (!form.ubicacion) {
+      setData([]);
+      return;
+    }
+
     try {
       const res = await listVisitas(form.ubicacion, busqueda);
       setData(res.data);
@@ -92,6 +94,12 @@ function BitacoraVisitasContent() {
   useEffect(() => {
     cargarDatos();
   }, [cargarDatos]);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
@@ -153,7 +161,7 @@ function BitacoraVisitasContent() {
       fd_entrada: r.fd_entrada || "",
       fd_salida: r.fd_salida || "",
       fi_usuario_id: r.fi_usuario_id || usuarioId,
-      ubicacion: r.ubicacion || "medellin",
+      ubicacion: r.ubicacion || defaultUbicacion,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -174,8 +182,8 @@ function BitacoraVisitasContent() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = `${""}/images/${form.ubicacion}.png`;
-    const color = form.ubicacion === "ceiba" ? [46, 125, 50] : [13, 71, 161];
+    const logo = getLogo(form.ubicacion);
+    const color = getColor(form.ubicacion);
 
     try {
       doc.addImage(logo, "PNG", 10, 8, 25, 25);
@@ -184,7 +192,7 @@ function BitacoraVisitasContent() {
     }
 
     doc.setFontSize(14);
-    const ubicLabel = ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion;
+    const ubicLabel = getLabel(form.ubicacion);
     doc.text(`Bitácora de Visitas — ${ubicLabel}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Registro de visitas, motivos y observaciones", 45, 26);
@@ -229,7 +237,7 @@ function BitacoraVisitasContent() {
             value={form.ubicacion}
             onChange={handleChange}
           >
-            {ubicaciones.map((op) => (
+            {ubicacionesGranja.map((op) => (
               <MenuItem key={op.value} value={op.value}>
                 {op.label}
               </MenuItem>
@@ -474,7 +482,7 @@ function BitacoraVisitasContent() {
                 </TableCell>
                 <TableCell>{r.fd_entrada}</TableCell>
                 <TableCell>{r.fd_salida}</TableCell>
-                <TableCell>{ubicaciones.find((u) => u.value === r.ubicacion)?.label ?? r.ubicacion}</TableCell>
+                <TableCell>{getLabel(r.ubicacion)}</TableCell>
                 <TableCell sx={{ maxWidth: 160 }}>
                   <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
                 </TableCell>

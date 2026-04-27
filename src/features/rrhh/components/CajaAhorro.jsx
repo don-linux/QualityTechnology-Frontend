@@ -30,12 +30,14 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 export default function CajaAhorro() {
   const showSnackbar = useSnackbar();
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
   const [registros, setRegistros] = useState([]);
   const [busqueda, setBusqueda] = useState("");
-  const [granja, setGranja] = useState("Ceiba");
+  const [granja, setGranja] = useState("");
   const [openNuevo, setOpenNuevo] = useState(false);
   const [nuevaCategoria, setNuevaCategoria] = useState("");
 
@@ -48,6 +50,7 @@ export default function CajaAhorro() {
       Obtener datos por granja
      ========================================================= */
   const obtenerDatos = useCallback(async () => {
+    if (!granja) return;
     try {
       const res = await listByGranja(granja);
       setRegistros(res.data);
@@ -57,8 +60,14 @@ export default function CajaAhorro() {
   }, [granja]);
 
   useEffect(() => {
+    if (!granja && defaultUbicacion) {
+      setGranja(defaultUbicacion);
+      return;
+    }
+
+    if (!granja) return;
     obtenerDatos();
-  }, [obtenerDatos]);
+  }, [defaultUbicacion, granja, obtenerDatos]);
 
   /* =========================================================
       Buscar categoría
@@ -171,20 +180,16 @@ export default function CajaAhorro() {
 
       {/*  Selector de granja */}
       <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-        <Button
-          variant={granja === "Ceiba" ? "contained" : "outlined"}
-          color="primary"
-          onClick={() => setGranja("Ceiba")}
-        >
-          Ceiba
-        </Button>
-        <Button
-          variant={granja === "Medellín" ? "contained" : "outlined"}
-          color="secondary"
-          onClick={() => setGranja("Medellín")}
-        >
-          Medellín
-        </Button>
+        {ubicacionesGranja.map((op) => (
+          <Button
+            key={op.value}
+            variant={granja === op.value ? "contained" : "outlined"}
+            color="primary"
+            onClick={() => setGranja(op.value)}
+          >
+            {op.label}
+          </Button>
+        ))}
       </Box>
 
       {/*  Barra de acciones */}

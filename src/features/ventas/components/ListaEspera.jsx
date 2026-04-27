@@ -38,6 +38,7 @@ import FormHelperText from "@mui/material/FormHelperText";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const EMPTY_CLIENTE_RAPIDO = {
   fc_razon_social: "",
@@ -72,9 +73,12 @@ function ListaEsperaContent() {
   const auth = useAuth();
   const rol = auth.rol;
   const nombreUsuario = auth.nombre;
-
-  const granjaDefault =
-    rol === "Jefe GAM" ? "Medellin" : rol === "Jefe GAC" ? "La Ceiba" : "";
+  const {
+    ubicacionesGranja,
+    defaultUbicacion,
+    resolveUnidadByRol,
+  } = useUbicacionesGranja();
+  const granjaDefault = resolveUnidadByRol(rol)?.fc_nombre || defaultUbicacion;
 
   const [editId, setEditId] = useState(null);
   const [clientes, setClientes] = useState([]);
@@ -148,6 +152,12 @@ function ListaEsperaContent() {
     cargarClientes();
     cargarOpcionesCliente();
   }, []);
+
+  useEffect(() => {
+    if (!form.fc_granja_asignada && granjaDefault) {
+      setForm((prev) => ({ ...prev, fc_granja_asignada: granjaDefault }));
+    }
+  }, [form.fc_granja_asignada, granjaDefault]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -386,8 +396,11 @@ function ListaEsperaContent() {
           <Grid size={{ xs: 12, md: 3 }}>
             {rol === "Administrador" ? (
               <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange} error={!!errors.fc_granja_asignada} helperText={errors.fc_granja_asignada}>
-                <MenuItem value="Medellin">Medellín</MenuItem>
-                <MenuItem value="La Ceiba">La Ceiba</MenuItem>
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
               </TextField>
             ) : (
               <TextField fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} slotProps={{ input: { readOnly: true } }} />

@@ -28,6 +28,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const MAX_NUMERICO = 15;
 const MAX_OBSERVACION = 500;
@@ -41,6 +42,7 @@ const LotesRegistro = () => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
     "fecha", "familia", "fi_instalacion_id", "huevos_ml",
@@ -48,7 +50,7 @@ const LotesRegistro = () => {
     "alevines_inicial",
   ];
 
-  const [granja, setGranja] = useState("Medellin");
+  const [granja, setGranja] = useState("");
   const [instalaciones, setInstalaciones] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [, setInstalacionSeleccionada] = useState("");
@@ -125,6 +127,7 @@ const LotesRegistro = () => {
       Cargar instalaciones desde REPRODUCTORES
   -------------------------------------------------------- */
   const cargarInstalaciones = useCallback(async () => {
+    if (!granja) return;
     try {
       const res = await listInstalaciones(granja);
       setInstalaciones(res.data);
@@ -137,6 +140,7 @@ const LotesRegistro = () => {
       Cargar lotes
   -------------------------------------------------------- */
   const cargarLotes = useCallback(async () => {
+    if (!granja) return;
     try {
       const res = await listLotes(granja);
       setLotes(res.data);
@@ -146,12 +150,19 @@ const LotesRegistro = () => {
   }, [granja]);
 
   useEffect(() => {
+    if (!granja && defaultUbicacion) {
+      setGranja(defaultUbicacion);
+      return;
+    }
+
+    if (!granja) return;
     cargarInstalaciones();
-  }, [cargarInstalaciones]);
+  }, [defaultUbicacion, granja, cargarInstalaciones]);
 
   useEffect(() => {
+    if (!granja) return;
     cargarLotes();
-  }, [cargarLotes]);
+  }, [granja, cargarLotes]);
 
   /* --------------------------------------------------------
      Registrar lote
@@ -306,33 +317,21 @@ const LotesRegistro = () => {
 
       {/* ----------------- BOTONES DE GRANJA ----------------- */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid size="auto">
-          <Button
-            variant={granja === "Medellin" ? "contained" : "outlined"}
-            onClick={() => setGranja("Medellin")}
-            sx={{
-              background: granja === "Medellin" ? "#0077b6" : "",
-              color: granja === "Medellin" ? "white" : "#0077b6",
-              borderColor: "#0077b6",
-            }}
-          >
-             Medellín
-          </Button>
-        </Grid>
-
-        <Grid size="auto">
-          <Button
-            variant={granja === "La Ceiba" ? "contained" : "outlined"}
-            onClick={() => setGranja("La Ceiba")}
-            sx={{
-              background: granja === "La Ceiba" ? "#2a9d8f" : "",
-              color: granja === "La Ceiba" ? "white" : "#2a9d8f",
-              borderColor: "#2a9d8f",
-            }}
-          >
-             La Ceiba
-          </Button>
-        </Grid>
+        {ubicacionesGranja.map((op) => (
+          <Grid size="auto" key={op.value}>
+            <Button
+              variant={granja === op.value ? "contained" : "outlined"}
+              onClick={() => setGranja(op.value)}
+              sx={{
+                background: granja === op.value ? "#0077b6" : "",
+                color: granja === op.value ? "white" : "#0077b6",
+                borderColor: "#0077b6",
+              }}
+            >
+              {op.label}
+            </Button>
+          </Grid>
+        ))}
       </Grid>
 
       {/* ----------------- FORMULARIO ----------------- */}

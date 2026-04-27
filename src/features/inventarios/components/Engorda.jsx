@@ -28,28 +28,23 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const MAX_OBSERVACION = 500;
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-const normalizarGranja = (g) => {
-  if (!g) return "Granja Acu\u00EDcola Medellin";
-  const txt = g.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  if (txt.includes("ceib")) return "Granja Acu\u00EDcola La Ceiba";
-  return "Granja Acu\u00EDcola Medellin";
-};
-
 export default function Engorda() {
-  const showSnackbar = useSnackbar();
   return <EngordaContent />;
 }
 
 function EngordaContent() {
   const usuario_id = localStorage.getItem("usuario_id");
+  const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
     "origen_instalacion", "fi_instalacion_id", "cantidad",
@@ -57,7 +52,7 @@ function EngordaContent() {
     "fecha_biometria",
   ];
 
-  const [granjaActiva, setGranjaActiva] = useState("Granja Acuícola Medellín");
+  const [granjaActiva, setGranjaActiva] = useState("");
   const [engordas, setEngordas] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
   const [instalaciones, setInstalaciones] = useState([]);
@@ -76,8 +71,9 @@ function EngordaContent() {
        OBTENER DATOS
   ========================================================= */
   const obtenerInstalaciones = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const granja = encodeURIComponent(granjaActiva);
       const { data } = await listInstalacionesEngorda(granja);
       setInstalaciones(data || []);
     } catch (err) {
@@ -86,8 +82,9 @@ function EngordaContent() {
   }, [granjaActiva]);
 
   const obtenerLotes = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const granja = encodeURIComponent(granjaActiva);
       const { data } = await listLotes(granja);
       setLotes(data || []);
     } catch (err) {
@@ -96,8 +93,9 @@ function EngordaContent() {
   }, [granjaActiva]);
 
   const obtenerEngordas = useCallback(async () => {
+    if (!granjaActiva) return;
     try {
-      const granja = encodeURIComponent(normalizarGranja(granjaActiva));
+      const granja = encodeURIComponent(granjaActiva);
       const { data } = await listEngordas(granja);
       setEngordas(data || []);
     } catch (err) {
@@ -133,12 +131,18 @@ function EngordaContent() {
   }, [granjaActiva, usuario_id, clearErrors]);
 
   useEffect(() => {
+    if (!granjaActiva && defaultUbicacion) {
+      setGranjaActiva(defaultUbicacion);
+      return;
+    }
+
+    if (!granjaActiva) return;
     limpiarFormulario();
     obtenerEngordas();
     obtenerMovimientos();
     obtenerInstalaciones();
     obtenerLotes();
-  }, [limpiarFormulario, obtenerEngordas, obtenerMovimientos, obtenerInstalaciones, obtenerLotes]);
+  }, [defaultUbicacion, granjaActiva, limpiarFormulario, obtenerEngordas, obtenerMovimientos, obtenerInstalaciones, obtenerLotes]);
 
   /* =========================================================
        FORMULARIO Y CAMBIOS
@@ -259,17 +263,21 @@ function EngordaContent() {
 
       {/*  Selección de granja */}
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <Button variant={granjaActiva.includes("Medellín") ? "contained" : "outlined"} color="primary" onClick={() => setGranjaActiva("Granja Acuícola Medellín")}>
-          MEDELLÍN
-        </Button>
-        <Button variant={granjaActiva.includes("Ceiba") ? "contained" : "outlined"} color="secondary" onClick={() => setGranjaActiva("Granja Acuícola La Ceiba")}>
-          LA CEIBA
-        </Button>
+        {ubicacionesGranja.map((op) => (
+          <Button
+            key={op.value}
+            variant={granjaActiva === op.value ? "contained" : "outlined"}
+            color="primary"
+            onClick={() => setGranjaActiva(op.value)}
+          >
+            {op.label}
+          </Button>
+        ))}
       </Box>
 
       {/*  Resumen */}
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
-        <Typography><b>Granja activa:</b> {granjaActiva.replace("Granja Acuícola ", "")}</Typography>
+        <Typography><b>Granja activa:</b> {granjaActiva}</Typography>
         <Typography><b>Registros en tina:</b> {engordas.length}</Typography>
         <Typography><b>Total organismos en engorda:</b> {totalCantidad.toLocaleString("es-MX")}</Typography>
       </Paper>

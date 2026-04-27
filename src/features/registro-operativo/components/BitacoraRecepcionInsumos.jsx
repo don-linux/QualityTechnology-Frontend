@@ -31,6 +31,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -39,6 +40,7 @@ const truncar = (texto) =>
 function RecepcionInsumosContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor } = useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_proveedor: "",
@@ -51,7 +53,7 @@ function RecepcionInsumosContent() {
     fc_verifico: "",
     fc_observaciones: "",
     fi_usuario_id: usuarioId,
-    ubicacion: "medellin",
+    ubicacion: "",
   });
 
   const [data, setData] = useState([]);
@@ -69,10 +71,6 @@ function RecepcionInsumosContent() {
 
   //  Opciones para selects
   const unidadesMedida = ["Kg", "Litros", "Piezas", "Bultos", "Otro"];
-  const ubicaciones = [
-    { value: "medellin", label: "Medellín" },
-    { value: "ceiba", label: "La Ceiba" },
-  ];
 
   const handleChange = (e) => {
     clearFieldError(e.target.name);
@@ -90,6 +88,11 @@ function RecepcionInsumosContent() {
 
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
+    if (!form.ubicacion) {
+      setData([]);
+      return;
+    }
+
     try {
       const res = await listRecepcionInsumos(form.ubicacion);
       const filtrados = res.data.filter((r) => {
@@ -108,6 +111,12 @@ function RecepcionInsumosContent() {
   useEffect(() => {
     cargarEmpleados();
   }, []);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
   useEffect(() => {
     cargarDatos();
@@ -163,12 +172,7 @@ function RecepcionInsumosContent() {
 
   //  Color PDF dinámico
   const getColorPorUbicacion = () => {
-    switch (form.ubicacion) {
-      case "ceiba":
-        return [46, 125, 50];
-      default:
-        return [13, 71, 161];
-    }
+    return getColor(form.ubicacion);
   };
 
   //  Exportar PDF
@@ -176,7 +180,7 @@ function RecepcionInsumosContent() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = `${""}/images/${form.ubicacion}.png`;
+    const logo = getLogo(form.ubicacion);
     const color = getColorPorUbicacion();
 
     try {
@@ -187,7 +191,7 @@ function RecepcionInsumosContent() {
 
     doc.setFontSize(14);
     doc.text(
-      `Bitácora de Recepción de Insumos — ${ubicaciones.find((u) => u.value === form.ubicacion)?.label ?? form.ubicacion}`,
+      `Bitácora de Recepción de Insumos — ${getLabel(form.ubicacion)}`,
       45,
       20
     );
@@ -247,7 +251,7 @@ function RecepcionInsumosContent() {
             value={form.ubicacion}
             onChange={handleChange}
           >
-            {ubicaciones.map((op) => (
+            {ubicacionesGranja.map((op) => (
               <MenuItem key={op.value} value={op.value}>
                 {op.label}
               </MenuItem>
