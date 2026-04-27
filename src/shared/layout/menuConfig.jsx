@@ -88,7 +88,7 @@ export const MENU_SECTIONS = [
     moduleIcon: <Store />,
     items: [
       { to: "/ventas/lista-espera", icon: <Store />, label: "Próximas Ventas" },
-      { to: "/ventas/registro", icon: <LocalAtm />, label: "Registro de Ventas" },
+      { to: "/ventas/registro", icon: <LocalAtm />, label: "Control de Ventas" },
       { to: "/registro/cliente", icon: <People />, label: "Clientes" },
     ],
   },

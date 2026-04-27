@@ -280,7 +280,7 @@ function VentaContent() {
       {/* FORMULARIO */}
       <Card sx={{ p: 3, mb: 3, borderRadius: 3, boxShadow: 4 }}>
         <Typography variant="h5" textAlign="center" mb={2} fontWeight="bold">
-          Registro de Ventas
+          Control de Ventas
         </Typography>
 
         <Grid container spacing={2}>
