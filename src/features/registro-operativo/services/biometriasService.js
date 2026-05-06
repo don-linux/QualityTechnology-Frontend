@@ -1,69 +1,45 @@
 import axios from "@shared/lib/axiosInstance";
 
-const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+// ── Biometrias ───────────────────────────────────────────────────────────────
 
-// -- Biometrias --
-export function listEmpleadosBiometrias() {
-  return axios.get("/biometrias/empleados");
-}
 export function listBiometrias() {
   return axios.get("/biometrias");
 }
-export function getInstalaciones(granja) {
-  return axios.get(`/instalaciones/granja/${pathSegment(granja)}`);
+
+export function getBiometria(id) {
+  return axios.get(`/biometrias/${id}`);
 }
-export function getLotesByInstalacion(instalacionId) {
-  return axios.get(`/lotes/instalacion/${instalacionId}`);
-}
-export function getInfoInstalacion(granjaParam, instalacionId) {
-  return axios.get(`/biometrias/info/${pathSegment(granjaParam)}/${instalacionId}`);
-}
+
 export function createBiometria(data) {
-  return axios.post("/biometrias/", data);
+  return axios.post("/biometrias", data);
 }
+
 export function updateBiometria(id, data) {
   return axios.put(`/biometrias/${id}`, data);
 }
+
 export function removeBiometria(id) {
   return axios.delete(`/biometrias/${id}`);
 }
 
-// -- Alimentacion --
-export function listAlimentacion() {
-  return axios.get("/alimentacion");
-}
-export function getOrigenes(granja) {
-  return axios.get(`/piletas/origen/${pathSegment(granja)}`);
-}
-export function createAlimentacion(data) {
-  return axios.post("/alimentacion", data);
-}
-export function updateAlimentacion(id, data) {
-  return axios.put(`/alimentacion/${id}`, data);
-}
-export function removeAlimentacion(id) {
-  return axios.delete(`/alimentacion/${id}`);
-}
-export function removeAllAlimentacion() {
-  return axios.delete("/alimentacion");
+// ── Observaciones ────────────────────────────────────────────────────────────
+
+export function listObservaciones(params) {
+  return axios.get("/observaciones", { params });
 }
 
-// -- Insumos --
-export function listEmpleadosInsumos() {
-  return axios.get("/insumos/empleados");
+export function getObservacion(id) {
+  return axios.get(`/observaciones/${id}`);
 }
-export function listInsumos() {
-  return axios.get("/insumos");
+
+export function createObservacion(data) {
+  return axios.post("/observaciones", data);
 }
-export function createInsumo(data) {
-  return axios.post("/insumos", data);
+
+export function updateObservacion(id, data) {
+  return axios.put(`/observaciones/${id}`, data);
 }
-export function updateInsumo(id, data) {
-  return axios.put(`/insumos/${id}`, data);
-}
-export function removeInsumo(id) {
-  return axios.delete(`/insumos/${id}`);
-}
-export function removeAllInsumos() {
-  return axios.delete("/insumos");
+
+export function removeObservacion(id) {
+  return axios.delete(`/observaciones/${id}`);
 }

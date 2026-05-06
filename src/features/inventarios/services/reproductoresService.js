@@ -1,13 +1,11 @@
 import axios from "@shared/lib/axiosInstance";
 
-const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
-
-export function listByGranja(granja) {
-  return axios.get(`/reproductores/granja/${pathSegment(granja)}`);
+export function listReproductores() {
+  return axios.get("/reproductores");
 }
 
-export function getMovimientos(granja) {
-  return axios.get(`/reproductores/movimientos/${pathSegment(granja)}`);
+export function getReproductor(id) {
+  return axios.get(`/reproductores/${id}`);
 }
 
 export function createReproductor(data) {

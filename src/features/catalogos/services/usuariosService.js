@@ -4,20 +4,12 @@ export function listUsuarios() {
   return axios.get("/usuarios");
 }
 
+export function getUsuario(id) {
+  return axios.get(`/usuarios/${id}`);
+}
+
 export function listRoles() {
   return axios.get("/roles");
-}
-
-export function listDepartamentosActivos() {
-  return axios.get("/departamentos/activos");
-}
-
-export function listPuestosActivos() {
-  return axios.get("/puestos/activos");
-}
-
-export function listUnidadesNegocioActivas() {
-  return axios.get("/unidades-negocio/activos");
 }
 
 export function createUsuario(data) {

@@ -91,8 +91,9 @@ export default function RolesModulos() {
   const obtenerModulosRol = async (rolId) => {
     try {
       const { data } = await listModulosByRol(rolId);
-      const ids = data.map((m) => m.fi_modulo_id);
-      
+      const modulosArr = Array.isArray(data) ? data : (data.modulos || []);
+      const ids = modulosArr.map((m) => m.fi_modulo_id ?? m.id);
+
       setRolesModulos(prev => ({
         ...prev,
         [rolId]: ids

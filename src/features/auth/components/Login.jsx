@@ -32,9 +32,9 @@ const Login = () => {
     setError("");
     setLoading(true);
     try {
-      const { data } = await axios.post("/usuarios/login", {
+      const { data } = await axios.post("/auth/login", {
         nombre: usuario,
-        contrasena: password,
+        password: password,
       });
 
       if (!data.usuario) throw new Error("Respuesta inválida del servidor");

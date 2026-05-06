@@ -13,7 +13,7 @@ export const logout = async () => {
   const refreshToken = localStorage.getItem("refreshToken");
   if (refreshToken) {
     try {
-      await axiosInstance.post("/usuarios/logout", { refreshToken });
+      await axiosInstance.post("/auth/logout", { refreshToken });
     } catch (err) {
       console.error("Error al cerrar sesión en servidor:", err);
     }

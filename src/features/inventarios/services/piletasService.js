@@ -1,47 +1,43 @@
 import axios from "@shared/lib/axiosInstance";
 
-const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
-
-export function getInventario(granja) {
-  return axios.get(`/piletas/inventario/${pathSegment(granja)}`);
+export function listPiletas(params) {
+  return axios.get("/piletas", { params });
 }
 
-export function getLotes(granja) {
-  return axios.get(`/piletas/lotes/${pathSegment(granja)}`);
+export function getPileta(id) {
+  return axios.get(`/piletas/${id}`);
 }
 
-export function getDestinos(granja) {
-  return axios.get(`/piletas/destino/${pathSegment(granja)}`);
+export function createPileta(data) {
+  return axios.post("/piletas", data);
 }
 
-export function getOrigenes(granja) {
-  return axios.get(`/piletas/origen/${pathSegment(granja)}`);
-}
-
-export function getMovimientos(usuarioId, granja) {
-  return axios.get(`/piletas/movimientos/${usuarioId}/${pathSegment(granja)}`);
-}
-
-export function registrarMovimiento(data) {
-  return axios.post("/piletas/movimientos/registrar", data);
-}
-
-export function registrarSiembra(data) {
-  return axios.post("/piletas/siembra", data);
+export function updatePileta(id, data) {
+  return axios.put(`/piletas/${id}`, data);
 }
 
 export function removePileta(id) {
   return axios.delete(`/piletas/${id}`);
 }
 
-export function filtrarMovimientos(usuarioId, granja, params) {
-  return axios.get(`/piletas/movimientos/filtro/${usuarioId}/${pathSegment(granja)}?${params}`);
+// ── Siembra ─────────────────────────────────────────────────────────────────
+
+export function listSiembra() {
+  return axios.get("/siembra");
 }
 
-export function eliminarMovimiento(movimientoId) {
-  return axios.delete("/piletas/movimientos/eliminar", { data: { movimiento_id: movimientoId } });
+export function getSiembra(id) {
+  return axios.get(`/siembra/${id}`);
 }
 
-export function eliminarTodosMovimientos(granja) {
-  return axios.delete("/piletas/movimientos/eliminar", { data: { eliminar_todos: true, granja } });
+export function registrarSiembra(data) {
+  return axios.post("/siembra", data);
+}
+
+export function updateSiembra(id, data) {
+  return axios.put(`/siembra/${id}`, data);
+}
+
+export function removeSiembra(id) {
+  return axios.delete(`/siembra/${id}`);
 }

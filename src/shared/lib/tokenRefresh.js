@@ -40,7 +40,7 @@ async function performRefresh() {
   }
 
   try {
-    const res = await fetch(`${API_URL}/usuarios/refresh`, {
+    const res = await fetch(`${API_URL}/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken: storedRefreshToken }),

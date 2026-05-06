@@ -9,9 +9,9 @@ export function listModulos() {
 }
 
 export function listModulosByRol(rolId) {
-  return axios.get(`/roles-modulos/${rolId}/modulos`);
+  return axios.get(`/roles/${rolId}`);
 }
 
 export function updateModulosByRol(rolId, modulosIds) {
-  return axios.put(`/roles-modulos/${rolId}/modulos`, { modulosIds });
+  return axios.put(`/roles/${rolId}/modulos`, { moduloIds: modulosIds });
 }
