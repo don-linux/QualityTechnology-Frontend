@@ -73,7 +73,12 @@ export function AuthProvider({ children }) {
       if (!session?.modulos) return false;
       const target = normalize(nombre);
       return session.modulos.some(
-        (m) => m && typeof m.fc_nombre === "string" && normalize(m.fc_nombre) === target
+        (m) =>
+          m &&
+          (
+            (typeof m.nombre === "string" && normalize(m.nombre) === target) ||
+            (typeof m.fc_nombre === "string" && normalize(m.fc_nombre) === target)
+          )
       );
     },
     [session?.modulos]
