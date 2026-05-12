@@ -1,30 +1,31 @@
 import axios from "@shared/lib/axiosInstance";
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
 export function listEmpleados() {
-  return axios.get("/empleados");
+  return axios.get(ENDPOINTS.empleados.base);
 }
 
 export function listDepartamentosActivos() {
-  return axios.get("/departamentos/activos");
+  return axios.get(ENDPOINTS.departamentos.activos);
 }
 
 export function listPuestosActivos() {
-  return axios.get("/puestos/activos");
+  return axios.get(ENDPOINTS.puestos.activos);
 }
 
 export function updateEmpleado(id, data) {
-  return axios.put(`/empleados/${id}`, data);
+  return axios.put(ENDPOINTS.empleados.byId(id), data);
 }
 
 export function createEmpleado(data) {
-  return axios.post("/empleados", data);
+  return axios.post(ENDPOINTS.empleados.base, data);
 }
 
 export function removeEmpleado(id) {
-  return axios.delete(`/empleados/${id}`);
+  return axios.delete(ENDPOINTS.empleados.byId(id));
 }
 
 export function toggleEmpleadoActivo(id, activate, data = {}) {
-  const endpoint = activate ? "activate" : "deactivate";
-  return axios.patch(`/empleados/${id}/${endpoint}`, data);
+  const url = activate ? ENDPOINTS.empleados.activate(id) : ENDPOINTS.empleados.deactivate(id);
+  return axios.patch(url, data);
 }

@@ -1,157 +1,174 @@
 import axios from "@shared/lib/axiosInstance";
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
-const queryValue = (value) => encodeURIComponent(String(value || ""));
+const B = ENDPOINTS.bitacoras;
 
-// -- Plagas --
+/* =====================================================
+   Plagas
+===================================================== */
 export function listEmpleadosPlagas() {
-  return axios.get("/plagas/empleados");
+  return axios.get(B.plagas.empleados);
 }
 export function listPlagas(ubicacion) {
-  return axios.get(`/plagas?ubicacion=${queryValue(ubicacion)}`);
+  return axios.get(B.plagas.base, { params: { ubicacion } });
 }
 export function createPlaga(data) {
-  return axios.post("/plagas", data);
+  return axios.post(B.plagas.base, data);
 }
 export function updatePlaga(id, data) {
-  return axios.put(`/plagas/${id}`, data);
+  return axios.put(B.plagas.byId(id), data);
 }
 export function removePlaga(id) {
-  return axios.delete(`/plagas/${id}`);
+  return axios.delete(B.plagas.byId(id));
 }
 export function removeAllPlagas(ubicacion) {
-  return axios.delete(`/plagas?ubicacion=${queryValue(ubicacion)}`);
+  return axios.delete(B.plagas.base, { params: { ubicacion } });
 }
 
-// -- Recepcion Insumos --
+/* =====================================================
+   Recepción de Insumos
+===================================================== */
 export function listEmpleadosRecepcionInsumos() {
-  return axios.get("/recepcion_insumos/empleados");
+  return axios.get(B.recepcionInsumos.empleados);
 }
 export function listRecepcionInsumos(ubicacion) {
-  return axios.get(`/recepcion_insumos?ubicacion=${queryValue(ubicacion)}`);
+  return axios.get(B.recepcionInsumos.base, { params: { ubicacion } });
 }
 export function createRecepcionInsumo(data) {
-  return axios.post("/recepcion_insumos", data);
+  return axios.post(B.recepcionInsumos.base, data);
 }
 export function updateRecepcionInsumo(id, data) {
-  return axios.put(`/recepcion_insumos/${id}`, data);
+  return axios.put(B.recepcionInsumos.byId(id), data);
 }
 export function removeRecepcionInsumo(id) {
-  return axios.delete(`/recepcion_insumos/${id}`);
+  return axios.delete(B.recepcionInsumos.byId(id));
 }
 export function removeAllRecepcionInsumos(ubicacion) {
-  return axios.delete(`/recepcion_insumos?ubicacion=${queryValue(ubicacion)}`);
+  return axios.delete(B.recepcionInsumos.base, { params: { ubicacion } });
 }
 
-// -- Visitas --
+/* =====================================================
+   Visitas
+===================================================== */
 export function listVisitas(ubicacion, filtro) {
-  return axios.get(`/visitas?ubicacion=${queryValue(ubicacion)}&filtro=${queryValue(filtro)}`);
+  return axios.get(B.visitas.base, { params: { ubicacion, filtro } });
 }
 export function createVisita(formData) {
-  return axios.post("/visitas", formData);
+  return axios.post(B.visitas.base, formData);
 }
 export function updateVisita(id, formData) {
-  return axios.put(`/visitas/${id}`, formData);
+  return axios.put(B.visitas.byId(id), formData);
 }
 export function removeVisita(id) {
-  return axios.delete(`/visitas/${id}`);
+  return axios.delete(B.visitas.byId(id));
 }
 export function removeAllVisitas() {
-  return axios.delete("/visitas");
+  return axios.delete(B.visitas.base);
 }
 
-// -- Banos --
+/* =====================================================
+   Baños
+===================================================== */
 export function listBanos() {
-  return axios.get("/banos");
+  return axios.get(B.banos.base);
 }
 export function listEmpleadosBanos() {
-  return axios.get("/banos/empleados");
+  return axios.get(B.banos.empleados);
 }
 export function createBano(data) {
-  return axios.post("/banos", data);
+  return axios.post(B.banos.base, data);
 }
 export function updateBano(id, data) {
-  return axios.put(`/banos/${id}`, data);
+  return axios.put(B.banos.byId(id), data);
 }
 export function removeBano(id) {
-  return axios.delete(`/banos/${id}`);
+  return axios.delete(B.banos.byId(id));
 }
 export function removeAllBanos() {
-  return axios.delete("/banos");
+  return axios.delete(B.banos.base);
 }
 
-// -- Parametros --
+/* =====================================================
+   Parámetros
+===================================================== */
 export function listEmpleadosParametros() {
-  return axios.get("/parametros/empleados");
+  return axios.get(B.parametros.empleados);
 }
 export function listParametros() {
-  return axios.get("/parametros");
+  return axios.get(B.parametros.base);
 }
 export function createParametro(data) {
-  return axios.post("/parametros", data);
+  return axios.post(B.parametros.base, data);
 }
 export function updateParametro(id, data) {
-  return axios.put(`/parametros/${id}`, data);
+  return axios.put(B.parametros.byId(id), data);
 }
 export function removeParametro(id) {
-  return axios.delete(`/parametros/${id}`);
+  return axios.delete(B.parametros.byId(id));
 }
 export function removeAllParametros() {
-  return axios.delete("/parametros");
+  return axios.delete(B.parametros.base);
 }
 
-// -- Medicamentos --
+/* =====================================================
+   Medicamentos
+===================================================== */
 export function listEmpleadosMedicamentos() {
-  return axios.get("/medicamentos/empleados");
+  return axios.get(B.medicamentos.empleados);
 }
 export function listMedicamentos() {
-  return axios.get("/medicamentos");
+  return axios.get(B.medicamentos.base);
 }
 export function createMedicamento(data) {
-  return axios.post("/medicamentos", data);
+  return axios.post(B.medicamentos.base, data);
 }
 export function updateMedicamento(id, data) {
-  return axios.put(`/medicamentos/${id}`, data);
+  return axios.put(B.medicamentos.byId(id), data);
 }
 export function removeMedicamento(id) {
-  return axios.delete(`/medicamentos/${id}`);
+  return axios.delete(B.medicamentos.byId(id));
 }
 export function removeAllMedicamentos() {
-  return axios.delete("/medicamentos");
+  return axios.delete(B.medicamentos.base);
 }
 
-// -- Recambios --
+/* =====================================================
+   Recambios
+===================================================== */
 export function listEmpleadosRecambios() {
-  return axios.get("/recambios/empleados");
+  return axios.get(B.recambios.empleados);
 }
 export function listRecambios() {
-  return axios.get("/recambios");
+  return axios.get(B.recambios.base);
 }
 export function createRecambio(data) {
-  return axios.post("/recambios", data);
+  return axios.post(B.recambios.base, data);
 }
 export function updateRecambio(id, data) {
-  return axios.put(`/recambios/${id}`, data);
+  return axios.put(B.recambios.byId(id), data);
 }
 export function removeRecambio(id) {
-  return axios.delete(`/recambios/${id}`);
+  return axios.delete(B.recambios.byId(id));
 }
 export function removeAllRecambios() {
-  return axios.delete("/recambios");
+  return axios.delete(B.recambios.base);
 }
 
-// -- Inventario --
+/* =====================================================
+   Inventario
+===================================================== */
 export function listInventario() {
-  return axios.get("/inventario");
+  return axios.get(B.inventario.base);
 }
 export function createInventario(data) {
-  return axios.post("/inventario", data);
+  return axios.post(B.inventario.base, data);
 }
 export function updateInventario(id, data) {
-  return axios.put(`/inventario/${id}`, data);
+  return axios.put(B.inventario.byId(id), data);
 }
 export function removeInventario(id) {
-  return axios.delete(`/inventario/${id}`);
+  return axios.delete(B.inventario.byId(id));
 }
 export function removeAllInventario() {
-  return axios.delete("/inventario");
+  return axios.delete(B.inventario.base);
 }

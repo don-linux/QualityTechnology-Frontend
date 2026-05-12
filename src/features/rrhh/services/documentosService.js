@@ -1,40 +1,34 @@
 import axios from "@shared/lib/axiosInstance";
+import { ENDPOINTS } from "@shared/lib/endpoints";
+
+const D = ENDPOINTS.documentosEmpleado;
 
 export function listDocumentos(empleadoId) {
-  const path = empleadoId
-    ? `/documentos-empleado/${empleadoId}`
-    : "/documentos-empleado/mis-documentos";
-  return axios.get(path);
+  return axios.get(empleadoId ? D.byEmpleado(empleadoId) : D.misDocumentos);
 }
 
 export function listTiposDocumento() {
-  return axios.get("/tipos-documento/activos");
+  return axios.get(ENDPOINTS.tiposDocumento.activos);
 }
 
 export function uploadDocumento(empleadoId, formData) {
-  const path = empleadoId
-    ? `/documentos-empleado/${empleadoId}/upload`
-    : "/documentos-empleado/mis-documentos/upload";
-  return axios.post(path, formData);
+  return axios.post(
+    empleadoId ? D.uploadByEmpleado(empleadoId) : D.uploadMio,
+    formData
+  );
 }
 
 export function viewDocumento(documentoId, selfService = false) {
-  const path = selfService
-    ? `/documentos-empleado/mis-documentos/view/${documentoId}`
-    : `/documentos-empleado/view/${documentoId}`;
-  return axios.get(path, { responseType: "blob" });
+  const url = selfService ? D.viewMio(documentoId) : D.view(documentoId);
+  return axios.get(url, { responseType: "blob" });
 }
 
 export function downloadDocumento(documentoId, selfService = false) {
-  const path = selfService
-    ? `/documentos-empleado/mis-documentos/download/${documentoId}`
-    : `/documentos-empleado/download/${documentoId}`;
-  return axios.get(path, { responseType: "blob" });
+  const url = selfService ? D.downloadMio(documentoId) : D.download(documentoId);
+  return axios.get(url, { responseType: "blob" });
 }
 
 export function removeDocumento(documentoId, selfService = false) {
-  const path = selfService
-    ? `/documentos-empleado/mis-documentos/${documentoId}`
-    : `/documentos-empleado/${documentoId}`;
-  return axios.delete(path);
+  const url = selfService ? D.deleteMio(documentoId) : D.byId(documentoId);
+  return axios.delete(url);
 }

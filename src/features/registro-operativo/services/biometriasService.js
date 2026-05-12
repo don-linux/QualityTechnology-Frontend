@@ -1,45 +1,47 @@
 import axios from "@shared/lib/axiosInstance";
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
-// ── Biometrias ───────────────────────────────────────────────────────────────
+/* ============================================================================
+   Biometrías
+============================================================================ */
 
 export function listBiometrias() {
-  return axios.get("/biometrias");
+  return axios.get(ENDPOINTS.bitacoras.biometrias.base);
 }
 
-export function getBiometria(id) {
-  return axios.get(`/biometrias/${id}`);
+export function listBiometriasByGranja(granja) {
+  return axios.get(ENDPOINTS.bitacoras.biometrias.byGranja(granja));
+}
+
+export function listEmpleadosBiometrias() {
+  return axios.get(ENDPOINTS.bitacoras.biometrias.empleados);
 }
 
 export function createBiometria(data) {
-  return axios.post("/biometrias", data);
+  return axios.post(ENDPOINTS.bitacoras.biometrias.base, data);
 }
 
 export function updateBiometria(id, data) {
-  return axios.put(`/biometrias/${id}`, data);
+  return axios.put(ENDPOINTS.bitacoras.biometrias.byId(id), data);
 }
 
 export function removeBiometria(id) {
-  return axios.delete(`/biometrias/${id}`);
+  return axios.delete(ENDPOINTS.bitacoras.biometrias.byId(id));
 }
 
-// ── Observaciones ────────────────────────────────────────────────────────────
+/* ============================================================================
+   Datos auxiliares para la pantalla de Biometrías
+   (instalaciones y lotes viven en sus routers propios)
+============================================================================ */
 
-export function listObservaciones(params) {
-  return axios.get("/observaciones", { params });
+export function getInstalaciones(granja) {
+  return axios.get(ENDPOINTS.instalaciones.byGranja(granja));
 }
 
-export function getObservacion(id) {
-  return axios.get(`/observaciones/${id}`);
+export function getLotesByInstalacion(instalacionId) {
+  return axios.get(ENDPOINTS.lotes.byInstalacion(instalacionId));
 }
 
-export function createObservacion(data) {
-  return axios.post("/observaciones", data);
-}
-
-export function updateObservacion(id, data) {
-  return axios.put(`/observaciones/${id}`, data);
-}
-
-export function removeObservacion(id) {
-  return axios.delete(`/observaciones/${id}`);
+export function getInfoInstalacion(granja, instalacionId) {
+  return axios.get(ENDPOINTS.bitacoras.biometrias.info(granja, instalacionId));
 }

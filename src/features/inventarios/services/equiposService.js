@@ -1,37 +1,38 @@
 import axios from "@shared/lib/axiosInstance";
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
 export function listEmpleadosEquipos() {
-  return axios.get("/equipos/empleados");
+  return axios.get(ENDPOINTS.equipos.empleados);
 }
 
 export function listEquipos(usuarioId) {
-  return axios.get(`/equipos/${usuarioId}`);
+  return axios.get(ENDPOINTS.equipos.byUsuario(usuarioId));
 }
 
 export function createEquipo(data) {
-  return axios.post("/equipos", data);
+  return axios.post(ENDPOINTS.equipos.base, data);
 }
 
 export function updateEquipo(id, data) {
-  return axios.put(`/equipos/${id}`, data);
+  return axios.put(ENDPOINTS.equipos.byId(id), data);
 }
 
 export function removeEquipo(id) {
-  return axios.delete(`/equipos/${id}`);
+  return axios.delete(ENDPOINTS.equipos.byId(id));
 }
 
 export function listMantenimientos(equipoId) {
-  return axios.get(`/equipos/${equipoId}/mantenimientos`);
+  return axios.get(ENDPOINTS.equipos.mantenimientos(equipoId));
 }
 
 export function createMantenimiento(equipoId, data) {
-  return axios.post(`/equipos/${equipoId}/mantenimientos`, data);
+  return axios.post(ENDPOINTS.equipos.mantenimientos(equipoId), data);
 }
 
 export function updateMantenimiento(mantenimientoId, data) {
-  return axios.put(`/equipos/mantenimientos/${mantenimientoId}`, data);
+  return axios.put(ENDPOINTS.equipos.mantenimientoById(mantenimientoId), data);
 }
 
 export function removeMantenimiento(mantenimientoId) {
-  return axios.delete(`/equipos/mantenimientos/${mantenimientoId}`);
+  return axios.delete(ENDPOINTS.equipos.mantenimientoById(mantenimientoId));
 }

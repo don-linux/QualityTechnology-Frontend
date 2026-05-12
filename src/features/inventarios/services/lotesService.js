@@ -1,27 +1,26 @@
 import axios from "@shared/lib/axiosInstance";
-
-const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
 export function getFamiliaPorInstalacion(instalacionId) {
-  return axios.get(`/lotes/familia-por-instalacion/${instalacionId}`);
+  return axios.get(ENDPOINTS.lotes.familiaPorInstalacion(instalacionId));
 }
 
 export function listInstalaciones(granja) {
-  return axios.get(`/lotes/instalaciones/${pathSegment(granja)}`);
+  return axios.get(ENDPOINTS.lotes.instalacionesReproductores(granja));
 }
 
 export function listLotes(granja) {
-  return axios.get(`/lotes/granja/${pathSegment(granja)}`);
+  return axios.get(ENDPOINTS.lotes.byGranja(granja));
 }
 
 export function createLote(data) {
-  return axios.post("/lotes", data);
+  return axios.post(ENDPOINTS.lotes.base, data);
 }
 
 export function updateLote(id, data) {
-  return axios.put(`/lotes/${id}`, data);
+  return axios.put(ENDPOINTS.lotes.byId(id), data);
 }
 
 export function removeLote(id) {
-  return axios.delete(`/lotes/${id}`);
+  return axios.delete(ENDPOINTS.lotes.byId(id));
 }

@@ -1,4 +1,5 @@
-import { API_URL } from "./config";
+import axiosInstance from "./axiosInstance";
+import { ENDPOINTS } from "./endpoints";
 
 let refreshPromise = null;
 
@@ -40,17 +41,11 @@ async function performRefresh() {
   }
 
   try {
-    const res = await fetch(`${API_URL}/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: storedRefreshToken }),
-    });
-
-    if (!res.ok) {
-      throw new Error("Error al renovar el token.");
-    }
-
-    const data = await res.json();
+    const { data } = await axiosInstance.post(
+      ENDPOINTS.auth.refresh,
+      { refreshToken: storedRefreshToken },
+      { _skipAuth: true }
+    );
 
     localStorage.setItem("token", data.token);
     if (data.refreshToken) {

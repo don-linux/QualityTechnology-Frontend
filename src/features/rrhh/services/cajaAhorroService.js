@@ -1,23 +1,22 @@
 import axios from "@shared/lib/axiosInstance";
-
-const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
 export function listByGranja(granja) {
-  return axios.get(`/caja-ahorro/${pathSegment(granja)}`);
+  return axios.get(ENDPOINTS.cajaAhorro.byGranja(granja));
 }
 
 export function createCategoria(data) {
-  return axios.post("/caja-ahorro", data);
+  return axios.post(ENDPOINTS.cajaAhorro.base, data);
 }
 
 export function updateCampo(id, data) {
-  return axios.put(`/caja-ahorro/${id}`, data);
+  return axios.put(ENDPOINTS.cajaAhorro.byId(id), data);
 }
 
 export function removeRegistro(id) {
-  return axios.delete(`/caja-ahorro/${id}`);
+  return axios.delete(ENDPOINTS.cajaAhorro.byId(id));
 }
 
 export function removeAllByGranja(granja) {
-  return axios.delete("/caja-ahorro", { params: { granja } });
+  return axios.delete(ENDPOINTS.cajaAhorro.base, { params: { granja } });
 }

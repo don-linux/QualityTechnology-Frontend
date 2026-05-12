@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "@shared/lib/axiosInstance";
+import { login as loginRequest } from "@features/auth/services/authService";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -32,10 +32,7 @@ const Login = () => {
     setError("");
     setLoading(true);
     try {
-      const { data } = await axios.post("/auth/login", {
-        nombre: usuario,
-        password: password,
-      });
+      const { data } = await loginRequest(usuario, password);
 
       if (!data.usuario) throw new Error("Respuesta inválida del servidor");
 

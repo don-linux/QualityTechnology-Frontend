@@ -1,27 +1,26 @@
 import axios from "@shared/lib/axiosInstance";
-
-const pathSegment = (value) => encodeURIComponent(decodeURIComponent(String(value || "")));
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
 export function listAlimentos() {
-  return axios.get("/alimentos");
+  return axios.get(ENDPOINTS.alimentos.base);
 }
 
 export function createAlimento(data) {
-  return axios.post("/alimentos", data);
+  return axios.post(ENDPOINTS.alimentos.base, data);
 }
 
 export function removeAlimento(id) {
-  return axios.delete(`/alimentos/${id}`);
+  return axios.delete(ENDPOINTS.alimentos.byId(id));
 }
 
 export function listReproductoresByGranja(granja) {
-  return axios.get(`/reproductores/granja/${pathSegment(granja)}`);
+  return axios.get(ENDPOINTS.reproductores.byGranja(granja));
 }
 
 export function listPiletasByGranja(granja) {
-  return axios.get(`/piletas/inventario/${pathSegment(granja)}`);
+  return axios.get(ENDPOINTS.piletas.inventario(granja));
 }
 
 export function listEngordaByGranja(granja) {
-  return axios.get(`/engorda/granja/${pathSegment(granja)}`);
+  return axios.get(ENDPOINTS.engorda.byGranja(granja));
 }
