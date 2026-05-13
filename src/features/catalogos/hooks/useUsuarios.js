@@ -74,7 +74,17 @@ export default function useUsuarios() {
   const crearUsuario = useCallback(
     async (form) => {
       try {
-        await createUsuario(form);
+        await createUsuario({
+          nombre: form.nombre,
+          contraseña: form.contraseña,
+          rol_id: Number(form.rol_id),
+          nombre_empleado: form.fc_nombre_empleado || undefined,
+          apellido_paterno: form.fc_apellido_paterno || undefined,
+          apellido_materno: form.fc_apellido_materno || undefined,
+          departamento_id: form.fi_departamento_id ? Number(form.fi_departamento_id) : undefined,
+          puesto_id: form.fi_puesto_id ? Number(form.fi_puesto_id) : undefined,
+          unidad_negocio_id: form.fi_unidad_negocio_id ? Number(form.fi_unidad_negocio_id) : undefined,
+        });
         showSnackbar("Usuario registrado correctamente", "success");
         obtenerUsuarios();
         return true;
@@ -105,9 +115,12 @@ export default function useUsuarios() {
 
   const toggleActivo = useCallback(
     async (usuario) => {
-      const accion = usuario.fb_activo ? "desactivar" : "activar";
+      const id = usuario?.usuario_id ?? usuario?.fi_usuario_id;
+      const activoNow = usuario?.activo ?? usuario?.fb_activo ?? false;
+      const accion = activoNow ? "desactivar" : "activar";
       try {
-        await toggleUsuarioActivo(usuario.fi_usuario_id, !usuario.fb_activo);
+        if (id == null) throw new Error("Usuario sin ID");
+        await toggleUsuarioActivo(id, !activoNow);
         obtenerUsuarios();
       } catch (error) {
         console.error(`Error al ${accion} usuario:`, error);
