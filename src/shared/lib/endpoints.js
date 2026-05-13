@@ -103,6 +103,11 @@ export const ENDPOINTS = {
     byId: (id) => `/alevinaje/${id}`,
   },
 
+  siembras: {
+    base: "/siembras",
+    byId: (id) => `/siembras/${id}`,
+  },
+
   equipos: {
     base: "/equipos",
     empleados: "/equipos/empleados",

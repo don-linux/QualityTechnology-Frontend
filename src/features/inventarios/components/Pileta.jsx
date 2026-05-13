@@ -38,6 +38,7 @@ import {
   updateAlevinaje,
   removeAlevinaje,
 } from "../services/alevinajeService";
+import { listSiembras } from "../services/siembraService";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -59,6 +60,35 @@ const tipoLabel = (t) => {
   const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda" };
   return map[String(t).toLowerCase()] || t;
 };
+
+/** Texto corto para listas de siembra (origen conocido desde reproductores). */
+function etiquetaSiembraOpcion(s) {
+  if (!s) return "";
+  const oid = s.fi_siembra_id ?? s.id;
+  const orig =
+    s.nombre_pileta_origen ??
+    (s.pileta_origen_id != null ? `#${s.pileta_origen_id}` : "Sin pileta origen");
+  const fam = s.familia_origen ? ` · familia ${s.familia_origen}` : "";
+  const fc = s.fecha ? String(s.fecha).split("T")[0] : "";
+  const n = Number(s.cantidad);
+  const c = Number.isFinite(n) ? `${n.toLocaleString("en-US")} org.` : "";
+  const origTipo = s.tipo_pileta_origen ? ` · origen:${s.tipo_pileta_origen}` : "";
+  return `#${oid}: ${orig}${fam}${origTipo} · ${c} · ${fc}`;
+}
+
+/** Resumen de siembra en tabla usando campos ya expuestos por serializeAlevinaje. */
+function etiquetaSiembraAlevinajeRow(r) {
+  if (!(r?.siembra_origen_id > 0)) return "—";
+  const oid = r.siembra_origen_id;
+  const orig = r.siembra_origen_pileta || "origen";
+  const fam = r.familia ? ` · familia ${r.familia}` : "";
+  const qty =
+    r.siembra_origen_cantidad != null ? `${Number(r.siembra_origen_cantidad)} org.` : "";
+  const fc = r.siembra_origen_fecha
+    ? String(r.siembra_origen_fecha).split("T")[0]
+    : "";
+  return `#${oid} ${orig}${fam} · ${qty} · ${fc}`;
+}
 
 const formatNumber = (num, opts = {}) =>
   num != null && num !== ""
@@ -88,14 +118,14 @@ const colorDias = (dias) => {
 /* ============================================================================
  *  PANTALLA PRINCIPAL
  * ========================================================================= */
-export default function Pileta() {
+export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } = {}) {
   const auth = useAuth();
   const usuarioId = auth.usuarioId;
   const showSnackbar = useSnackbar();
   const { confirm, ConfirmModal } = useConfirm();
   const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(initialMainTab);
   const [granjaActiva, setGranjaActiva] = useState("");
 
   const [piletas, setPiletas] = useState([]);
@@ -143,6 +173,10 @@ export default function Pileta() {
   }, [defaultUbicacion, granjaActiva]);
 
   useEffect(() => {
+    setTab(initialMainTab);
+  }, [initialMainTab]);
+
+  useEffect(() => {
     cargarPiletas();
     cargarAlevinajes();
   }, [cargarPiletas, cargarAlevinajes]);
@@ -160,7 +194,7 @@ export default function Pileta() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={2} color="#004C7D">
-        Alevinaje
+        {pageTitle}
       </Typography>
 
       {/* Selector granja */}
@@ -244,9 +278,11 @@ function AlevinajeTab({
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [opcionesSiembra, setOpcionesSiembra] = useState([]);
 
   const [form, setForm] = useState({
     pileta_id: "",
+    siembra_origen_id: "",
     fecha: "",
     lote: "",
     huevos_ml: "",
@@ -270,11 +306,34 @@ function AlevinajeTab({
     return ((m * 100) / i).toFixed(2);
   }, [form.alevines_iniciales, form.mortalidad]);
 
+  useEffect(() => {
+    let discard = false;
+    (async () => {
+      if (!granjaActiva || !form.pileta_id) {
+        if (!discard) setOpcionesSiembra([]);
+        return;
+      }
+      try {
+        const res = await listSiembras({
+          granja: granjaActiva,
+          pileta_destino: form.pileta_id,
+        });
+        if (!discard) setOpcionesSiembra(Array.isArray(res.data) ? res.data : []);
+      } catch {
+        if (!discard) setOpcionesSiembra([]);
+      }
+    })();
+    return () => {
+      discard = true;
+    };
+  }, [granjaActiva, form.pileta_id]);
+
   const limpiar = () => {
     clearErrors();
     setEditId(null);
     setForm({
       pileta_id: "",
+      siembra_origen_id: "",
       fecha: "",
       lote: "",
       huevos_ml: "",
@@ -289,6 +348,10 @@ function AlevinajeTab({
   const handleChange = (e) => {
     const { name, value } = e.target;
     clearFieldError(name);
+    if (name === "pileta_id") {
+      setForm((prev) => ({ ...prev, pileta_id: value, siembra_origen_id: "" }));
+      return;
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -310,6 +373,12 @@ function AlevinajeTab({
         observacion: form.observacion,
         fi_usuario_id: usuarioId,
       };
+      const sid = form.siembra_origen_id ? Number(form.siembra_origen_id) : null;
+      if (editId) {
+        body.siembra_origen_id = sid;
+      } else if (sid) {
+        body.siembra_origen_id = sid;
+      }
 
       if (editId) {
         await updateAlevinaje(editId, body);
@@ -333,6 +402,10 @@ function AlevinajeTab({
     setEditId(row.fi_id);
     setForm({
       pileta_id: row.pileta_id != null ? String(row.pileta_id) : "",
+      siembra_origen_id:
+        row.siembra_origen_id != null && row.siembra_origen_id > 0
+          ? String(row.siembra_origen_id)
+          : "",
       fecha: row.fd_fecha?.split("T")[0] || "",
       lote: row.no_lote || "",
       huevos_ml: row.huevos_ml ?? "",
@@ -411,6 +484,46 @@ function AlevinajeTab({
                       {p.nombre} · {p.estado}
                     </MenuItem>
                   ))}
+                </TextField>
+              </Grid>
+
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  select
+                  label="Siembra de ingreso (reproductores → esta pileta)"
+                  name="siembra_origen_id"
+                  value={form.siembra_origen_id || ""}
+                  onChange={handleChange}
+                  fullWidth
+                  disabled={!granjaActiva || !form.pileta_id}
+                  slotProps={{
+                    select: {
+                      renderValue: (val) => {
+                        const s = opcionesSiembra.find(
+                          (x) => String(x.fi_siembra_id ?? x.id) === String(val),
+                        );
+                        return s ? etiquetaSiembraOpcion(s) : val ? `#${val}` : "Sin vincular";
+                      },
+                    },
+                  }}
+                  helperText={
+                    errors.siembra_origen_id ||
+                    (!form.pileta_id
+                      ? "Elige pileta primero"
+                      : opcionesSiembra.length === 0
+                        ? "No hay siembras con destino en esta pileta (registra antes la siembra con esta pileta como destino)."
+                        : "Opcional: vincula el lote al movimiento físico ya registrado.")
+                  }
+                >
+                  <MenuItem value="">Sin vincular</MenuItem>
+                  {opcionesSiembra.map((s) => {
+                    const id = s.fi_siembra_id ?? s.id;
+                    return (
+                      <MenuItem key={id} value={String(id)}>
+                        {etiquetaSiembraOpcion(s)}
+                      </MenuItem>
+                    );
+                  })}
                 </TextField>
               </Grid>
 
@@ -566,6 +679,7 @@ function AlevinajeTab({
                 <TableCell align="right">Mort. %</TableCell>
                 <TableCell align="right">Vivos</TableCell>
                 <TableCell>Días</TableCell>
+                <TableCell sx={{ minWidth: 200 }}>Siembra origen</TableCell>
                 <TableCell>Última nota (pileta)</TableCell>
                 <TableCell align="center" sx={{ minWidth: 120 }}>
                   Acciones
@@ -575,7 +689,7 @@ function AlevinajeTab({
             <TableBody>
               {alevinajes.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={10} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                  <TableCell colSpan={11} align="center" sx={{ py: 4, color: "text.secondary" }}>
                     Sin registros para esta granja.
                   </TableCell>
                 </TableRow>
@@ -606,6 +720,9 @@ function AlevinajeTab({
                         color={colorDias(dias)}
                         label={dias != null ? `${dias} d` : "—"}
                       />
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 260 }} title={etiquetaSiembraAlevinajeRow(r)}>
+                      {etiquetaSiembraAlevinajeRow(r)}
                     </TableCell>
                     <TableCell sx={{ maxWidth: 240 }}>
                       <span title={r.fc_ultima_observacion_pileta || ""}>
