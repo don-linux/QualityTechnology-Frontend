@@ -56,13 +56,6 @@ export const ENDPOINTS = {
     eliminarMovimientos: "/piletas/movimientos/eliminar",
   },
 
-  instalaciones: {
-    base: "/instalaciones",
-    byGranja: (granja) => `/instalaciones/granja/${path(granja)}`,
-    byTipo: (tipo, granja) => `/instalaciones/tipo/${tipo}/${path(granja)}`,
-    byId: (id) => `/instalaciones/${id}`,
-  },
-
   lotes: {
     base: "/lotes",
     byGranja: (granja) => `/lotes/granja/${path(granja)}`,
@@ -75,7 +68,6 @@ export const ENDPOINTS = {
   reproductores: {
     base: "/reproductores",
     byGranja: (granja) => `/reproductores/granja/${path(granja)}`,
-    instalaciones: (granja) => `/reproductores/instalaciones/${path(granja)}`,
     movimientos: (granja) => `/reproductores/movimientos/${path(granja)}`,
     byId: (id) => `/reproductores/${id}`,
   },

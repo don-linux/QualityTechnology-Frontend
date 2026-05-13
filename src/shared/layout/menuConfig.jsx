@@ -77,7 +77,6 @@ export const MENU_SECTIONS = [
         sublabel: "Otros Inventarios",
         sublabelColor: "#e3eb72ff",
         items: [
-          { to: "/inventarios/instalaciones", icon: <HomeWorkIcon />, label: "Instalaciones" },
           { to: "/inventarios/alimentos", icon: <LocalMall />, label: "Alimento e Insumos" },
           { to: "/inventarios/equipos", icon: <Handyman />, label: "Equipo y Herramientas" },
         ],

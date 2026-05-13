@@ -38,20 +38,3 @@ export function updateBiometria(id, data) {
 export function removeBiometria(id) {
   return axios.delete(ENDPOINTS.bitacoras.biometrias.byId(id));
 }
-
-/* ============================================================================
-   Datos auxiliares para la pantalla de Biometrías
-   (instalaciones y lotes viven en sus routers propios)
-============================================================================ */
-
-export function getInstalaciones(granja) {
-  return axios.get(ENDPOINTS.instalaciones.byGranja(granja));
-}
-
-export function getLotesByInstalacion(instalacionId) {
-  return axios.get(ENDPOINTS.lotes.byInstalacion(instalacionId));
-}
-
-export function getInfoInstalacion(granja, instalacionId) {
-  return axios.get(ENDPOINTS.bitacoras.biometrias.info(granja, instalacionId));
-}

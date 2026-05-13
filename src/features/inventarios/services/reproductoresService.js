@@ -15,10 +15,6 @@ export function listByGranja(filtroUbicacion) {
   });
 }
 
-export function getInstalaciones(granja) {
-  return axios.get(ENDPOINTS.reproductores.instalaciones(granja));
-}
-
 export function getMovimientos(granja) {
   return axios.get(ENDPOINTS.reproductores.movimientos(granja));
 }

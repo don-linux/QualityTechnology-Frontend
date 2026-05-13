@@ -32,15 +32,6 @@ export function removeEngorda(id) {
   return axios.delete(ENDPOINTS.engorda.byId(id));
 }
 
-/* ============================================================================
-   Instalaciones / lotes utilizados por la pantalla de Engorda
-   (reutilizan otros routers; se exponen aquí por conveniencia del feature)
-============================================================================ */
-
-export function listInstalacionesEngorda(granja) {
-  return axios.get(ENDPOINTS.instalaciones.byTipo("engorda", granja));
-}
-
 export function listLotes(granja) {
   return axios.get(ENDPOINTS.lotes.byGranja(granja));
 }
