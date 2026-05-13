@@ -14,5 +14,5 @@ export function listModulosByRol(rolId) {
 }
 
 export function updateModulosByRol(rolId, modulosIds) {
-  return axios.put(ENDPOINTS.rolesModulos.byRol(rolId), { moduloIds: modulosIds });
+  return axios.put(ENDPOINTS.rolesModulos.byRol(rolId), { modulosIds });
 }
