@@ -35,8 +35,30 @@ const MENUS_PRINCIPALES = new Set([
   "Finanzas",
   "RRHH",
   "Catálogos",
+  "Catalogos",
   "Seguridad",
 ]);
+
+/** API actual: rol_id / nombre / es_root (antes fi_rol_id / fc_nombre / fb_es_root). */
+function getRolId(rol) {
+  return rol?.rol_id ?? rol?.fi_rol_id ?? rol?.id ?? null;
+}
+
+function getRolNombre(rol) {
+  return rol?.nombre ?? rol?.fc_nombre ?? "";
+}
+
+function rolEsRoot(rol) {
+  return Boolean(rol?.es_root ?? rol?.fb_es_root);
+}
+
+function getModuloId(m) {
+  return m?.modulo_id ?? m?.fi_modulo_id ?? m?.id;
+}
+
+function getModuloNombre(m) {
+  return String(m?.nombre ?? m?.fc_nombre ?? "").trim();
+}
 
 export default function RolesModulos() {
   const [roles, setRoles] = useState([]);
@@ -55,8 +77,9 @@ export default function RolesModulos() {
 
   useEffect(() => {
     if (roles.length > 0) {
-      roles.forEach(rol => {
-        obtenerModulosRol(rol.fi_rol_id);
+      roles.forEach((rol) => {
+        const id = getRolId(rol);
+        if (id != null) obtenerModulosRol(id);
       });
     }
   }, [roles]);
@@ -92,7 +115,7 @@ export default function RolesModulos() {
     try {
       const { data } = await listModulosByRol(rolId);
       const modulosArr = Array.isArray(data) ? data : (data.modulos || []);
-      const ids = modulosArr.map((m) => m.fi_modulo_id ?? m.id);
+      const ids = modulosArr.map((m) => getModuloId(m)).filter(Boolean);
 
       setRolesModulos(prev => ({
         ...prev,
@@ -108,7 +131,7 @@ export default function RolesModulos() {
   // ================================
   const abrirEdicion = (rol) => {
     setRolEditando(rol);
-    const ids = rolesModulos[rol.fi_rol_id] || [];
+    const ids = rolesModulos[getRolId(rol)] || [];
     setModulosSeleccionados(ids.filter((id) => idsPrincipales.has(id)));
     setDrawerOpen(true);
   };
@@ -122,11 +145,11 @@ export default function RolesModulos() {
     setModulosSeleccionados([]);
   };
 
-  const modulosPrincipales = modulos.filter(
-    (m) => MENUS_PRINCIPALES.has(m.fc_nombre?.trim())
+  const modulosPrincipales = modulos.filter((m) =>
+    MENUS_PRINCIPALES.has(getModuloNombre(m))
   );
 
-  const idsPrincipales = new Set(modulosPrincipales.map((m) => m.fi_modulo_id));
+  const idsPrincipales = new Set(modulosPrincipales.map((m) => getModuloId(m)));
 
   const handleCheckbox = (moduloId) => {
     setModulosSeleccionados((prev) =>
@@ -143,12 +166,14 @@ export default function RolesModulos() {
     if (!rolEditando) return;
 
     try {
-      await updateModulosByRol(rolEditando.fi_rol_id, modulosSeleccionados);
+      const editId = getRolId(rolEditando);
+      if (editId == null) return;
+      await updateModulosByRol(editId, modulosSeleccionados);
 
       // Actualizar estado local
-      setRolesModulos(prev => ({
+      setRolesModulos((prev) => ({
         ...prev,
-        [rolEditando.fi_rol_id]: modulosSeleccionados
+        [editId]: modulosSeleccionados,
       }));
 
       showSnackbar("Módulos actualizados correctamente", "success");
@@ -186,15 +211,15 @@ export default function RolesModulos() {
 
           <TableBody>
             {roles.map((rol) => (
-              <TableRow key={rol.fi_rol_id} hover>
+              <TableRow key={getRolId(rol) ?? String(getRolNombre(rol))} hover>
                 <TableCell sx={{ fontWeight: 500 }}>
-                  {rol.fc_nombre}
+                  {getRolNombre(rol)}
                 </TableCell>
 
                 <TableCell align="center">
                   <Chip
-                    label={`${contarModulosActivos(rol.fi_rol_id)} / ${modulosPrincipales.length}`}
-                    color={contarModulosActivos(rol.fi_rol_id) > 0 ? "primary" : "default"}
+                    label={`${contarModulosActivos(getRolId(rol))} / ${modulosPrincipales.length}`}
+                    color={contarModulosActivos(getRolId(rol)) > 0 ? "primary" : "default"}
                     size="small"
                   />
                 </TableCell>
@@ -204,7 +229,7 @@ export default function RolesModulos() {
                     color="primary"
                     onClick={() => abrirEdicion(rol)}
                     size="small"
-                    disabled={rol.fb_es_root}
+                    disabled={rolEsRoot(rol)}
                   >
                     <EditIcon />
                   </IconButton>
@@ -243,7 +268,7 @@ export default function RolesModulos() {
                 Rol
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {rolEditando.fc_nombre}
+                {getRolNombre(rolEditando)}
               </Typography>
             </Box>
 
@@ -256,14 +281,14 @@ export default function RolesModulos() {
             <FormGroup>
               {modulosPrincipales.map((modulo) => (
                 <FormControlLabel
-                  key={modulo.fi_modulo_id}
+                  key={getModuloId(modulo)}
                   control={
                     <Checkbox
-                      checked={modulosSeleccionados.includes(modulo.fi_modulo_id)}
-                      onChange={() => handleCheckbox(modulo.fi_modulo_id)}
+                      checked={modulosSeleccionados.includes(getModuloId(modulo))}
+                      onChange={() => handleCheckbox(getModuloId(modulo))}
                     />
                   }
-                  label={modulo.fc_nombre}
+                  label={getModuloNombre(modulo)}
                   sx={{ mb: 1 }}
                 />
               ))}

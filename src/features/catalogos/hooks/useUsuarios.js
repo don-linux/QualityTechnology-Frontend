@@ -2,13 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import {
   listUsuarios,
   listRoles,
-  listDepartamentosActivos,
-  listPuestosActivos,
-  listUnidadesNegocioActivas,
   createUsuario,
   updateUsuario,
   toggleUsuarioActivo,
 } from "../services/usuariosService";
+import { listDepartamentosActivos, listPuestosActivos } from "@features/rrhh/services/empleadosService";
+import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
 import useSnackbar from "@shared/hooks/useSnackbar";
 
 export default function useUsuarios() {
