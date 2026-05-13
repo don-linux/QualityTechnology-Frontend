@@ -5,6 +5,7 @@ import {
   updateInstalacion,
   removeInstalacion,
 } from "../services/instalacionesService";
+import { listPiletas } from "../services/piletasService";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -82,6 +83,18 @@ function InstalacionesContent() {
     [granja, resolveFiltroUbicacion],
   );
 
+  /** Mismo uso que enums `PiletaTipo` del backend (`alevinaje` | …). */
+  const tipoPiletaQuery = useMemo(() => {
+    const t = String(tipo ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase();
+    return ["alevinaje", "reproductores", "engorda"].includes(t) ? t : "";
+  }, [tipo]);
+
+  const [piletasFisicasTabla, setPiletasFisicasTabla] = useState([]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -147,6 +160,25 @@ function InstalacionesContent() {
     obtenerInstalaciones();
   }, [defaultUbicacion, granja, obtenerInstalaciones]);
 
+  /* Piletas físicas de la sede por tipo — modelo distinto del catálogo `instalaciones`. */
+  const cargarPiletasMismoTipo = useCallback(async () => {
+    if (!granja || !filtroUbicacion?.granja || !tipoPiletaQuery) {
+      setPiletasFisicasTabla([]);
+      return;
+    }
+    try {
+      const { data } = await listPiletas(filtroUbicacion, tipoPiletaQuery);
+      setPiletasFisicasTabla(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setPiletasFisicasTabla([]);
+    }
+  }, [granja, filtroUbicacion, tipoPiletaQuery]);
+
+  useEffect(() => {
+    cargarPiletasMismoTipo();
+  }, [cargarPiletasMismoTipo]);
+
   const mostrarMensaje = (texto, error = false) => {
     setMensaje({ texto, error });
     setTimeout(() => setMensaje({ texto: "", error: false }), 4000);
@@ -197,6 +229,7 @@ function InstalacionesContent() {
       mostrarMensaje("Instalación registrada correctamente.");
       limpiarFormulario();
       obtenerInstalaciones();
+      cargarPiletasMismoTipo();
     } catch (error) {
       console.error(error);
       mostrarMensaje("Error al registrar instalación.", true);
@@ -217,6 +250,7 @@ function InstalacionesContent() {
       mostrarMensaje("Instalación actualizada correctamente.");
       limpiarFormulario();
       obtenerInstalaciones();
+      cargarPiletasMismoTipo();
     } catch (error) {
       console.error(error);
       mostrarMensaje("Error al actualizar instalación.", true);
@@ -231,6 +265,7 @@ function InstalacionesContent() {
       mostrarMensaje("Instalación eliminada correctamente.");
       limpiarFormulario();
       obtenerInstalaciones();
+      cargarPiletasMismoTipo();
     } catch (error) {
       console.error(error);
       mostrarMensaje(error.response?.data?.error || error.message || "Error al eliminar la instalación.", true);
@@ -616,6 +651,63 @@ function InstalacionesContent() {
         <Typography sx={{ m: 2, fontWeight: "bold", fontSize: "16px" }}>
           Total instalaciones: {instalacionesFiltradas.length} — Total m³:{" "}
           {totalM3.toFixed(2)}
+        </Typography>
+      </Paper>
+
+      <Paper sx={{ mt: 3, borderRadius: 3, overflow: "hidden" }}>
+        <Box
+          sx={{
+            background: "linear-gradient(90deg, #3949AB, #5C6BC0)",
+            color: "white",
+            py: 1.2,
+            px: 2,
+          }}
+        >
+          <Typography variant="h6">
+            Piletas físicas tipo {tipo} — {granja}
+          </Typography>
+        </Box>
+        <Typography variant="body2" sx={{ px: 2, pt: 1.5, color: "text.secondary" }}>
+          Las piletas operativas (siembras, inventario vivo, etc.) viven en el modelo{" "}
+          <strong>Pileta</strong>; el catálogo de arriba es <strong>instalaciones</strong>. Las
+          filas pueden coincidir en tipo y ubicación, pero siguen siendo registros aparte.
+          Adminístralas en Inventarios → Piletas / Piletas físicas si hace falta crearlas.
+        </Typography>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nombre pileta</TableCell>
+              <TableCell>Estado</TableCell>
+              <TableCell align="right">Volumen (m³)</TableCell>
+              <TableCell>Material</TableCell>
+              <TableCell>Ubicación (catálogo)</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {piletasFisicasTabla.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  No hay piletas de tipo «{tipo}» en esta sede (o falta ubicación bien alineada
+                  con catálogo). Revisa la sede seleccionada o crea piletas en la pestaña
+                  correspondiente.
+                </TableCell>
+              </TableRow>
+            )}
+            {piletasFisicasTabla.map((p) => (
+              <TableRow key={p.fi_pileta_id} hover>
+                <TableCell>{p.nombre}</TableCell>
+                <TableCell>{p.estado ?? "—"}</TableCell>
+                <TableCell align="right">
+                  {p.metros_cubicos != null ? Number(p.metros_cubicos).toFixed(3) : "—"}
+                </TableCell>
+                <TableCell>{p.material ?? "—"}</TableCell>
+                <TableCell>{p.fc_granja ?? "—"}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        <Typography sx={{ m: 2, fontWeight: 600, fontSize: "15px" }}>
+          Total piletas listadas: {piletasFisicasTabla.length}
         </Typography>
       </Paper>
 
