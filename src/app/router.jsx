@@ -58,6 +58,7 @@ const Proveedores = lazy(() => import("@pages/rrhh/ProveedoresPage"));
 
 // Seguridad
 const RolesModulos = lazy(() => import("@pages/seguridad/ModulosPorRolPage"));
+const UbicacionesGranjasSeg = lazy(() => import("@pages/seguridad/UbicacionesGranjasPage"));
 const SinAcceso = lazy(() => import("@pages/SinAccesoPage"));
 
 const LazyFallback = () => (
@@ -151,6 +152,7 @@ export default function AppRouter() {
         <Route element={<PrivateRoute modulo="Seguridad" />}>
           <Route element={<CorporateLayout />}>
             <Route path="seguridad/roles-modulos" element={<RolesModulos />} />
+            <Route path="seguridad/ubicaciones-granjas" element={<UbicacionesGranjasSeg />} />
           </Route>
         </Route>
 

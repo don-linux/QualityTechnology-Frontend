@@ -1,12 +1,22 @@
 import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
+import { filtrosUbicacionAParams } from "./piletasService";
 
 /* ============================================================================
    Engordas por granja (el backend ya no expone GET / ni GET /:id)
 ============================================================================ */
 
-export function listEngordas(granja) {
-  return axios.get(ENDPOINTS.engorda.byGranja(granja));
+export function listEngordas(filtroUbicacion) {
+  const nombre =
+    filtroUbicacion && typeof filtroUbicacion === "object"
+      ? filtroUbicacion.granja ?? filtroUbicacion.nombre ?? ""
+      : String(filtroUbicacion ?? "");
+  const base = ENDPOINTS.engorda.byGranja(nombre);
+  const params = {};
+  filtrosUbicacionAParams(params, filtroUbicacion);
+  return axios.get(base, {
+    params: Object.keys(params).length ? params : undefined,
+  });
 }
 
 /**

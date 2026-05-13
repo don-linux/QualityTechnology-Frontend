@@ -123,10 +123,21 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
   const usuarioId = auth.usuarioId;
   const showSnackbar = useSnackbar();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } =
+    useUbicacionesGranja();
 
   const [tab, setTab] = useState(initialMainTab);
   const [granjaActiva, setGranjaActiva] = useState("");
+
+  const filtroUbicacion = useMemo(
+    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
+    [granjaActiva, resolveFiltroUbicacion],
+  );
+
+  const ubicacionSeleccionada = useMemo(
+    () => ubicacionesGranja.find((op) => op.value === granjaActiva),
+    [ubicacionesGranja, granjaActiva],
+  );
 
   const [piletas, setPiletas] = useState([]);
   const [piletasAlevinaje, setPiletasAlevinaje] = useState([]);
@@ -135,15 +146,15 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
   /* ------------------------------------------------------------------ DATA */
 
   const cargarPiletas = useCallback(async () => {
-    if (!granjaActiva) {
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) {
       setPiletas([]);
       setPiletasAlevinaje([]);
       return;
     }
     try {
       const [resAll, resAlev] = await Promise.all([
-        listPiletas(granjaActiva),
-        listPiletas(granjaActiva, "alevinaje"),
+        listPiletas(filtroUbicacion),
+        listPiletas(filtroUbicacion, "alevinaje"),
       ]);
       setPiletas(Array.isArray(resAll.data) ? resAll.data : []);
       setPiletasAlevinaje(Array.isArray(resAlev.data) ? resAlev.data : []);
@@ -152,21 +163,21 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
       setPiletasAlevinaje([]);
       showSnackbar("Error cargando piletas", "error");
     }
-  }, [granjaActiva, showSnackbar]);
+  }, [filtroUbicacion, showSnackbar]);
 
   const cargarAlevinajes = useCallback(async () => {
-    if (!granjaActiva) {
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) {
       setAlevinajes([]);
       return;
     }
     try {
-      const res = await listAlevinaje(granjaActiva);
+      const res = await listAlevinaje(filtroUbicacion);
       setAlevinajes(Array.isArray(res.data) ? res.data : []);
     } catch {
       setAlevinajes([]);
       showSnackbar("Error cargando registros de alevinaje", "error");
     }
-  }, [granjaActiva, showSnackbar]);
+  }, [filtroUbicacion, showSnackbar]);
 
   useEffect(() => {
     if (!granjaActiva && defaultUbicacion) setGranjaActiva(defaultUbicacion);
@@ -214,7 +225,10 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
       <Paper sx={{ p: 2, mb: 2, backgroundColor: "#E3F2FD" }} elevation={0}>
         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
           <Typography variant="body2">
-            <b>Granja activa:</b> {granjaActiva || "—"}
+            <b>Ubicación (sede):</b> {granjaActiva || "—"}
+            {ubicacionSeleccionada?.ubicacion_id ? (
+              <span> · ID ubicación #{ubicacionSeleccionada.ubicacion_id}</span>
+            ) : null}
           </Typography>
           <Typography variant="body2">
             <b>Piletas:</b> {piletas.length} ({piletasAlevinaje.length} de alevinaje)
@@ -234,6 +248,7 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
       {tab === 0 && (
         <AlevinajeTab
           granjaActiva={granjaActiva}
+          filtroUbicacion={filtroUbicacion}
           piletasAlevinaje={piletasAlevinaje}
           piletas={piletas}
           alevinajes={alevinajes}
@@ -266,6 +281,7 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
  * ========================================================================= */
 function AlevinajeTab({
   granjaActiva,
+  filtroUbicacion,
   piletasAlevinaje,
   piletas,
   alevinajes,
@@ -309,13 +325,13 @@ function AlevinajeTab({
   useEffect(() => {
     let discard = false;
     (async () => {
-      if (!granjaActiva || !form.pileta_id) {
+      if ((!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) || !form.pileta_id) {
         if (!discard) setOpcionesSiembra([]);
         return;
       }
       try {
         const res = await listSiembras({
-          granja: granjaActiva,
+          ...filtroUbicacion,
           pileta_destino: form.pileta_id,
         });
         if (!discard) setOpcionesSiembra(Array.isArray(res.data) ? res.data : []);
@@ -326,7 +342,7 @@ function AlevinajeTab({
     return () => {
       discard = true;
     };
-  }, [granjaActiva, form.pileta_id]);
+  }, [filtroUbicacion, form.pileta_id]);
 
   const limpiar = () => {
     clearErrors();

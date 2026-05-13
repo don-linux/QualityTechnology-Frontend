@@ -51,7 +51,8 @@ export default function BioBiometrias() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId || "";
   const showSnackbar = useSnackbar();
-  const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getGroups, resolveFiltroUbicacion } =
+    useUbicacionesGranja();
 
   const [data, setData] = useState([]);
   const [empleados, setEmpleados] = useState([]);
@@ -94,13 +95,18 @@ export default function BioBiometrias() {
     }
   };
 
-  const cargarPiletas = async (granja) => {
-    if (!granja) {
+  const cargarPiletas = async (ubicacionSeleccionNombre) => {
+    if (!ubicacionSeleccionNombre) {
+      setPiletas([]);
+      return;
+    }
+    const filtro = resolveFiltroUbicacion(ubicacionSeleccionNombre);
+    if (!filtro.granja && !filtro.ubicacion_id) {
       setPiletas([]);
       return;
     }
     try {
-      const res = await listPiletas(granja);
+      const res = await listPiletas(filtro);
       setPiletas(Array.isArray(res.data) ? res.data : []);
     } catch {
       setPiletas([]);
@@ -276,7 +282,10 @@ export default function BioBiometrias() {
                 onChange={handleChange}
                 fullWidth
                 error={!!errors.ubicacion}
-                helperText={errors.ubicacion}
+                helperText={
+                  errors.ubicacion ||
+                  "Sede física (tabla ubicaciones): filtra piletas por `ubicacion_id` en el servidor."
+                }
               >
                 <MenuItem value="">Seleccione</MenuItem>
                 {ubicacionesGranja.map((op) => (

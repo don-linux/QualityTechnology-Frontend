@@ -27,7 +27,12 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 const EMPTY = { ubicacion_id: null, nombre: "", direccion: "" };
 
-export default function Ubicaciones() {
+export default function Ubicaciones({
+  titulo = "Ubicaciones",
+  subtitulo = "Administra las granjas y ubicaciones físicas del sistema",
+  alertSeverity = "info",
+  alertText = "El modelo actual solo guarda nombre y dirección. No hay activación/desactivación en servidor.",
+} = {}) {
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState(EMPTY);
   const [ubicaciones, setUbicaciones] = useState([]);
@@ -92,15 +97,17 @@ export default function Ubicaciones() {
   return (
     <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
       <Box textAlign="center" mb={3}>
-        <Typography variant="h4" fontWeight="bold">Ubicaciones</Typography>
+        <Typography variant="h4" fontWeight="bold">{titulo}</Typography>
         <Typography variant="body2" color="text.secondary">
-          Administra las granjas y ubicaciones físicas del sistema
+          {subtitulo}
         </Typography>
       </Box>
 
-      <Alert severity="info" sx={{ mb: 3 }}>
-        El modelo actual solo guarda nombre y dirección. No hay activación/desactivación en servidor.
-      </Alert>
+      {alertText ? (
+        <Alert severity={alertSeverity} sx={{ mb: 3 }}>
+          {alertText}
+        </Alert>
+      ) : null}
 
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>

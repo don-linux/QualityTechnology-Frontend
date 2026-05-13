@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -50,7 +50,7 @@ function EngordaContent() {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
     "pileta_id", "cantidad", "talla_gr", "observacion",
@@ -65,6 +65,11 @@ function EngordaContent() {
   const [seleccionado, setSeleccionado] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
+  const filtroUbicacion = useMemo(
+    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
+    [granjaActiva, resolveFiltroUbicacion],
+  );
+
   const formatNumber = (num) => {
     if (num === null || num === undefined || num === "") return "—";
     const n = Number(num);
@@ -75,11 +80,11 @@ function EngordaContent() {
        OBTENER DATOS
   ========================================================= */
   const obtenerPiletas = useCallback(async () => {
-    if (!granjaActiva) return;
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
       const [resEngorda, resTodas] = await Promise.all([
-        listPiletas(granjaActiva, "engorda"),
-        listPiletas(granjaActiva),
+        listPiletas(filtroUbicacion, "engorda"),
+        listPiletas(filtroUbicacion),
       ]);
       setPiletasEngorda(Array.isArray(resEngorda.data) ? resEngorda.data : []);
       setPiletasOrigen(Array.isArray(resTodas.data) ? resTodas.data : []);
@@ -88,18 +93,17 @@ function EngordaContent() {
       setPiletasEngorda([]);
       setPiletasOrigen([]);
     }
-  }, [granjaActiva]);
+  }, [filtroUbicacion]);
 
   const obtenerEngordas = useCallback(async () => {
-    if (!granjaActiva) return;
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const granja = encodeURIComponent(granjaActiva);
-      const { data } = await listEngordas(granja);
+      const { data } = await listEngordas(filtroUbicacion);
       setEngordas(data || []);
     } catch (err) {
       console.error("Error al obtener engordas:", err);
     }
-  }, [granjaActiva]);
+  }, [filtroUbicacion]);
 
   const obtenerMovimientos = useCallback(async () => {
     try {
@@ -263,7 +267,7 @@ function EngordaContent() {
 
       {/*  Resumen */}
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
-        <Typography><b>Granja activa:</b> {granjaActiva}</Typography>
+        <Typography><b>Ubicación (sede):</b> {granjaActiva}</Typography>
         <Typography><b>Registros en tina:</b> {engordas.length}</Typography>
         <Typography><b>Total organismos en engorda:</b> {totalCantidad.toLocaleString("es-MX")}</Typography>
       </Paper>

@@ -1,5 +1,6 @@
 import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
+import { filtrosUbicacionAParams } from "./piletasService";
 
 /**
  * CRUD del modelo `alevinaje` (etapa cría en piletas tipo "alevinaje").
@@ -7,9 +8,9 @@ import { ENDPOINTS } from "@shared/lib/endpoints";
  * que aparezca como "última observación" al consultar la pileta.
  */
 
-export function listAlevinaje(granja, piletaId) {
+export function listAlevinaje(filtroUbicacion, piletaId) {
   const params = {};
-  if (granja) params.granja = granja;
+  filtrosUbicacionAParams(params, filtroUbicacion);
   if (piletaId) params.pileta_id = piletaId;
   return axios.get(ENDPOINTS.alevinaje.base, { params });
 }

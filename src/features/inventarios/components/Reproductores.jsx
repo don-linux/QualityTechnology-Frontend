@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   listByGranja as listReproductoresByGranja,
   getMovimientos as getReproductoresMovimientos,
@@ -93,9 +93,14 @@ function ReproductoresContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
 
   const [granjaActiva, setGranjaActiva] = useState("");
+  const filtroUbicacion = useMemo(
+    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
+    [granjaActiva, resolveFiltroUbicacion],
+  );
+
   const [reproductores, setReproductores] = useState([]);
   const [piletasReproductores, setPiletasReproductores] = useState([]);
   const [piletasOrigen, setPiletasOrigen] = useState([]);
@@ -156,9 +161,8 @@ const colorDias = (dias) => {
   /* ===================== CARGA DE DATOS ===================== */
 
   const obtenerReproductores = useCallback(async () => {
-    if (!granjaActiva) return;
-    const granja = encodeURIComponent(granjaActiva);
-    const { data } = await listReproductoresByGranja(granja);
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
+    const { data } = await listReproductoresByGranja(filtroUbicacion);
     setReproductores(data || []);
     setTotalOrganismos(
       data?.reduce(
@@ -166,14 +170,14 @@ const colorDias = (dias) => {
         0
       ) || 0
     );
-  }, [granjaActiva]);
+  }, [filtroUbicacion]);
 
   const obtenerPiletas = useCallback(async () => {
-    if (!granjaActiva) return;
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
       const [resRepro, resTodas] = await Promise.all([
-        listPiletas(granjaActiva, "reproductores"),
-        listPiletas(granjaActiva),
+        listPiletas(filtroUbicacion, "reproductores"),
+        listPiletas(filtroUbicacion),
       ]);
       const repro = Array.isArray(resRepro.data) ? resRepro.data : [];
       const todas = Array.isArray(resTodas.data) ? resTodas.data : [];
@@ -186,7 +190,7 @@ const colorDias = (dias) => {
       setPiletasOrigen([]);
       setTotalPiletas(0);
     }
-  }, [granjaActiva]);
+  }, [filtroUbicacion]);
 
   const obtenerTrazabilidad = useCallback(async () => {
     if (!granjaActiva) return;
@@ -387,7 +391,7 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
             borderLeft: "6px solid #2196F3",
           }}
         >
-        <Typography><strong>Granja activa:</strong> {granjaActiva}</Typography>
+        <Typography><strong>Ubicación (sede):</strong> {granjaActiva}</Typography>
         <Typography><strong>Total piletas reproductoras:</strong> {totalPiletas}</Typography>
         <Typography><strong>Total organismos:</strong> {totalOrganismos}</Typography>
       </Paper>
