@@ -39,6 +39,46 @@ export function getNombreUnidad(unidad) {
   return unidad?.fc_nombre || unidad?.label || unidad?.value || "";
 }
 
+/**
+ * Cruzar texto de granja/unidad ({@link fc_nombre}) con filas de `listUbicacionesActivas()`
+ * cuando el nombre literal no coincide. Mejora `?granja=` y `ubicacion_id` en inventarios.
+ * @param {string} label — ej. `fc_nombre` de la unidad de negocio
+ * @param {Array<{ ubicacion_id?: number, nombre: string }>} ubicacionesRows
+ * @returns {number|null}
+ */
+export function matchUbicacionIdForGranjaLabel(label, ubicacionesRows) {
+  if (!label || !Array.isArray(ubicacionesRows) || ubicacionesRows.length === 0) return null;
+
+  let bestId = null;
+  let bestScore = 0;
+  const nt = normalizarTexto(label);
+  const STOP = new Set(
+    ["granja", "acuícola", "la", "el", "de", "y", "del", "los", "las"].map((s) => normalizarTexto(s)),
+  );
+
+  for (const u of ubicacionesRows) {
+    const name = u?.nombre;
+    if (!name || u.ubicacion_id == null) continue;
+    if (normalizarTexto(name) === nt) return u.ubicacion_id;
+  }
+
+  for (const u of ubicacionesRows) {
+    const name = u?.nombre;
+    if (!name || u.ubicacion_id == null) continue;
+    const un = normalizarTexto(name);
+    const shorter = un.length <= nt.length ? un : nt;
+    const longer = un.length <= nt.length ? nt : un;
+    if (shorter.length < 4 || !longer.includes(shorter)) continue;
+    if (STOP.has(shorter)) continue;
+    if (shorter.length > bestScore) {
+      bestScore = shorter.length;
+      bestId = u.ubicacion_id;
+    }
+  }
+
+  return bestId;
+}
+
 export function getUnidadGranjaSlug(value) {
   const nombre = normalizarTexto(value);
   if (nombre.includes("ceiba")) return "ceiba";

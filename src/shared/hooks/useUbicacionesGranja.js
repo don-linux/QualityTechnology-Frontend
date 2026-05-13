@@ -5,7 +5,7 @@ import {
   getUnidadGranjaColor,
   getUnidadGranjaLogo,
   getUnidadGranjaSlug,
-  normalizarTexto,
+  matchUbicacionIdForGranjaLabel,
 } from "@shared/utils/unidadesNegocio";
 
 /**
@@ -21,7 +21,7 @@ export default function useUbicacionesGranja() {
   const { ubicacionesGranja: unidadesGranjaOps, loading, error, resolveUnidadByRol } =
     useUnidadesNegocioOptions();
 
-  const [nombreToUbicacionId, setNombreToUbicacionId] = useState({});
+  const [ubicacionesActivasRows, setUbicacionesActivasRows] = useState([]);
   const [ubicLoading, setUbicLoading] = useState(false);
   const [ubicError, setUbicError] = useState(null);
 
@@ -32,17 +32,13 @@ export default function useUbicacionesGranja() {
         setUbicLoading(true);
         const res = await listUbicacionesActivas();
         const rows = Array.isArray(res.data) ? res.data : [];
-        const m = {};
-        for (const u of rows) {
-          if (u?.nombre) m[normalizarTexto(u.nombre)] = u.ubicacion_id;
-        }
         if (!cancel) {
-          setNombreToUbicacionId(m);
+          setUbicacionesActivasRows(rows);
           setUbicError(null);
         }
       } catch (e) {
         if (!cancel) {
-          setNombreToUbicacionId({});
+          setUbicacionesActivasRows([]);
           setUbicError(e);
         }
       } finally {
@@ -58,9 +54,9 @@ export default function useUbicacionesGranja() {
     () =>
       unidadesGranjaOps.map((op) => ({
         ...op,
-        ubicacion_id: nombreToUbicacionId[normalizarTexto(op.value)] ?? null,
+        ubicacion_id: matchUbicacionIdForGranjaLabel(op.value, ubicacionesActivasRows),
       })),
-    [nombreToUbicacionId, unidadesGranjaOps],
+    [ubicacionesActivasRows, unidadesGranjaOps],
   );
 
   const defaultUbicacion = ubicacionesGranja[0]?.value || "";
