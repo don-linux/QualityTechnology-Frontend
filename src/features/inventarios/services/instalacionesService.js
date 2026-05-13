@@ -1,12 +1,37 @@
 import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
+import { filtrosUbicacionAParams } from "./piletasService";
 
-export function listByGranja(granja) {
-  return axios.get(ENDPOINTS.instalaciones.byGranja(granja));
+/**
+ * @param {string|{ granja?, ubicacion_id? }} filtroUbicacion — igual que piletas/inventarios
+ */
+export function listByGranja(filtroUbicacion) {
+  const granjaNombre =
+    typeof filtroUbicacion === "string"
+      ? filtroUbicacion
+      : String(filtroUbicacion?.granja ?? filtroUbicacion?.fc_granja ?? "");
+
+  const params = {};
+  if (typeof filtroUbicacion === "object" && filtroUbicacion) {
+    filtrosUbicacionAParams(params, filtroUbicacion);
+  }
+
+  const q = Object.keys(params).length ? { params } : undefined;
+  return axios.get(ENDPOINTS.instalaciones.byGranja(granjaNombre), q);
 }
 
-export function listByTipo(tipo, granja) {
-  return axios.get(ENDPOINTS.instalaciones.byTipo(tipo, granja));
+export function listByTipo(tipo, filtroUbicacion) {
+  const granjaNombre =
+    typeof filtroUbicacion === "string"
+      ? filtroUbicacion
+      : String(filtroUbicacion?.granja ?? filtroUbicacion?.fc_granja ?? "");
+
+  const params = {};
+  if (typeof filtroUbicacion === "object" && filtroUbicacion) {
+    filtrosUbicacionAParams(params, filtroUbicacion);
+  }
+  const q = Object.keys(params).length ? { params } : undefined;
+  return axios.get(ENDPOINTS.instalaciones.byTipo(tipo, granjaNombre), q);
 }
 
 export function createInstalacion(data) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   listByGranja,
   createInstalacion,
@@ -19,6 +19,11 @@ import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import FormHelperText from "@mui/material/FormHelperText";
+import Select from "@mui/material/Select";
+import { listUbicacionesActivas } from "@features/catalogos/services/ubicacionesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useAuth from "@app/providers/AuthProvider";
@@ -32,11 +37,20 @@ function InstalacionesContent() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId;
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } =
+    useUbicacionesGranja();
+
+  const [ubicacionesCatalogo, setUbicacionesCatalogo] = useState([]);
 
   const requiredFields = [
-    "nombre_instalacion", "largo", "ancho", "altura",
-    "material", "estado", "tipo_instalacion",
+    "nombre_instalacion",
+    "largo",
+    "ancho",
+    "altura",
+    "material",
+    "estado",
+    "tipo_instalacion",
+    "ubicacion_id",
   ];
 
   const [form, setForm] = useState({
@@ -45,8 +59,9 @@ function InstalacionesContent() {
     ancho: "",
     altura: "",
     material: "",
-    tipo_instalacion: "",
+    tipo_instalacion: "Alevinaje",
     estado: "vacia",
+    ubicacion_id: "",
   });
 
   const { confirm, ConfirmModal } = useConfirm();
@@ -62,13 +77,33 @@ function InstalacionesContent() {
   const [filtroMaterial, setFiltroMaterial] = useState("");
   const [filtroUso, setFiltroUso] = useState("");
 
+  const filtroUbicacion = useMemo(
+    () => (granja ? resolveFiltroUbicacion(granja) : null),
+    [granja, resolveFiltroUbicacion],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await listUbicacionesActivas();
+        if (!cancelled && Array.isArray(data)) setUbicacionesCatalogo(data);
+      } catch (_) {
+        if (!cancelled) setUbicacionesCatalogo([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   /* =========================================================
       Obtener instalaciones por tipo y granja
   ========================================================= */
   const obtenerInstalaciones = useCallback(async () => {
-    if (!granja) return;
+    if (!granja || !filtroUbicacion?.granja) return;
     try {
-      const { data } = await listByGranja(granja);
+      const { data } = await listByGranja(filtroUbicacion);
 
       if (!Array.isArray(data)) {
         setInstalaciones([]);
@@ -91,15 +126,16 @@ function InstalacionesContent() {
       );
 
       setInstalaciones(filtradas);
-      setMensaje(
-        ` ${filtradas.length} instalaciones cargadas (${tipo} - ${granja})`
-      );
+      setMensaje({
+        texto: ` ${filtradas.length} instalaciones cargadas (${tipo} - ${granja})`,
+        error: false,
+      });
     } catch (error) {
       console.error(error);
       setInstalaciones([]);
-      setMensaje("Error al obtener instalaciones");
+      setMensaje({ texto: "Error al obtener instalaciones", error: true });
     }
-  }, [tipo, granja]);
+  }, [tipo, granja, filtroUbicacion]);
 
   useEffect(() => {
     if (!granja && defaultUbicacion) {
@@ -124,6 +160,11 @@ function InstalacionesContent() {
     clearFieldError(e.target.name);
   };
 
+  const defaultUbicacionFormId = useMemo(() => {
+    const id = filtroUbicacion?.ubicacion_id;
+    return id != null ? String(id) : "";
+  }, [filtroUbicacion]);
+
   const limpiarFormulario = () => {
     setForm({
       nombre_instalacion: "",
@@ -133,17 +174,22 @@ function InstalacionesContent() {
       material: "",
       tipo_instalacion: tipo,
       estado: "vacia",
+      ubicacion_id: defaultUbicacionFormId,
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
     clearErrors();
   };
 
+  const ubicacionParaPayload = Number(form.ubicacion_id);
+
   const registrarInstalacion = async () => {
     if (!validate(form, requiredFields)) return;
+    if (!Number.isInteger(ubicacionParaPayload) || ubicacionParaPayload <= 0) return;
     try {
       await createInstalacion({
         ...form,
+        ubicacion_id: ubicacionParaPayload,
         fi_usuario_id: usuario_id,
         fc_granja: granja,
       });
@@ -159,9 +205,11 @@ function InstalacionesContent() {
 
   const actualizarInstalacion = async () => {
     if (!validate(form, requiredFields)) return;
+    if (!Number.isInteger(ubicacionParaPayload) || ubicacionParaPayload <= 0) return;
     try {
       await updateInstalacion(seleccionado, {
         ...form,
+        ubicacion_id: ubicacionParaPayload,
         fi_usuario_id: usuario_id,
         fc_granja: granja,
       });
@@ -203,6 +251,10 @@ function InstalacionesContent() {
       material: i.material,
       tipo_instalacion: i.tipo_instalacion,
       estado: i.estado,
+      ubicacion_id:
+        i.ubicacion_id != null
+          ? String(i.ubicacion_id)
+          : defaultUbicacionFormId || "",
     });
     setMostrarFormulario(true);
   };
@@ -211,11 +263,11 @@ function InstalacionesContent() {
       Filtros funcionales
   ========================================================= */
   const instalacionesFiltradas = instalaciones
-    // FILTRO MATERIAL (buscador parcial)
     .filter((i) =>
-      i.material.toLowerCase().includes(filtroMaterial.toLowerCase())
+      String(i.material ?? "")
+        .toLowerCase()
+        .includes(filtroMaterial.toLowerCase()),
     )
-    // FILTRO USO
     .filter((i) => !filtroUso || i.estado === filtroUso);
 
   const totalM3 = instalacionesFiltradas.reduce(
@@ -274,7 +326,21 @@ function InstalacionesContent() {
         <Button 
           variant="contained" 
           color="success"
-          onClick={() => setMostrarFormulario(true)}
+          onClick={() => {
+            clearErrors();
+            setSeleccionado(null);
+            setForm({
+              nombre_instalacion: "",
+              largo: "",
+              ancho: "",
+              altura: "",
+              material: "",
+              tipo_instalacion: tipo,
+              estado: "vacia",
+              ubicacion_id: defaultUbicacionFormId || "",
+            });
+            setMostrarFormulario(true);
+          }}
         >
           + Nueva Instalación ({tipo})
         </Button>
@@ -286,6 +352,32 @@ function InstalacionesContent() {
           <CardContent>
             <Grid container spacing={2}>
               
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormControl fullWidth error={!!errors.ubicacion_id}>
+                  <InputLabel id="instal-ubic-label">Ubicación (granja / sede)</InputLabel>
+                  <Select
+                    labelId="instal-ubic-label"
+                    label="Ubicación (granja / sede)"
+                    name="ubicacion_id"
+                    value={form.ubicacion_id || ""}
+                    onChange={handleChange}
+                  >
+                    <MenuItem value="">
+                      <em>Seleccione…</em>
+                    </MenuItem>
+                    {ubicacionesCatalogo.map((u) => (
+                      <MenuItem key={u.ubicacion_id} value={String(u.ubicacion_id)}>
+                        {u.nombre}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>
+                    {errors.ubicacion_id ||
+                      "Catálogo de ubicaciones físicas vincula la instalación a piletas/inventarios vía ubicacion_id."}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+
               <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
                   label="Nombre"
@@ -480,6 +572,7 @@ function InstalacionesContent() {
           <TableHead>
             <TableRow>
               <TableCell>Nombre</TableCell>
+              <TableCell>Ubicación</TableCell>
               <TableCell>Largo</TableCell>
               <TableCell>Ancho</TableCell>
               <TableCell>Altura</TableCell>
@@ -494,6 +587,7 @@ function InstalacionesContent() {
             {instalacionesFiltradas.map((inst) => (
               <TableRow key={inst.fi_instalacion_id} hover>
                 <TableCell>{inst.nombre_instalacion}</TableCell>
+                <TableCell>{inst.ubicacion_nombre || inst.fc_granja || "—"}</TableCell>
                 <TableCell>{inst.largo}</TableCell>
                 <TableCell>{inst.ancho}</TableCell>
                 <TableCell>{inst.altura}</TableCell>
