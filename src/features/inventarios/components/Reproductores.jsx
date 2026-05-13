@@ -673,6 +673,7 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                 <TableCell>Ratio</TableCell>
                 <TableCell>Línea</TableCell>
                 <TableCell>Familia</TableCell>
+                <TableCell>Últ. nota (pileta)</TableCell>
                 <TableCell>Observación</TableCell>
                 <TableCell>Fecha siembra</TableCell>
                 <TableCell>Días en pila</TableCell>
@@ -710,6 +711,29 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                     <TableCell sx={{ maxWidth: 160 }}>
                       <span title={r.fc_familia || ""}>
                         {r.fc_familia ? truncar(r.fc_familia) : "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 200 }}>
+                      <span
+                        title={
+                          r.fc_ultima_observacion_pileta ||
+                          (r.fc_ultima_observacion_proceso
+                            ? `(${r.fc_ultima_observacion_proceso})`
+                            : "")
+                        }
+                      >
+                        {r.fc_ultima_observacion_pileta ? (
+                          <>
+                            {truncar(r.fc_ultima_observacion_pileta)}
+                            {r.fc_ultima_observacion_proceso ? (
+                              <Typography variant="caption" display="block" color="text.secondary">
+                                {r.fc_ultima_observacion_proceso}
+                              </Typography>
+                            ) : null}
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </span>
                     </TableCell>
                     <TableCell sx={{ maxWidth: 160 }}>

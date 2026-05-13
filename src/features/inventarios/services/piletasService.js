@@ -2,6 +2,15 @@ import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
 
 /* ============================================================================
+   CRUD físico piletas (+ última observación si el backend la incluye)
+============================================================================ */
+
+export function listPiletas(granja) {
+  const params = granja ? { params: { granja } } : {};
+  return axios.get(ENDPOINTS.piletas.base, params);
+}
+
+/* ============================================================================
    Inventario / Lotes / Orígenes / Destinos
 ============================================================================ */
 

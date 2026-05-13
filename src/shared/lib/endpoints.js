@@ -42,6 +42,7 @@ export const ENDPOINTS = {
   },
 
   piletas: {
+    base: "/piletas",
     lotes: (granja) => `/piletas/lotes/${path(granja)}`,
     lotePorInstalacion: (inst, granja) => `/piletas/lote-por-inst/${inst}/${path(granja)}`,
     inventario: (granja) => `/piletas/inventario/${path(granja)}`,
