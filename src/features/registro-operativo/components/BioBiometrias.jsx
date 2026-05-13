@@ -7,6 +7,8 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
@@ -22,9 +24,6 @@ import Alert from "@mui/material/Alert";
 import {
   listBiometrias,
   listEmpleadosBiometrias,
-  getInstalaciones,
-  getLotesByInstalacion,
-  getInfoInstalacion,
   createBiometria,
   updateBiometria,
   removeBiometria,
@@ -42,6 +41,12 @@ const truncar = (texto) =>
 
 const MAX_FC_OBSERVACIONES = 500;
 
+const tipoLabel = (t) => {
+  if (!t) return "—";
+  const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda" };
+  return map[String(t).toLowerCase()] || t;
+};
+
 export default function BioBiometrias() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId || "";
@@ -51,8 +56,6 @@ export default function BioBiometrias() {
   const [data, setData] = useState([]);
   const [empleados, setEmpleados] = useState([]);
   const [piletas, setPiletas] = useState([]);
-  const [instalaciones, setInstalaciones] = useState([]);
-  const [lotes, setLotes] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -61,14 +64,12 @@ export default function BioBiometrias() {
     "ubicacion",
     "pileta_id",
     "fd_fecha",
-    "tipo",
     "fn_peso_total_gramos",
     "fn_organismos_muestreados",
     "fc_encargado",
     "fc_observaciones",
   ];
 
-  /* FORMULARIO */
   const [form, setForm] = useState({
     ubicacion: "",
     pileta_id: "",
@@ -78,9 +79,6 @@ export default function BioBiometrias() {
     fn_peso_promedio: "",
     fc_observaciones: "",
     fc_encargado: "",
-    fi_instalacion_id: "",
-    fi_lote_id: "",
-    tipo: "",
     fi_usuario_id: usuario_id,
   });
 
@@ -90,32 +88,19 @@ export default function BioBiometrias() {
   const cargarDatos = async () => {
     try {
       const res = await listBiometrias();
-      setData(res.data);
+      setData(Array.isArray(res.data) ? res.data : []);
     } catch {
       showSnackbar("Error al cargar biometrías", "error");
     }
   };
 
-  const cargarInstalaciones = async () => {
-    if (!form.ubicacion) {
-      setInstalaciones([]);
-      return;
-    }
-    try {
-      const res = await getInstalaciones(form.ubicacion);
-      setInstalaciones(res.data);
-    } catch {
-      showSnackbar("Error al cargar instalaciones", "error");
-    }
-  };
-
-  const cargarPiletas = async () => {
-    if (!form.ubicacion) {
+  const cargarPiletas = async (granja) => {
+    if (!granja) {
       setPiletas([]);
       return;
     }
     try {
-      const res = await listPiletas(form.ubicacion);
+      const res = await listPiletas(granja);
       setPiletas(Array.isArray(res.data) ? res.data : []);
     } catch {
       setPiletas([]);
@@ -123,20 +108,10 @@ export default function BioBiometrias() {
     }
   };
 
-  const cargarLotes = async (instalacionId) => {
-    try {
-      const res = await getLotesByInstalacion(instalacionId);
-      setLotes(res.data);
-    } catch {
-      setLotes([]);
-      showSnackbar("Error al cargar lotes", "error");
-    }
-  };
-
   const cargarEmpleados = async () => {
     try {
       const res = await listEmpleadosBiometrias();
-      setEmpleados(res.data);
+      setEmpleados(Array.isArray(res.data) ? res.data : []);
     } catch {
       showSnackbar("Error al cargar empleados", "error");
     }
@@ -154,45 +129,8 @@ export default function BioBiometrias() {
   }, [defaultUbicacion, form.ubicacion]);
 
   useEffect(() => {
-    cargarInstalaciones();
-    cargarPiletas();
+    cargarPiletas(form.ubicacion);
   }, [form.ubicacion]);
-
-  /* -----------------------------
-      AUTORRELLENADO
-  ------------------------------*/
-  const cargarInfoInstalacion = async (instalacionId) => {
-    try {
-      const res = await getInfoInstalacion(form.ubicacion, instalacionId);
-
-      const d = res.data;
-
-      if (!d.tipo) {
-        // No hay registros previos
-        setForm((prev) => ({
-          ...prev,
-          tipo: "",
-          fi_lote_id: "",
-          fn_organismos_muestreados: "",
-          fn_peso_total_gramos: "",
-          fn_peso_promedio: "",
-        }));
-        return;
-      }
-
-      // Sí hay datos → autorrellenar
-        setForm((prev) => ({
-          ...prev,
-          tipo: d.tipo ? d.tipo.toUpperCase() : "",
-          fi_lote_id: d.fi_lote_id ?? "",
-          fn_organismos_muestreados: d.organismos ?? "",
-          fn_peso_total_gramos: "",
-          fn_peso_promedio: "",
-        }));
-    } catch (err) {
-      console.log(" Error cargando info de instalación:", err);
-    }
-  };
 
   /* -----------------------------
       HANDLE CHANGE
@@ -201,49 +139,17 @@ export default function BioBiometrias() {
     const { name, value } = e.target;
     clearFieldError(name);
 
-    // Cálculo de peso promedio
-    if (
-      name === "fn_peso_total_gramos" ||
-      name === "fn_organismos_muestreados"
-    ) {
-      const p =
-        name === "fn_peso_total_gramos"
-          ? value
-          : form.fn_peso_total_gramos;
+    if (name === "fn_peso_total_gramos" || name === "fn_organismos_muestreados") {
+      const p = name === "fn_peso_total_gramos" ? value : form.fn_peso_total_gramos;
+      const o = name === "fn_organismos_muestreados" ? value : form.fn_organismos_muestreados;
+      const prom = p > 0 && o > 0 ? (parseFloat(p) / parseFloat(o)).toFixed(2) : "";
 
-      const o =
-        name === "fn_organismos_muestreados"
-          ? value
-          : form.fn_organismos_muestreados;
-
-      const prom =
-        p > 0 && o > 0 ? (parseFloat(p) / parseFloat(o)).toFixed(2) : "";
-
-      setForm({
-        ...form,
-        [name]: value,
-        fn_peso_promedio: prom,
-      });
+      setForm({ ...form, [name]: value, fn_peso_promedio: prom });
       return;
     }
 
     if (name === "ubicacion") {
-      setForm({
-        ...form,
-        ubicacion: value,
-        pileta_id: "",
-        fi_instalacion_id: "",
-        fi_lote_id: "",
-        tipo: "",
-      });
-      setLotes([]);
-      return;
-    }
-
-    if (name === "fi_instalacion_id") {
-      setForm({ ...form, fi_instalacion_id: value });
-      cargarLotes(value);
-      cargarInfoInstalacion(value);
+      setForm({ ...form, ubicacion: value, pileta_id: "" });
       return;
     }
 
@@ -257,10 +163,12 @@ export default function BioBiometrias() {
     if (!validate(form, requiredFields)) return;
     try {
       const body = {
-        ...form,
-        fc_granja: form.ubicacion,
-        tipo: form.tipo?.toUpperCase(),
-        pileta_id: form.pileta_id ? Number(form.pileta_id) : "",
+        fd_fecha: form.fd_fecha,
+        fn_peso_total_gramos: form.fn_peso_total_gramos,
+        fn_organismos_muestreados: form.fn_organismos_muestreados,
+        fc_encargado: form.fc_encargado,
+        fc_observaciones: form.fc_observaciones,
+        pileta_id: Number(form.pileta_id),
       };
 
       if (editId) {
@@ -289,19 +197,14 @@ export default function BioBiometrias() {
     setForm({
       ubicacion: row.ubicacion || "",
       pileta_id: row.pileta_id != null ? String(row.pileta_id) : "",
-      fd_fecha: row.fd_fecha?.split("T")[0],
-      fn_peso_total_gramos: row.fn_peso_total_gramos,
-      fn_organismos_muestreados: row.fn_organismos_muestreados,
-      fn_peso_promedio: row.fn_peso_promedio,
+      fd_fecha: row.fd_fecha?.split("T")[0] || "",
+      fn_peso_total_gramos: row.fn_peso_total_gramos ?? "",
+      fn_organismos_muestreados: row.fn_organismos_muestreados ?? "",
+      fn_peso_promedio: row.fn_peso_promedio ?? "",
       fc_observaciones: row.fc_observaciones ?? "",
-      fc_encargado: row.fc_encargado,
-      fi_instalacion_id: row.fi_instalacion_id ?? "",
-      fi_lote_id: row.fi_lote_id ?? "",
-      tipo: row.tipo || "",
+      fc_encargado: row.fc_encargado ?? "",
       fi_usuario_id: usuario_id,
     });
-
-    cargarLotes(row.fi_instalacion_id);
   };
 
   /* -----------------------------
@@ -333,19 +236,17 @@ export default function BioBiometrias() {
       fn_peso_promedio: "",
       fc_observaciones: "",
       fc_encargado: "",
-      fi_instalacion_id: "",
-      fi_lote_id: "",
-      tipo: "",
       fi_usuario_id: usuario_id,
     }));
   };
 
-  /* ----------------------------- */
-  const formatNum = (n) =>
-    Number(n).toLocaleString("en-US", {
+  const formatNum = (n) => {
+    if (n === null || n === undefined || n === "") return "—";
+    return Number(n).toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
+  };
 
   const piletaSeleccionada =
     form.pileta_id !== ""
@@ -386,7 +287,7 @@ export default function BioBiometrias() {
               </TextField>
             </Grid>
 
-            {/* PILETA (fuente principal para observaciones por pileta) */}
+            {/* PILETA */}
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
@@ -395,54 +296,32 @@ export default function BioBiometrias() {
                 value={form.pileta_id}
                 onChange={handleChange}
                 fullWidth
+                disabled={!form.ubicacion}
                 error={!!errors.pileta_id}
                 helperText={
                   errors.pileta_id ||
                   (form.ubicacion
-                    ? "Obligatorio. El listado incluye la última observación registrada para cada pileta."
+                    ? "Define la etapa (alevinaje / reproductores / engorda) y vincula la observación a esa pileta."
                     : "Seleccione primero la ubicación")
                 }
-                disabled={!form.ubicacion}
+                slotProps={{
+                  select: {
+                    renderValue: (val) => {
+                      const p = piletas.find((x) => String(x.fi_pileta_id) === String(val));
+                      if (!p) return "";
+                      return `${p.nombre} · ${tipoLabel(p.tipo)} · ${p.estado}`;
+                    },
+                  },
+                }}
               >
                 <MenuItem value="">Seleccione</MenuItem>
                 {piletas.map((p) => (
                   <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
-                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", py: 0.5 }}>
-                      <span>
-                        {p.nombre} · {p.tipo} · {p.estado}
-                      </span>
-                      {(p.ultima_observacion || p.fc_ultima_observacion_proceso) && (
-                        <Typography variant="caption" color="text.secondary" sx={{ maxWidth: 360 }}>
-                          Últ.
-                          {p.fc_ultima_observacion_proceso ? ` (${p.fc_ultima_observacion_proceso})` : ""}:{" "}
-                          {truncar(p.ultima_observacion || "")}
-                        </Typography>
-                      )}
-                    </Box>
+                    {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
                   </MenuItem>
                 ))}
               </TextField>
             </Grid>
-
-            {piletaSeleccionada?.ultima_observacion && (
-              <Grid size={12}>
-                <Alert severity="info">
-                  <Typography variant="subtitle2">Última observación en la pileta seleccionada</Typography>
-                  <Typography variant="body2">{piletaSeleccionada.ultima_observacion}</Typography>
-                  {(piletaSeleccionada.fc_ultima_observacion_proceso ||
-                    piletaSeleccionada.fd_ultima_observacion) && (
-                    <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                      {[
-                        piletaSeleccionada.fc_ultima_observacion_proceso,
-                        piletaSeleccionada.fd_ultima_observacion?.split?.("T")?.[0],
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </Typography>
-                  )}
-                </Alert>
-              </Grid>
-            )}
 
             {/* FECHA */}
             <Grid size={{ xs: 12, md: 4 }}>
@@ -459,75 +338,68 @@ export default function BioBiometrias() {
               />
             </Grid>
 
-            {/* INSTALACIÓN */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                select
-                label="Instalación (opcional)"
-                name="fi_instalacion_id"
-                value={form.fi_instalacion_id}
-                onChange={handleChange}
-                fullWidth
-                error={!!errors.fi_instalacion_id}
-                helperText={errors.fi_instalacion_id}
-              >
-                <MenuItem value="">Seleccione</MenuItem>
-                {instalaciones.map((i) => (
-                  <MenuItem key={i.fi_instalacion_id} value={i.fi_instalacion_id}>
-                    {i.nombre_instalacion}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
+            {/* RESUMEN PILETA + ÚLTIMA OBSERVACIÓN */}
+            {piletaSeleccionada && (
+              <Grid size={12}>
+                <Alert
+                  severity={piletaSeleccionada.ultima_observacion ? "info" : "success"}
+                  sx={{ "& .MuiAlert-message": { width: "100%" } }}
+                >
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1}
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    sx={{ mb: piletaSeleccionada.ultima_observacion ? 1 : 0 }}
+                  >
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                      {piletaSeleccionada.nombre}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                      label={`Etapa: ${tipoLabel(piletaSeleccionada.tipo)}`}
+                    />
+                    <Chip
+                      size="small"
+                      color={piletaSeleccionada.estado === "ocupada" ? "warning" : "default"}
+                      variant="outlined"
+                      label={`Estado: ${piletaSeleccionada.estado}`}
+                    />
+                    {piletaSeleccionada.fc_granja && (
+                      <Chip size="small" variant="outlined" label={piletaSeleccionada.fc_granja} />
+                    )}
+                  </Stack>
 
-            {/* LOTE */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                select
-                label="Lote (opcional)"
-                name="fi_lote_id"
-                value={form.fi_lote_id}
-                onChange={handleChange}
-                fullWidth
-                error={!!errors.fi_lote_id}
-                helperText={errors.fi_lote_id}
-              >
-                <MenuItem value="">Seleccione</MenuItem>
-                {lotes.map((l) => (
-                  <MenuItem key={l.fi_lote_id} value={l.fi_lote_id}>
-                    {l.no_lote}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-
-            {/* TIPO */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                select
-                label="Tipo"
-                name="tipo"
-                value={form.tipo}
-                onChange={handleChange}
-                fullWidth
-                error={!!errors.tipo}
-                helperText={errors.tipo}
-                slotProps={{
-                  input: {
-                    readOnly:
-                      form.fi_lote_id !== "" &&
-                      (form.tipo === "ALEVINAJE" ||
-                        form.tipo === "ENGORDA" ||
-                        form.tipo === "REPRODUCTORES"),
-                  },
-                }}
-              >
-                <MenuItem value="">Seleccionar</MenuItem>
-                <MenuItem value="ALEVINAJE">Alevinaje</MenuItem>
-                <MenuItem value="ENGORDA">Engorda</MenuItem>
-                <MenuItem value="REPRODUCTORES">Reproductores</MenuItem>
-              </TextField>
-            </Grid>
+                  {piletaSeleccionada.ultima_observacion ? (
+                    <>
+                      <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                        {piletaSeleccionada.ultima_observacion}
+                      </Typography>
+                      {(piletaSeleccionada.fc_ultima_observacion_proceso ||
+                        piletaSeleccionada.fd_ultima_observacion) && (
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                          {[
+                            piletaSeleccionada.fc_ultima_observacion_proceso
+                              ? `proceso: ${piletaSeleccionada.fc_ultima_observacion_proceso}`
+                              : null,
+                            piletaSeleccionada.fd_ultima_observacion
+                              ? `fecha: ${String(piletaSeleccionada.fd_ultima_observacion).split("T")[0]}`
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </Typography>
+                      )}
+                    </>
+                  ) : (
+                    <Typography variant="caption" color="text.secondary">
+                      Sin observaciones previas para esta pileta.
+                    </Typography>
+                  )}
+                </Alert>
+              </Grid>
+            )}
 
             {/* PESO TOTAL */}
             <Grid size={{ xs: 12, md: 4 }}>
@@ -566,6 +438,7 @@ export default function BioBiometrias() {
                 value={form.fn_peso_promedio}
                 slotProps={{ input: { readOnly: true } }}
                 fullWidth
+                helperText="Calculado automáticamente"
               />
             </Grid>
 
@@ -587,9 +460,10 @@ export default function BioBiometrias() {
                     {empleado.fc_nombre_completo}
                   </MenuItem>
                 ))}
-                {form.fc_encargado && !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado) && (
-                  <MenuItem value={form.fc_encargado}>{form.fc_encargado}</MenuItem>
-                )}
+                {form.fc_encargado &&
+                  !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado) && (
+                    <MenuItem value={form.fc_encargado}>{form.fc_encargado}</MenuItem>
+                  )}
               </TextField>
             </Grid>
 
@@ -606,7 +480,7 @@ export default function BioBiometrias() {
                 error={!!errors.fc_observaciones}
                 helperText={
                   errors.fc_observaciones ||
-                  `Se guarda como observación de la pileta (proceso "biometría"). ${form.fc_observaciones.length}/${MAX_FC_OBSERVACIONES}`
+                  `Se guarda como observación de la pileta (proceso "biometria"). ${form.fc_observaciones.length}/${MAX_FC_OBSERVACIONES}`
                 }
                 inputProps={{ maxLength: MAX_FC_OBSERVACIONES }}
               />
@@ -618,13 +492,8 @@ export default function BioBiometrias() {
               {editId ? "Actualizar" : "Guardar"}
             </Button>
 
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ ml: 2 }}
-              onClick={limpiar}
-            >
-              Limpiar
+            <Button variant="contained" color="error" sx={{ ml: 2 }} onClick={limpiar}>
+              {editId ? "Cancelar" : "Limpiar"}
             </Button>
           </Box>
         </CardContent>
@@ -634,68 +503,80 @@ export default function BioBiometrias() {
       {getGroups(data).map(({ value, label, rows }) => (
         <Accordion key={value} defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography fontWeight="bold">{label} ({rows.length})</Typography>
+            <Typography fontWeight="bold">
+              {label} ({rows.length})
+            </Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
             <Paper sx={{ width: "100%" }}>
               <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
                 <Table sx={{ minWidth: 1120 }}>
-                <TableHead sx={{ background: "#E8F5E9" }}>
-                  <TableRow>
-                    <TableCell>Fecha</TableCell>
-                    <TableCell>Pileta</TableCell>
-                    <TableCell>Proceso (obs.)</TableCell>
-                    <TableCell>Peso Total</TableCell>
-                    <TableCell>Organismos</TableCell>
-                    <TableCell>Peso Promedio</TableCell>
-                    <TableCell>Tipo</TableCell>
-                    <TableCell>Encargado</TableCell>
-                    <TableCell>Observaciones</TableCell>
-                    <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map((row) => (
-                    <TableRow key={row.fi_id}>
-                      <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
-                      <TableCell>{row.nombre_pileta || row.instalacion_nombre || "—"}</TableCell>
-                      <TableCell>{row.fc_observacion_proceso || "—"}</TableCell>
-                      <TableCell>{formatNum(row.fn_peso_total_gramos)}</TableCell>
-                      <TableCell>{row.fn_organismos_muestreados}</TableCell>
-                      <TableCell>{formatNum(row.fn_peso_promedio)}</TableCell>
-                      <TableCell>{row.tipo}</TableCell>
-                      <TableCell sx={{ maxWidth: 160 }}>
-                        <span title={row.fc_encargado}>{truncar(row.fc_encargado)}</span>
-                      </TableCell>
-                      <TableCell sx={{ maxWidth: 160 }}>
-                        <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
-                      </TableCell>
-                      <TableCell
-                        align="center"
-                        sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-                      >
-                        <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                          <Button
-                            variant="contained"
-                            size="small"
-                            color="warning"
-                            onClick={() => editar(row)}
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            variant="contained"
-                            size="small"
-                            color="error"
-                            onClick={() => eliminar(row.fi_id)}
-                          >
-                            Eliminar
-                          </Button>
-                        </Box>
+                  <TableHead sx={{ background: "#E8F5E9" }}>
+                    <TableRow>
+                      <TableCell>Fecha</TableCell>
+                      <TableCell>Pileta</TableCell>
+                      <TableCell>Proceso (obs.)</TableCell>
+                      <TableCell>Peso Total</TableCell>
+                      <TableCell>Organismos</TableCell>
+                      <TableCell>Peso Promedio</TableCell>
+                      <TableCell>Encargado</TableCell>
+                      <TableCell>Observaciones</TableCell>
+                      <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>
+                        Acciones
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
+                  </TableHead>
+                  <TableBody>
+                    {rows.map((row) => (
+                      <TableRow key={row.fi_id}>
+                        <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
+                        <TableCell>{row.nombre_pileta || "—"}</TableCell>
+                        <TableCell>{row.fc_observacion_proceso || "—"}</TableCell>
+                        <TableCell>{formatNum(row.fn_peso_total_gramos)}</TableCell>
+                        <TableCell>{row.fn_organismos_muestreados ?? "—"}</TableCell>
+                        <TableCell>{formatNum(row.fn_peso_promedio)}</TableCell>
+                        <TableCell sx={{ maxWidth: 160 }}>
+                          <span title={row.fc_encargado}>{truncar(row.fc_encargado)}</span>
+                        </TableCell>
+                        <TableCell sx={{ maxWidth: 200 }}>
+                          <span title={row.fc_observaciones || ""}>
+                            {row.fc_observaciones ? truncar(row.fc_observaciones) : "—"}
+                          </span>
+                        </TableCell>
+                        <TableCell
+                          align="center"
+                          sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                        >
+                          <Box
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 1,
+                              flexWrap: "nowrap",
+                            }}
+                          >
+                            <Button
+                              variant="contained"
+                              size="small"
+                              color="warning"
+                              onClick={() => editar(row)}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              color="error"
+                              onClick={() => eliminar(row.fi_id)}
+                            >
+                              Eliminar
+                            </Button>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
                 </Table>
               </TableContainer>
             </Paper>

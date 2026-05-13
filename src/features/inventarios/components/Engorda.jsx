@@ -16,15 +16,15 @@ import CardContent from "@mui/material/CardContent";
 import MenuItem from "@mui/material/MenuItem";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
+import Chip from "@mui/material/Chip";
 import {
-  listInstalacionesEngorda,
-  listLotes,
   listEngordas,
   listMovimientos,
   createEngorda,
   removeEngorda,
   removeMovimiento,
 } from "../services/engordaService";
+import { listPiletas } from "../services/piletasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
@@ -34,6 +34,12 @@ const MAX_OBSERVACION = 500;
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
+const tipoLabel = (t) => {
+  if (!t) return "—";
+  const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda" };
+  return map[String(t).toLowerCase()] || t;
+};
 
 export default function Engorda() {
   return <EngordaContent />;
@@ -47,16 +53,14 @@ function EngordaContent() {
   const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
-    "origen_instalacion", "fi_instalacion_id", "cantidad",
-    "talla_gr", "no_lote", "observacion", "fecha_siembra",
-    "fecha_biometria",
+    "pileta_id", "cantidad", "talla_gr", "observacion",
   ];
 
   const [granjaActiva, setGranjaActiva] = useState("");
   const [engordas, setEngordas] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
-  const [instalaciones, setInstalaciones] = useState([]);
-  const [lotes, setLotes] = useState([]); 
+  const [piletasEngorda, setPiletasEngorda] = useState([]);
+  const [piletasOrigen, setPiletasOrigen] = useState([]);
   const [form, setForm] = useState({});
   const [seleccionado, setSeleccionado] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -70,25 +74,19 @@ function EngordaContent() {
   /* =========================================================
        OBTENER DATOS
   ========================================================= */
-  const obtenerInstalaciones = useCallback(async () => {
+  const obtenerPiletas = useCallback(async () => {
     if (!granjaActiva) return;
     try {
-      const granja = encodeURIComponent(granjaActiva);
-      const { data } = await listInstalacionesEngorda(granja);
-      setInstalaciones(data || []);
+      const [resEngorda, resTodas] = await Promise.all([
+        listPiletas(granjaActiva, "engorda"),
+        listPiletas(granjaActiva),
+      ]);
+      setPiletasEngorda(Array.isArray(resEngorda.data) ? resEngorda.data : []);
+      setPiletasOrigen(Array.isArray(resTodas.data) ? resTodas.data : []);
     } catch (err) {
-      console.error(" Error al obtener instalaciones:", err);
-    }
-  }, [granjaActiva]);
-
-  const obtenerLotes = useCallback(async () => {
-    if (!granjaActiva) return;
-    try {
-      const granja = encodeURIComponent(granjaActiva);
-      const { data } = await listLotes(granja);
-      setLotes(data || []);
-    } catch (err) {
-      console.error(" Error al obtener lotes:", err);
+      console.error("Error al obtener piletas:", err);
+      setPiletasEngorda([]);
+      setPiletasOrigen([]);
     }
   }, [granjaActiva]);
 
@@ -114,14 +112,11 @@ function EngordaContent() {
 
   const limpiarFormulario = useCallback(() => {
     setForm({
-      origen_instalacion: "",
-      fi_instalacion_id: "",
+      origen_pileta_id: "",
+      pileta_id: "",
       cantidad: "",
       talla_gr: "",
-      no_lote: "",
       observacion: "",
-      fecha_siembra: "",
-      fecha_biometria: "",
       fc_granja: granjaActiva,
       fi_usuario_id: usuario_id,
     });
@@ -140,9 +135,8 @@ function EngordaContent() {
     limpiarFormulario();
     obtenerEngordas();
     obtenerMovimientos();
-    obtenerInstalaciones();
-    obtenerLotes();
-  }, [defaultUbicacion, granjaActiva, limpiarFormulario, obtenerEngordas, obtenerMovimientos, obtenerInstalaciones, obtenerLotes]);
+    obtenerPiletas();
+  }, [defaultUbicacion, granjaActiva, limpiarFormulario, obtenerEngordas, obtenerMovimientos, obtenerPiletas]);
 
   /* =========================================================
        FORMULARIO Y CAMBIOS
@@ -150,19 +144,6 @@ function EngordaContent() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     clearFieldError(e.target.name);
-  };
-
-  //  Nueva función para manejar el cambio de origen (Lote)
-  const handleOrigenLote = (loteId) => {
-    const lote = lotes.find((l) => l.fi_lote_id === loteId);
-    setForm({
-      ...form,
-      origen_instalacion: loteId,
-      no_lote: lote?.no_lote || "",
-      talla_gr: lote?.talla_gr || "",
-      cantidad: "",
-      fecha_siembra: lote?.fecha_siembra?.substring(0, 10) || "",
-    });
   };
 
   /* =========================================================
@@ -173,14 +154,18 @@ function EngordaContent() {
 
     try {
       await createEngorda({
-        ...form,
-        origen_id: form.origen_instalacion,
-        fi_instalacion_id: form.fi_instalacion_id,
+        pileta_id: Number(form.pileta_id),
+        cantidad: form.cantidad,
+        talla_gr: form.talla_gr,
+        observacion: form.observacion,
+        origen_pileta_id: form.origen_pileta_id ? Number(form.origen_pileta_id) : null,
+        fc_granja: granjaActiva,
+        fi_usuario_id: usuario_id,
       });
 
-      showSnackbar(" Registro agregado correctamente", "success");
+      showSnackbar("Registro agregado correctamente", "success");
       obtenerEngordas();
-      obtenerLotes(); // Refrescar lotes por si cambió el inventario
+      obtenerPiletas();
       limpiarFormulario();
     } catch (err) {
       showSnackbar("Error al registrar engorda: " + (err.response?.data?.error || err.message), "error");
@@ -192,11 +177,15 @@ function EngordaContent() {
     if (!validate(form, requiredFields)) return;
     try {
       await createEngorda({
-        ...form,
+        pileta_id: Number(form.pileta_id),
+        cantidad: form.cantidad,
+        talla_gr: form.talla_gr,
+        observacion: form.observacion,
+        origen_pileta_id: form.origen_pileta_id ? Number(form.origen_pileta_id) : null,
         fi_engorda_id: seleccionado,
       });
 
-      showSnackbar(" Registro actualizado", "success");
+      showSnackbar("Registro actualizado", "success");
       obtenerEngordas();
       limpiarFormulario();
     } catch (err) {
@@ -220,15 +209,12 @@ function EngordaContent() {
     clearErrors();
     setSeleccionado(e.fi_engorda_id);
     setForm({
-      fi_instalacion_id: e.fi_instalacion_id,
-      origen_instalacion: e.fi_lote_id,
-      cantidad: e.cantidad,
-      talla_gr: e.talla_gr,
-      no_lote: e.no_lote,
-      observacion: e.observacion,
-      fecha_siembra: e.fecha_siembra?.substring(0, 10) || "",
-      fecha_biometria: e.fecha_biometria?.substring(0, 10) || "",
-      fc_granja: e.fc_granja,
+      pileta_id: e.pileta_id != null ? String(e.pileta_id) : "",
+      origen_pileta_id: e.origen_pileta_id != null ? String(e.origen_pileta_id) : "",
+      cantidad: e.cantidad ?? "",
+      talla_gr: e.talla_gr ?? "",
+      observacion: e.observacion ?? "",
+      fc_granja: e.fc_granja || granjaActiva,
     });
     setMostrarFormulario(true);
   };
@@ -295,58 +281,87 @@ function EngordaContent() {
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Grid container spacing={2}>
-                {/* 1. ORIGEN */}
+                {/* PILETA ORIGEN (opcional) */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     select
-                    label="Origen"
-                    name="origen_instalacion"
-                    value={form.origen_instalacion || ""}
-                    onChange={(e) => handleOrigenLote(e.target.value)}
-                    fullWidth
-                    error={!!errors.origen_instalacion}
-                    helperText={errors.origen_instalacion}
-                  >
-                    <MenuItem value="">Seleccione Lote de Inventario</MenuItem>
-                    {lotes.map((l) => (
-                      <MenuItem key={l.fi_lote_id} value={l.fi_lote_id}>
-                        {`${l.no_lote} — ${l.nombre_instalacion} (${l.cantidad} org)`}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-
-                {/* 2.DESTINO */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    select
-                    label="Destino"
-                    name="fi_instalacion_id"
-                    value={form.fi_instalacion_id || ""}
+                    label="Pileta origen (opcional)"
+                    name="origen_pileta_id"
+                    value={form.origen_pileta_id || ""}
                     onChange={handleChange}
                     fullWidth
-                    error={!!errors.fi_instalacion_id}
-                    helperText={errors.fi_instalacion_id}
+                    helperText="Pileta de la que provienen los organismos (alevinaje u otra)"
+                    slotProps={{
+                      select: {
+                        renderValue: (val) => {
+                          const p = piletasOrigen.find((x) => String(x.fi_pileta_id) === String(val));
+                          return p ? `${p.nombre} · ${tipoLabel(p.tipo)}` : "";
+                        },
+                      },
+                    }}
                   >
-                    <MenuItem value="">Seleccione un destino</MenuItem>
-                    {instalaciones.map((i) => (
-                      <MenuItem key={i.fi_instalacion_id} value={i.fi_instalacion_id}>
-                        {i.nombre_instalacion}
+                    <MenuItem value="">Sin origen interno</MenuItem>
+                    {piletasOrigen.map((p) => (
+                      <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
+                        {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
                       </MenuItem>
                     ))}
                   </TextField>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField label="Cantidad a Sembrar" name="cantidad" type="number" value={form.cantidad || ""} onChange={handleChange} fullWidth error={!!errors.cantidad} helperText={errors.cantidad} />
+                {/* PILETA DESTINO (engorda) */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    select
+                    label="Pileta destino (engorda)"
+                    name="pileta_id"
+                    value={form.pileta_id || ""}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errors.pileta_id}
+                    helperText={errors.pileta_id || "Solo piletas tipo engorda"}
+                    slotProps={{
+                      select: {
+                        renderValue: (val) => {
+                          const p = piletasEngorda.find((x) => String(x.fi_pileta_id) === String(val));
+                          return p ? `${p.nombre} · ${p.estado}` : "";
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem value="">Seleccione un destino</MenuItem>
+                    {piletasEngorda.map((p) => (
+                      <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
+                        {p.nombre} · {p.estado}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField label="Talla (Gr)" name="talla_gr" type="number" value={form.talla_gr || ""} onChange={handleChange} fullWidth error={!!errors.talla_gr} helperText={errors.talla_gr} />
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label="Cantidad a Sembrar"
+                    name="cantidad"
+                    type="number"
+                    value={form.cantidad || ""}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errors.cantidad}
+                    helperText={errors.cantidad}
+                  />
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField label="No. Lote" name="no_lote" value={form.no_lote || ""} fullWidth slotProps={{ input: { readOnly: true } }} error={!!errors.no_lote} helperText={errors.no_lote} />
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label="Talla (Gr)"
+                    name="talla_gr"
+                    type="number"
+                    value={form.talla_gr || ""}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errors.talla_gr}
+                    helperText={errors.talla_gr}
+                  />
                 </Grid>
 
                 <Grid size={12}>
@@ -362,17 +377,9 @@ function EngordaContent() {
                     error={!!errors.observacion}
                     helperText={
                       errors.observacion ||
-                      `${String(form.observacion ?? "").length}/${MAX_OBSERVACION}`
+                      `Se guarda como observación de la pileta (proceso "engorda"). ${String(form.observacion ?? "").length}/${MAX_OBSERVACION}`
                     }
                   />
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField type="date" label="Fecha Siembra" name="fecha_siembra" InputLabelProps={{ shrink: true }} value={form.fecha_siembra || ""} onChange={handleChange} fullWidth error={!!errors.fecha_siembra} helperText={errors.fecha_siembra} />
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField type="date" label="Fecha Biometría" name="fecha_biometria" InputLabelProps={{ shrink: true }} value={form.fecha_biometria || ""} onChange={handleChange} fullWidth error={!!errors.fecha_biometria} helperText={errors.fecha_biometria} />
                 </Grid>
               </Grid>
 
@@ -391,29 +398,51 @@ function EngordaContent() {
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>Instalación</TableCell>
+              <TableCell>Pileta</TableCell>
               <TableCell>Cantidad</TableCell>
               <TableCell>Talla (Gr)</TableCell>
-              <TableCell>No. Lote</TableCell>
-              <TableCell>Fecha Siembra</TableCell>
-              <TableCell>Días en Pila</TableCell>
-              <TableCell>Fecha Biometría</TableCell>
-              <TableCell>Días Transcurridos</TableCell>
+              <TableCell>Última observación (pileta)</TableCell>
+              <TableCell>Última biometría</TableCell>
+              <TableCell>Días desde biometría</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {engordas.map((e) => (
-              <TableRow key={e.fi_engorda_id} hover onClick={() => seleccionarRegistro(e)} style={{ cursor: "pointer" }}>
-                <TableCell>{e.destino_nombre}</TableCell>
-                <TableCell>{formatNumber(e.cantidad)}</TableCell>
-                <TableCell>{formatNumber(e.talla_gr)}</TableCell>
-                <TableCell>{e.no_lote}</TableCell>
-                <TableCell>{e.fecha_siembra ? new Date(e.fecha_siembra).toLocaleDateString("es-MX") : "—"}</TableCell>
-                <TableCell>{e.dias_en_pila}</TableCell>
-                <TableCell>{e.fecha_biometria ? new Date(e.fecha_biometria).toLocaleDateString("es-MX") : "—"}</TableCell>
-                <TableCell><span style={getBadgeStyle(e.dias_transcurridos)}>{e.dias_transcurridos}</span></TableCell>
-              </TableRow>
-            ))}
+            {engordas.map((e) => {
+              const fechaBio = e.fecha_biometria || e.fd_fecha_biometria;
+              const dias = e.dias_transcurridos;
+              return (
+                <TableRow
+                  key={e.fi_engorda_id}
+                  hover
+                  onClick={() => seleccionarRegistro(e)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <TableCell>
+                    {e.nombre_pileta || e.destino_nombre || "—"}
+                    {e.fc_granja ? (
+                      <Chip size="small" sx={{ ml: 1 }} label={e.fc_granja} variant="outlined" />
+                    ) : null}
+                  </TableCell>
+                  <TableCell>{formatNumber(e.cantidad)}</TableCell>
+                  <TableCell>{formatNumber(e.talla_gr)}</TableCell>
+                  <TableCell sx={{ maxWidth: 220 }}>
+                    <span title={e.observacion || ""}>
+                      {e.observacion ? truncar(e.observacion) : "—"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {fechaBio ? new Date(fechaBio).toLocaleDateString("es-MX") : "—"}
+                  </TableCell>
+                  <TableCell>
+                    {dias != null ? (
+                      <span style={getBadgeStyle(dias)}>{dias}</span>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </Paper>

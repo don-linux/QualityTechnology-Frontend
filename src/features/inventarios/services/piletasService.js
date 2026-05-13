@@ -5,9 +5,19 @@ import { ENDPOINTS } from "@shared/lib/endpoints";
    CRUD físico piletas (+ última observación si el backend la incluye)
 ============================================================================ */
 
-export function listPiletas(granja) {
-  const params = granja ? { params: { granja } } : {};
-  return axios.get(ENDPOINTS.piletas.base, params);
+export function listPiletas(granja, tipo) {
+  const params = {};
+  if (granja) params.granja = granja;
+  if (tipo) params.tipo = tipo;
+  return axios.get(ENDPOINTS.piletas.base, { params });
+}
+
+export function createPileta(data) {
+  return axios.post(ENDPOINTS.piletas.base, data);
+}
+
+export function updatePileta(id, data) {
+  return axios.put(ENDPOINTS.piletas.byId(id), data);
 }
 
 /* ============================================================================
