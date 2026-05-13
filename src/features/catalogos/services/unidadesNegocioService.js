@@ -9,12 +9,12 @@ export function listUnidadesNegocioActivas() {
   return axios.get(ENDPOINTS.unidadesNegocio.activos);
 }
 
-export function createUnidadNegocio(fc_nombre) {
-  return axios.post(ENDPOINTS.unidadesNegocio.base, { fc_nombre });
+export function createUnidadNegocio(nombre) {
+  return axios.post(ENDPOINTS.unidadesNegocio.base, { nombre });
 }
 
-export function updateUnidadNegocio(id, fc_nombre) {
-  return axios.put(ENDPOINTS.unidadesNegocio.byId(id), { fc_nombre });
+export function updateUnidadNegocio(id, nombre) {
+  return axios.put(ENDPOINTS.unidadesNegocio.byId(id), { nombre });
 }
 
 export function activateUnidadNegocio(id) {

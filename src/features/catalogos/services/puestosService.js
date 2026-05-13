@@ -5,12 +5,12 @@ export function listPuestos() {
   return axios.get(ENDPOINTS.puestos.base);
 }
 
-export function createPuesto(fc_nombre) {
-  return axios.post(ENDPOINTS.puestos.base, { fc_nombre });
+export function createPuesto(nombre) {
+  return axios.post(ENDPOINTS.puestos.base, { nombre });
 }
 
-export function updatePuesto(id, fc_nombre) {
-  return axios.put(ENDPOINTS.puestos.byId(id), { fc_nombre });
+export function updatePuesto(id, nombre) {
+  return axios.put(ENDPOINTS.puestos.byId(id), { nombre });
 }
 
 export function activatePuesto(id) {

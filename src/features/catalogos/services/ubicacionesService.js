@@ -13,12 +13,18 @@ export function getUbicacion(id) {
   return axios.get(ENDPOINTS.ubicaciones.byId(id));
 }
 
-export function createUbicacion({ nombre, direccion, descripcion }) {
-  return axios.post(ENDPOINTS.ubicaciones.base, { nombre, direccion, descripcion });
+export function createUbicacion({ nombre, direccion }) {
+  return axios.post(ENDPOINTS.ubicaciones.base, {
+    nombre,
+    direccion: direccion || null,
+  });
 }
 
-export function updateUbicacion(id, { nombre, direccion, descripcion }) {
-  return axios.put(ENDPOINTS.ubicaciones.byId(id), { nombre, direccion, descripcion });
+export function updateUbicacion(id, { nombre, direccion }) {
+  return axios.put(ENDPOINTS.ubicaciones.byId(id), {
+    nombre,
+    direccion: direccion || null,
+  });
 }
 
 export function activateUbicacion(id) {

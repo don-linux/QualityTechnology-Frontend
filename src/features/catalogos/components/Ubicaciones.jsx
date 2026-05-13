@@ -3,11 +3,8 @@ import {
   listUbicaciones,
   createUbicacion,
   updateUbicacion,
-  activateUbicacion,
-  deactivateUbicacion,
 } from "@features/catalogos/services/ubicacionesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 
 import Container from "@mui/material/Container";
@@ -25,10 +22,10 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
+import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 
-const EMPTY = { ubicacion_id: null, nombre: "", direccion: "", descripcion: "" };
+const EMPTY = { ubicacion_id: null, nombre: "", direccion: "" };
 
 export default function Ubicaciones() {
   const showSnackbar = useSnackbar();
@@ -36,7 +33,6 @@ export default function Ubicaciones() {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
 
   useEffect(() => { cargar(); }, []);
 
@@ -84,36 +80,11 @@ export default function Ubicaciones() {
     }
   };
 
-  const desactivar = async (id, nombre) => {
-    if (!await confirm(`¿Desactivar la ubicación "${nombre}"?`)) return;
-    try {
-      await deactivateUbicacion(id);
-      showSnackbar("Ubicación desactivada", "info");
-      cargar();
-      limpiar();
-    } catch {
-      showSnackbar("Error al desactivar ubicación", "error");
-    }
-  };
-
-  const activar = async (id, nombre) => {
-    if (!await confirm(`¿Activar la ubicación "${nombre}"?`)) return;
-    try {
-      await activateUbicacion(id);
-      showSnackbar("Ubicación activada", "success");
-      cargar();
-      limpiar();
-    } catch {
-      showSnackbar("Error al activar ubicación", "error");
-    }
-  };
-
   const seleccionar = (u) => {
     setForm({
       ubicacion_id: u.ubicacion_id,
       nombre:       u.nombre       ?? "",
       direccion:    u.direccion    ?? "",
-      descripcion:  u.descripcion  ?? "",
     });
     clearErrors();
   };
@@ -126,6 +97,10 @@ export default function Ubicaciones() {
           Administra las granjas y ubicaciones físicas del sistema
         </Typography>
       </Box>
+
+      <Alert severity="info" sx={{ mb: 3 }}>
+        El modelo actual solo guarda nombre y dirección. No hay activación/desactivación en servidor.
+      </Alert>
 
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
@@ -151,17 +126,6 @@ export default function Ubicaciones() {
                 label="Dirección"
                 fullWidth
                 value={form.direccion}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid size={12}>
-              <TextField
-                name="descripcion"
-                label="Descripción"
-                fullWidth
-                multiline
-                rows={2}
-                value={form.descripcion}
                 onChange={handleChange}
               />
             </Grid>
@@ -204,8 +168,6 @@ export default function Ubicaciones() {
                   <TableCell>ID</TableCell>
                   <TableCell>Nombre</TableCell>
                   <TableCell>Dirección</TableCell>
-                  <TableCell>Descripción</TableCell>
-                  <TableCell>Estado</TableCell>
                   <TableCell align="center">Acciones</TableCell>
                 </TableRow>
               </TableHead>
@@ -215,36 +177,11 @@ export default function Ubicaciones() {
                     <TableCell>{u.ubicacion_id}</TableCell>
                     <TableCell>{u.nombre}</TableCell>
                     <TableCell>{u.direccion ?? "—"}</TableCell>
-                    <TableCell sx={{ maxWidth: 220, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {u.descripcion ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={u.activo ? "Activo" : "Inactivo"}
-                        color={u.activo ? "success" : "default"}
-                        size="small"
-                      />
-                    </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: "inline-flex", gap: 1, flexWrap: "nowrap" }}>
                         <Button size="small" variant="outlined" onClick={() => seleccionar(u)}>
                           Seleccionar
                         </Button>
-                        {u.activo ? (
-                          <Button
-                            size="small" variant="outlined" color="error"
-                            onClick={() => desactivar(u.ubicacion_id, u.nombre)}
-                          >
-                            Desactivar
-                          </Button>
-                        ) : (
-                          <Button
-                            size="small" variant="outlined" color="success"
-                            onClick={() => activar(u.ubicacion_id, u.nombre)}
-                          >
-                            Activar
-                          </Button>
-                        )}
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -254,8 +191,6 @@ export default function Ubicaciones() {
           </TableContainer>
         </Box>
       )}
-
-      {ConfirmModal}
     </Container>
   );
 }
