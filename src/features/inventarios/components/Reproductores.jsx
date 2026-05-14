@@ -209,10 +209,10 @@ const colorDias = (dias) => {
   }, [filtroUbicacion]);
 
   const obtenerTrazabilidad = useCallback(async () => {
-    if (!granjaActiva) return;
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const { data } = await getReproductoresMovimientos(granjaActiva);
-      setRastreos(data || []);
+      const { data } = await getReproductoresMovimientos(filtroUbicacion);
+      setRastreos(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error al cargar trazabilidad:", err);
       setRastreos([]);
@@ -221,7 +221,7 @@ const colorDias = (dias) => {
         "error"
       );
     }
-  }, [granjaActiva, showSnackbar]);
+  }, [filtroUbicacion, showSnackbar]);
 
   useEffect(() => {
     if (!granjaActiva && defaultUbicacion) {

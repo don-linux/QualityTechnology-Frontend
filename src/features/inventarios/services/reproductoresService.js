@@ -15,8 +15,17 @@ export function listByGranja(filtroUbicacion) {
   });
 }
 
-export function getMovimientos(granja) {
-  return axios.get(ENDPOINTS.reproductores.movimientos(granja));
+export function getMovimientos(filtroUbicacion) {
+  const nombre =
+    filtroUbicacion && typeof filtroUbicacion === "object"
+      ? filtroUbicacion.granja ?? filtroUbicacion.nombre ?? ""
+      : String(filtroUbicacion ?? "");
+  const base = ENDPOINTS.reproductores.movimientos(nombre);
+  const params = {};
+  filtrosUbicacionAParams(params, filtroUbicacion);
+  return axios.get(base, {
+    params: Object.keys(params).length ? params : undefined,
+  });
 }
 
 export function createReproductor(data) {
