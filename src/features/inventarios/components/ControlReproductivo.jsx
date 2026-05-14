@@ -29,12 +29,14 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { listPiletas } from "../services/piletasService";
 
 const MAX_NUMERICO = 15;
 const MAX_OBSERVACION = 500;
 const TRUNCAR_MAX = 40;
 
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
+const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
@@ -45,13 +47,21 @@ const ControlReproductivo = () => {
   const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
-    "fecha", "familia", "fi_pileta_id", "huevos_ml",
-    "ovadas", "no_lote", "observacion", "mortalidad",
-    "alevines_inicial",
+    "fecha",
+    "familia",
+    "fi_pileta_id",
+    "huevos_ml",
+    "ovadas",
+    "no_lote",
+    "observacion",
+    "mortalidad",
+    "machos",
+    "hembras",
   ];
 
   const [granja, setGranja] = useState("");
   const [piletasReproductoras, setPiletasReproductoras] = useState([]);
+  const [piletasDestinoAlevinaje, setPiletasDestinoAlevinaje] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -60,13 +70,50 @@ const ControlReproductivo = () => {
     fecha: "",
     familia: "",
     fi_pileta_id: "",
+    fi_pileta_destino_id: "",
     huevos_ml: "",
     ovadas: "",
     no_lote: "",
     observacion: "",
     mortalidad: 0,
-    alevines_inicial: 0,
+    machos: "",
+    hembras: "",
   });
+
+  const cantidadTotalAlevines = () => {
+    const m = Number(formData.machos || 0);
+    const h = Number(formData.hembras || 0);
+    return Number.isFinite(m) && Number.isFinite(h) ? m + h : null;
+  };
+
+  const payloadComunBackend = () => {
+    const origen = formData.fi_pileta_id;
+    const destino = formData.fi_pileta_destino_id || origen;
+    const machosNum = Number(formData.machos || 0);
+    const hembrasNum = Number(formData.hembras || 0);
+    const cantTot = cantidadTotalAlevines() ?? 0;
+    const mismoPool = Number(origen) === Number(destino);
+    return {
+      fecha: formData.fecha,
+      familia: formData.familia,
+      fi_pileta_id: origen,
+      pileta_origen_reproductora_id: mismoPool ? null : Number(origen),
+      pileta_destino_id: Number(destino),
+      fi_pileta_destino_id: destino,
+      pileta_id: Number(destino),
+      no_lote: formData.no_lote,
+      lote: formData.no_lote,
+      huevos_ml: formData.huevos_ml === "" ? null : formData.huevos_ml,
+      ovadas: Number(formData.ovadas || 0),
+      observacion: formData.observacion,
+      mortalidad: Number(formData.mortalidad || 0),
+      machos: machosNum,
+      hembras: hembrasNum,
+      cantidad_total: cantTot,
+      alevines_inicial: cantTot,
+      alevines_iniciales: cantTot,
+    };
+  };
 
   const validarNoLote = (value) => {
     const regex = /^[A-Za-z0-9-]*$/;
@@ -90,8 +137,14 @@ const ControlReproductivo = () => {
     return;
   }
 
-  if (name === "fi_pileta_id") {
+  if (name === "machos" || name === "hembras") {
+    if (!soloEntero(value)) return;
+    setFormData({ ...formData, [name]: value });
+    clearFieldError(name);
+    return;
+  }
 
+  if (name === "fi_pileta_id") {
     setFormData({ ...formData, fi_pileta_id: value });
 
     clearFieldError(name);
@@ -134,6 +187,17 @@ const ControlReproductivo = () => {
     }
   }, [granja, resolveFiltroUbicacion]);
 
+  const cargarPiletasDestinoAlevinaje = useCallback(async () => {
+    if (!granja) return;
+    try {
+      const filtros = resolveFiltroUbicacion(granja);
+      const res = await listPiletas(filtros, "alevinaje");
+      setPiletasDestinoAlevinaje(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error cargando piletas alevinaje (destino):", err);
+    }
+  }, [granja, resolveFiltroUbicacion]);
+
   /** Registros de `alevinaje` filtrados por sede (misma granja que piletas). */
   const cargarRegistros = useCallback(async () => {
     if (!granja) return;
@@ -154,7 +218,13 @@ const ControlReproductivo = () => {
 
     if (!granja) return;
     cargarPiletasReproductoras();
-  }, [defaultUbicacion, granja, cargarPiletasReproductoras]);
+    cargarPiletasDestinoAlevinaje();
+  }, [
+    defaultUbicacion,
+    granja,
+    cargarPiletasReproductoras,
+    cargarPiletasDestinoAlevinaje,
+  ]);
 
   useEffect(() => {
     if (!granja) return;
@@ -166,21 +236,16 @@ const ControlReproductivo = () => {
   -------------------------------------------------------- */
   const registrarAlevinaje = async () => {
     if (!validate(formData, requiredFields)) return;
+    const totCant = cantidadTotalAlevines();
+    if (totCant === null || totCant < 1) {
+      showSnackbar(
+        "Indica cantidad de machos y hembras: la suma debe ser mayor a cero.",
+        "error",
+      );
+      return;
+    }
     try {
-      await createAlevinaje({
-        fecha: formData.fecha,
-        familia: formData.familia,
-        fi_pileta_id: formData.fi_pileta_id,
-        pileta_id: formData.fi_pileta_id,
-        no_lote: formData.no_lote,
-        lote: formData.no_lote,
-        huevos_ml: formData.huevos_ml === "" ? null : formData.huevos_ml,
-        ovadas: Number(formData.ovadas || 0),
-        observacion: formData.observacion,
-        mortalidad: Number(formData.mortalidad || 0),
-        alevines_inicial: Number(formData.alevines_inicial || 0),
-        alevines_iniciales: Number(formData.alevines_inicial || 0),
-      });
+      await createAlevinaje(payloadComunBackend());
 
       showSnackbar("Registro guardado en alevinaje", "success");
       resetFormulario();
@@ -208,11 +273,21 @@ const ControlReproductivo = () => {
         ? String(seleccionado.fecha).split("T")[0]
         : "",
       familia: seleccionado.familia || "",
-      fi_pileta_id:
-        seleccionado.fi_pileta_id
-        ?? seleccionado.pileta_id
-        ?? seleccionado.fc_pileta_id
-        ?? "",
+      fi_pileta_id: String(
+        seleccionado.pileta_origen_reproductora_id
+          ?? seleccionado.fi_pileta_origen_reproductora_id
+          ?? seleccionado.fi_pileta_origen_id
+          ?? seleccionado.pileta_id
+          ?? seleccionado.fi_pileta_destino_id
+          ?? seleccionado.pileta_destino_id
+          ?? "",
+      ),
+      fi_pileta_destino_id: String(
+        seleccionado.fi_pileta_destino_id
+          ?? seleccionado.pileta_destino_id
+          ?? seleccionado.pileta_id
+          ?? "",
+      ),
       huevos_ml:
         seleccionado.huevos_ml != null ? String(seleccionado.huevos_ml) : "",
       ovadas: seleccionado.ovadas ?? "",
@@ -222,10 +297,20 @@ const ControlReproductivo = () => {
         ?? seleccionado.fc_observacion
         ?? "",
       mortalidad: seleccionado.mortalidad ?? 0,
-      alevines_inicial:
-        seleccionado.alevines_inicial
-        ?? seleccionado.alevines_iniciales
-        ?? "",
+      ...(function sexosDesdeSeleccionado() {
+        const cq = Number(seleccionado.cantidad_total ?? seleccionado.alevines_iniciales ?? 0);
+        let m =
+          seleccionado.machos != null ? Number(seleccionado.machos) : null;
+        let h =
+          seleccionado.hembras != null ? Number(seleccionado.hembras) : null;
+        if ((m === null || Number.isNaN(m)) && (h === null || Number.isNaN(h)) && cq > 0) {
+          m = cq;
+          h = 0;
+        }
+        if (m === null || Number.isNaN(m)) m = 0;
+        if (h === null || Number.isNaN(h)) h = 0;
+        return { machos: String(m), hembras: String(h) };
+      }()),
     });
 
     setModoEdicion(true);
@@ -236,21 +321,16 @@ const ControlReproductivo = () => {
   -------------------------------------------------------- */
   const actualizarAlevinajeRegistro = async () => {
     if (!validate(formData, requiredFields)) return;
+    const totCant = cantidadTotalAlevines();
+    if (totCant === null || totCant < 1) {
+      showSnackbar(
+        "Indica cantidad de machos y hembras: la suma debe ser mayor a cero.",
+        "error",
+      );
+      return;
+    }
     try {
-      await updateAlevinaje(seleccionado.fi_id ?? seleccionado.fi_lote_id ?? seleccionado.id, {
-        fecha: formData.fecha,
-        familia: formData.familia,
-        fi_pileta_id: formData.fi_pileta_id,
-        pileta_id: formData.fi_pileta_id,
-        no_lote: formData.no_lote,
-        lote: formData.no_lote,
-        huevos_ml: formData.huevos_ml === "" ? null : formData.huevos_ml,
-        ovadas: Number(formData.ovadas || 0),
-        observacion: formData.observacion,
-        mortalidad: Number(formData.mortalidad || 0),
-        alevines_inicial: Number(formData.alevines_inicial || 0),
-        alevines_iniciales: Number(formData.alevines_inicial || 0),
-      });
+      await updateAlevinaje(seleccionado.fi_id ?? seleccionado.fi_lote_id ?? seleccionado.id, payloadComunBackend());
 
       showSnackbar("Registro actualizado", "success");
 
@@ -296,12 +376,14 @@ const ControlReproductivo = () => {
       fecha: "",
       familia: "",
       fi_pileta_id: "",
+      fi_pileta_destino_id: "",
       huevos_ml: "",
       ovadas: "",
       no_lote: "",
       observacion: "",
       mortalidad: 0,
-      alevines_inicial: 0,
+      machos: "",
+      hembras: "",
     });
     clearErrors();
   };
@@ -396,11 +478,11 @@ const ControlReproductivo = () => {
               />
             </Grid>
 
-            {/* PILETA REPRODUCTORES */}
+            {/* PILETA ORIGEN */}
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 select
-                label="Pileta (reproductores)"
+                label="Pileta origen (reproductores)"
                 name="fi_pileta_id"
                 value={formData.fi_pileta_id || ""}
                 onChange={handleChange}
@@ -408,7 +490,7 @@ const ControlReproductivo = () => {
                 error={!!errors.fi_pileta_id}
                 helperText={
                   errors.fi_pileta_id ||
-                  "Solo piletas etapa Reproductores con estado ocupada. Al guardar pasan a Alevinaje."
+                  "Piletas reproductores ocupadas. La familia se autocompleta desde aquí."
                 }
               >
                 {piletasReproductoras.map((p) => (
@@ -420,6 +502,87 @@ const ControlReproductivo = () => {
                   </MenuItem>
                 ))}
               </TextField>
+            </Grid>
+
+            {/* PILETA DESTINO */}
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <TextField
+                select
+                label="Pileta destino (alevinaje)"
+                name="fi_pileta_destino_id"
+                value={formData.fi_pileta_destino_id || ""}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fi_pileta_destino_id}
+                helperText={
+                  errors.fi_pileta_destino_id ||
+                  "Donde permanece este cargamento. Vacío = mismo acto físico solo en pileta origen."
+                }
+              >
+                <MenuItem value="">
+                  <em>(Igual que origen — conversión en la misma pileta)</em>
+                </MenuItem>
+                {piletasDestinoAlevinaje.map((p) => (
+                  <MenuItem key={p.id} value={String(p.id)}>
+                    {p.nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            {/* Machos / hembras / total */}
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Machos"
+                name="machos"
+                type="number"
+                value={formData.machos}
+                onChange={handleChange}
+                fullWidth
+                inputProps={{ min: 0, inputMode: "numeric" }}
+                error={!!errors.machos}
+                helperText={errors.machos}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Hembras"
+                name="hembras"
+                type="number"
+                value={formData.hembras}
+                onChange={handleChange}
+                fullWidth
+                inputProps={{ min: 0, inputMode: "numeric" }}
+                error={!!errors.hembras}
+                helperText={errors.hembras}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Cantidad total"
+                value={
+                  cantidadTotalAlevines() != null
+                    ? String(cantidadTotalAlevines())
+                    : ""
+                }
+                disabled
+                fullWidth
+                placeholder="Machos + hembras"
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Mortalidad"
+                name="mortalidad"
+                type="number"
+                value={formData.mortalidad}
+                onChange={handleChange}
+                fullWidth
+                inputProps={{ min: 0, inputMode: "numeric" }}
+                error={!!errors.mortalidad}
+                helperText={errors.mortalidad || "Ej. 0 al registrar"}
+              />
             </Grid>
 
             {/* HUEVOS ML */}
@@ -453,16 +616,16 @@ const ControlReproductivo = () => {
               />
             </Grid>
 
-            {/* NO LOTE */}
+            {/* LOTE */}
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
-                label="Referencia cría"
+                label="Lote (referencia cría)"
                 name="no_lote"
                 value={formData.no_lote}
                 onChange={handleChange}
                 fullWidth
                 error={!!errors.no_lote}
-                helperText={errors.no_lote}
+                helperText={errors.no_lote || "Código del cargamento guardado como `lote` en alevinaje."}
               />
             </Grid>
 
@@ -508,16 +671,19 @@ const ControlReproductivo = () => {
 
       <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
         <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table sx={{ minWidth: 1200 }}>
+          <Table sx={{ minWidth: 1550 }}>
             <TableHead sx={{ backgroundColor: "#006d77" }}>
               <TableRow>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Familia</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Origen repr.</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Destino alev.</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Huevos (ml)</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ovadas</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Alevines</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Referencia cría</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Machos</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Hembras</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Total</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote cría</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad %</TableCell>
@@ -527,7 +693,7 @@ const ControlReproductivo = () => {
             <TableBody>
               {registros.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} align="center">
+                  <TableCell colSpan={13} align="center">
                     No hay registros.
                   </TableCell>
                 </TableRow>
@@ -550,16 +716,27 @@ const ControlReproductivo = () => {
                         {l.familia ? truncar(l.familia) : "—"}
                       </span>
                     </TableCell>
-                    <TableCell sx={{ maxWidth: 160 }}>
-                      <span title={l.nombre_pileta || l.nombre_instalacion || ""}>
-                        {(l.nombre_pileta || l.nombre_instalacion)
-                          ? truncar(l.nombre_pileta || l.nombre_instalacion)
+                    <TableCell sx={{ maxWidth: 140 }}>
+                      <span title={l.nombre_pileta_origen_reproductora || ""}>
+                        {l.nombre_pileta_origen_reproductora
+                          ? truncar(l.nombre_pileta_origen_reproductora)
+                          : "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 140 }}>
+                      <span title={(l.nombre_pileta_destino || l.nombre_pileta) || ""}>
+                        {(l.nombre_pileta_destino || l.nombre_pileta)
+                          ? truncar(l.nombre_pileta_destino || l.nombre_pileta)
                           : "—"}
                       </span>
                     </TableCell>
                     <TableCell>{formatNumber(l.huevos_ml)}</TableCell>
                     <TableCell>{l.ovadas}</TableCell>
-                    <TableCell>{formatNumber(l.alevines_inicial || 0)}</TableCell>
+                    <TableCell>{formatNumber(l.machos ?? 0)}</TableCell>
+                    <TableCell>{formatNumber(l.hembras ?? 0)}</TableCell>
+                    <TableCell>
+                      {formatNumber(l.cantidad_total ?? l.alevines_inicial ?? l.alevines_iniciales ?? 0)}
+                    </TableCell>
                     <TableCell>{l.no_lote}</TableCell>
                     <TableCell sx={{ maxWidth: 160 }}>
                       <span title={l.observacion || ""}>
