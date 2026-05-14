@@ -248,7 +248,12 @@ function PiletasTab({
       reiniciarTrasGuardar();
       onChange();
     } catch (err) {
-      showSnackbar(err.response?.data?.error || err.message || "Error", "error");
+      const data = err.response?.data ?? {};
+      const msg =
+        import.meta.env.DEV && data.detail
+          ? `${data.error || "Error"}: ${String(data.detail).slice(0, 360)}`
+          : data.error || data.detail || err.message || "Error";
+      showSnackbar(msg, "error");
     }
   };
 

@@ -194,9 +194,18 @@ const colorDias = (dias) => {
 
   const obtenerTrazabilidad = useCallback(async () => {
     if (!granjaActiva) return;
-    const { data } = await getReproductoresMovimientos(granjaActiva);
-    setRastreos(data || []);
-  }, [granjaActiva]);
+    try {
+      const { data } = await getReproductoresMovimientos(granjaActiva);
+      setRastreos(data || []);
+    } catch (err) {
+      console.error("Error al cargar trazabilidad:", err);
+      setRastreos([]);
+      showSnackbar(
+        err?.response?.data?.error || "No se pudieron cargar los movimientos.",
+        "error"
+      );
+    }
+  }, [granjaActiva, showSnackbar]);
 
   useEffect(() => {
     if (!granjaActiva && defaultUbicacion) {
