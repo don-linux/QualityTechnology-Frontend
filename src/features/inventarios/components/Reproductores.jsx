@@ -24,7 +24,6 @@ import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import useFormValidation from "@shared/hooks/useFormValidation";
@@ -456,12 +455,6 @@ const colorDias = (dias) => {
     }
   };
 
-  const trazarReproductor = (r) => {
-    showSnackbar(`Movimiento desde ${r.nombre_pileta || r.nombre_instalacion || "pileta"}.
-Pronto conectaremos este botón con traspasos internos.`, "error");
-  };
-
-  /* ===================== RENDER ===================== */
 
   return (
     <Box>
@@ -777,11 +770,25 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                 <TableCell>Familia</TableCell>
                 <TableCell>Últ. nota (pileta)</TableCell>
                 <TableCell>Observación</TableCell>
-                <TableCell>Fecha siembra</TableCell>
-                <TableCell>Días en pila</TableCell>
-                <TableCell>Últ. biometría</TableCell>
-                <TableCell>Días transcurridos</TableCell>
-                <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>
+                <TableCell
+                  title="Fecha del último ingreso registrado como movimiento (`siembra`) hacia esta pileta."
+                >
+                  Fecha siembra
+                </TableCell>
+                <TableCell
+                  title="Días en cultivo: desde la fecha de siembra vinculada; si falta, desde el alta del reproductor en sistema."
+                >
+                  Días en pila
+                </TableCell>
+                <TableCell title="Última biometría: puntero del reproductor o la más reciente en la misma pileta.">
+                  Últ. biometría
+                </TableCell>
+                <TableCell
+                  title="Días transcurridos desde la última biometría (semáforo: verde ≤10, amarillo ≤15, rojo &gt;15)."
+                >
+                  Días sin biometría
+                </TableCell>
+                <TableCell align="center" sx={{ minWidth: 120, whiteSpace: "nowrap" }}>
                   Acciones
                 </TableCell>
               </TableRow>
@@ -789,7 +796,8 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
 
             <TableBody>
               {reproductores.map((r) => {
-                const diasPila = calcularDias(r.fd_fecha_siembra);
+                const refDiasPila = r.fd_fecha_siembra ?? r.fd_alta_reproductor ?? null;
+                const diasPila = calcularDias(refDiasPila);
                 const diasBiometria = calcularDias(r.fd_fecha_biometria);
 
                 return (
@@ -844,9 +852,15 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                       </span>
                     </TableCell>
 
-                    <TableCell>{formatFecha(r.fd_fecha_siembra)}</TableCell>
-
-                    {/* DÍAS EN PILA (SIN SEMÁFORO) */}
+                    <TableCell>
+                      {r.fd_fecha_siembra ? (
+                        formatFecha(r.fd_fecha_siembra)
+                      ) : r.fd_alta_reproductor ? (
+                        formatFecha(r.fd_alta_reproductor)
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
                     <TableCell
                       sx={{
                         fontWeight: "bold",
@@ -866,27 +880,29 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                       ) : "—"}
                     </TableCell>
 
-                    {/* ACCIONES */}
                     <TableCell
                       align="center"
-                      sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                      sx={{ minWidth: 120, verticalAlign: "middle", whiteSpace: "nowrap" }}
                     >
-                      <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                      <Box
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 1,
+                        }}
+                      >
                         <Tooltip title="Editar">
                           <IconButton color="primary" onClick={() => editarReproductor(r)}>
                             <EditIcon />
                           </IconButton>
                         </Tooltip>
-
                         <Tooltip title="Eliminar">
-                          <IconButton color="error" onClick={() => eliminarReproductor(r.fi_reproductor_id)}>
+                          <IconButton
+                            color="error"
+                            onClick={() => eliminarReproductor(r.fi_reproductor_id)}
+                          >
                             <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-
-                        <Tooltip title="Trazar movimiento">
-                          <IconButton color="success" onClick={() => trazarReproductor(r)}>
-                            <SyncAltIcon />
                           </IconButton>
                         </Tooltip>
                       </Box>
