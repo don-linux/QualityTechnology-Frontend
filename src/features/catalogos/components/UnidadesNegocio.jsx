@@ -72,8 +72,8 @@ export default function UnidadesNegocio() {
     }
   };
 
-  const obtenerUnidades = async () => {
-    setLoading(true);
+  const obtenerUnidades = async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     try {
       const { data } = await listUnidadesNegocio();
       setUnidades(data);
@@ -81,8 +81,14 @@ export default function UnidadesNegocio() {
       console.error(e);
       showSnackbar("Error al cargar unidades de negocio", "error");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
+  };
+
+  /** Texto corto desde respuesta axios u otro Error */
+  const apiErrMsg = (e, fallback) => {
+    const m = e?.response?.data?.error ?? e?.response?.data?.mensaje ?? e?.message;
+    return typeof m === "string" && m.trim() ? m : fallback;
   };
 
   const handleChange = (e) => {
@@ -96,10 +102,10 @@ export default function UnidadesNegocio() {
   };
 
   const parseUbicacionId = () => {
-    const raw = form.fi_ubicacion_id?.trim?.() ?? "";
+    const raw = String(form.fi_ubicacion_id ?? "").trim();
     if (raw === "") return null;
     const n = Number(raw);
-    return Number.isFinite(n) ? n : null;
+    return Number.isInteger(n) && n > 0 ? n : null;
   };
 
   const registrar = async () => {
@@ -110,12 +116,13 @@ export default function UnidadesNegocio() {
       return;
     }
     try {
-      await createUnidadNegocio(form.fc_nombre, ubicacionId);
-      obtenerUnidades();
+      await createUnidadNegocio(form.fc_nombre.trim(), ubicacionId);
+      showSnackbar("Unidad de negocio registrada correctamente", "success");
+      obtenerUnidades({ silent: true });
       limpiar();
     } catch (e) {
       console.error(e);
-      showSnackbar("Error al registrar unidad de negocio", "error");
+      showSnackbar(apiErrMsg(e, "Error al registrar unidad de negocio"), "error");
     }
   };
 
@@ -128,12 +135,13 @@ export default function UnidadesNegocio() {
       return;
     }
     try {
-      await updateUnidadNegocio(form.fi_unidad_negocio_id, form.fc_nombre, ubicacionId);
-      obtenerUnidades();
+      await updateUnidadNegocio(form.fi_unidad_negocio_id, form.fc_nombre.trim(), ubicacionId);
+      showSnackbar("Unidad de negocio actualizada correctamente", "success");
+      obtenerUnidades({ silent: true });
       limpiar();
     } catch (e) {
       console.error(e);
-      showSnackbar("Error al actualizar unidad de negocio", "error");
+      showSnackbar(apiErrMsg(e, "Error al actualizar unidad de negocio"), "error");
     }
   };
 
