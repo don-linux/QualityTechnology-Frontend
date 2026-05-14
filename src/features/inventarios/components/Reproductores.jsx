@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   listByGranja as listReproductoresByGranja,
   getMovimientos as getReproductoresMovimientos,
@@ -57,6 +57,20 @@ function getReproductorRequiredFields(origenTipo) {
     : [...REPRODUCTOR_BASE_REQUIRED, "origen_texto"];
 }
 
+/** Recalcula machos / hembras / cantidad derivada para el estado del formulario. */
+function aplicarCantidadesMachosHembras(prevForm, machosEntero, hembrasEntero) {
+  const m = Math.max(0, Number(machosEntero) || 0);
+  const h = Math.max(0, Number(hembrasEntero) || 0);
+  const next = { ...prevForm, fn_cantidad: m + h, fc_ratio: "" };
+  next.fn_machos = m ? String(m) : "";
+  next.fn_hembras = h ? String(h) : "";
+  if (m > 0 && h > 0) {
+    const ratio = Math.round((h / m) * 100) / 100;
+    next.fc_ratio = `1:${ratio}`;
+  }
+  return next;
+}
+
 const tipoLabel = (t) => {
   if (!t) return "—";
   const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda" };
@@ -113,6 +127,8 @@ function ReproductoresContent() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
   const [origenTipo, setOrigenTipo] = useState("Interno");
+  /** Peces sumados desde la última pileta interna ocupada seleccionada (para revertir al cambiar origen). */
+  const origenAporteRef = useRef({ piletaId: null, machos: 0, hembras: 0 });
 
   const [form, setForm] = useState({
     origen_pileta_id: "",
@@ -240,6 +256,7 @@ const colorDias = (dias) => {
   /* ===================== FORMULARIO ===================== */
 
   const limpiarFormulario = () => {
+    origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
     setForm({
       origen_pileta_id: "",
       origen_texto: "",
@@ -259,8 +276,68 @@ const colorDias = (dias) => {
     clearErrors();
   };
 
+  /** Al elegir pileta interna ocupada con inventario, suma peces destino manteniendo edición manual posible después. */
+  const handleSeleccionOrigenPileta = useCallback(
+    (nextOrigenStr) => {
+      let warnMismoDestino = false;
+      setForm((prev) => {
+        let m = Number(prev.fn_machos || 0) || 0;
+        let h = Number(prev.fn_hembras || 0) || 0;
+
+        const ap = origenAporteRef.current;
+        if (ap.piletaId != null && (ap.machos > 0 || ap.hembras > 0)) {
+          m = Math.max(0, m - ap.machos);
+          h = Math.max(0, h - ap.hembras);
+        }
+        origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
+
+        let siguiente = aplicarCantidadesMachosHembras(prev, m, h);
+        siguiente.origen_pileta_id = nextOrigenStr;
+
+        if (!nextOrigenStr) return siguiente;
+
+        const oid = Number(nextOrigenStr);
+        const did = Number(prev.pileta_id);
+        if (did && oid === did) {
+          warnMismoDestino = true;
+          siguiente.origen_pileta_id = "";
+          return siguiente;
+        }
+
+        const pileMeta = piletasOrigen.find((p) => Number(p.fi_pileta_id) === oid);
+        const repOrig = reproductores.find((r) => Number(r.pileta_id) === oid);
+        const om = repOrig ? Number(repOrig.fn_machos ?? 0) || 0 : 0;
+        const oh = repOrig ? Number(repOrig.fn_hembras ?? 0) || 0 : 0;
+
+        if (
+          !repOrig ||
+          pileMeta?.estado !== "ocupada" ||
+          (om <= 0 && oh <= 0)
+        ) {
+          return siguiente;
+        }
+
+        origenAporteRef.current = { piletaId: oid, machos: om, hembras: oh };
+        return aplicarCantidadesMachosHembras(siguiente, m + om, h + oh);
+      });
+      if (warnMismoDestino) {
+        showSnackbar(
+          "La pileta origen no puede ser la misma que la pileta destino.",
+          "warning",
+        );
+      }
+    },
+    [piletasOrigen, reproductores, showSnackbar],
+  );
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "origen_pileta_id") {
+      handleSeleccionOrigenPileta(value);
+      clearFieldError(name);
+      return;
+    }
 
     if (name === "fn_machos" || name === "fn_hembras") {
       if (!soloEntero(value)) return;
@@ -322,6 +399,7 @@ const colorDias = (dias) => {
 
   const editarReproductor = (r) => {
     clearErrors();
+    origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
     setSeleccionado(r);
     setOrigenTipo(r.origen_pileta_id ? "Interno" : "Externo");
 
@@ -447,12 +525,12 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                 label="Origen"
                 value={origenTipo}
                 onChange={(e) => {
-                  setOrigenTipo(e.target.value);
-                  setForm({
-                    ...form,
-                    origen_instalacion: "",
-                    origen_texto: "",
-                  });
+                  const nextTipo = e.target.value;
+                  if (origenTipo === "Interno" && nextTipo !== "Interno") {
+                    handleSeleccionOrigenPileta("");
+                  }
+                  setOrigenTipo(nextTipo);
+                  setForm((prev) => ({ ...prev, origen_texto: "" }));
                 }}
                 fullWidth
               >
