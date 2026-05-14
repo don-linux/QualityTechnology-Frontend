@@ -133,7 +133,6 @@ export const MENU_SECTIONS = [
     moduleIcon: <Security />,
     items: [
       { to: "/seguridad/roles-modulos", icon: <People />, label: "Módulos por rol" },
-      { to: "/seguridad/ubicaciones-granjas", icon: <HomeWorkIcon />, label: "Ubicaciones de granjas" },
     ],
   },
 ];

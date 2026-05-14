@@ -38,3 +38,22 @@ export function getUnidadNegocioNombre(u) {
 export function unidadNegocioActivo(u) {
   return u?.fb_activo ?? u?.activo ?? false;
 }
+
+export function getUbicacionId(u) {
+  return u?.ubicacion_id ?? u?.fi_ubicacion_id ?? u?.id;
+}
+
+export function getUbicacionNombre(u) {
+  return u?.nombre ?? u?.fc_nombre ?? "";
+}
+
+/** Sede física enlazada (`unidadNegocio.ubicacionId` / serializers). */
+export function getUnidadNegocioUbicacionId(u) {
+  const v = u?.fi_ubicacion_id ?? u?.ubicacion_id;
+  if (v == null || v === "") return "";
+  return String(v);
+}
+
+export function getUnidadNegocioUbicacionNombre(u) {
+  return u?.fc_ubicacion_nombre ?? u?.ubicacion?.nombre ?? "";
+}

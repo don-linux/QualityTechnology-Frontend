@@ -52,10 +52,19 @@ export default function useUbicacionesGranja() {
 
   const ubicacionesGranja = useMemo(
     () =>
-      unidadesGranjaOps.map((op) => ({
-        ...op,
-        ubicacion_id: matchUbicacionIdForGranjaLabel(op.value, ubicacionesActivasRows),
-      })),
+      unidadesGranjaOps.map((op) => {
+        const raw = op.raw ?? {};
+        const explicit =
+          raw.fi_ubicacion_id ?? raw.ubicacion_id ?? raw.ubicacionId ?? null;
+        const mapped = matchUbicacionIdForGranjaLabel(op.value, ubicacionesActivasRows);
+        const n =
+          explicit != null && explicit !== "" ? Number(explicit) : NaN;
+        const fromExplicit = Number.isFinite(n) ? n : null;
+        return {
+          ...op,
+          ubicacion_id: fromExplicit != null ? fromExplicit : mapped,
+        };
+      }),
     [ubicacionesActivasRows, unidadesGranjaOps],
   );
 
