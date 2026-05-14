@@ -67,7 +67,6 @@ export const MENU_SECTIONS = [
         sublabelColor: "#90cdffff",
         items: [
           { to: "/inventarios/lotes", icon: <EggAltIcon />, label: "Control Reproductivo" },
-          { to: "/inventarios/piletas", icon: <Science />, label: "Alevinaje" },
           { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Piletas físicas" },
           { to: "/inventarios/reproductores", icon: <Biotech />, label: "Reproductores" },
           { to: "/inventarios/engorda", icon: <Grass />, label: "Engorda" },

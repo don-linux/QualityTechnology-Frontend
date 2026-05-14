@@ -6,96 +6,92 @@ Guía paso a paso del orden correcto para capturar datos en el módulo **Inventa
 
 ## 1. Mapa de dependencias
 
+El módulo **Instalaciones** se retiró de la app: la **infraestructura base** es una sola pantalla, **Piletas físicas** (modelo `Pileta`), donde defines cada estanque con su **etapa** (`alevinaje`, `reproductores`, `engorda`). Todo lo demás cuelga de esas piletas creadas en la sede/granja activa.
+
 ```
-┌───────────────────┐
-│   Instalaciones   │  ← BASE. Todo se apoya aquí.
-│  (Alev / Rep / Eng)│
-└─────────┬─────────┘
-          │
-     ┌────┼────────────────────────┬──────────────────┐
-     ▼    ▼                        ▼                  ▼
-┌──────────────┐  ┌──────────────────────┐   ┌──────────────┐
-│ Reproductores│  │      Lotes           │   │   Equipos    │
-│  (Tipo Rep)  │  │ (instalaciones con   │   │ (indepen-    │
-└──────┬───────┘  │  reproductores)      │   │  diente)     │
-       │          └──────────┬───────────┘   └──────────────┘
-       │                     │
-       └─────────┬───────────┘
-                 │
-                 │ (opcional: trazabilidad hacia siembras con
-                 │  destino en pileta — ver pestaña Alevinaje)
-                 ▼
-        ┌────────────────────────┐
-        │  Piletas físicas       │  ← CRUD del modelo `Pileta`
-        │  (tipo alevinaje /     │     (dimensiones, material, estado…)
-        │   reproductores /      │
-        │   engorda)             │
-        └───────────┬────────────┘
-                    ▼
-        ┌────────────────────────┐
-        │  Registros de          │  ← Tabla `alevinaje`: organismos por
-        │  Alevinaje             │     pileta; lote y cantidades
-        └───────────┬────────────┘
-                    │
-                    ▼
-        ┌────────────────────────┐
-        │    Engorda             │  ← pileta destino tipo engorda;
-        │                        │     origen opcional = otra pileta
-        └───────────┬────────────┘
-                    │
-                    ▼
-        ┌────────────────┐
-        │    Alimentos   │  ← Se alimentan Alevines | Engorda | Reproductores
-        └────────────────┘
+┌────────────────────────────┐
+│   Piletas físicas          │  ← BASE. CRUD modelo `Pileta`
+│   (etapa: Alev / Rep / Eng) │     (nombre, dimensiones, material, estado…)
+└─────────────┬──────────────┘
+              │
+     ┌────────┼─────────────────────────┬──────────────────┐
+     ▼        ▼                         ▼                  ▼
+┌──────────────┐  ┌──────────────────────────┐   ┌──────────────┐
+│ Reproductores│  │   Lotes (control repro.) │   │   Equipos    │
+│ piletas tipo │  │  (tras reproductores;    │   │ (indepen-    │
+│ reproductores│  │   selector API legacy)   │   │  diente)     │
+└──────┬───────┘  └────────────┬─────────────┘   └──────────────┘
+       │                       │
+       └───────────┬───────────┘
+                   │
+                   │ (siembra opcional → ver Alevinaje)
+                   ▼
+          ┌────────────────────────┐
+          │  Registros Alevinaje   │  ← Tabla `alevinaje`; solo piletas
+          │  (piletas etapa       │     etapa `alevinaje`
+          │   alevinaje)          │
+          └───────────┬────────────┘
+                      ▼
+          ┌────────────────────────┐
+          │    Engorda             │  ← pileta destino etapa engorda;
+          │                        │     origen opcional = otra pileta
+          └───────────┬────────────┘
+                      ▼
+          ┌────────────────┐
+          │    Alimentos   │  ← Alevines | Engorda | Reproductores
+          └────────────────┘
 ```
 
 ## 2. Orden correcto de captura
 
 | # | Módulo | Ruta | Depende de |
 |---|---|---|---|
-| 1 | Instalaciones | `/inventarios/instalaciones` | — |
-| 2 | Reproductores | `/inventarios/reproductores` | Instalaciones (tipo *Reproductores*) |
-| 3 | Lotes | `/inventarios/lotes` | Reproductores (habilita la instalación como origen de lote) |
-| 4 | Piletas físicas + Alevinaje | `/inventarios/piletas` (pestaña Alevinaje por defecto) y `/inventarios/piletas-fisicas` (abre en piletas) | Para **registrar alevinaje**: al menos una pileta **tipo *Alevinaje*** en la sede activa. La vinculación a **siembra de ingreso** es opcional y solo muestra opciones si ya existen siembras con destino en esa pileta (`GET /siembras`). |
-| 5 | Engorda | `/inventarios/engorda` | Al menos una pileta **tipo *Engorda*** en la sede; **origen** opcional (`origen_pileta_id`) desde `listPiletas` |
-| 6 | Alimentos | `/inventarios/alimentos` | Piletas / Engordas / Reproductores existentes |
-| 7 | Equipos | `/inventarios/equipos` | Independiente (puede llenarse en cualquier momento) |
+| 1 | Piletas físicas | `/inventarios/piletas-fisicas` (o pestaña *Piletas físicas* en `/inventarios/piletas`) | — Crear aquí las piletas por **etapa** que vayas a usar (*Alevinaje*, *Reproductores*, *Engorda*). |
+| 2 | Reproductores | `/inventarios/reproductores` | Al menos una pileta **etapa *Reproductores*** en la sede activa (`listPiletas` filtra por tipo). |
+| 3 | Lotes | `/inventarios/lotes` | Reproductores registrados (el selector usa `GET /lotes/instalaciones/:granja`; nombre legacy, origen = circuito reproductivo). |
+| 4 | Alevinaje | `/inventarios/piletas` (pestaña *Alevinaje* por defecto) | Paso 1: al menos una pileta **etapa *Alevinaje***. Opcional: vincular a **siembra de ingreso** si existen siembras con destino en esa pileta (`GET /siembras`). |
+| 5 | Engorda | `/inventarios/engorda` | Al menos una pileta **etapa *Engorda***; **origen** opcional (`origen_pileta_id`) vía `listPiletas`. |
+| 6 | Alimentos | `/inventarios/alimentos` | Piletas / registros de engorda / reproductores según pestaña |
+| 7 | Equipos | `/inventarios/equipos` | Independiente (cualquier momento) |
 
 **Antes de empezar:** elige siempre la **granja activa** (`Medellín` o `La Ceiba`) con los botones del encabezado. Cada granja tiene su propio inventario aislado.
 
 ---
 
-## 3. Paso 1 — Instalaciones
+## 3. Paso 1 — Piletas físicas (base)
 
-**Ruta:** `/inventarios/instalaciones`
-**Archivo:** `src/features/inventarios/components/Instalaciones.jsx`
-**Servicio:** `src/features/inventarios/services/instalacionesService.js`
+**Rutas:** `/inventarios/piletas-fisicas` (menú **Piletas físicas**, abre en la pestaña *Piletas físicas*) o `/inventarios/piletas` → pestaña **Piletas físicas**.
 
-![Módulo Instalaciones](./images/inventarios/01-instalaciones.png)
+**Páginas:** `src/pages/inventarios/PiletasFisicasPage.jsx` (`initialMainTab={1}`) y `src/pages/inventarios/PiletaPage.jsx` (`initialMainTab={0}` solo cambia la pestaña inicial; el componente es el mismo).
+
+**Componente:** `src/features/inventarios/components/Pileta.jsx`
+
+**Servicio:** `src/features/inventarios/services/piletasService.js`
+
+![Pestaña Piletas físicas en Pileta.jsx](./images/inventarios/04-piletas.png)
+
+> La captura puede mostrar la pestaña *Alevinaje* u otra; es la misma pantalla. Para documentación nueva, usa `/inventarios/piletas-fisicas` en el script de la §13.
 
 ### Qué representa
-La infraestructura física (tinas, piletas, estanques) donde se colocan los organismos. Es el **cimiento** de todo lo demás.
+Sustituye al antiguo módulo **Instalaciones** (ya no hay ruta `/inventarios/instalaciones`). Aquí registras cada **estanque real** como fila del modelo **`Pileta`**: nombre, dimensiones (largo / ancho / alto → volumen), material, estado (`vacia` | `ocupada`) y **etapa** (`alevinaje` | `reproductores` | `engorda`). Sin piletas creadas, los selectores de **Reproductores**, **Alevinaje**, **Engorda** y otros quedan vacíos.
 
 ### Pasos
-1. Elegir la granja (MEDELLÍN / LA CEIBA).
-2. Elegir el **tipo** de instalación a registrar (`Alevinaje`, `Reproductores`, `Engorda`).
-3. Click en **`+ Nueva Instalación ({tipo})`**.
-4. Llenar el formulario:
-   - `Nombre` — nombre único (ej. "Pileta A-01").
-   - `Largo`, `Ancho`, `Altura` — en metros.
-   - `Material` — texto libre (ej. "Concreto", "Fibra").
-   - `Estado` — `vacia` | `ocupada`. Déjalo en `vacia` al crear.
-   - `Tipo` — debe coincidir con el tipo seleccionado arriba.
-5. Click en **REGISTRAR**.
+1. Elegir **sede/granja** en el encabezado (`useUbicacionesGranja`).
+2. Ir a **Piletas físicas** y **`Nueva pileta`**.
+3. Completar el formulario y elegir la **etapa** acorde a lo que necesitas después:
+   - **Reproductores** — para el módulo Reproductores y la cadena de Lotes.
+   - **Alevinaje** — para registrar en la pestaña *Alevinaje* y para alimentación de alevines.
+   - **Engorda** — para movimientos de engorda y su alimentación.
+4. **REGISTRAR**. Repite por cada unidad física.
 
 ### Qué habilita
-- **Tipo "Reproductores"** → aparece como opción en el selector *Instalación (origen/destino)* de `Reproductores.jsx` y en el selector *Instalación* de `LotesRegistro.jsx`.
-- **Tipo "Alevinaje"** y **"Engorda"** → siguen siendo la referencia de infraestructura para otros flujos que aún usan **instalaciones**; el módulo de **piletas** (`Pileta.jsx`) trabaja con el modelo **`Pileta`** (pestaña *Piletas físicas*), no selecciona instalaciones como destino de siembra.
-- **Tipo "Engorda"** → las instalaciones tipo engorda pueden seguir usándose donde el dominio lo relacione; en la pantalla actual de **Engorda** los selectores cargan **piletas** por tipo (`listPiletas`), no el catálogo de instalaciones.
+- **Etapa reproductores** → aparece en *Pileta destino* y en el circuito que alimenta el selector de **Lotes** (vía reproductores registrados).
+- **Etapa alevinaje** → alimenta la pestaña **Alevinaje** y, con datos operativos, el selector de **Alimentos** › Alevines.
+- **Etapa engorda** → selectores de **Engorda** y **Alimentos** › Engorda.
 
 ### Errores frecuentes
-- Crear una instalación con **tipo distinto** al requerido por el módulo siguiente → no aparecerá en su selector.
-- El campo `estado` se actualiza automáticamente a `ocupada` al sembrar; no lo cambies manualmente a menos que sea un ajuste.
+- Crear la pileta con **etapa incorrecta** para el módulo siguiente → no aparecerá en el filtro correspondiente.
+- Confundir **crear la pileta** (este paso) con **registrar alevinaje** (paso 4): el alevinaje es otro modelo (`alevinaje`), enlazado a una pileta ya existente.
 
 ---
 
@@ -108,28 +104,29 @@ La infraestructura física (tinas, piletas, estanques) donde se colocan los orga
 ![Módulo Reproductores](./images/inventarios/02-reproductores.png)
 
 ### Qué representa
-Los peces reproductores (machos y hembras) alojados en instalaciones tipo *Reproductores*. Generan los huevos que derivan en los lotes.
+Los peces reproductores (machos y hembras) asociados a **piletas etapa *Reproductores***. Generan los huevos que derivan en los lotes.
 
 ### Prerrequisito
-Al menos una instalación tipo **`Reproductores`** creada en la granja activa.
+Al menos una **pileta etapa `reproductores`** en la sede activa (paso 1).
 
 ### Pasos
 1. Elegir la granja.
 2. Click en **`+ NUEVO REGISTRO`**.
 3. Llenar el formulario:
-   - `Origen`: `Interno` (seleccionar instalación ya existente) o `Externo` (texto libre con la procedencia).
-   - `Destino` (`fc_instalacion`): la instalación donde se alojan.
+   - `Origen`: `Interno` (elegir **Pileta origen** del listado `listPiletas`) o `Externo` (texto de procedencia).
+   - `Pileta destino` — solo piletas **tipo reproductores**; define línea/familia operativa de esa unidad.
    - `Machos`, `Hembras` → el sistema calcula automáticamente `Cantidad` y `Ratio`.
    - `Talla (gr)`, `Línea`, `Familia`, `Observación`.
    - `Fecha siembra`, `Última biometría`.
 4. Click en **REGISTRAR**.
 
 ### Qué habilita
-- La instalación donde se registró el reproductor queda vinculada a una `familia`, lo que permite que esa instalación aparezca en el selector de **Lotes** (endpoint `/lotes/instalaciones/:granja`) y autocomplete la familia al seleccionarla.
+- El vínculo reproductor–pileta deja constancia de **familia** para el flujo de **Lotes** (`GET /lotes/instalaciones/:granja` lista orígenes con reproductores; el formulario de lotes aún puede mostrar el campo como *Instalación* por compatibilidad con el payload `fc_instalacion_id`).
 
 ### Errores frecuentes
-- Dejar `Origen = Interno` sin seleccionar instalación: el sistema validará y no dejará guardar.
-- Cambiar a `Externo` pero dejar el texto vacío: misma validación.
+- Dejar `Origen = Interno` sin elegir **Pileta origen**: validación en cliente.
+- `Origen = Externo` con texto vacío: misma validación.
+- No haber creado piletas **reproductores** en el paso 1: los desplegables de pileta quedan vacíos.
 
 ---
 
@@ -145,20 +142,20 @@ Al menos una instalación tipo **`Reproductores`** creada en la granja activa.
 Cada lote es una **camada** producida por los reproductores: número de lote, ovadas, cantidad de huevos por ml, alevines disponibles y mortalidad.
 
 ### Prerrequisito
-Al menos un **reproductor** registrado, cuya instalación aparezca en `listInstalaciones(granja)` (la consulta filtra por instalaciones que tienen reproductores).
+Al menos un **reproductor** registrado; el listado del selector proviene de `listInstalaciones(granja)` (nombre heredado del API; son **orígenes del circuito reproductivo** vinculados a reproductores).
 
 ### Pasos
 1. Elegir la granja.
 2. Llenar el formulario:
    - `Fecha` del lote.
-   - `Instalación` — seleccionar la instalación de reproductores. Al elegirla, el campo `Familia` se **autocompleta** (vía `getFamiliaPorInstalacion`).
+   - `Instalación` — selector legacy; elige el origen asociado a reproductores. Al elegirlo, el campo `Familia` se **autocompleta** (vía `getFamiliaPorInstalacion`).
    - `Huevos (ml)`, `Ovadas`.
    - `No. Lote` — solo letras, números y guion (se convierte a mayúsculas). Ej: `L-001`.
    - `Observación`.
 3. Click en **Registrar Lote**.
 
 ### Qué habilita
-- Los lotes quedan asociados a la instalación de reproductores y a la **familia**; son la base del ciclo de huevos/alevines en ese circuito. La pantalla actual de **piletas / alevinaje** ya **no** consume este catálogo como selector de origen (el lote en alevinaje es un **texto** capturado en el formulario). En **Engorda**, el origen es una **pileta** (`origen_pileta_id`), no el listado de lotes de este módulo.
+- Los lotes quedan asociados al **origen reproductivo** elegido (payload/API siguen usando término *instalación*) y a la **familia**; son la base del ciclo de huevos/alevines en ese circuito. El **Alevinaje** (paso 4) **no** usa este listado: allí el lote es **texto libre**. En **Engorda**, el origen es una **pileta** (`origen_pileta_id`), no el listado de lotes de este módulo.
 
 ### Campos ocultos al crear (se llenan más adelante)
 - `mortalidad` se inicia en `0`.
@@ -170,45 +167,39 @@ Al menos un **reproductor** registrado, cuya instalación aparezca en `listInsta
 
 ---
 
-## 6. Paso 4 — Piletas físicas y Alevinaje
+## 6. Paso 4 — Alevinaje (registros operativos)
 
-**Rutas:** `/inventarios/piletas` (menú **Alevinaje**, primera pestaña *Alevinaje*) y `/inventarios/piletas-fisicas` (menú **Piletas físicas**, primera pestaña *Piletas físicas*).
+**Ruta principal:** `/inventarios/piletas` — menú **Alevinaje**, pestaña **Alevinaje** por defecto.
 
-**Páginas:** `src/pages/inventarios/PiletaPage.jsx` (`initialMainTab={0}`) y `src/pages/inventarios/PiletasFisicasPage.jsx` (`initialMainTab={1}`).
+**Componente:** `src/features/inventarios/components/Pileta.jsx`
 
-**Componente único:** `src/features/inventarios/components/Pileta.jsx`
+**Servicios:** `piletasService.js`, `alevinajeService.js`, `siembraService.js` (`listSiembras` opcional para «Siembra de ingreso»).
 
-**Servicios:** `piletasService.js` (CRUD de piletas), `alevinajeService.js` (registros de alevinaje), `siembraService.js` (`listSiembras` para el combo opcional).
+![Módulo Alevinaje (Pileta.jsx)](./images/inventarios/04-piletas.png)
 
-![Módulo Piletas / Alevinaje](./images/inventarios/04-piletas.png)
+### Qué representa
 
-### Qué representa (flujo actual)
+Registros del modelo **`alevinaje`**: qué **pileta** (solo etapa `alevinaje`), **lote** (texto libre), fechas, huevos/ml, ovadas, **alevines iniciales**, mortalidad y observación (hasta 500 caracteres). Las **piletas** donde ocurre esto debieron crearse en el **paso 1** (pestaña *Piletas físicas*), con **etapa Alevinaje**.
 
-1. **Piletas físicas** — Inventario de **estanques reales** como filas del modelo `Pileta`: nombre, dimensiones (largo/ancho/alto → volumen), material, estado (`vacia` | `ocupada`) y **etapa** (`alevinaje` | `reproductores` | `engorda`). Son las unidades que después aparecen en Engorda, Reproductores, Biometrías, etc.
-2. **Alevinaje** — Registros operativos (**modelo `alevinaje`**): qué **pileta** (solo las de tipo `alevinaje`), **lote** (texto), fechas, huevos/ml, ovadas, **alevines iniciales**, mortalidad y observación (hasta 500 caracteres; se refleja como observación de pileta con proceso `alevinaje`).
+### Orden dentro de este módulo
 
-El encabezado usa **`useUbicacionesGranja`**: botones de sede/granja y, cuando aplica, `ubicacion_id` en las peticiones (misma convención que el resto de inventarios).
-
-### Orden recomendado dentro del módulo
-
-1. Elegir **sede/granja** arriba.
-2. Pestaña **Piletas físicas** → **`Nueva pileta`**: crear al menos una pileta con **Etapa = Alevinaje** (sin esto, la pestaña Alevinaje muestra advertencia y el selector de pileta queda vacío).
-3. Pestaña **Alevinaje** → **`Nuevo registro`**: elegir pileta, datos del lote y cantidades.
+1. Sede/granja en el encabezado.
+2. Si aún no existe: en **Piletas físicas** (paso 1) crear piletas **etapa Alevinaje**.
+3. Pestaña **Alevinaje** → **`Nuevo registro`**: elegir pileta, lote y cantidades.
 
 ### Pestaña «Siembra de ingreso» (opcional)
 
-Tras elegir **pileta**, el combo **«Siembra de ingreso (reproductores → esta pileta)»** llama a `GET /siembras` con la ubicación actual y `pileta_destino` = pileta elegida. Las opciones enlazan el registro de alevinaje con una **siembra** ya existente cuyo destino es esa pileta. Si no hay siembras, el campo puede quedar **Sin vincular**; no es obligatorio para guardar.
+Tras elegir **pileta**, el combo enlaza con `GET /siembras` filtrando `pileta_destino`. Si no hay siembras, puede quedar **Sin vincular**; no es obligatorio para guardar.
 
 ### Qué habilita aguas abajo
 
-- Piletas **tipo alevinaje** con registros de alevinaje alimentan el selector **Pileta** en la pestaña **Alevines** de `Alimentos.jsx` (`listPiletasByGranja`).
-- Las piletas (todas las etapas) participan en **Engorda** y **Reproductores** como origen/destino según su `tipo`.
+- Registros de alevinaje alimentan trazabilidad y la pestaña **Alevines** de `Alimentos.jsx` (`listPiletasByGranja`).
 
-### Reglas y errores frecuentes (frontend)
+### Reglas y errores frecuentes
 
-- Validación local en alevinaje: obligatorios **pileta**, **lote**, **alevines iniciales**, **fecha**; mortalidad porcentual es calculada en pantalla.
-- **Eliminar** una pileta física (`removePileta`) puede fallar si el backend tiene integridad referencial; revisar el mensaje de error del API.
-- Confundir **nombre de pileta** con **código de lote**: el lote en esta pantalla es independiente del módulo **Lotes** (`/inventarios/lotes`).
+- Obligatorios en formulario: **pileta**, **lote**, **alevines iniciales**, **fecha**.
+- **Eliminar** una pileta (`removePileta`) puede fallar por integridad referencial en el backend.
+- El **código de lote** aquí es texto; no es el mismo concepto que el **Lote** del paso 3 (`/inventarios/lotes`).
 
 ---
 
@@ -257,7 +248,7 @@ El registro de organismos en **piletas tipo engorda**, con **pileta origen** opc
 El registro de **alimentación diaria** por unidad productiva. Tiene tres pestañas independientes: `Alevines`, `Engorda`, `Reproductores`.
 
 ### Prerrequisito (por pestaña)
-- **Alevines**: al menos una pileta registrada (paso 4).
+- **Alevines**: piletas creadas en el paso 1 (etapa alevinaje) y, para datos útiles en operación, registros de **Alevinaje** (paso 4).
 - **Engorda**: al menos un registro de engorda (paso 5).
 - **Reproductores**: al menos un reproductor registrado (paso 2).
 
@@ -313,12 +304,12 @@ Inventario de **equipos y herramientas** del usuario logueado (bombas, redes, se
 
 Para llenar los inventarios **desde cero en una granja nueva**, sigue este checklist sin saltarte pasos:
 
-- [ ] **1. Instalaciones** — crear al menos una por cada tipo que vayas a usar (`Alevinaje`, `Reproductores`, `Engorda`).
-- [ ] **2. Reproductores** — asignar reproductores a las instalaciones tipo *Reproductores*.
-- [ ] **3. Lotes** — crear lotes a partir de esas instalaciones (la familia se hereda).
-- [ ] **4. Piletas físicas + Alevinaje** — crear piletas tipo *Alevinaje* en la pestaña *Piletas físicas* y luego los registros en la pestaña *Alevinaje* (vinculación a siembra opcional).
-- [ ] **5. Engorda** — registrar engorda en piletas **tipo engorda**, con origen en otra pileta si aplica.
-- [ ] **6. Alimentos** — registrar la alimentación diaria por pestaña (Alevines / Engorda / Reproductores).
+- [ ] **1. Piletas físicas** — crear las piletas necesarias por **etapa** (*Alevinaje*, *Reproductores*, *Engorda*) en `/inventarios/piletas-fisicas` o en la pestaña homónima.
+- [ ] **2. Reproductores** — asignar reproductores a piletas **etapa reproductores**.
+- [ ] **3. Lotes** — control reproductivo; la familia se autocompleta desde el selector (API legacy `instalaciones`).
+- [ ] **4. Alevinaje** — registros en `/inventarios/piletas` sobre piletas **etapa alevinaje**; siembra de ingreso opcional.
+- [ ] **5. Engorda** — registros en piletas **etapa engorda**, con pileta origen opcional.
+- [ ] **6. Alimentos** — alimentación por pestaña (Alevines / Engorda / Reproductores).
 - [ ] **7. Equipos** — cuando haga falta, sin orden forzado.
 
 ## 11. Punto clave sobre granjas
@@ -343,7 +334,7 @@ Si no ves datos que sabes que existen, lo primero a revisar es que el botón de 
 
 ## 13. Regenerar capturas
 
-Las capturas viven en `docs/images/inventarios/` (`01-instalaciones.png` … `07-equipos.png`). Fueron tomadas con una sesión logueada sobre `http://localhost:3000`, viewport `1440×900`, `deviceScaleFactor: 1.25`, en `fullPage`.
+Las capturas viven en `docs/images/inventarios/`. Convención sugerida: `01-piletas-fisicas.png` … `07-equipos.png` (el antiguo `01-instalaciones.png` ya no aplica: no existe la ruta de Instalaciones). Fueron tomadas con una sesión logueada sobre `http://localhost:3000`, viewport `1440×900`, `deviceScaleFactor: 1.25`, en `fullPage`.
 
 Si cambia la UI y hay que actualizarlas, se puede hacer con Playwright siguiendo estos pasos:
 
@@ -366,7 +357,7 @@ const OUT = process.env.OUT_DIR;
 mkdirSync(OUT, { recursive: true });
 
 const routes = [
-  { slug: "01-instalaciones", path: "/inventarios/instalaciones" },
+  { slug: "01-piletas-fisicas", path: "/inventarios/piletas-fisicas" },
   { slug: "02-reproductores", path: "/inventarios/reproductores" },
   { slug: "03-lotes", path: "/inventarios/lotes" },
   { slug: "04-piletas", path: "/inventarios/piletas" },

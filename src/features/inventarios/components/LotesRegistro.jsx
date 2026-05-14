@@ -45,22 +45,21 @@ const LotesRegistro = () => {
   const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
-    "fecha", "familia", "fi_instalacion_id", "huevos_ml",
+    "fecha", "familia", "fi_pileta_id", "huevos_ml",
     "ovadas", "no_lote", "observacion", "mortalidad",
     "alevines_inicial",
   ];
 
   const [granja, setGranja] = useState("");
-  const [instalaciones, setInstalaciones] = useState([]);
+  const [piletasReproductoras, setPiletasReproductoras] = useState([]);
   const [lotes, setLotes] = useState([]);
-  const [, setInstalacionSeleccionada] = useState("");
   const [loteSeleccionado, setLoteSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
 
   const [formData, setFormData] = useState({
     fecha: "",
     familia: "",
-    fi_instalacion_id: "",
+    fi_pileta_id: "",
     huevos_ml: "",
     ovadas: "",
     no_lote: "",
@@ -91,11 +90,10 @@ const LotesRegistro = () => {
     return;
   }
 
-  if (name === "fi_instalacion_id") {
+  if (name === "fi_pileta_id") {
 
-    setFormData({ ...formData, fi_instalacion_id: value });
+    setFormData({ ...formData, fi_pileta_id: value });
 
-    setInstalacionSeleccionada(value);
     clearFieldError(name);
 
     try {
@@ -123,16 +121,14 @@ const LotesRegistro = () => {
   clearFieldError(name);
 
 };
-  /** --------------------------------------------------------
-      Cargar instalaciones desde REPRODUCTORES
-  -------------------------------------------------------- */
-  const cargarInstalaciones = useCallback(async () => {
+  /** Piletas etapa reproductores con reproductor (mismo endpoint legacy `/lotes/instalaciones`). */
+  const cargarPiletasReproductoras = useCallback(async () => {
     if (!granja) return;
     try {
       const res = await listInstalaciones(granja);
-      setInstalaciones(res.data);
+      setPiletasReproductoras(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error cargando instalaciones:", err);
+      console.error("Error cargando piletas reproductoras:", err);
     }
   }, [granja]);
 
@@ -156,8 +152,8 @@ const LotesRegistro = () => {
     }
 
     if (!granja) return;
-    cargarInstalaciones();
-  }, [defaultUbicacion, granja, cargarInstalaciones]);
+    cargarPiletasReproductoras();
+  }, [defaultUbicacion, granja, cargarPiletasReproductoras]);
 
   useEffect(() => {
     if (!granja) return;
@@ -173,7 +169,8 @@ const LotesRegistro = () => {
       await createLote({
         fecha: formData.fecha,
         familia: formData.familia,
-        fc_instalacion_id: formData.fi_instalacion_id,
+        fc_pileta_id: formData.fi_pileta_id,
+        pileta_id: formData.fi_pileta_id,
         huevos_ml: formData.huevos_ml,
         ovadas: Number(formData.ovadas || 0),
         no_lote: formData.no_lote,
@@ -202,7 +199,11 @@ const LotesRegistro = () => {
     setFormData({
       fecha: loteSeleccionado.fecha.split("T")[0],
       familia: loteSeleccionado.familia,
-      fi_instalacion_id: loteSeleccionado.fc_instalacion_id,
+      fi_pileta_id:
+        loteSeleccionado.fi_pileta_id
+        ?? loteSeleccionado.fc_pileta_id
+        ?? loteSeleccionado.fi_instalacion_id
+        ?? "",
       huevos_ml: loteSeleccionado.huevos_ml,
       ovadas: loteSeleccionado.ovadas,
       no_lote: loteSeleccionado.no_lote,
@@ -223,7 +224,8 @@ const LotesRegistro = () => {
       await updateLote(loteSeleccionado.fi_lote_id, {
         fecha: formData.fecha,
         familia: formData.familia,
-        fc_instalacion_id: formData.fi_instalacion_id,
+        fc_pileta_id: formData.fi_pileta_id,
+        pileta_id: formData.fi_pileta_id,
         huevos_ml: formData.huevos_ml,
         ovadas: Number(formData.ovadas || 0),
         no_lote: formData.no_lote,
@@ -271,7 +273,7 @@ const LotesRegistro = () => {
     setFormData({
       fecha: "",
       familia: "",
-      fi_instalacion_id: "",
+      fi_pileta_id: "",
       huevos_ml: "",
       ovadas: "",
       no_lote: "",
@@ -372,21 +374,24 @@ const LotesRegistro = () => {
               />
             </Grid>
 
-            {/* INSTALACIÓN */}
+            {/* PILETA REPRODUCTORES */}
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 select
-                label="Instalación"
-                name="fi_instalacion_id"
-                value={formData.fi_instalacion_id || ""}
+                label="Pileta (reproductores)"
+                name="fi_pileta_id"
+                value={formData.fi_pileta_id || ""}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fi_instalacion_id}
-                helperText={errors.fi_instalacion_id}
+                error={!!errors.fi_pileta_id}
+                helperText={errors.fi_pileta_id || "Definida en Piletas físicas, etapa reproductores"}
               >
-                {instalaciones.map((i) => (
-                  <MenuItem key={i.fi_instalacion_id} value={i.fi_instalacion_id}>
-                    {i.nombre_instalacion}
+                {piletasReproductoras.map((p) => (
+                  <MenuItem
+                    key={p.fi_pileta_id ?? p.pileta_id}
+                    value={String(p.fi_pileta_id ?? p.pileta_id)}
+                  >
+                    {p.nombre_pileta ?? p.nombre_instalacion}
                   </MenuItem>
                 ))}
               </TextField>
@@ -483,7 +488,7 @@ const LotesRegistro = () => {
               <TableRow>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Familia</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Instalación</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Huevos (ml)</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ovadas</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Alevines</TableCell>
@@ -519,8 +524,10 @@ const LotesRegistro = () => {
                       </span>
                     </TableCell>
                     <TableCell sx={{ maxWidth: 160 }}>
-                      <span title={l.nombre_instalacion || ""}>
-                        {l.nombre_instalacion ? truncar(l.nombre_instalacion) : "—"}
+                      <span title={l.nombre_pileta || l.nombre_instalacion || ""}>
+                        {(l.nombre_pileta || l.nombre_instalacion)
+                          ? truncar(l.nombre_pileta || l.nombre_instalacion)
+                          : "—"}
                       </span>
                     </TableCell>
                     <TableCell>{formatNumber(l.huevos_ml)}</TableCell>

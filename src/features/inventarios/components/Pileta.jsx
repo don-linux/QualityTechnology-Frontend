@@ -9,14 +9,12 @@ import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import Tab from "@mui/material/Tab";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Tabs from "@mui/material/Tabs";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
@@ -32,21 +30,12 @@ import {
   updatePileta,
   removePileta,
 } from "../services/piletasService";
-import {
-  listAlevinaje,
-  createAlevinaje,
-  updateAlevinaje,
-  removeAlevinaje,
-} from "../services/alevinajeService";
-import { listSiembras } from "../services/siembraService";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
-import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
-const MAX_OBSERVACION = 500;
 const TRUNCAR_MAX = 60;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
@@ -61,35 +50,6 @@ const tipoLabel = (t) => {
   return map[String(t).toLowerCase()] || t;
 };
 
-/** Texto corto para listas de siembra (origen conocido desde reproductores). */
-function etiquetaSiembraOpcion(s) {
-  if (!s) return "";
-  const oid = s.fi_siembra_id ?? s.id;
-  const orig =
-    s.nombre_pileta_origen ??
-    (s.pileta_origen_id != null ? `#${s.pileta_origen_id}` : "Sin pileta origen");
-  const fam = s.familia_origen ? ` · familia ${s.familia_origen}` : "";
-  const fc = s.fecha ? String(s.fecha).split("T")[0] : "";
-  const n = Number(s.cantidad);
-  const c = Number.isFinite(n) ? `${n.toLocaleString("en-US")} org.` : "";
-  const origTipo = s.tipo_pileta_origen ? ` · origen:${s.tipo_pileta_origen}` : "";
-  return `#${oid}: ${orig}${fam}${origTipo} · ${c} · ${fc}`;
-}
-
-/** Resumen de siembra en tabla usando campos ya expuestos por serializeAlevinaje. */
-function etiquetaSiembraAlevinajeRow(r) {
-  if (!(r?.siembra_origen_id > 0)) return "—";
-  const oid = r.siembra_origen_id;
-  const orig = r.siembra_origen_pileta || "origen";
-  const fam = r.familia ? ` · familia ${r.familia}` : "";
-  const qty =
-    r.siembra_origen_cantidad != null ? `${Number(r.siembra_origen_cantidad)} org.` : "";
-  const fc = r.siembra_origen_fecha
-    ? String(r.siembra_origen_fecha).split("T")[0]
-    : "";
-  return `#${oid} ${orig}${fam} · ${qty} · ${fc}`;
-}
-
 const formatNumber = (num, opts = {}) =>
   num != null && num !== ""
     ? Number(num).toLocaleString("en-US", opts)
@@ -101,32 +61,15 @@ const formatFecha = (fecha) => {
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("es-MX");
 };
 
-const calcDias = (fecha) => {
-  if (!fecha) return null;
-  const d = new Date(fecha);
-  if (Number.isNaN(d.getTime())) return null;
-  return Math.floor((Date.now() - d.getTime()) / 86400000);
-};
-
-const colorDias = (dias) => {
-  if (dias == null) return "default";
-  if (dias <= 10) return "success";
-  if (dias <= 20) return "warning";
-  return "error";
-};
-
 /* ============================================================================
- *  PANTALLA PRINCIPAL
+ *  PANTALLA PRINCIPAL — solo piletas físicas (CRUD)
  * ========================================================================= */
-export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } = {}) {
-  const auth = useAuth();
-  const usuarioId = auth.usuarioId;
+export default function Pileta({ pageTitle = "Piletas físicas" } = {}) {
   const showSnackbar = useSnackbar();
   const { confirm, ConfirmModal } = useConfirm();
   const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } =
     useUbicacionesGranja();
 
-  const [tab, setTab] = useState(initialMainTab);
   const [granjaActiva, setGranjaActiva] = useState("");
 
   const filtroUbicacion = useMemo(
@@ -140,42 +83,18 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
   );
 
   const [piletas, setPiletas] = useState([]);
-  const [piletasAlevinaje, setPiletasAlevinaje] = useState([]);
-  const [alevinajes, setAlevinajes] = useState([]);
-
-  /* ------------------------------------------------------------------ DATA */
 
   const cargarPiletas = useCallback(async () => {
     if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) {
       setPiletas([]);
-      setPiletasAlevinaje([]);
       return;
     }
     try {
-      const [resAll, resAlev] = await Promise.all([
-        listPiletas(filtroUbicacion),
-        listPiletas(filtroUbicacion, "alevinaje"),
-      ]);
+      const resAll = await listPiletas(filtroUbicacion);
       setPiletas(Array.isArray(resAll.data) ? resAll.data : []);
-      setPiletasAlevinaje(Array.isArray(resAlev.data) ? resAlev.data : []);
     } catch {
       setPiletas([]);
-      setPiletasAlevinaje([]);
       showSnackbar("Error cargando piletas", "error");
-    }
-  }, [filtroUbicacion, showSnackbar]);
-
-  const cargarAlevinajes = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) {
-      setAlevinajes([]);
-      return;
-    }
-    try {
-      const res = await listAlevinaje(filtroUbicacion);
-      setAlevinajes(Array.isArray(res.data) ? res.data : []);
-    } catch {
-      setAlevinajes([]);
-      showSnackbar("Error cargando registros de alevinaje", "error");
     }
   }, [filtroUbicacion, showSnackbar]);
 
@@ -184,43 +103,14 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
   }, [defaultUbicacion, granjaActiva]);
 
   useEffect(() => {
-    setTab(initialMainTab);
-  }, [initialMainTab]);
-
-  useEffect(() => {
     cargarPiletas();
-    cargarAlevinajes();
-  }, [cargarPiletas, cargarAlevinajes]);
+  }, [cargarPiletas]);
 
-  const totalOrganismosAlevinaje = useMemo(
-    () =>
-      alevinajes.reduce(
-        (acc, r) => acc + ((r.alevines_iniciales || 0) - (r.mortalidad || 0)),
-        0,
-      ),
-    [alevinajes],
-  );
-
-  /* ----------------------------------------------------------------- RENDER */
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={2} color="#004C7D">
         {pageTitle}
       </Typography>
-
-      {/* Selector granja */}
-      <Stack direction="row" spacing={1} mb={2} flexWrap="wrap">
-        {ubicacionesGranja.map((op) => (
-          <Button
-            key={op.value}
-            variant={granjaActiva === op.value ? "contained" : "outlined"}
-            color="primary"
-            onClick={() => setGranjaActiva(op.value)}
-          >
-            {op.label}
-          </Button>
-        ))}
-      </Stack>
 
       <Paper sx={{ p: 2, mb: 2, backgroundColor: "#E3F2FD" }} elevation={0}>
         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
@@ -231,45 +121,20 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
             ) : null}
           </Typography>
           <Typography variant="body2">
-            <b>Piletas:</b> {piletas.length} ({piletasAlevinaje.length} de alevinaje)
-          </Typography>
-          <Typography variant="body2">
-            <b>Alevines vivos (alevinaje):</b>{" "}
-            {totalOrganismosAlevinaje.toLocaleString("en-US")}
+            <b>Piletas registradas:</b> {piletas.length}
           </Typography>
         </Stack>
       </Paper>
 
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
-        <Tab label={`Alevinaje (${alevinajes.length})`} />
-        <Tab label={`Piletas físicas (${piletas.length})`} />
-      </Tabs>
-
-      {tab === 0 && (
-        <AlevinajeTab
-          granjaActiva={granjaActiva}
-          filtroUbicacion={filtroUbicacion}
-          piletasAlevinaje={piletasAlevinaje}
-          piletas={piletas}
-          alevinajes={alevinajes}
-          usuarioId={usuarioId}
-          onChange={cargarAlevinajes}
-          onChangePiletas={cargarPiletas}
-          showSnackbar={showSnackbar}
-          confirm={confirm}
-        />
-      )}
-
-      {tab === 1 && (
-        <PiletasTab
-          granjaActiva={granjaActiva}
-          piletas={piletas}
-          onChange={cargarPiletas}
-          showSnackbar={showSnackbar}
-          confirm={confirm}
-          ubicacionesGranja={ubicacionesGranja}
-        />
-      )}
+      <PiletasTab
+        granjaActiva={granjaActiva}
+        setGranjaActiva={setGranjaActiva}
+        piletas={piletas}
+        onChange={cargarPiletas}
+        showSnackbar={showSnackbar}
+        confirm={confirm}
+        ubicacionesGranja={ubicacionesGranja}
+      />
 
       {ConfirmModal}
     </Box>
@@ -277,509 +142,11 @@ export default function Pileta({ initialMainTab = 0, pageTitle = "Alevinaje" } =
 }
 
 /* ============================================================================
- *  TAB 1 — ALEVINAJE (modelo `alevinaje`)
- * ========================================================================= */
-function AlevinajeTab({
-  granjaActiva,
-  filtroUbicacion,
-  piletasAlevinaje,
-  piletas,
-  alevinajes,
-  usuarioId,
-  onChange,
-  onChangePiletas,
-  showSnackbar,
-  confirm,
-}) {
-  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [opcionesSiembra, setOpcionesSiembra] = useState([]);
-
-  const [form, setForm] = useState({
-    pileta_id: "",
-    siembra_origen_id: "",
-    fecha: "",
-    lote: "",
-    huevos_ml: "",
-    ovadas: "",
-    alevines_iniciales: "",
-    mortalidad: "",
-    observacion: "",
-  });
-
-  const required = ["pileta_id", "lote", "alevines_iniciales", "fecha"];
-
-  const piletaSel = useMemo(
-    () => piletasAlevinaje.find((p) => String(p.fi_pileta_id) === String(form.pileta_id)),
-    [piletasAlevinaje, form.pileta_id],
-  );
-
-  const mortalidadPorc = useMemo(() => {
-    const i = Number(form.alevines_iniciales) || 0;
-    const m = Number(form.mortalidad) || 0;
-    if (i <= 0) return "";
-    return ((m * 100) / i).toFixed(2);
-  }, [form.alevines_iniciales, form.mortalidad]);
-
-  useEffect(() => {
-    let discard = false;
-    (async () => {
-      if ((!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) || !form.pileta_id) {
-        if (!discard) setOpcionesSiembra([]);
-        return;
-      }
-      try {
-        const res = await listSiembras({
-          ...filtroUbicacion,
-          pileta_destino: form.pileta_id,
-        });
-        if (!discard) setOpcionesSiembra(Array.isArray(res.data) ? res.data : []);
-      } catch {
-        if (!discard) setOpcionesSiembra([]);
-      }
-    })();
-    return () => {
-      discard = true;
-    };
-  }, [filtroUbicacion, form.pileta_id]);
-
-  const limpiar = () => {
-    clearErrors();
-    setEditId(null);
-    setForm({
-      pileta_id: "",
-      siembra_origen_id: "",
-      fecha: "",
-      lote: "",
-      huevos_ml: "",
-      ovadas: "",
-      alevines_iniciales: "",
-      mortalidad: "",
-      observacion: "",
-    });
-    setMostrarFormulario(false);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    clearFieldError(name);
-    if (name === "pileta_id") {
-      setForm((prev) => ({ ...prev, pileta_id: value, siembra_origen_id: "" }));
-      return;
-    }
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const guardar = async () => {
-    if (!validate(form, required)) return;
-    if (!granjaActiva) {
-      showSnackbar("Selecciona una granja", "warning");
-      return;
-    }
-    try {
-      const body = {
-        pileta_id: Number(form.pileta_id),
-        fecha: form.fecha,
-        lote: form.lote,
-        huevos_ml: form.huevos_ml || null,
-        ovadas: form.ovadas || 0,
-        alevines_iniciales: Number(form.alevines_iniciales),
-        mortalidad: Number(form.mortalidad) || 0,
-        observacion: form.observacion,
-        fi_usuario_id: usuarioId,
-      };
-      const sid = form.siembra_origen_id ? Number(form.siembra_origen_id) : null;
-      if (editId) {
-        body.siembra_origen_id = sid;
-      } else if (sid) {
-        body.siembra_origen_id = sid;
-      }
-
-      if (editId) {
-        await updateAlevinaje(editId, body);
-        showSnackbar("Registro actualizado", "success");
-      } else {
-        await createAlevinaje(body);
-        showSnackbar("Registro creado", "success");
-      }
-
-      limpiar();
-      onChange();
-      onChangePiletas();
-    } catch (err) {
-      const msg = err.response?.data?.error || err.message || "Error";
-      showSnackbar(msg, "error");
-    }
-  };
-
-  const editar = (row) => {
-    clearErrors();
-    setEditId(row.fi_id);
-    setForm({
-      pileta_id: row.pileta_id != null ? String(row.pileta_id) : "",
-      siembra_origen_id:
-        row.siembra_origen_id != null && row.siembra_origen_id > 0
-          ? String(row.siembra_origen_id)
-          : "",
-      fecha: row.fd_fecha?.split("T")[0] || "",
-      lote: row.no_lote || "",
-      huevos_ml: row.huevos_ml ?? "",
-      ovadas: row.ovadas ?? "",
-      alevines_iniciales: row.alevines_iniciales ?? "",
-      mortalidad: row.mortalidad ?? "",
-      observacion: row.fc_observacion ?? "",
-    });
-    setMostrarFormulario(true);
-  };
-
-  const eliminar = async (id) => {
-    if (!(await confirm("¿Eliminar este registro de alevinaje?"))) return;
-    try {
-      await removeAlevinaje(id);
-      onChange();
-      showSnackbar("Registro eliminado", "success");
-    } catch (err) {
-      showSnackbar(err.response?.data?.error || "Error eliminando", "error");
-    }
-  };
-
-  return (
-    <>
-      <Stack direction="row" justifyContent="flex-end" mb={2}>
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={mostrarFormulario ? <CloseIcon /> : <AddIcon />}
-          onClick={() => (mostrarFormulario ? limpiar() : setMostrarFormulario(true))}
-          disabled={!granjaActiva}
-        >
-          {mostrarFormulario ? "Cerrar formulario" : "Nuevo registro"}
-        </Button>
-      </Stack>
-
-      {mostrarFormulario && (
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" mb={2}>
-              {editId ? "Editar alevinaje" : "Nuevo alevinaje"}
-            </Typography>
-
-            {piletasAlevinaje.length === 0 && (
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                No hay piletas tipo <b>alevinaje</b> en esta granja. Crea una en la
-                pestaña <b>Piletas físicas</b> primero.
-              </Alert>
-            )}
-
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  select
-                  label="Pileta (alevinaje)"
-                  name="pileta_id"
-                  value={form.pileta_id}
-                  onChange={handleChange}
-                  fullWidth
-                  error={!!errors.pileta_id}
-                  helperText={errors.pileta_id}
-                  slotProps={{
-                    select: {
-                      renderValue: (val) => {
-                        const p = piletasAlevinaje.find(
-                          (x) => String(x.fi_pileta_id) === String(val),
-                        );
-                        return p ? `${p.nombre} · ${p.estado}` : "";
-                      },
-                    },
-                  }}
-                >
-                  <MenuItem value="">Seleccione</MenuItem>
-                  {piletasAlevinaje.map((p) => (
-                    <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
-                      {p.nombre} · {p.estado}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  select
-                  label="Siembra de ingreso (reproductores → esta pileta)"
-                  name="siembra_origen_id"
-                  value={form.siembra_origen_id || ""}
-                  onChange={handleChange}
-                  fullWidth
-                  disabled={!granjaActiva || !form.pileta_id}
-                  slotProps={{
-                    select: {
-                      renderValue: (val) => {
-                        const s = opcionesSiembra.find(
-                          (x) => String(x.fi_siembra_id ?? x.id) === String(val),
-                        );
-                        return s ? etiquetaSiembraOpcion(s) : val ? `#${val}` : "Sin vincular";
-                      },
-                    },
-                  }}
-                  helperText={
-                    errors.siembra_origen_id ||
-                    (!form.pileta_id
-                      ? "Elige pileta primero"
-                      : opcionesSiembra.length === 0
-                        ? "No hay siembras con destino en esta pileta (registra antes la siembra con esta pileta como destino)."
-                        : "Opcional: vincula el lote al movimiento físico ya registrado.")
-                  }
-                >
-                  <MenuItem value="">Sin vincular</MenuItem>
-                  {opcionesSiembra.map((s) => {
-                    const id = s.fi_siembra_id ?? s.id;
-                    return (
-                      <MenuItem key={id} value={String(id)}>
-                        {etiquetaSiembraOpcion(s)}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
-                  type="date"
-                  label="Fecha"
-                  name="fecha"
-                  value={form.fecha}
-                  onChange={handleChange}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  error={!!errors.fecha}
-                  helperText={errors.fecha}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
-                  label="Lote"
-                  name="lote"
-                  value={form.lote}
-                  onChange={handleChange}
-                  fullWidth
-                  error={!!errors.lote}
-                  helperText={errors.lote || "Identificador del lote en esta pileta"}
-                  inputProps={{ maxLength: 60 }}
-                />
-              </Grid>
-
-              {piletaSel?.ultima_observacion && (
-                <Grid size={12}>
-                  <Alert severity="info">
-                    <Typography variant="caption">
-                      Última observación de {piletaSel.nombre}
-                      {piletaSel.fc_ultima_observacion_proceso
-                        ? ` (proceso ${piletaSel.fc_ultima_observacion_proceso})`
-                        : ""}
-                      :
-                    </Typography>
-                    <Typography variant="body2">{piletaSel.ultima_observacion}</Typography>
-                  </Alert>
-                </Grid>
-              )}
-
-              <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
-                  label="Huevos/ml"
-                  name="huevos_ml"
-                  value={form.huevos_ml}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ inputMode: "decimal" }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
-                  label="Ovadas"
-                  name="ovadas"
-                  value={form.ovadas}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ inputMode: "numeric" }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
-                  label="Alevines iniciales"
-                  name="alevines_iniciales"
-                  value={form.alevines_iniciales}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ inputMode: "numeric" }}
-                  error={!!errors.alevines_iniciales}
-                  helperText={errors.alevines_iniciales}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
-                  label="Mortalidad"
-                  name="mortalidad"
-                  value={form.mortalidad}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ inputMode: "numeric" }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
-                  label="Mortalidad %"
-                  value={mortalidadPorc}
-                  fullWidth
-                  slotProps={{ input: { readOnly: true } }}
-                  helperText="Calculado automáticamente"
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
-                  label="Alevines vivos"
-                  value={
-                    form.alevines_iniciales
-                      ? Number(form.alevines_iniciales) - Number(form.mortalidad || 0)
-                      : ""
-                  }
-                  fullWidth
-                  slotProps={{ input: { readOnly: true } }}
-                  helperText="Iniciales − mortalidad"
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <TextField
-                  label="Observación"
-                  name="observacion"
-                  value={form.observacion}
-                  onChange={handleChange}
-                  fullWidth
-                  multiline
-                  rows={2}
-                  inputProps={{ maxLength: MAX_OBSERVACION }}
-                  helperText={`Se guarda como observación de la pileta (proceso "alevinaje"). ${String(form.observacion).length}/${MAX_OBSERVACION}`}
-                />
-              </Grid>
-            </Grid>
-
-            <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
-              <Button variant="outlined" onClick={limpiar}>
-                {editId ? "Cancelar" : "Limpiar"}
-              </Button>
-              <Button variant="contained" color="success" onClick={guardar}>
-                {editId ? "Actualizar" : "Registrar"}
-              </Button>
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
-
-      <Paper>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table stickyHeader sx={{ minWidth: 1200 }}>
-            <TableHead sx={{ background: "#E8F5E9" }}>
-              <TableRow>
-                <TableCell>Fecha</TableCell>
-                <TableCell>Pileta</TableCell>
-                <TableCell>Lote</TableCell>
-                <TableCell align="right">Iniciales</TableCell>
-                <TableCell align="right">Mortalidad</TableCell>
-                <TableCell align="right">Mort. %</TableCell>
-                <TableCell align="right">Vivos</TableCell>
-                <TableCell>Días</TableCell>
-                <TableCell sx={{ minWidth: 200 }}>Siembra origen</TableCell>
-                <TableCell>Última nota (pileta)</TableCell>
-                <TableCell align="center" sx={{ minWidth: 120 }}>
-                  Acciones
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {alevinajes.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={11} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                    Sin registros para esta granja.
-                  </TableCell>
-                </TableRow>
-              )}
-              {alevinajes.map((r) => {
-                const dias = calcDias(r.fd_fecha);
-                const vivos =
-                  (Number(r.alevines_iniciales) || 0) - (Number(r.mortalidad) || 0);
-                return (
-                  <TableRow key={r.fi_id} hover>
-                    <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
-                    <TableCell>{r.nombre_pileta || "—"}</TableCell>
-                    <TableCell>{r.no_lote}</TableCell>
-                    <TableCell align="right">{formatNumber(r.alevines_iniciales)}</TableCell>
-                    <TableCell align="right">{formatNumber(r.mortalidad)}</TableCell>
-                    <TableCell align="right">
-                      {formatNumber(r.mortalidad_porcentaje, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </TableCell>
-                    <TableCell align="right">
-                      <b>{formatNumber(vivos)}</b>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        color={colorDias(dias)}
-                        label={dias != null ? `${dias} d` : "—"}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ maxWidth: 260 }} title={etiquetaSiembraAlevinajeRow(r)}>
-                      {etiquetaSiembraAlevinajeRow(r)}
-                    </TableCell>
-                    <TableCell sx={{ maxWidth: 240 }}>
-                      <span title={r.fc_ultima_observacion_pileta || ""}>
-                        {r.fc_ultima_observacion_pileta
-                          ? truncar(r.fc_ultima_observacion_pileta)
-                          : "—"}
-                      </span>
-                      {r.fc_ultima_observacion_proceso && (
-                        <Typography variant="caption" display="block" color="text.secondary">
-                          {r.fc_ultima_observacion_proceso}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
-                      <Tooltip title="Editar">
-                        <IconButton size="small" color="primary" onClick={() => editar(r)}>
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Eliminar">
-                        <IconButton size="small" color="error" onClick={() => eliminar(r.fi_id)}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-    </>
-  );
-}
-
-/* ============================================================================
- *  TAB 2 — PILETAS FÍSICAS (CRUD del modelo `Pileta`)
+ *  Formulario + tabla — CRUD modelo `Pileta`
  * ========================================================================= */
 function PiletasTab({
   granjaActiva,
+  setGranjaActiva,
   piletas,
   onChange,
   showSnackbar,
@@ -787,7 +154,7 @@ function PiletasTab({
   ubicacionesGranja,
 }) {
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [mostrarFormulario, setMostrarFormulario] = useState(true);
   const [editId, setEditId] = useState(null);
 
   const [form, setForm] = useState({
@@ -820,7 +187,7 @@ function PiletasTab({
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const limpiar = () => {
+  const limpiar = (cerrarPanel = false) => {
     clearErrors();
     setEditId(null);
     setForm({
@@ -832,13 +199,28 @@ function PiletasTab({
       estado: "vacia",
       tipo: "",
     });
-    setMostrarFormulario(false);
+    if (cerrarPanel) setMostrarFormulario(false);
+  };
+
+  /** Tras crear/editar: deja el formulario abierto para otro alta rápido. */
+  const reiniciarTrasGuardar = () => {
+    clearErrors();
+    setEditId(null);
+    setForm({
+      nombre: "",
+      largo: "",
+      ancho: "",
+      alto: "",
+      material: "",
+      estado: "vacia",
+      tipo: "",
+    });
   };
 
   const guardar = async () => {
     if (!validate(form, required)) return;
     if (!granjaActiva) {
-      showSnackbar("Selecciona una granja", "warning");
+      showSnackbar("Selecciona una ubicación (sede)", "warning");
       return;
     }
     try {
@@ -852,6 +234,9 @@ function PiletasTab({
         tipo: form.tipo,
         granja: granjaActiva,
       };
+      if (ubicacionActual?.ubicacion_id != null) {
+        body.ubicacion_id = ubicacionActual.ubicacion_id;
+      }
 
       if (editId) {
         await updatePileta(editId, body);
@@ -860,7 +245,7 @@ function PiletasTab({
         await createPileta(body);
         showSnackbar("Pileta creada", "success");
       }
-      limpiar();
+      reiniciarTrasGuardar();
       onChange();
     } catch (err) {
       showSnackbar(err.response?.data?.error || err.message || "Error", "error");
@@ -870,6 +255,10 @@ function PiletasTab({
   const editar = (p) => {
     clearErrors();
     setEditId(p.fi_pileta_id);
+    const matchUbicacion = ubicacionesGranja.find(
+      (u) => u.value === p.fc_granja || u.label === p.fc_granja,
+    );
+    if (matchUbicacion) setGranjaActiva(matchUbicacion.value);
     setForm({
       nombre: p.nombre || "",
       largo: p.largo ?? "",
@@ -900,7 +289,7 @@ function PiletasTab({
           variant="contained"
           color="success"
           startIcon={mostrarFormulario ? <CloseIcon /> : <AddIcon />}
-          onClick={() => (mostrarFormulario ? limpiar() : setMostrarFormulario(true))}
+          onClick={() => (mostrarFormulario ? limpiar(true) : setMostrarFormulario(true))}
           disabled={!granjaActiva}
         >
           {mostrarFormulario ? "Cerrar formulario" : "Nueva pileta"}
@@ -914,13 +303,41 @@ function PiletasTab({
               {editId ? "Editar pileta" : "Nueva pileta"}
             </Typography>
 
-            {!granjaActiva && (
+            {ubicacionesGranja.length === 0 && (
               <Alert severity="warning" sx={{ mb: 2 }}>
-                Selecciona primero una granja para asignar la pileta.
+                No hay ubicaciones disponibles. Revisa el catálogo de ubicaciones y unidades de
+                negocio.
               </Alert>
             )}
 
             <Grid container spacing={2}>
+              <Grid size={12}>
+                <TextField
+                  select
+                  required
+                  label="Ubicación (sede)"
+                  value={granjaActiva || ""}
+                  onChange={(e) => setGranjaActiva(e.target.value)}
+                  fullWidth
+                  disabled={ubicacionesGranja.length === 0}
+                  helperText={
+                    ubicacionActual?.ubicacion_id != null
+                      ? `ID en catálogo de ubicaciones: ${ubicacionActual.ubicacion_id}`
+                      : "El alta de la pileta queda ligado a la sede elegida"
+                  }
+                >
+                  {ubicacionesGranja.length === 0 ? (
+                    <MenuItem value="">Sin ubicaciones configuradas</MenuItem>
+                  ) : (
+                    ubicacionesGranja.map((op) => (
+                      <MenuItem key={op.value} value={op.value}>
+                        {op.label}
+                      </MenuItem>
+                    ))
+                  )}
+                </TextField>
+              </Grid>
+
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Nombre"
@@ -1035,21 +452,14 @@ function PiletasTab({
                   ))}
                 </TextField>
               </Grid>
-
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label="Granja"
-                  value={ubicacionActual?.label || granjaActiva || ""}
-                  fullWidth
-                  slotProps={{ input: { readOnly: true } }}
-                  helperText="La granja se toma del selector superior"
-                />
-              </Grid>
             </Grid>
 
             <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
-              <Button variant="outlined" onClick={limpiar}>
-                {editId ? "Cancelar" : "Limpiar"}
+              <Button
+                variant="outlined"
+                onClick={() => (editId ? limpiar(true) : limpiar(false))}
+              >
+                {editId ? "Cancelar" : "Limpiar campos"}
               </Button>
               <Button variant="contained" color="success" onClick={guardar}>
                 {editId ? "Actualizar" : "Crear"}
@@ -1069,7 +479,7 @@ function PiletasTab({
                 <TableCell>Estado</TableCell>
                 <TableCell align="right">Vol. m³</TableCell>
                 <TableCell>Material</TableCell>
-                <TableCell>Granja</TableCell>
+                <TableCell>Ubicación</TableCell>
                 <TableCell>Última observación</TableCell>
                 <TableCell align="center" sx={{ minWidth: 120 }}>
                   Acciones
@@ -1080,7 +490,7 @@ function PiletasTab({
               {piletas.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                    Sin piletas para esta granja.
+                    Sin piletas para esta ubicación.
                   </TableCell>
                 </TableRow>
               )}

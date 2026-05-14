@@ -60,7 +60,9 @@ export const ENDPOINTS = {
     base: "/lotes",
     byGranja: (granja) => `/lotes/granja/${path(granja)}`,
     byInstalacion: (id) => `/lotes/instalacion/${id}`,
+    /** Lista piletas etapa reproductores (con reproductor). Nombre de ruta histórico. */
     instalacionesReproductores: (granja) => `/lotes/instalaciones/${path(granja)}`,
+    /** Param: id de pileta reproductores (también soporta familia desde lote legacy por instalacion_id). */
     familiaPorInstalacion: (id) => `/lotes/familia-por-instalacion/${id}`,
     byId: (id) => `/lotes/${id}`,
   },

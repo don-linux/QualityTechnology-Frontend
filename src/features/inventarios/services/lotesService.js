@@ -1,10 +1,12 @@
 import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
 
-export function getFamiliaPorInstalacion(instalacionId) {
-  return axios.get(ENDPOINTS.lotes.familiaPorInstalacion(instalacionId));
+/** Familia del circuito reproductivo: `id` es **pileta** etapa reproductores (ruta legacy). */
+export function getFamiliaPorInstalacion(piletaId) {
+  return axios.get(ENDPOINTS.lotes.familiaPorInstalacion(piletaId));
 }
 
+/** Piletas reproductoras para Lotes. GET `/lotes/instalaciones/:granja` (nombre de ruta heredado). */
 export function listInstalaciones(granja) {
   return axios.get(ENDPOINTS.lotes.instalacionesReproductores(granja));
 }
