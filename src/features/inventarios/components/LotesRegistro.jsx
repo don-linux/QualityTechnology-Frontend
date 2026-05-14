@@ -42,7 +42,7 @@ const LotesRegistro = () => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
     "fecha", "familia", "fi_pileta_id", "huevos_ml",
@@ -121,16 +121,17 @@ const LotesRegistro = () => {
   clearFieldError(name);
 
 };
-  /** Piletas etapa reproductores de la sede (legacy `GET /lotes/instalaciones/:granja`). */
+  /** Piletas etapa reproductores de la sede (legacy `GET /lotes/instalaciones/:granja` + `ubicacion_id`). */
   const cargarPiletasReproductoras = useCallback(async () => {
     if (!granja) return;
     try {
-      const res = await listInstalaciones(granja);
+      const filtros = resolveFiltroUbicacion(granja);
+      const res = await listInstalaciones(filtros);
       setPiletasReproductoras(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error cargando piletas reproductoras:", err);
     }
-  }, [granja]);
+  }, [granja, resolveFiltroUbicacion]);
 
   /** --------------------------------------------------------
       Cargar lotes
@@ -138,12 +139,13 @@ const LotesRegistro = () => {
   const cargarLotes = useCallback(async () => {
     if (!granja) return;
     try {
-      const res = await listLotes(granja);
+      const filtros = resolveFiltroUbicacion(granja);
+      const res = await listLotes(filtros);
       setLotes(res.data);
     } catch (err) {
       console.error("Error cargando lotes:", err);
     }
-  }, [granja]);
+  }, [granja, resolveFiltroUbicacion]);
 
   useEffect(() => {
     if (!granja && defaultUbicacion) {
@@ -384,7 +386,10 @@ const LotesRegistro = () => {
                 onChange={handleChange}
                 fullWidth
                 error={!!errors.fi_pileta_id}
-                helperText={errors.fi_pileta_id || "Definida en Piletas físicas, etapa reproductores"}
+                helperText={
+                  errors.fi_pileta_id ||
+                  "Solo piletas etapa Reproductores con estado ocupada. Al crear el lote pasan a Alevinaje."
+                }
               >
                 {piletasReproductoras.map((p) => (
                   <MenuItem
