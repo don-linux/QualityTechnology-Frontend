@@ -48,6 +48,16 @@ const truncar = (texto) =>
 
 const EMPTY_FORM = { fi_unidad_negocio_id: null, fc_nombre: "", fi_ubicacion_id: "" };
 
+function apiErrMsg(e, fallback) {
+  const data = e?.response?.data;
+  const pick =
+    (typeof data?.detail === "string" && data.detail.trim() && data.detail) ||
+    (typeof data?.error === "string" && data.error.trim() && data.error) ||
+    (typeof data?.mensaje === "string" && data.mensaje.trim() && data.mensaje) ||
+    (typeof e?.message === "string" && e.message.trim() && e.message);
+  return pick || fallback;
+}
+
 export default function UnidadesNegocio() {
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState(EMPTY_FORM);
@@ -68,7 +78,7 @@ export default function UnidadesNegocio() {
       setUbicaciones(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
-      showSnackbar("Error al cargar ubicaciones", "error");
+      showSnackbar(apiErrMsg(e, "Error al cargar ubicaciones"), "error");
     }
   };
 
@@ -79,16 +89,10 @@ export default function UnidadesNegocio() {
       setUnidades(data);
     } catch (e) {
       console.error(e);
-      showSnackbar("Error al cargar unidades de negocio", "error");
+      showSnackbar(apiErrMsg(e, "Error al cargar unidades de negocio"), "error");
     } finally {
       if (!silent) setLoading(false);
     }
-  };
-
-  /** Texto corto desde respuesta axios u otro Error */
-  const apiErrMsg = (e, fallback) => {
-    const m = e?.response?.data?.error ?? e?.response?.data?.mensaje ?? e?.message;
-    return typeof m === "string" && m.trim() ? m : fallback;
   };
 
   const handleChange = (e) => {
