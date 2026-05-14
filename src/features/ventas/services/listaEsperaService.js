@@ -1,29 +1,30 @@
 import axios from "@shared/lib/axiosInstance";
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
 export function listLista() {
-  return axios.get("/lista-espera");
+  return axios.get(ENDPOINTS.listaEspera.base);
 }
 
 export function listClientes() {
-  return axios.get("/clientes");
+  return axios.get(ENDPOINTS.clientes.base);
 }
 
 export function createRegistro(form) {
-  return axios.post("/lista-espera", form);
+  return axios.post(ENDPOINTS.listaEspera.base, form);
 }
 
 export function updateRegistro(id, form) {
-  return axios.put(`/lista-espera/${id}`, form);
+  return axios.put(ENDPOINTS.listaEspera.byId(id), form);
 }
 
 export function removeRegistro(id) {
-  return axios.delete(`/lista-espera/${id}`);
+  return axios.delete(ENDPOINTS.listaEspera.byId(id));
 }
 
 export function convertirAVenta(id) {
-  return axios.post(`/lista-espera/convertir/${id}`);
+  return axios.post(ENDPOINTS.listaEspera.convertir(id));
 }
 
 export function createClienteRapido(data) {
-  return axios.post("/clientes", data);
+  return axios.post(ENDPOINTS.clientes.base, data);
 }

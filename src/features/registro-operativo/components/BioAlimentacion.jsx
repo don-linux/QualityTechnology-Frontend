@@ -19,12 +19,12 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   listAlimentacion,
-  getOrigenes,
   createAlimentacion,
   updateAlimentacion,
   removeAlimentacion,
   removeAllAlimentacion,
-} from "../services/biometriasService";
+} from "../services/alimentacionService";
+import { getOrigenes } from "@features/inventarios/services/piletasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";

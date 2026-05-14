@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useMemo } from "react";
 import axiosInstance from "@shared/lib/axiosInstance";
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
 const AuthContext = createContext(null);
 
@@ -60,7 +61,7 @@ export function AuthProvider({ children }) {
     const refreshToken = localStorage.getItem("refreshToken");
     if (refreshToken) {
       try {
-        await axiosInstance.post("/auth/logout", { refreshToken });
+        await axiosInstance.post(ENDPOINTS.auth.logout, { refreshToken });
       } catch (_) { /* best effort */ }
     }
     localStorage.clear();

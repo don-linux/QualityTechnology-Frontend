@@ -21,6 +21,46 @@ import PasswordField from "@shared/components/PasswordField";
 import useConfirm from "@shared/hooks/useConfirm";
 import useUsuarios from "../hooks/useUsuarios";
 
+function uid(u) {
+  return u?.usuario_id ?? u?.fi_usuario_id ?? u?.id;
+}
+function unombre(u) {
+  return u?.nombre ?? u?.fc_nombre ?? "";
+}
+function uactivo(u) {
+  return Boolean(u?.activo ?? u?.fb_activo);
+}
+function rid(r) {
+  return r?.rol_id ?? r?.fi_rol_id ?? r?.id;
+}
+function rnombre(r) {
+  return r?.nombre ?? r?.fc_nombre ?? "";
+}
+function rroot(r) {
+  return Boolean(r?.es_root ?? r?.fb_es_root);
+}
+function deptKey(d) {
+  return d?.departamento_id ?? d?.fi_departamento_id;
+}
+function deptLabel(d) {
+  return d?.nombre ?? d?.fc_nombre ?? "";
+}
+function puestoKey(p) {
+  return p?.puesto_id ?? p?.fi_puesto_id;
+}
+function puestoLabel(p) {
+  return p?.nombre ?? p?.fc_nombre ?? "";
+}
+function udnKey(udn) {
+  return udn?.unidad_negocio_id ?? udn?.fi_unidad_negocio_id;
+}
+function udnLabel(udn) {
+  return udn?.nombre ?? udn?.fc_nombre ?? "";
+}
+function usuarioRolId(usuario) {
+  return usuario?.rol_id ?? usuario?.fi_rol_id;
+}
+
 export default function UsuariosRegistro() {
   const [form, setForm] = useState({
     nombre: "",
@@ -39,8 +79,8 @@ export default function UsuariosRegistro() {
   const { confirm, ConfirmModal } = useConfirm();
   const { usuarios, roles, departamentos, puestos, unidadesNegocio, crearUsuario, actualizarUsuario, toggleActivo } = useUsuarios();
 
-  const rolSeleccionado = roles.find((r) => r.fi_rol_id === Number(form.rol_id));
-  const esRoot = rolSeleccionado?.fb_es_root === true;
+  const rolSeleccionado = roles.find((r) => rid(r) === Number(form.rol_id));
+  const esRoot = rroot(rolSeleccionado);
 
   const requiredFields = esRoot || usuarioSeleccionado
     ? ["nombre", "contraseña", "rol_id"]
@@ -59,7 +99,7 @@ export default function UsuariosRegistro() {
   const handleUpdate = async () => {
     if (!usuarioSeleccionado) return;
     if (!validate(form, ["nombre", "contraseña", "rol_id"])) return;
-    const ok = await actualizarUsuario(usuarioSeleccionado.fi_usuario_id, {
+    const ok = await actualizarUsuario(uid(usuarioSeleccionado), {
       nombre: form.nombre,
       contraseña: form.contraseña,
       rol_id: form.rol_id,
@@ -68,17 +108,17 @@ export default function UsuariosRegistro() {
   };
 
   const handleToggleActive = async (usuario) => {
-    const accion = usuario.fb_activo ? "desactivar" : "activar";
-    if (!await confirm(`¿Seguro que deseas ${accion} al usuario "${usuario.fc_nombre}"?`)) return;
+    const accion = uactivo(usuario) ? "desactivar" : "activar";
+    if (!await confirm(`¿Seguro que deseas ${accion} al usuario "${unombre(usuario)}"?`)) return;
     await toggleActivo(usuario);
   };
 
   const seleccionarUsuario = (usuario) => {
     setUsuarioSeleccionado(usuario);
     setForm({
-      nombre: usuario.fc_nombre,
+      nombre: unombre(usuario),
       contraseña: "",
-      rol_id: usuario.fi_rol_id,
+      rol_id: usuarioRolId(usuario) ?? "",
       fc_nombre_empleado: "",
       fc_apellido_paterno: "",
       fc_apellido_materno: "",
@@ -100,8 +140,10 @@ export default function UsuariosRegistro() {
   };
 
   const obtenerNombreRol = (rolId) => {
-    const rol = roles.find((r) => r.fi_rol_id === rolId);
-    return rol ? rol.fc_nombre : rolId;
+    if (rolId == null || rolId === "") return "";
+    const n = Number(rolId);
+    const rol = roles.find((r) => Number(rid(r)) === n);
+    return rol ? rnombre(rol) : rolId;
   };
 
   const mostrarCamposEmpleado = !usuarioSeleccionado && form.rol_id && !esRoot;
@@ -131,7 +173,7 @@ export default function UsuariosRegistro() {
             <Grid size={12}>
               <TextField select name="rol_id" label="Rol" fullWidth value={form.rol_id} onChange={handleChange} error={!!errors.rol_id} helperText={errors.rol_id}>
                 {roles.map((rol) => (
-                  <MenuItem key={rol.fi_rol_id} value={rol.fi_rol_id}>{rol.fc_nombre}</MenuItem>
+                  <MenuItem key={rid(rol)} value={rid(rol)}>{rnombre(rol)}</MenuItem>
                 ))}
               </TextField>
             </Grid>
@@ -155,7 +197,7 @@ export default function UsuariosRegistro() {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField select name="fi_departamento_id" label="Departamento" fullWidth value={form.fi_departamento_id} onChange={handleChange} error={!!errors.fi_departamento_id} helperText={errors.fi_departamento_id}>
                     {departamentos.map((d) => (
-                      <MenuItem key={d.fi_departamento_id} value={d.fi_departamento_id}>{d.fc_nombre}</MenuItem>
+                      <MenuItem key={deptKey(d)} value={deptKey(d)}>{deptLabel(d)}</MenuItem>
                     ))}
                   </TextField>
                 </Grid>
@@ -163,7 +205,7 @@ export default function UsuariosRegistro() {
                   <TextField select name="fi_puesto_id" label="Puesto" fullWidth value={form.fi_puesto_id} onChange={handleChange}>
                     <MenuItem value="">Sin asignar</MenuItem>
                     {puestos.map((p) => (
-                      <MenuItem key={p.fi_puesto_id} value={p.fi_puesto_id}>{p.fc_nombre}</MenuItem>
+                      <MenuItem key={puestoKey(p)} value={puestoKey(p)}>{puestoLabel(p)}</MenuItem>
                     ))}
                   </TextField>
                 </Grid>
@@ -171,7 +213,7 @@ export default function UsuariosRegistro() {
                   <TextField select name="fi_unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.fi_unidad_negocio_id} onChange={handleChange}>
                     <MenuItem value="">Sin asignar</MenuItem>
                     {unidadesNegocio.map((u) => (
-                      <MenuItem key={u.fi_unidad_negocio_id} value={u.fi_unidad_negocio_id}>{u.fc_nombre}</MenuItem>
+                      <MenuItem key={udnKey(u)} value={udnKey(u)}>{udnLabel(u)}</MenuItem>
                     ))}
                   </TextField>
                 </Grid>
@@ -206,14 +248,14 @@ export default function UsuariosRegistro() {
           </TableHead>
           <TableBody>
             {usuarios.map((usuario) => (
-              <TableRow key={usuario.fi_usuario_id} hover sx={{ opacity: usuario.fb_activo ? 1 : 0.5 }}>
-                <TableCell>{usuario.fi_usuario_id}</TableCell>
-                <TableCell>{usuario.fc_nombre}</TableCell>
-                <TableCell>{obtenerNombreRol(usuario.fi_rol_id)}</TableCell>
+              <TableRow key={uid(usuario)} hover sx={{ opacity: uactivo(usuario) ? 1 : 0.5 }}>
+                <TableCell>{uid(usuario)}</TableCell>
+                <TableCell>{unombre(usuario)}</TableCell>
+                <TableCell>{obtenerNombreRol(usuarioRolId(usuario))}</TableCell>
                 <TableCell>
                   <Chip
-                    label={usuario.fb_activo ? "Activo" : "Inactivo"}
-                    color={usuario.fb_activo ? "success" : "default"}
+                    label={uactivo(usuario) ? "Activo" : "Inactivo"}
+                    color={uactivo(usuario) ? "success" : "default"}
                     size="small"
                   />
                 </TableCell>
@@ -224,10 +266,10 @@ export default function UsuariosRegistro() {
                   <Button
                     variant="outlined"
                     size="small"
-                    color={usuario.fb_activo ? "error" : "success"}
+                    color={uactivo(usuario) ? "error" : "success"}
                     onClick={() => handleToggleActive(usuario)}
                   >
-                    {usuario.fb_activo ? "Desactivar" : "Activar"}
+                    {uactivo(usuario) ? "Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>

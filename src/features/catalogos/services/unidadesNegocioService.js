@@ -1,25 +1,32 @@
 import axios from "@shared/lib/axiosInstance";
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
 export function listUnidadesNegocio() {
-  return axios.get("/unidades-negocio");
+  return axios.get(ENDPOINTS.unidadesNegocio.base);
 }
 
 export function listUnidadesNegocioActivas() {
-  return axios.get("/unidades-negocio/activos");
+  return axios.get(ENDPOINTS.unidadesNegocio.activos);
 }
 
-export function createUnidadNegocio(fc_nombre) {
-  return axios.post("/unidades-negocio", { fc_nombre });
+export function createUnidadNegocio(nombre, ubicacionId) {
+  return axios.post(ENDPOINTS.unidadesNegocio.base, {
+    nombre,
+    ubicacion_id: ubicacionId,
+  });
 }
 
-export function updateUnidadNegocio(id, fc_nombre) {
-  return axios.put(`/unidades-negocio/${id}`, { fc_nombre });
+export function updateUnidadNegocio(id, nombre, ubicacionId) {
+  return axios.put(ENDPOINTS.unidadesNegocio.byId(id), {
+    nombre,
+    ubicacion_id: ubicacionId,
+  });
 }
 
 export function activateUnidadNegocio(id) {
-  return axios.patch(`/unidades-negocio/${id}/activate`);
+  return axios.patch(ENDPOINTS.unidadesNegocio.activate(id));
 }
 
 export function deactivateUnidadNegocio(id) {
-  return axios.patch(`/unidades-negocio/${id}/deactivate`);
+  return axios.patch(ENDPOINTS.unidadesNegocio.deactivate(id));
 }

@@ -1,26 +1,27 @@
 import axios from "@shared/lib/axiosInstance";
+import { ENDPOINTS } from "@shared/lib/endpoints";
 
 export function listUsuarios() {
-  return axios.get("/usuarios");
+  return axios.get(ENDPOINTS.usuarios.base);
 }
 
 export function getUsuario(id) {
-  return axios.get(`/usuarios/${id}`);
+  return axios.get(ENDPOINTS.usuarios.byId(id));
 }
 
 export function listRoles() {
-  return axios.get("/roles");
+  return axios.get(ENDPOINTS.roles.base);
 }
 
 export function createUsuario(data) {
-  return axios.post("/usuarios", data);
+  return axios.post(ENDPOINTS.usuarios.base, data);
 }
 
 export function updateUsuario(id, data) {
-  return axios.put(`/usuarios/${id}`, data);
+  return axios.put(ENDPOINTS.usuarios.byId(id), data);
 }
 
 export function toggleUsuarioActivo(id, activate) {
-  const endpoint = activate ? "activate" : "deactivate";
-  return axios.patch(`/usuarios/${id}/${endpoint}`);
+  const url = activate ? ENDPOINTS.usuarios.activate(id) : ENDPOINTS.usuarios.deactivate(id);
+  return axios.patch(url);
 }

@@ -20,6 +20,11 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import {
+  getDepartamentoId,
+  getDepartamentoNombre,
+  departamentoActivo,
+} from "@features/catalogos/utils/catalogEntityGetters";
 
 export default function Departamentos() {
   const showSnackbar = useSnackbar();
@@ -89,7 +94,10 @@ export default function Departamentos() {
   };
 
   const seleccionar = (d) => {
-    setForm({ fi_departamento_id: d.fi_departamento_id, fc_nombre: d.fc_nombre });
+    setForm({
+      fi_departamento_id: getDepartamentoId(d),
+      fc_nombre: getDepartamentoNombre(d),
+    });
     clearErrors();
   };
 
@@ -140,19 +148,23 @@ export default function Departamentos() {
             </TableHead>
             <TableBody>
               {departamentos.map((d) => (
-                <TableRow key={d.fi_departamento_id} hover>
-                  <TableCell>{d.fi_departamento_id}</TableCell>
-                  <TableCell>{d.fc_nombre}</TableCell>
+                <TableRow key={getDepartamentoId(d) ?? ""} hover>
+                  <TableCell>{getDepartamentoId(d)}</TableCell>
+                  <TableCell>{getDepartamentoNombre(d)}</TableCell>
                   <TableCell>
-                    <Chip label={d.fb_activo ? "Activo" : "Inactivo"} color={d.fb_activo ? "success" : "default"} size="small" />
+                    <Chip
+                      label={departamentoActivo(d) ? "Activo" : "Inactivo"}
+                      color={departamentoActivo(d) ? "success" : "default"}
+                      size="small"
+                    />
                   </TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
                       <Button size="small" variant="outlined" onClick={() => seleccionar(d)}>Seleccionar</Button>
-                      {d.fb_activo ? (
-                        <Button size="small" variant="outlined" color="error" onClick={() => desactivar(d.fi_departamento_id, d.fc_nombre)}>Desactivar</Button>
+                      {departamentoActivo(d) ? (
+                        <Button size="small" variant="outlined" color="error" onClick={() => desactivar(getDepartamentoId(d), getDepartamentoNombre(d))}>Desactivar</Button>
                       ) : (
-                        <Button size="small" variant="outlined" color="success" onClick={() => activar(d.fi_departamento_id, d.fc_nombre)}>Activar</Button>
+                        <Button size="small" variant="outlined" color="success" onClick={() => activar(getDepartamentoId(d), getDepartamentoNombre(d))}>Activar</Button>
                       )}
                     </Box>
                   </TableCell>

@@ -24,6 +24,7 @@ import Business from "@mui/icons-material/Business";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import EggAltIcon from "@mui/icons-material/EggAlt";
+import PoolOutlinedIcon from "@mui/icons-material/PoolOutlined";
 import MenuBook from "@mui/icons-material/MenuBook";
 import Security from "@mui/icons-material/Security";
 import Groups from "@mui/icons-material/Groups";
@@ -65,9 +66,9 @@ export const MENU_SECTIONS = [
         sublabel: "Inventario de Organismos",
         sublabelColor: "#90cdffff",
         items: [
-          { to: "/inventarios/lotes", icon: <EggAltIcon />, label: "Control Reproductivo" },
-          { to: "/inventarios/piletas", icon: <Science />, label: "Alevinaje" },
+          { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Piletas físicas" },
           { to: "/inventarios/reproductores", icon: <Biotech />, label: "Reproductores" },
+          { to: "/inventarios/alevinaje", icon: <EggAltIcon />, label: "Control Reproductivo" },
           { to: "/inventarios/engorda", icon: <Grass />, label: "Engorda" },
         ],
       },
@@ -75,7 +76,6 @@ export const MENU_SECTIONS = [
         sublabel: "Otros Inventarios",
         sublabelColor: "#e3eb72ff",
         items: [
-          { to: "/inventarios/instalaciones", icon: <HomeWorkIcon />, label: "Instalaciones" },
           { to: "/inventarios/alimentos", icon: <LocalMall />, label: "Alimento e Insumos" },
           { to: "/inventarios/equipos", icon: <Handyman />, label: "Equipo y Herramientas" },
         ],
@@ -124,6 +124,7 @@ export const MENU_SECTIONS = [
       { to: "/departamentos", icon: <Business />, label: "Departamentos" },
       { to: "/puestos", icon: <Work />, label: "Puestos" },
       { to: "/unidades-negocio", icon: <Business />, label: "Unidades de Negocio" },
+      { to: "/ubicaciones",     icon: <HomeWorkIcon />, label: "Ubicaciones" },
     ],
   },
   {

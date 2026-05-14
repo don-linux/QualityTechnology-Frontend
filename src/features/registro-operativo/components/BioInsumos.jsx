@@ -25,7 +25,7 @@ import {
   updateInsumo,
   removeInsumo,
   removeAllInsumos,
-} from "../services/biometriasService";
+} from "../services/insumosService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";

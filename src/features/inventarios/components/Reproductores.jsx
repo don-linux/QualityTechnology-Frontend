@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   listByGranja as listReproductoresByGranja,
   getMovimientos as getReproductoresMovimientos,
@@ -6,7 +6,7 @@ import {
   updateReproductor,
   removeReproductor,
 } from "../services/reproductoresService";
-import { listByGranja as listInstalacionesByGranja } from "../services/instalacionesService";
+import { listPiletas } from "../services/piletasService";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -24,7 +24,6 @@ import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import useFormValidation from "@shared/hooks/useFormValidation";
@@ -42,22 +41,40 @@ const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 const REPRODUCTOR_BASE_REQUIRED = [
-  "fi_instalacion_id",
+  "pileta_id",
   "fn_machos",
   "fn_hembras",
   "fn_talla",
   "fc_linea",
   "fc_familia",
   "fc_observacion",
-  "fd_fecha_siembra",
-  "fd_fecha_biometria",
 ];
 
 function getReproductorRequiredFields(origenTipo) {
   return origenTipo === "Interno"
-    ? [...REPRODUCTOR_BASE_REQUIRED, "origen_instalacion"]
+    ? [...REPRODUCTOR_BASE_REQUIRED, "origen_pileta_id"]
     : [...REPRODUCTOR_BASE_REQUIRED, "origen_texto"];
 }
+
+/** Recalcula machos / hembras / cantidad derivada para el estado del formulario. */
+function aplicarCantidadesMachosHembras(prevForm, machosEntero, hembrasEntero) {
+  const m = Math.max(0, Number(machosEntero) || 0);
+  const h = Math.max(0, Number(hembrasEntero) || 0);
+  const next = { ...prevForm, fn_cantidad: m + h, fc_ratio: "" };
+  next.fn_machos = m ? String(m) : "";
+  next.fn_hembras = h ? String(h) : "";
+  if (m > 0 && h > 0) {
+    const ratio = Math.round((h / m) * 100) / 100;
+    next.fc_ratio = `1:${ratio}`;
+  }
+  return next;
+}
+
+const tipoLabel = (t) => {
+  if (!t) return "—";
+  const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda" };
+  return map[String(t).toLowerCase()] || t;
+};
 
 const CirculoNumero = ({ color, value }) => (
   <Box
@@ -89,25 +106,33 @@ function ReproductoresContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
 
   const [granjaActiva, setGranjaActiva] = useState("");
+  const filtroUbicacion = useMemo(
+    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
+    [granjaActiva, resolveFiltroUbicacion],
+  );
+
   const [reproductores, setReproductores] = useState([]);
-  const [instalaciones, setInstalaciones] = useState([]);
+  const [piletasReproductores, setPiletasReproductores] = useState([]);
+  const [piletasOrigen, setPiletasOrigen] = useState([]);
   const [rastreos, setRastreos] = useState([]);
   const [filtroTexto, setFiltroTexto] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
-  const [totalInstalaciones, setTotalInstalaciones] = useState(0);
+  const [totalPiletas, setTotalPiletas] = useState(0);
   const [totalOrganismos, setTotalOrganismos] = useState(0);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
   const [origenTipo, setOrigenTipo] = useState("Interno");
+  /** Peces sumados desde la última pileta interna ocupada seleccionada (para revertir al cambiar origen). */
+  const origenAporteRef = useRef({ piletaId: null, machos: 0, hembras: 0 });
 
   const [form, setForm] = useState({
-    origen_instalacion: "",
+    origen_pileta_id: "",
     origen_texto: "",
-    fi_instalacion_id: "",
+    pileta_id: "",
     fn_machos: "",
     fn_hembras: "",
     fn_cantidad: "",
@@ -116,8 +141,6 @@ function ReproductoresContent() {
     fc_familia: "",
     fc_ratio: "",
     fc_observacion: "",
-    fd_fecha_siembra: "",
-    fd_fecha_biometria: "",
   });
 
   /* ===================== HELPERS ===================== */
@@ -153,9 +176,8 @@ const colorDias = (dias) => {
   /* ===================== CARGA DE DATOS ===================== */
 
   const obtenerReproductores = useCallback(async () => {
-    if (!granjaActiva) return;
-    const granja = encodeURIComponent(granjaActiva);
-    const { data } = await listReproductoresByGranja(granja);
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
+    const { data } = await listReproductoresByGranja(filtroUbicacion);
     setReproductores(data || []);
     setTotalOrganismos(
       data?.reduce(
@@ -163,21 +185,42 @@ const colorDias = (dias) => {
         0
       ) || 0
     );
-  }, [granjaActiva]);
+  }, [filtroUbicacion]);
 
-  const obtenerInstalaciones = useCallback(async () => {
-    if (!granjaActiva) return;
-    const granja = encodeURIComponent(granjaActiva);
-    const { data } = await listInstalacionesByGranja(granja);
-    setInstalaciones(data || []);
-    setTotalInstalaciones(data?.length || 0);
-  }, [granjaActiva]);
+  const obtenerPiletas = useCallback(async () => {
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
+    try {
+      const [resRepro, resTodas] = await Promise.all([
+        listPiletas(filtroUbicacion, "reproductores"),
+        listPiletas(filtroUbicacion),
+      ]);
+      const repro = Array.isArray(resRepro.data) ? resRepro.data : [];
+      const todas = Array.isArray(resTodas.data) ? resTodas.data : [];
+      setPiletasReproductores(repro);
+      setPiletasOrigen(todas);
+      setTotalPiletas(repro.length);
+    } catch (err) {
+      console.error("Error al obtener piletas:", err);
+      setPiletasReproductores([]);
+      setPiletasOrigen([]);
+      setTotalPiletas(0);
+    }
+  }, [filtroUbicacion]);
 
   const obtenerTrazabilidad = useCallback(async () => {
-    if (!granjaActiva) return;
-    const { data } = await getReproductoresMovimientos(granjaActiva);
-    setRastreos(data || []);
-  }, [granjaActiva]);
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
+    try {
+      const { data } = await getReproductoresMovimientos(filtroUbicacion);
+      setRastreos(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Error al cargar trazabilidad:", err);
+      setRastreos([]);
+      showSnackbar(
+        err?.response?.data?.error || "No se pudieron cargar los movimientos.",
+        "error"
+      );
+    }
+  }, [filtroUbicacion, showSnackbar]);
 
   useEffect(() => {
     if (!granjaActiva && defaultUbicacion) {
@@ -187,9 +230,9 @@ const colorDias = (dias) => {
 
     if (!granjaActiva) return;
     obtenerReproductores();
-    obtenerInstalaciones();
+    obtenerPiletas();
     obtenerTrazabilidad();
-  }, [defaultUbicacion, granjaActiva, obtenerReproductores, obtenerInstalaciones, obtenerTrazabilidad]);
+  }, [defaultUbicacion, granjaActiva, obtenerReproductores, obtenerPiletas, obtenerTrazabilidad]);
 
   const rastreosFiltrados = rastreos.filter((r) => {
   const texto = filtroTexto.toLowerCase();
@@ -212,10 +255,11 @@ const colorDias = (dias) => {
   /* ===================== FORMULARIO ===================== */
 
   const limpiarFormulario = () => {
+    origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
     setForm({
-      origen_instalacion: "",
+      origen_pileta_id: "",
       origen_texto: "",
-      fi_instalacion_id: "",
+      pileta_id: "",
       fn_machos: "",
       fn_hembras: "",
       fn_cantidad: "",
@@ -224,8 +268,6 @@ const colorDias = (dias) => {
       fc_familia: "",
       fc_ratio: "",
       fc_observacion: "",
-      fd_fecha_siembra: "",
-      fd_fecha_biometria: "",
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
@@ -233,8 +275,68 @@ const colorDias = (dias) => {
     clearErrors();
   };
 
+  /** Al elegir pileta interna ocupada con inventario, suma peces destino manteniendo edición manual posible después. */
+  const handleSeleccionOrigenPileta = useCallback(
+    (nextOrigenStr) => {
+      let warnMismoDestino = false;
+      setForm((prev) => {
+        let m = Number(prev.fn_machos || 0) || 0;
+        let h = Number(prev.fn_hembras || 0) || 0;
+
+        const ap = origenAporteRef.current;
+        if (ap.piletaId != null && (ap.machos > 0 || ap.hembras > 0)) {
+          m = Math.max(0, m - ap.machos);
+          h = Math.max(0, h - ap.hembras);
+        }
+        origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
+
+        let siguiente = aplicarCantidadesMachosHembras(prev, m, h);
+        siguiente.origen_pileta_id = nextOrigenStr;
+
+        if (!nextOrigenStr) return siguiente;
+
+        const oid = Number(nextOrigenStr);
+        const did = Number(prev.pileta_id);
+        if (did && oid === did) {
+          warnMismoDestino = true;
+          siguiente.origen_pileta_id = "";
+          return siguiente;
+        }
+
+        const pileMeta = piletasOrigen.find((p) => Number(p.fi_pileta_id) === oid);
+        const repOrig = reproductores.find((r) => Number(r.pileta_id) === oid);
+        const om = repOrig ? Number(repOrig.fn_machos ?? 0) || 0 : 0;
+        const oh = repOrig ? Number(repOrig.fn_hembras ?? 0) || 0 : 0;
+
+        if (
+          !repOrig ||
+          pileMeta?.estado !== "ocupada" ||
+          (om <= 0 && oh <= 0)
+        ) {
+          return siguiente;
+        }
+
+        origenAporteRef.current = { piletaId: oid, machos: om, hembras: oh };
+        return aplicarCantidadesMachosHembras(siguiente, m + om, h + oh);
+      });
+      if (warnMismoDestino) {
+        showSnackbar(
+          "La pileta origen no puede ser la misma que la pileta destino.",
+          "warning",
+        );
+      }
+    },
+    [piletasOrigen, reproductores, showSnackbar],
+  );
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "origen_pileta_id") {
+      handleSeleccionOrigenPileta(value);
+      clearFieldError(name);
+      return;
+    }
 
     if (name === "fn_machos" || name === "fn_hembras") {
       if (!soloEntero(value)) return;
@@ -272,8 +374,15 @@ const colorDias = (dias) => {
 
     try {
       await createReproductor({
-        ...form,
-        origen_texto: form.origen_instalacion || form.origen_texto,
+        pileta_id: Number(form.pileta_id),
+        fn_machos: form.fn_machos,
+        fn_hembras: form.fn_hembras,
+        fn_talla: form.fn_talla,
+        fc_linea: form.fc_linea,
+        fc_familia: form.fc_familia,
+        fc_observacion: form.fc_observacion,
+        origen_pileta_id: form.origen_pileta_id ? Number(form.origen_pileta_id) : null,
+        origen_texto: form.origen_texto,
         fi_usuario_id: usuario_id,
         fc_granja: granjaActiva,
       });
@@ -289,25 +398,22 @@ const colorDias = (dias) => {
 
   const editarReproductor = (r) => {
     clearErrors();
+    origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
     setSeleccionado(r);
-    setOrigenTipo(
-      String(r.origen_instalacion || "").trim() ? "Interno" : "Externo"
-    );
+    setOrigenTipo(r.origen_pileta_id ? "Interno" : "Externo");
 
     setForm({
-      origen_instalacion: r.origen_instalacion || "",
+      origen_pileta_id: r.origen_pileta_id != null ? String(r.origen_pileta_id) : "",
       origen_texto: r.origen_texto || "",
-      fi_instalacion_id: r.fi_instalacion_id,
-      fn_machos: r.fn_machos,
-      fn_hembras: r.fn_hembras,
-      fn_cantidad: r.fn_cantidad,
-      fn_talla: r.fn_talla,
-      fc_linea: r.fc_linea,
-      fc_familia: r.fc_familia,
-      fc_ratio: r.fc_ratio,
-      fc_observacion: r.fc_observacion,
-      fd_fecha_siembra: r.fd_fecha_siembra?.split("T")[0] || "",
-      fd_fecha_biometria: r.fd_fecha_biometria?.split("T")[0] || "",
+      pileta_id: r.pileta_id != null ? String(r.pileta_id) : "",
+      fn_machos: r.fn_machos ?? "",
+      fn_hembras: r.fn_hembras ?? "",
+      fn_cantidad: r.fn_cantidad ?? "",
+      fn_talla: r.fn_talla ?? "",
+      fc_linea: r.fc_linea ?? "",
+      fc_familia: r.fc_familia ?? "",
+      fc_ratio: r.fc_ratio ?? "",
+      fc_observacion: r.fc_observacion ?? "",
     });
 
     setMostrarFormulario(true);
@@ -317,8 +423,15 @@ const colorDias = (dias) => {
     if (!validate(form, getReproductorRequiredFields(origenTipo))) return;
     try {
       await updateReproductor(seleccionado.fi_reproductor_id, {
-        ...form,
-        origen_texto: form.origen_instalacion || form.origen_texto,
+        pileta_id: Number(form.pileta_id),
+        fn_machos: form.fn_machos,
+        fn_hembras: form.fn_hembras,
+        fn_talla: form.fn_talla,
+        fc_linea: form.fc_linea,
+        fc_familia: form.fc_familia,
+        fc_observacion: form.fc_observacion,
+        origen_pileta_id: form.origen_pileta_id ? Number(form.origen_pileta_id) : null,
+        origen_texto: form.origen_texto,
         fi_usuario_id: usuario_id,
       });
 
@@ -342,12 +455,6 @@ const colorDias = (dias) => {
     }
   };
 
-  const trazarReproductor = (r) => {
-    showSnackbar(`Movimiento desde ${r.nombre_instalacion}.
-Pronto conectaremos este botón con traspasos internos.`, "error");
-  };
-
-  /* ===================== RENDER ===================== */
 
   return (
     <Box>
@@ -364,8 +471,8 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
             borderLeft: "6px solid #2196F3",
           }}
         >
-        <Typography><strong>Granja activa:</strong> {granjaActiva}</Typography>
-        <Typography><strong>Total instalaciones:</strong> {totalInstalaciones}</Typography>
+        <Typography><strong>Ubicación (sede):</strong> {granjaActiva}</Typography>
+        <Typography><strong>Total piletas reproductoras:</strong> {totalPiletas}</Typography>
         <Typography><strong>Total organismos:</strong> {totalOrganismos}</Typography>
       </Paper>
       
@@ -411,12 +518,12 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                 label="Origen"
                 value={origenTipo}
                 onChange={(e) => {
-                  setOrigenTipo(e.target.value);
-                  setForm({
-                    ...form,
-                    origen_instalacion: "",
-                    origen_texto: "",
-                  });
+                  const nextTipo = e.target.value;
+                  if (origenTipo === "Interno" && nextTipo !== "Interno") {
+                    handleSeleccionOrigenPileta("");
+                  }
+                  setOrigenTipo(nextTipo);
+                  setForm((prev) => ({ ...prev, origen_texto: "" }));
                 }}
                 fullWidth
               >
@@ -425,24 +532,32 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
               </TextField>
             </Grid>
 
-            {/* SI ES INTERNO → MOSTRAR INSTALACIONES */}
+            {/* SI ES INTERNO → MOSTRAR PILETA ORIGEN */}
             {origenTipo === "Interno" && (
               <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
                   select
                   size="small"
-                  label="Instalación (origen)"
-                  name="origen_instalacion"
-                  value={form.origen_instalacion}
+                  label="Pileta origen"
+                  name="origen_pileta_id"
+                  value={form.origen_pileta_id}
                   onChange={handleChange}
                   fullWidth
-                  error={!!errors.origen_instalacion}
-                  helperText={errors.origen_instalacion}
+                  error={!!errors.origen_pileta_id}
+                  helperText={errors.origen_pileta_id || "Pileta de la que provienen los reproductores"}
+                  slotProps={{
+                    select: {
+                      renderValue: (val) => {
+                        const p = piletasOrigen.find((x) => String(x.fi_pileta_id) === String(val));
+                        return p ? `${p.nombre} · ${tipoLabel(p.tipo)}` : "";
+                      },
+                    },
+                  }}
                 >
                   <MenuItem value="">Seleccione</MenuItem>
-                  {instalaciones.map((i) => (
-                    <MenuItem key={i.fi_instalacion_id} value={i.nombre_instalacion}>
-                      {i.nombre_instalacion}
+                  {piletasOrigen.map((p) => (
+                    <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
+                      {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -464,26 +579,37 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                 />
               </Grid>
             )}
-                {/* DESTINO */}
+
+                {/* PILETA DESTINO (reproductores) */}
                 <Grid size={{ xs: 12, md: 3 }}>
                   <TextField
                     select
                     size="small"
-                    label="Destino"
-                    name="fi_instalacion_id"
-                    value={form.fi_instalacion_id}
+                    label="Pileta destino"
+                    name="pileta_id"
+                    value={form.pileta_id}
                     onChange={handleChange}
                     fullWidth
-                    error={!!errors.fi_instalacion_id}
-                    helperText={errors.fi_instalacion_id}
+                    error={!!errors.pileta_id}
+                    helperText={
+                      errors.pileta_id ||
+                      "Sólo piletas tipo reproductores. Define la familia/línea para esta pileta."
+                    }
+                    slotProps={{
+                      select: {
+                        renderValue: (val) => {
+                          const p = piletasReproductores.find(
+                            (x) => String(x.fi_pileta_id) === String(val),
+                          );
+                          return p ? `${p.nombre} · ${p.estado}` : "";
+                        },
+                      },
+                    }}
                   >
                     <MenuItem value="">Seleccione</MenuItem>
-                    {instalaciones.map((i) => (
-                      <MenuItem
-                        key={i.fi_instalacion_id}
-                        value={i.fi_instalacion_id}
-                      >
-                        {i.nombre_instalacion}
+                    {piletasReproductores.map((p) => (
+                      <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
+                        {p.nombre} · {p.estado}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -587,37 +713,6 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                   />
                 </Grid>
 
-                {/* FECHAS */}
-                <Grid size={6}>
-                  <TextField
-                    type="date"
-                    size="small"
-                    label="Fecha siembra"
-                    name="fd_fecha_siembra"
-                    value={form.fd_fecha_siembra}
-                    onChange={handleChange}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    error={!!errors.fd_fecha_siembra}
-                    helperText={errors.fd_fecha_siembra}
-                  />
-                </Grid>
-
-                <Grid size={6}>
-                  <TextField
-                    type="date"
-                    size="small"
-                    label="Última biometría"
-                    name="fd_fecha_biometria"
-                    value={form.fd_fecha_biometria}
-                    onChange={handleChange}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    error={!!errors.fd_fecha_biometria}
-                    helperText={errors.fd_fecha_biometria}
-                  />
-                </Grid>
-
                 {/* OBSERVACIÓN */}
                 <Grid size={12}>
                   <TextField
@@ -665,7 +760,7 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
           <Table stickyHeader sx={{ minWidth: 1350 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Instalación</TableCell>
+                <TableCell>Pileta</TableCell>
                 <TableCell>Cantidad</TableCell>
                 <TableCell>Talla</TableCell>
                 <TableCell>Machos</TableCell>
@@ -673,12 +768,27 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                 <TableCell>Ratio</TableCell>
                 <TableCell>Línea</TableCell>
                 <TableCell>Familia</TableCell>
+                <TableCell>Últ. nota (pileta)</TableCell>
                 <TableCell>Observación</TableCell>
-                <TableCell>Fecha siembra</TableCell>
-                <TableCell>Días en pila</TableCell>
-                <TableCell>Últ. biometría</TableCell>
-                <TableCell>Días transcurridos</TableCell>
-                <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>
+                <TableCell
+                  title="Fecha del último ingreso registrado como movimiento (`siembra`) hacia esta pileta."
+                >
+                  Fecha siembra
+                </TableCell>
+                <TableCell
+                  title="Días en cultivo: desde la fecha de siembra vinculada; si falta, desde el alta del reproductor en sistema."
+                >
+                  Días en pila
+                </TableCell>
+                <TableCell title="Última biometría: puntero del reproductor o la más reciente en la misma pileta.">
+                  Últ. biometría
+                </TableCell>
+                <TableCell
+                  title="Días transcurridos desde la última biometría (semáforo: verde ≤10, amarillo ≤15, rojo &gt;15)."
+                >
+                  Días sin biometría
+                </TableCell>
+                <TableCell align="center" sx={{ minWidth: 120, whiteSpace: "nowrap" }}>
                   Acciones
                 </TableCell>
               </TableRow>
@@ -686,15 +796,16 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
 
             <TableBody>
               {reproductores.map((r) => {
-                const diasPila = calcularDias(r.fd_fecha_siembra);
+                const refDiasPila = r.fd_fecha_siembra ?? r.fd_alta_reproductor ?? null;
+                const diasPila = calcularDias(refDiasPila);
                 const diasBiometria = calcularDias(r.fd_fecha_biometria);
 
                 return (
                   <TableRow key={r.fi_reproductor_id}>
 
                     <TableCell sx={{ maxWidth: 160 }}>
-                      <span title={r.nombre_instalacion || ""}>
-                        {truncar(r.nombre_instalacion) || "—"}
+                      <span title={r.nombre_pileta || r.nombre_instalacion || ""}>
+                        {truncar(r.nombre_pileta || r.nombre_instalacion) || "—"}
                       </span>
                     </TableCell>
                     <TableCell>{formatNumber(r.fn_cantidad)}</TableCell>
@@ -712,15 +823,44 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                         {r.fc_familia ? truncar(r.fc_familia) : "—"}
                       </span>
                     </TableCell>
+                    <TableCell sx={{ maxWidth: 200 }}>
+                      <span
+                        title={
+                          r.fc_ultima_observacion_pileta ||
+                          (r.fc_ultima_observacion_proceso
+                            ? `(${r.fc_ultima_observacion_proceso})`
+                            : "")
+                        }
+                      >
+                        {r.fc_ultima_observacion_pileta ? (
+                          <>
+                            {truncar(r.fc_ultima_observacion_pileta)}
+                            {r.fc_ultima_observacion_proceso ? (
+                              <Typography variant="caption" display="block" color="text.secondary">
+                                {r.fc_ultima_observacion_proceso}
+                              </Typography>
+                            ) : null}
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </span>
+                    </TableCell>
                     <TableCell sx={{ maxWidth: 160 }}>
                       <span title={r.fc_observacion || ""}>
                         {r.fc_observacion ? truncar(r.fc_observacion) : "—"}
                       </span>
                     </TableCell>
 
-                    <TableCell>{formatFecha(r.fd_fecha_siembra)}</TableCell>
-
-                    {/* DÍAS EN PILA (SIN SEMÁFORO) */}
+                    <TableCell>
+                      {r.fd_fecha_siembra ? (
+                        formatFecha(r.fd_fecha_siembra)
+                      ) : r.fd_alta_reproductor ? (
+                        formatFecha(r.fd_alta_reproductor)
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
                     <TableCell
                       sx={{
                         fontWeight: "bold",
@@ -740,27 +880,29 @@ Pronto conectaremos este botón con traspasos internos.`, "error");
                       ) : "—"}
                     </TableCell>
 
-                    {/* ACCIONES */}
                     <TableCell
                       align="center"
-                      sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+                      sx={{ minWidth: 120, verticalAlign: "middle", whiteSpace: "nowrap" }}
                     >
-                      <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                      <Box
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 1,
+                        }}
+                      >
                         <Tooltip title="Editar">
                           <IconButton color="primary" onClick={() => editarReproductor(r)}>
                             <EditIcon />
                           </IconButton>
                         </Tooltip>
-
                         <Tooltip title="Eliminar">
-                          <IconButton color="error" onClick={() => eliminarReproductor(r.fi_reproductor_id)}>
+                          <IconButton
+                            color="error"
+                            onClick={() => eliminarReproductor(r.fi_reproductor_id)}
+                          >
                             <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-
-                        <Tooltip title="Trazar movimiento">
-                          <IconButton color="success" onClick={() => trazarReproductor(r)}>
-                            <SyncAltIcon />
                           </IconButton>
                         </Tooltip>
                       </Box>

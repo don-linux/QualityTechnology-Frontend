@@ -20,6 +20,7 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import { getPuestoId, getPuestoNombre, puestoActivo } from "@features/catalogos/utils/catalogEntityGetters";
 
 export default function Puestos() {
   const showSnackbar = useSnackbar();
@@ -89,7 +90,7 @@ export default function Puestos() {
   };
 
   const seleccionar = (p) => {
-    setForm({ fi_puesto_id: p.fi_puesto_id, fc_nombre: p.fc_nombre });
+    setForm({ fi_puesto_id: getPuestoId(p), fc_nombre: getPuestoNombre(p) });
     clearErrors();
   };
 
@@ -140,19 +141,23 @@ export default function Puestos() {
             </TableHead>
             <TableBody>
               {puestos.map((p) => (
-                <TableRow key={p.fi_puesto_id} hover>
-                  <TableCell>{p.fi_puesto_id}</TableCell>
-                  <TableCell>{p.fc_nombre}</TableCell>
+                <TableRow key={getPuestoId(p) ?? ""} hover>
+                  <TableCell>{getPuestoId(p)}</TableCell>
+                  <TableCell>{getPuestoNombre(p)}</TableCell>
                   <TableCell>
-                    <Chip label={p.fb_activo ? "Activo" : "Inactivo"} color={p.fb_activo ? "success" : "default"} size="small" />
+                    <Chip
+                      label={puestoActivo(p) ? "Activo" : "Inactivo"}
+                      color={puestoActivo(p) ? "success" : "default"}
+                      size="small"
+                    />
                   </TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
                       <Button size="small" variant="outlined" onClick={() => seleccionar(p)}>Seleccionar</Button>
-                      {p.fb_activo ? (
-                        <Button size="small" variant="outlined" color="error" onClick={() => desactivar(p.fi_puesto_id, p.fc_nombre)}>Desactivar</Button>
+                      {puestoActivo(p) ? (
+                        <Button size="small" variant="outlined" color="error" onClick={() => desactivar(getPuestoId(p), getPuestoNombre(p))}>Desactivar</Button>
                       ) : (
-                        <Button size="small" variant="outlined" color="success" onClick={() => activar(p.fi_puesto_id, p.fc_nombre)}>Activar</Button>
+                        <Button size="small" variant="outlined" color="success" onClick={() => activar(getPuestoId(p), getPuestoNombre(p))}>Activar</Button>
                       )}
                     </Box>
                   </TableCell>

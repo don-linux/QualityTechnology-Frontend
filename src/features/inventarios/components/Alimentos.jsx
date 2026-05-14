@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listAlimentos,
   createAlimento,
@@ -42,9 +42,14 @@ export default function Alimentos() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId;
   const showSnackbar = useSnackbar();
-  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
   const [tab, setTab] = useState("alevinaje");
   const [granjaActiva, setGranjaActiva] = useState("");
+
+  const filtroUbicacion = useMemo(
+    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
+    [granjaActiva, resolveFiltroUbicacion],
+  );
 
   const [form, setForm] = useState({
     fi_alimento_id: null,
@@ -77,40 +82,37 @@ export default function Alimentos() {
   }, [showSnackbar]);
 
   const obtenerReproductores = useCallback(async () => {
-    if (!granjaActiva) return;
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const granja = encodeURIComponent(granjaActiva);
-      const res = await listReproductoresByGranja(granja);
+      const res = await listReproductoresByGranja(filtroUbicacion);
       setReproductores(res.data);
     } catch (error) {
       console.error("Error al obtener reproductores:", error);
       showSnackbar("Error al cargar reproductores", "error");
     }
-  }, [granjaActiva, showSnackbar]);
+  }, [filtroUbicacion, showSnackbar]);
 
   const obtenerPiletas = useCallback(async () => {
-    if (!granjaActiva) return;
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const granja = encodeURIComponent(granjaActiva);
-      const res = await listPiletasByGranja(granja);
+      const res = await listPiletasByGranja(filtroUbicacion);
       setPiletas(res.data);
     } catch (error) {
       console.error("Error al obtener piletas:", error);
       showSnackbar("Error al cargar piletas", "error");
     }
-  }, [granjaActiva, showSnackbar]);
+  }, [filtroUbicacion, showSnackbar]);
 
   const obtenerEngorda = useCallback(async () => {
-    if (!granjaActiva) return;
+    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const granja = encodeURIComponent(granjaActiva);
-      const res = await listEngordaByGranja(granja);
+      const res = await listEngordaByGranja(filtroUbicacion);
       setEngorda(res.data);
     } catch (error) {
       console.error("Error al obtener engorda:", error);
       showSnackbar("Error al cargar engorda", "error");
     }
-  }, [granjaActiva, showSnackbar]);
+  }, [filtroUbicacion, showSnackbar]);
 
   useEffect(() => {
     if (!granjaActiva && defaultUbicacion) {

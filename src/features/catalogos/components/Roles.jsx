@@ -89,7 +89,10 @@ export default function Roles() {
   };
 
   const seleccionarRol = (rol) => {
-    setForm({ rol_id: rol.fi_rol_id, nombre: rol.fc_nombre });
+    setForm({
+      rol_id: rol.rol_id ?? rol.fi_rol_id ?? rol.id,
+      nombre: rol.nombre ?? rol.fc_nombre,
+    });
     setMensaje('');
     clearErrors();
   };
@@ -168,8 +171,8 @@ export default function Roles() {
                   </TableHead>
                   <TableBody>
                     {roles.map((rol) => (
-                      <TableRow key={rol.fi_rol_id} hover>
-                        <TableCell>{rol.fc_nombre}</TableCell>
+                      <TableRow key={rol.rol_id ?? rol.fi_rol_id ?? rol.id} hover>
+                        <TableCell>{rol.nombre ?? rol.fc_nombre}</TableCell>
                         <TableCell>
                           <Button
                             variant="outlined"
