@@ -43,8 +43,6 @@ export const ENDPOINTS = {
 
   piletas: {
     base: "/piletas",
-    lotes: (granja) => `/piletas/lotes/${path(granja)}`,
-    lotePorInstalacion: (inst, granja) => `/piletas/lote-por-inst/${inst}/${path(granja)}`,
     inventario: (granja) => `/piletas/inventario/${path(granja)}`,
     origen: (granja) => `/piletas/origen/${path(granja)}`,
     destino: (granja) => `/piletas/destino/${path(granja)}`,
@@ -54,17 +52,6 @@ export const ENDPOINTS = {
     movimientosFiltro: (usuario, granja) => `/piletas/movimientos/filtro/${usuario}/${path(granja)}`,
     registrarMovimiento: "/piletas/movimientos/registrar",
     eliminarMovimientos: "/piletas/movimientos/eliminar",
-  },
-
-  lotes: {
-    base: "/lotes",
-    byGranja: (granja) => `/lotes/granja/${path(granja)}`,
-    byInstalacion: (id) => `/lotes/instalacion/${id}`,
-    /** Lista piletas etapa reproductores de la sede. Nombre de ruta histórico. */
-    instalacionesReproductores: (granja) => `/lotes/instalaciones/${path(granja)}`,
-    /** Param: id de pileta reproductores (también soporta familia desde lote legacy por instalacion_id). */
-    familiaPorInstalacion: (id) => `/lotes/familia-por-instalacion/${id}`,
-    byId: (id) => `/lotes/${id}`,
   },
 
   reproductores: {
@@ -95,6 +82,9 @@ export const ENDPOINTS = {
   alevinaje: {
     base: "/alevinaje",
     byId: (id) => `/alevinaje/${id}`,
+    /** Piletas etapa `reproductores` ocupadas (control reproductivo). */
+    reproductoresOcupadas: (granja) => `/alevinaje/reproductores/${path(granja)}`,
+    familiaPorPileta: (piletaId) => `/alevinaje/familia-por-pileta/${piletaId}`,
   },
 
   siembras: {

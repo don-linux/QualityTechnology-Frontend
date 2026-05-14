@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  getFamiliaPorInstalacion,
-  listInstalaciones,
-  listLotes,
-  createLote,
-  updateLote,
-  removeLote,
-} from "../services/lotesService";
+  listAlevinaje,
+  createAlevinaje,
+  updateAlevinaje,
+  removeAlevinaje,
+  listReproductoresOcupadas,
+  getFamiliaPorPileta,
+} from "../services/alevinajeService";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
@@ -38,7 +38,7 @@ const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-const LotesRegistro = () => {
+const ControlReproductivo = () => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -52,8 +52,8 @@ const LotesRegistro = () => {
 
   const [granja, setGranja] = useState("");
   const [piletasReproductoras, setPiletasReproductoras] = useState([]);
-  const [lotes, setLotes] = useState([]);
-  const [loteSeleccionado, setLoteSeleccionado] = useState(null);
+  const [registros, setRegistros] = useState([]);
+  const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -98,14 +98,15 @@ const LotesRegistro = () => {
 
     try {
 
-      const fam = await getFamiliaPorInstalacion(value);
+      const fam = await getFamiliaPorPileta(value);
 
-      if (fam.data) {
-
+      if (fam.data?.familia != null && fam.data.familia !== "") {
        setFormData((prev) => ({
         ...prev,
-        familia: fam.data?.familia || ""
+        familia: fam.data.familia || ""
       }));
+      } else {
+        setFormData((prev) => ({ ...prev, familia: "" }));
       }
 
     } catch (err) {
@@ -121,29 +122,27 @@ const LotesRegistro = () => {
   clearFieldError(name);
 
 };
-  /** Piletas etapa reproductores de la sede (legacy `GET /lotes/instalaciones/:granja` + `ubicacion_id`). */
+  /** Piletas etapa reproductores ocupadas (`GET /alevinaje/reproductores/:granja` + `ubicacion_id`). */
   const cargarPiletasReproductoras = useCallback(async () => {
     if (!granja) return;
     try {
       const filtros = resolveFiltroUbicacion(granja);
-      const res = await listInstalaciones(filtros);
+      const res = await listReproductoresOcupadas(filtros);
       setPiletasReproductoras(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error cargando piletas reproductoras:", err);
     }
   }, [granja, resolveFiltroUbicacion]);
 
-  /** --------------------------------------------------------
-      Cargar lotes
-  -------------------------------------------------------- */
-  const cargarLotes = useCallback(async () => {
+  /** Registros de `alevinaje` filtrados por sede (misma granja que piletas). */
+  const cargarRegistros = useCallback(async () => {
     if (!granja) return;
     try {
       const filtros = resolveFiltroUbicacion(granja);
-      const res = await listLotes(filtros);
-      setLotes(res.data);
+      const res = await listAlevinaje(filtros);
+      setRegistros(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error cargando lotes:", err);
+      console.error("Error cargando registros de alevinaje:", err);
     }
   }, [granja, resolveFiltroUbicacion]);
 
@@ -159,35 +158,41 @@ const LotesRegistro = () => {
 
   useEffect(() => {
     if (!granja) return;
-    cargarLotes();
-  }, [granja, cargarLotes]);
+    cargarRegistros();
+  }, [granja, cargarRegistros]);
 
   /* --------------------------------------------------------
-     Registrar lote
+     Registrar alevinaje
   -------------------------------------------------------- */
-  const registrarLote = async () => {
+  const registrarAlevinaje = async () => {
     if (!validate(formData, requiredFields)) return;
     try {
-      await createLote({
+      await createAlevinaje({
         fecha: formData.fecha,
         familia: formData.familia,
-        fc_pileta_id: formData.fi_pileta_id,
+        fi_pileta_id: formData.fi_pileta_id,
         pileta_id: formData.fi_pileta_id,
-        huevos_ml: formData.huevos_ml,
-        ovadas: Number(formData.ovadas || 0),
         no_lote: formData.no_lote,
+        lote: formData.no_lote,
+        huevos_ml: formData.huevos_ml === "" ? null : formData.huevos_ml,
+        ovadas: Number(formData.ovadas || 0),
         observacion: formData.observacion,
-        fc_granja: granja,
-        mortalidad: 0,
+        mortalidad: Number(formData.mortalidad || 0),
         alevines_inicial: Number(formData.alevines_inicial || 0),
+        alevines_iniciales: Number(formData.alevines_inicial || 0),
       });
 
-      showSnackbar("Lote registrado correctamente", "success");
+      showSnackbar("Registro guardado en alevinaje", "success");
       resetFormulario();
       actualizarTabla();
     } catch (err) {
-      console.error(" Error al registrar lote:", err);
-      showSnackbar("Error al registrar el lote", "error");
+      console.error(" Error al registrar alevinaje:", err);
+      showSnackbar(
+        err?.response?.data?.error ||
+          err?.response?.data?.detalle ||
+          "Error al registrar",
+        "error",
+      );
     }
   };
 
@@ -195,23 +200,32 @@ const LotesRegistro = () => {
      Activar edición
   -------------------------------------------------------- */
   const activarEdicion = () => {
-    if (!loteSeleccionado) return;
+    if (!seleccionado) return;
     clearErrors();
 
     setFormData({
-      fecha: loteSeleccionado.fecha.split("T")[0],
-      familia: loteSeleccionado.familia,
+      fecha: seleccionado.fecha
+        ? String(seleccionado.fecha).split("T")[0]
+        : "",
+      familia: seleccionado.familia || "",
       fi_pileta_id:
-        loteSeleccionado.fi_pileta_id
-        ?? loteSeleccionado.fc_pileta_id
-        ?? loteSeleccionado.fi_instalacion_id
+        seleccionado.fi_pileta_id
+        ?? seleccionado.pileta_id
+        ?? seleccionado.fc_pileta_id
         ?? "",
-      huevos_ml: loteSeleccionado.huevos_ml,
-      ovadas: loteSeleccionado.ovadas,
-      no_lote: loteSeleccionado.no_lote,
-      observacion: loteSeleccionado.observacion || "",
-      mortalidad: loteSeleccionado.mortalidad || 0,
-      alevines_inicial: loteSeleccionado.alevines_inicial || "",
+      huevos_ml:
+        seleccionado.huevos_ml != null ? String(seleccionado.huevos_ml) : "",
+      ovadas: seleccionado.ovadas ?? "",
+      no_lote: seleccionado.no_lote ?? seleccionado.lote ?? "",
+      observacion:
+        seleccionado.observacion
+        ?? seleccionado.fc_observacion
+        ?? "",
+      mortalidad: seleccionado.mortalidad ?? 0,
+      alevines_inicial:
+        seleccionado.alevines_inicial
+        ?? seleccionado.alevines_iniciales
+        ?? "",
     });
 
     setModoEdicion(true);
@@ -220,46 +234,52 @@ const LotesRegistro = () => {
   /* --------------------------------------------------------
      Guardar cambios de edición
   -------------------------------------------------------- */
-  const actualizarLote = async () => {
+  const actualizarAlevinajeRegistro = async () => {
     if (!validate(formData, requiredFields)) return;
     try {
-      await updateLote(loteSeleccionado.fi_lote_id, {
+      await updateAlevinaje(seleccionado.fi_id ?? seleccionado.fi_lote_id ?? seleccionado.id, {
         fecha: formData.fecha,
         familia: formData.familia,
-        fc_pileta_id: formData.fi_pileta_id,
+        fi_pileta_id: formData.fi_pileta_id,
         pileta_id: formData.fi_pileta_id,
-        huevos_ml: formData.huevos_ml,
-        ovadas: Number(formData.ovadas || 0),
         no_lote: formData.no_lote,
+        lote: formData.no_lote,
+        huevos_ml: formData.huevos_ml === "" ? null : formData.huevos_ml,
+        ovadas: Number(formData.ovadas || 0),
         observacion: formData.observacion,
-        fc_granja: granja,
         mortalidad: Number(formData.mortalidad || 0),
         alevines_inicial: Number(formData.alevines_inicial || 0),
+        alevines_iniciales: Number(formData.alevines_inicial || 0),
       });
 
-      showSnackbar("Lote actualizado correctamente", "success");
+      showSnackbar("Registro actualizado", "success");
 
       resetEdicion();
       actualizarTabla();
     } catch (err) {
-      console.error(" Error al actualizar lote:", err);
-      showSnackbar("No se pudo actualizar el lote", "error");
+      console.error(" Error al actualizar alevinaje:", err);
+      showSnackbar(
+        err?.response?.data?.error ||
+          err?.response?.data?.detalle ||
+          "No se pudo actualizar",
+        "error",
+      );
     }
   };
 
   /* --------------------------------------------------------
-     Eliminar lote
+     Eliminar registro
   -------------------------------------------------------- */
-  const eliminarLote = async (id) => {
-    if (!await confirm("¿Seguro que deseas eliminar este lote?")) return;
+  const eliminarAlevinajeRegistro = async (id) => {
+    if (!await confirm("¿Seguro que deseas eliminar este registro de alevinaje?")) return;
 
     try {
-      await removeLote(id);
-      showSnackbar("Lote eliminado correctamente", "success");
+      await removeAlevinaje(id);
+      showSnackbar("Registro eliminado", "success");
       actualizarTabla();
       resetEdicion();
     } catch (err) {
-      console.error(" Error al eliminar lote:", err);
+      console.error(" Error al eliminar alevinaje:", err);
       showSnackbar("No se pudo eliminar", "error");
     }
   };
@@ -268,7 +288,7 @@ const LotesRegistro = () => {
      Helpers
   -------------------------------------------------------- */
   const actualizarTabla = () => {
-    cargarLotes();
+    cargarRegistros();
   };
 
   const resetFormulario = () => {
@@ -288,7 +308,7 @@ const LotesRegistro = () => {
 
   const resetEdicion = () => {
     setModoEdicion(false);
-    setLoteSeleccionado(null);
+    setSeleccionado(null);
     resetFormulario();
   };
 
@@ -316,7 +336,7 @@ const LotesRegistro = () => {
   return (
     <div style={{ padding: "25px" }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
-         Control Reproductivo — Lotes
+         Control reproductivo — Alevinaje
       </Typography>
 
       {/* ----------------- BOTONES DE GRANJA ----------------- */}
@@ -342,7 +362,7 @@ const LotesRegistro = () => {
       <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#005f73" }}>
-            {modoEdicion ? " Editar Lote" : "Registrar Nuevo Lote"}
+            {modoEdicion ? " Editar registro" : "Registrar nuevo alevinaje"}
           </Typography>
 
           <Divider sx={{ mb: 3 }} />
@@ -388,7 +408,7 @@ const LotesRegistro = () => {
                 error={!!errors.fi_pileta_id}
                 helperText={
                   errors.fi_pileta_id ||
-                  "Solo piletas etapa Reproductores con estado ocupada. Al crear el lote pasan a Alevinaje."
+                  "Solo piletas etapa Reproductores con estado ocupada. Al guardar pasan a Alevinaje."
                 }
               >
                 {piletasReproductoras.map((p) => (
@@ -436,7 +456,7 @@ const LotesRegistro = () => {
             {/* NO LOTE */}
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
-                label="No. Lote"
+                label="Referencia cría"
                 name="no_lote"
                 value={formData.no_lote}
                 onChange={handleChange}
@@ -471,10 +491,10 @@ const LotesRegistro = () => {
                 variant="contained"
                 startIcon={<AddCircleIcon />}
                 color="success"
-                onClick={modoEdicion ? actualizarLote : registrarLote}
+                onClick={modoEdicion ? actualizarAlevinajeRegistro : registrarAlevinaje}
                 sx={{ mt: 1, fontWeight: "bold" }}
               >
-                {modoEdicion ? "Guardar Cambios" : "Registrar Lote"}
+                {modoEdicion ? "Guardar Cambios" : "Registrar alevinaje"}
               </Button>
             </Grid>
           </Grid>
@@ -483,7 +503,7 @@ const LotesRegistro = () => {
 
       {/* ----------------- TABLA ----------------- */}
       <Typography variant="h6" sx={{ mb: 1, fontWeight: "bold", color: "#023047" }}>
-        Lotes registrados — {granja}
+        Registros (alevinaje) — {granja}
       </Typography>
 
       <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
@@ -497,7 +517,7 @@ const LotesRegistro = () => {
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Huevos (ml)</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ovadas</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Alevines</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>No. Lote</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Referencia cría</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad %</TableCell>
@@ -505,21 +525,23 @@ const LotesRegistro = () => {
             </TableHead>
 
             <TableBody>
-              {lotes.length === 0 ? (
+              {registros.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={10} align="center">
                     No hay registros.
                   </TableCell>
                 </TableRow>
               ) : (
-                lotes.map((l) => (
+                registros.map((l) => (
                   <TableRow
-                    key={l.fi_lote_id}
-                    onClick={() => setLoteSeleccionado(l)}
+                    key={l.fi_id ?? l.id}
+                    onClick={() => setSeleccionado(l)}
                     style={{
                       cursor: "pointer",
                       backgroundColor:
-                        loteSeleccionado?.fi_lote_id === l.fi_lote_id ? "#e0f7fa" : "transparent",
+                        (seleccionado?.fi_id ?? seleccionado?.id) === (l.fi_id ?? l.id)
+                          ? "#e0f7fa"
+                          : "transparent",
                     }}
                   >
                     <TableCell>{formatearFecha(l.fecha)}</TableCell>
@@ -555,18 +577,18 @@ const LotesRegistro = () => {
       </Paper>
 
       {/* ----------------- BOTONES EDITAR / ELIMINAR ----------------- */}
-      {loteSeleccionado && (
+      {seleccionado && (
         <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>
           <Button variant="contained" color="warning" onClick={activarEdicion}>
-             Editar Lote
+             Editar registro
           </Button>
 
           <Button
             variant="contained"
             color="error"
-            onClick={() => eliminarLote(loteSeleccionado.fi_lote_id)}
+            onClick={() => eliminarAlevinajeRegistro(seleccionado.fi_id ?? seleccionado.fi_lote_id)}
           >
-             Eliminar Lote
+             Eliminar registro
           </Button>
 
           <Button variant="outlined" color="inherit" onClick={resetEdicion}>
@@ -579,4 +601,4 @@ const LotesRegistro = () => {
   );
 };
 
-export default LotesRegistro;
+export default ControlReproductivo;

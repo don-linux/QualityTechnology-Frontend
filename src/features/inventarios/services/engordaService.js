@@ -32,10 +32,6 @@ export function removeEngorda(id) {
   return axios.delete(ENDPOINTS.engorda.byId(id));
 }
 
-export function listLotes(granja) {
-  return axios.get(ENDPOINTS.lotes.byGranja(granja));
-}
-
 /* ============================================================================
    Movimientos
 ============================================================================ */

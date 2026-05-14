@@ -38,15 +38,11 @@ export function updatePileta(id, data) {
 }
 
 /* ============================================================================
-   Inventario / Lotes / Orígenes / Destinos
+   Inventario / Orígenes / Destinos
 ============================================================================ */
 
 export function getInventario(granja) {
   return axios.get(ENDPOINTS.piletas.inventario(granja));
-}
-
-export function getLotes(granja) {
-  return axios.get(ENDPOINTS.piletas.lotes(granja));
 }
 
 export function getOrigenes(granja) {
@@ -55,10 +51,6 @@ export function getOrigenes(granja) {
 
 export function getDestinos(granja) {
   return axios.get(ENDPOINTS.piletas.destino(granja));
-}
-
-export function getLotePorInstalacion(instalacionId, granja) {
-  return axios.get(ENDPOINTS.piletas.lotePorInstalacion(instalacionId, granja));
 }
 
 /* ============================================================================
