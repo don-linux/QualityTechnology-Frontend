@@ -52,9 +52,7 @@ function EngordaContent() {
   const { confirm, ConfirmModal } = useConfirm();
   const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
 
-  const requiredFields = [
-    "pileta_id", "cantidad", "talla_gr", "observacion",
-  ];
+  const requiredFields = ["pileta_id", "machos", "hembras", "talla_gr", "observacion"];
 
   const [granjaActiva, setGranjaActiva] = useState("");
   const [engordas, setEngordas] = useState([]);
@@ -69,6 +67,23 @@ function EngordaContent() {
     () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
     [granjaActiva, resolveFiltroUbicacion],
   );
+
+  /** Solo piletas con inventario declarado (permite traslado desde origen real). */
+  const piletasOrigenOcupadas = useMemo(
+    () =>
+      (piletasOrigen || []).filter(
+        (p) => String(p.estado).toLowerCase() === "ocupada",
+      ),
+    [piletasOrigen],
+  );
+
+  const cantidadTotalForm = useMemo(() => {
+    const m = Number(form.machos);
+    const h = Number(form.hembras);
+    const mi = Number.isFinite(m) ? Math.max(0, Math.floor(m)) : 0;
+    const hi = Number.isFinite(h) ? Math.max(0, Math.floor(h)) : 0;
+    return mi + hi;
+  }, [form.machos, form.hembras]);
 
   const formatNumber = (num) => {
     if (num === null || num === undefined || num === "") return "—";
@@ -118,7 +133,8 @@ function EngordaContent() {
     setForm({
       origen_pileta_id: "",
       pileta_id: "",
-      cantidad: "",
+      machos: "",
+      hembras: "",
       talla_gr: "",
       observacion: "",
       fc_granja: granjaActiva,
@@ -156,10 +172,25 @@ function EngordaContent() {
   const registrarEngorda = async () => {
     if (!validate(form, requiredFields)) return;
 
+    const machosVal = Number(form.machos);
+    const hembrasVal = Number(form.hembras);
+    if (!Number.isFinite(machosVal) || !Number.isFinite(hembrasVal) || machosVal < 0 || hembrasVal < 0) {
+      showSnackbar("Machos y hembras deben ser números válidos", "error");
+      return;
+    }
+    const mi = Math.floor(machosVal);
+    const hi = Math.floor(hembrasVal);
+    if (mi + hi <= 0) {
+      showSnackbar("La suma machos + hembras debe ser mayor a cero", "error");
+      return;
+    }
+
     try {
       await createEngorda({
         pileta_id: Number(form.pileta_id),
-        cantidad: form.cantidad,
+        machos: mi,
+        hembras: hi,
+        cantidad: mi + hi,
         talla_gr: form.talla_gr,
         observacion: form.observacion,
         origen_pileta_id: form.origen_pileta_id ? Number(form.origen_pileta_id) : null,
@@ -170,6 +201,7 @@ function EngordaContent() {
       showSnackbar("Registro agregado correctamente", "success");
       obtenerEngordas();
       obtenerPiletas();
+      obtenerMovimientos();
       limpiarFormulario();
     } catch (err) {
       showSnackbar("Error al registrar engorda: " + (err.response?.data?.error || err.message), "error");
@@ -179,10 +211,26 @@ function EngordaContent() {
   const actualizarEngorda = async () => {
     if (!seleccionado) return;
     if (!validate(form, requiredFields)) return;
+
+    const machosVal = Number(form.machos);
+    const hembrasVal = Number(form.hembras);
+    if (!Number.isFinite(machosVal) || !Number.isFinite(hembrasVal) || machosVal < 0 || hembrasVal < 0) {
+      showSnackbar("Machos y hembras deben ser números válidos", "error");
+      return;
+    }
+    const mi = Math.floor(machosVal);
+    const hi = Math.floor(hembrasVal);
+    if (mi + hi <= 0) {
+      showSnackbar("La suma machos + hembras debe ser mayor a cero", "error");
+      return;
+    }
+
     try {
       await createEngorda({
         pileta_id: Number(form.pileta_id),
-        cantidad: form.cantidad,
+        machos: mi,
+        hembras: hi,
+        cantidad: mi + hi,
         talla_gr: form.talla_gr,
         observacion: form.observacion,
         origen_pileta_id: form.origen_pileta_id ? Number(form.origen_pileta_id) : null,
@@ -191,6 +239,8 @@ function EngordaContent() {
 
       showSnackbar("Registro actualizado", "success");
       obtenerEngordas();
+      obtenerPiletas();
+      obtenerMovimientos();
       limpiarFormulario();
     } catch (err) {
       showSnackbar("Error al actualizar", "error");
@@ -214,8 +264,15 @@ function EngordaContent() {
     setSeleccionado(e.fi_engorda_id);
     setForm({
       pileta_id: e.pileta_id != null ? String(e.pileta_id) : "",
-      origen_pileta_id: e.origen_pileta_id != null ? String(e.origen_pileta_id) : "",
-      cantidad: e.cantidad ?? "",
+      origen_pileta_id:
+        e.origen_pileta_id != null ? String(e.origen_pileta_id) : "",
+      machos:
+        e.machos != null
+          ? String(e.machos)
+          : e.cantidad != null
+            ? String(e.cantidad)
+            : "",
+      hembras: e.hembras != null ? String(e.hembras) : "",
       talla_gr: e.talla_gr ?? "",
       observacion: e.observacion ?? "",
       fc_granja: e.fc_granja || granjaActiva,
@@ -294,7 +351,7 @@ function EngordaContent() {
                     value={form.origen_pileta_id || ""}
                     onChange={handleChange}
                     fullWidth
-                    helperText="Pileta de la que provienen los organismos (alevinaje u otra)"
+                    helperText="Solo piletas ocupadas. Origen del traslado (alevinaje, repro u otra engorda)."
                     slotProps={{
                       select: {
                         renderValue: (val) => {
@@ -305,11 +362,17 @@ function EngordaContent() {
                     }}
                   >
                     <MenuItem value="">Sin origen interno</MenuItem>
-                    {piletasOrigen.map((p) => (
-                      <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
-                        {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
-                      </MenuItem>
-                    ))}
+                    {piletasOrigenOcupadas
+                      .filter(
+                        (p) =>
+                          !form.pileta_id ||
+                          String(p.fi_pileta_id) !== String(form.pileta_id),
+                      )
+                      .map((p) => (
+                        <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
+                          {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
+                        </MenuItem>
+                      ))}
                   </TextField>
                 </Grid>
 
@@ -342,16 +405,41 @@ function EngordaContent() {
                   </TextField>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
-                    label="Cantidad a Sembrar"
-                    name="cantidad"
+                    label="Machos"
+                    name="machos"
                     type="number"
-                    value={form.cantidad || ""}
+                    inputProps={{ min: 0, step: 1 }}
+                    value={form.machos ?? ""}
                     onChange={handleChange}
                     fullWidth
-                    error={!!errors.cantidad}
-                    helperText={errors.cantidad}
+                    error={!!errors.machos}
+                    helperText={errors.machos || "Organismos macho a trasladar"}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <TextField
+                    label="Hembras"
+                    name="hembras"
+                    type="number"
+                    inputProps={{ min: 0, step: 1 }}
+                    value={form.hembras ?? ""}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errors.hembras}
+                    helperText={errors.hembras || "Organismos hembra a trasladar"}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <TextField
+                    label="Cantidad total"
+                    value={cantidadTotalForm > 0 ? cantidadTotalForm : ""}
+                    fullWidth
+                    slotProps={{ input: { readOnly: true } }}
+                    helperText="Suma automática machos + hembras"
                   />
                 </Grid>
 
@@ -403,7 +491,9 @@ function EngordaContent() {
           <TableHead>
             <TableRow>
               <TableCell>Pileta</TableCell>
-              <TableCell>Cantidad</TableCell>
+              <TableCell>Cantidad total</TableCell>
+              <TableCell>Machos</TableCell>
+              <TableCell>Hembras</TableCell>
               <TableCell>Talla (Gr)</TableCell>
               <TableCell>Última observación (pileta)</TableCell>
               <TableCell>Última biometría</TableCell>
@@ -428,6 +518,8 @@ function EngordaContent() {
                     ) : null}
                   </TableCell>
                   <TableCell>{formatNumber(e.cantidad)}</TableCell>
+                  <TableCell>{formatNumber(e.machos)}</TableCell>
+                  <TableCell>{formatNumber(e.hembras)}</TableCell>
                   <TableCell>{formatNumber(e.talla_gr)}</TableCell>
                   <TableCell sx={{ maxWidth: 220 }}>
                     <span title={e.observacion || ""}>
