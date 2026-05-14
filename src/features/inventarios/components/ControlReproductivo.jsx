@@ -50,6 +50,7 @@ const ControlReproductivo = () => {
     "fecha",
     "familia",
     "fi_pileta_id",
+    "fi_pileta_destino_id",
     "huevos_ml",
     "ovadas",
     "no_lote",
@@ -461,7 +462,7 @@ const ControlReproductivo = () => {
                 fullWidth
                 InputLabelProps={{ shrink: true }}
                 error={!!errors.fecha}
-                helperText={errors.fecha}
+                {...(errors.fecha ? { helperText: errors.fecha } : {})}
               />
             </Grid>
 
@@ -474,7 +475,7 @@ const ControlReproductivo = () => {
                 onChange={handleChange}
                 fullWidth
                 error={!!errors.familia}
-                helperText={errors.familia}
+                {...(errors.familia ? { helperText: errors.familia } : {})}
               />
             </Grid>
 
@@ -488,10 +489,7 @@ const ControlReproductivo = () => {
                 onChange={handleChange}
                 fullWidth
                 error={!!errors.fi_pileta_id}
-                helperText={
-                  errors.fi_pileta_id ||
-                  "Piletas reproductores ocupadas. La familia se autocompleta desde aquí."
-                }
+                {...(errors.fi_pileta_id ? { helperText: errors.fi_pileta_id } : {})}
               >
                 {piletasReproductoras.map((p) => (
                   <MenuItem
@@ -514,19 +512,20 @@ const ControlReproductivo = () => {
                 onChange={handleChange}
                 fullWidth
                 error={!!errors.fi_pileta_destino_id}
-                helperText={
-                  errors.fi_pileta_destino_id ||
-                  "Donde permanece este cargamento. Vacío = mismo acto físico solo en pileta origen."
-                }
+                {...(
+                  errors.fi_pileta_destino_id
+                    ? { helperText: errors.fi_pileta_destino_id }
+                    : {}
+                )}
               >
-                <MenuItem value="">
-                  <em>(Igual que origen — conversión en la misma pileta)</em>
-                </MenuItem>
-                {piletasDestinoAlevinaje.map((p) => (
-                  <MenuItem key={p.id} value={String(p.id)}>
-                    {p.nombre}
-                  </MenuItem>
-                ))}
+                {piletasDestinoAlevinaje.map((p) => {
+                  const pid = p.fi_pileta_id ?? p.pileta_id;
+                  return (
+                    <MenuItem key={pid} value={String(pid)}>
+                      {p.nombre}
+                    </MenuItem>
+                  );
+                })}
               </TextField>
             </Grid>
 
@@ -541,7 +540,7 @@ const ControlReproductivo = () => {
                 fullWidth
                 inputProps={{ min: 0, inputMode: "numeric" }}
                 error={!!errors.machos}
-                helperText={errors.machos}
+                {...(errors.machos ? { helperText: errors.machos } : {})}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 2 }}>
@@ -554,7 +553,7 @@ const ControlReproductivo = () => {
                 fullWidth
                 inputProps={{ min: 0, inputMode: "numeric" }}
                 error={!!errors.hembras}
-                helperText={errors.hembras}
+                {...(errors.hembras ? { helperText: errors.hembras } : {})}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 2 }}>
@@ -567,7 +566,6 @@ const ControlReproductivo = () => {
                 }
                 disabled
                 fullWidth
-                placeholder="Machos + hembras"
               />
             </Grid>
 
@@ -581,7 +579,7 @@ const ControlReproductivo = () => {
                 fullWidth
                 inputProps={{ min: 0, inputMode: "numeric" }}
                 error={!!errors.mortalidad}
-                helperText={errors.mortalidad || "Ej. 0 al registrar"}
+                {...(errors.mortalidad ? { helperText: errors.mortalidad } : {})}
               />
             </Grid>
 
@@ -595,10 +593,7 @@ const ControlReproductivo = () => {
                 fullWidth
                 inputProps={{ maxLength: MAX_NUMERICO, inputMode: "decimal" }}
                 error={!!errors.huevos_ml}
-                helperText={
-                  errors.huevos_ml ||
-                  `${String(formData.huevos_ml ?? "").length}/${MAX_NUMERICO}`
-                }
+                {...(errors.huevos_ml ? { helperText: errors.huevos_ml } : {})}
               />
             </Grid>
 
@@ -612,20 +607,20 @@ const ControlReproductivo = () => {
                 onChange={handleChange}
                 fullWidth
                 error={!!errors.ovadas}
-                helperText={errors.ovadas}
+                {...(errors.ovadas ? { helperText: errors.ovadas } : {})}
               />
             </Grid>
 
             {/* LOTE */}
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
-                label="Lote (referencia cría)"
+                label="Lote"
                 name="no_lote"
                 value={formData.no_lote}
                 onChange={handleChange}
                 fullWidth
                 error={!!errors.no_lote}
-                helperText={errors.no_lote || "Código del cargamento guardado como `lote` en alevinaje."}
+                {...(errors.no_lote ? { helperText: errors.no_lote } : {})}
               />
             </Grid>
 
@@ -641,10 +636,7 @@ const ControlReproductivo = () => {
                 rows={2}
                 inputProps={{ maxLength: MAX_OBSERVACION }}
                 error={!!errors.observacion}
-                helperText={
-                  errors.observacion ||
-                  `${String(formData.observacion ?? "").length}/${MAX_OBSERVACION}`
-                }
+                {...(errors.observacion ? { helperText: errors.observacion } : {})}
               />
             </Grid>
 
@@ -676,14 +668,14 @@ const ControlReproductivo = () => {
               <TableRow>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Familia</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Origen repr.</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta origen</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Destino alev.</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Huevos (ml)</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Ovadas</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Machos</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Hembras</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Total</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote cría</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Mortalidad %</TableCell>
