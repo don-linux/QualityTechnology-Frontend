@@ -121,7 +121,7 @@ const LotesRegistro = () => {
   clearFieldError(name);
 
 };
-  /** Piletas etapa reproductores con reproductor (mismo endpoint legacy `/lotes/instalaciones`). */
+  /** Piletas etapa reproductores de la sede (legacy `GET /lotes/instalaciones/:granja`). */
   const cargarPiletasReproductoras = useCallback(async () => {
     if (!granja) return;
     try {

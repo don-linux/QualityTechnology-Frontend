@@ -6,7 +6,7 @@ export function getFamiliaPorInstalacion(piletaId) {
   return axios.get(ENDPOINTS.lotes.familiaPorInstalacion(piletaId));
 }
 
-/** Piletas reproductoras para Lotes. GET `/lotes/instalaciones/:granja` (nombre de ruta heredado). */
+/** Piletas etapa reproductores para Lotes. GET `/lotes/instalaciones/:granja` (nombre de ruta heredado). */
 export function listInstalaciones(granja) {
   return axios.get(ENDPOINTS.lotes.instalacionesReproductores(granja));
 }
