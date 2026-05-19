@@ -59,6 +59,18 @@ export function estadoConservacionActivo(e) {
   return e?.activo ?? e?.esta_activo ?? e?.fb_activo ?? false;
 }
 
+export function getTipoInstanciaPiletaId(t) {
+  return t?.tipo_instancia_pileta_id ?? t?.id;
+}
+
+export function getTipoInstanciaPiletaNombre(t) {
+  return t?.nombre ?? t?.fc_nombre ?? "";
+}
+
+export function tipoInstanciaPiletaActivo(t) {
+  return t?.activo ?? t?.esta_activo ?? t?.fb_activo ?? false;
+}
+
 /** Sede física enlazada (`unidadNegocio.ubicacionId` / serializers). */
 export function getUnidadNegocioUbicacionId(u) {
   const v = u?.fi_ubicacion_id ?? u?.ubicacion_id;

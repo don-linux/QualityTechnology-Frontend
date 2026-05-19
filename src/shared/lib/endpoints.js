@@ -237,6 +237,14 @@ export const ENDPOINTS = {
     deactivate: (id) => `/estados-conservacion/${id}/deactivate`,
   },
 
+  tiposInstanciaPileta: {
+    base: "/tipos-instancia-pileta",
+    activos: "/tipos-instancia-pileta/activos",
+    byId: (id) => `/tipos-instancia-pileta/${id}`,
+    activate: (id) => `/tipos-instancia-pileta/${id}/activate`,
+    deactivate: (id) => `/tipos-instancia-pileta/${id}/deactivate`,
+  },
+
   bitacoras: {
     biometrias: {
       base: "/biometrias",

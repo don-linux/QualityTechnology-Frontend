@@ -31,9 +31,12 @@ import {
   removePileta,
 } from "../services/piletasService";
 import { listEstadosConservacionActivos } from "@features/catalogos/services/estadosConservacionService";
+import { listTiposInstanciaPiletaActivos } from "@features/catalogos/services/tiposInstanciaPiletaService";
 import {
   getEstadoConservacionId,
   getEstadoConservacionNombre,
+  getTipoInstanciaPiletaId,
+  getTipoInstanciaPiletaNombre,
 } from "@features/catalogos/utils/catalogEntityGetters";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
@@ -163,6 +166,7 @@ function PiletasTab({
   const [editId, setEditId] = useState(null);
 
   const [estadosConservacion, setEstadosConservacion] = useState([]);
+  const [tiposInstancia, setTiposInstancia] = useState([]);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -173,9 +177,19 @@ function PiletasTab({
     estado: "vacia",
     tipo: "",
     estado_conservacion_id: "",
+    tipo_instancia: "",
   });
 
-  const required = ["nombre", "largo", "ancho", "alto", "material", "tipo", "estado_conservacion_id"];
+  const required = [
+    "nombre",
+    "largo",
+    "ancho",
+    "alto",
+    "material",
+    "tipo",
+    "estado_conservacion_id",
+    "tipo_instancia",
+  ];
 
   const ubicacionActual = useMemo(
     () => ubicacionesGranja.find((u) => u.value === granjaActiva),
@@ -186,6 +200,9 @@ function PiletasTab({
     listEstadosConservacionActivos()
       .then(({ data }) => setEstadosConservacion(Array.isArray(data) ? data : []))
       .catch(() => setEstadosConservacion([]));
+    listTiposInstanciaPiletaActivos()
+      .then(({ data }) => setTiposInstancia(Array.isArray(data) ? data : []))
+      .catch(() => setTiposInstancia([]));
   }, []);
 
   const m3 = useMemo(() => {
@@ -213,6 +230,7 @@ function PiletasTab({
       estado: "vacia",
       tipo: "",
       estado_conservacion_id: "",
+      tipo_instancia: "",
     });
     if (cerrarPanel) setMostrarFormulario(false);
   };
@@ -230,6 +248,7 @@ function PiletasTab({
       estado: "vacia",
       tipo: "",
       estado_conservacion_id: "",
+      tipo_instancia: "",
     });
   };
 
@@ -249,6 +268,7 @@ function PiletasTab({
         estado: form.estado,
         tipo: form.tipo,
         estado_conservacion_id: Number(form.estado_conservacion_id),
+        tipo_instancia: Number(form.tipo_instancia),
         granja: granjaActiva,
       };
       if (ubicacionActual?.ubicacion_id != null) {
@@ -291,6 +311,7 @@ function PiletasTab({
       tipo: p.tipo || "",
       estado_conservacion_id:
         p.estado_conservacion_id != null ? String(p.estado_conservacion_id) : "",
+      tipo_instancia: p.tipo_instancia != null ? String(p.tipo_instancia) : "",
     });
     setMostrarFormulario(true);
   };
@@ -502,6 +523,35 @@ function PiletasTab({
                   ))}
                 </TextField>
               </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  select
+                  required
+                  label="Tipo de instancia"
+                  name="tipo_instancia"
+                  value={form.tipo_instancia}
+                  onChange={handleChange}
+                  fullWidth
+                  error={!!errors.tipo_instancia}
+                  helperText={
+                    errors.tipo_instancia ||
+                    (tiposInstancia.length === 0
+                      ? "Configure valores en Catálogos → Tipos de instancia"
+                      : "")
+                  }
+                >
+                  <MenuItem value="">Seleccione</MenuItem>
+                  {tiposInstancia.map((ti) => (
+                    <MenuItem
+                      key={getTipoInstanciaPiletaId(ti)}
+                      value={String(getTipoInstanciaPiletaId(ti))}
+                    >
+                      {getTipoInstanciaPiletaNombre(ti)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
             </Grid>
 
             <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
@@ -521,11 +571,12 @@ function PiletasTab({
 
       <Paper>
         <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table stickyHeader sx={{ minWidth: 1200 }}>
+          <Table stickyHeader sx={{ minWidth: 1320 }}>
             <TableHead sx={{ background: "#E3F2FD" }}>
               <TableRow>
                 <TableCell>Nombre</TableCell>
                 <TableCell>Etapa</TableCell>
+                <TableCell>Tipo instancia</TableCell>
                 <TableCell>Estado</TableCell>
                 <TableCell>Conservación</TableCell>
                 <TableCell align="right">Cantidad</TableCell>
@@ -541,7 +592,7 @@ function PiletasTab({
             <TableBody>
               {piletas.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={10} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                  <TableCell colSpan={11} align="center" sx={{ py: 4, color: "text.secondary" }}>
                     Sin piletas para esta ubicación.
                   </TableCell>
                 </TableRow>
@@ -552,6 +603,7 @@ function PiletasTab({
                   <TableCell>
                     <Chip size="small" variant="outlined" label={tipoLabel(p.tipo)} />
                   </TableCell>
+                  <TableCell>{p.fc_tipo_instancia || "—"}</TableCell>
                   <TableCell>
                     <Chip
                       size="small"
