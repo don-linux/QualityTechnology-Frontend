@@ -47,6 +47,18 @@ export function getUbicacionNombre(u) {
   return u?.nombre ?? u?.fc_nombre ?? "";
 }
 
+export function getEstadoConservacionId(e) {
+  return e?.estado_conservacion_id ?? e?.id;
+}
+
+export function getEstadoConservacionNombre(e) {
+  return e?.nombre ?? e?.fc_nombre ?? "";
+}
+
+export function estadoConservacionActivo(e) {
+  return e?.activo ?? e?.esta_activo ?? e?.fb_activo ?? false;
+}
+
 /** Sede física enlazada (`unidadNegocio.ubicacionId` / serializers). */
 export function getUnidadNegocioUbicacionId(u) {
   const v = u?.fi_ubicacion_id ?? u?.ubicacion_id;

@@ -30,6 +30,11 @@ import {
   updatePileta,
   removePileta,
 } from "../services/piletasService";
+import { listEstadosConservacionActivos } from "@features/catalogos/services/estadosConservacionService";
+import {
+  getEstadoConservacionId,
+  getEstadoConservacionNombre,
+} from "@features/catalogos/utils/catalogEntityGetters";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -157,6 +162,8 @@ function PiletasTab({
   const [mostrarFormulario, setMostrarFormulario] = useState(true);
   const [editId, setEditId] = useState(null);
 
+  const [estadosConservacion, setEstadosConservacion] = useState([]);
+
   const [form, setForm] = useState({
     nombre: "",
     largo: "",
@@ -165,14 +172,21 @@ function PiletasTab({
     material: "",
     estado: "vacia",
     tipo: "",
+    estado_conservacion_id: "",
   });
 
-  const required = ["nombre", "largo", "ancho", "alto", "material", "tipo"];
+  const required = ["nombre", "largo", "ancho", "alto", "material", "tipo", "estado_conservacion_id"];
 
   const ubicacionActual = useMemo(
     () => ubicacionesGranja.find((u) => u.value === granjaActiva),
     [ubicacionesGranja, granjaActiva],
   );
+
+  useEffect(() => {
+    listEstadosConservacionActivos()
+      .then(({ data }) => setEstadosConservacion(Array.isArray(data) ? data : []))
+      .catch(() => setEstadosConservacion([]));
+  }, []);
 
   const m3 = useMemo(() => {
     const l = Number(form.largo) || 0;
@@ -198,6 +212,7 @@ function PiletasTab({
       material: "",
       estado: "vacia",
       tipo: "",
+      estado_conservacion_id: "",
     });
     if (cerrarPanel) setMostrarFormulario(false);
   };
@@ -214,6 +229,7 @@ function PiletasTab({
       material: "",
       estado: "vacia",
       tipo: "",
+      estado_conservacion_id: "",
     });
   };
 
@@ -232,6 +248,7 @@ function PiletasTab({
         material: form.material,
         estado: form.estado,
         tipo: form.tipo,
+        estado_conservacion_id: Number(form.estado_conservacion_id),
         granja: granjaActiva,
       };
       if (ubicacionActual?.ubicacion_id != null) {
@@ -272,6 +289,8 @@ function PiletasTab({
       material: p.material || "",
       estado: p.estado || "vacia",
       tipo: p.tipo || "",
+      estado_conservacion_id:
+        p.estado_conservacion_id != null ? String(p.estado_conservacion_id) : "",
     });
     setMostrarFormulario(true);
   };
@@ -457,6 +476,32 @@ function PiletasTab({
                   ))}
                 </TextField>
               </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  select
+                  required
+                  label="Estado de conservación"
+                  name="estado_conservacion_id"
+                  value={form.estado_conservacion_id}
+                  onChange={handleChange}
+                  fullWidth
+                  error={!!errors.estado_conservacion_id}
+                  helperText={
+                    errors.estado_conservacion_id ||
+                    (estadosConservacion.length === 0
+                      ? "Configure valores en Catálogos → Estados de conservación"
+                      : "")
+                  }
+                >
+                  <MenuItem value="">Seleccione</MenuItem>
+                  {estadosConservacion.map((ec) => (
+                    <MenuItem key={getEstadoConservacionId(ec)} value={String(getEstadoConservacionId(ec))}>
+                      {getEstadoConservacionNombre(ec)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
             </Grid>
 
             <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
@@ -476,12 +521,13 @@ function PiletasTab({
 
       <Paper>
         <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table stickyHeader sx={{ minWidth: 1100 }}>
+          <Table stickyHeader sx={{ minWidth: 1200 }}>
             <TableHead sx={{ background: "#E3F2FD" }}>
               <TableRow>
                 <TableCell>Nombre</TableCell>
                 <TableCell>Etapa</TableCell>
                 <TableCell>Estado</TableCell>
+                <TableCell>Conservación</TableCell>
                 <TableCell align="right">Cantidad</TableCell>
                 <TableCell align="right">Vol. m³</TableCell>
                 <TableCell>Material</TableCell>
@@ -495,7 +541,7 @@ function PiletasTab({
             <TableBody>
               {piletas.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                  <TableCell colSpan={10} align="center" sx={{ py: 4, color: "text.secondary" }}>
                     Sin piletas para esta ubicación.
                   </TableCell>
                 </TableRow>
@@ -514,6 +560,7 @@ function PiletasTab({
                       label={p.estado}
                     />
                   </TableCell>
+                  <TableCell>{p.fc_estado_conservacion || "—"}</TableCell>
                   <TableCell align="right">{formatNumber(p.cantidad ?? p.fn_cantidad)}</TableCell>
                   <TableCell align="right">
                     {formatNumber(p.metros_cubicos, {
