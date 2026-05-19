@@ -64,7 +64,7 @@ const formatFecha = (fecha) => {
 /* ============================================================================
  *  PANTALLA PRINCIPAL — solo piletas físicas (CRUD)
  * ========================================================================= */
-export default function Pileta({ pageTitle = "Piletas físicas" } = {}) {
+export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
   const showSnackbar = useSnackbar();
   const { confirm, ConfirmModal } = useConfirm();
   const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } =
@@ -482,6 +482,7 @@ function PiletasTab({
                 <TableCell>Nombre</TableCell>
                 <TableCell>Etapa</TableCell>
                 <TableCell>Estado</TableCell>
+                <TableCell align="right">Cantidad</TableCell>
                 <TableCell align="right">Vol. m³</TableCell>
                 <TableCell>Material</TableCell>
                 <TableCell>Ubicación</TableCell>
@@ -494,7 +495,7 @@ function PiletasTab({
             <TableBody>
               {piletas.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                  <TableCell colSpan={9} align="center" sx={{ py: 4, color: "text.secondary" }}>
                     Sin piletas para esta ubicación.
                   </TableCell>
                 </TableRow>
@@ -513,6 +514,7 @@ function PiletasTab({
                       label={p.estado}
                     />
                   </TableCell>
+                  <TableCell align="right">{formatNumber(p.cantidad ?? p.fn_cantidad)}</TableCell>
                   <TableCell align="right">
                     {formatNumber(p.metros_cubicos, {
                       minimumFractionDigits: 2,

@@ -61,7 +61,11 @@ export function AuthProvider({ children }) {
     const refreshToken = localStorage.getItem("refreshToken");
     if (refreshToken) {
       try {
-        await axiosInstance.post(ENDPOINTS.auth.logout, { refreshToken });
+        await axiosInstance.post(
+          ENDPOINTS.auth.logout,
+          { refreshToken },
+          { _skipAuth: true }
+        );
       } catch (_) { /* best effort */ }
     }
     localStorage.clear();

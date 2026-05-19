@@ -66,7 +66,7 @@ export const MENU_SECTIONS = [
         sublabel: "Inventario de Organismos",
         sublabelColor: "#90cdffff",
         items: [
-          { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Piletas físicas" },
+          { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
           { to: "/inventarios/reproductores", icon: <Biotech />, label: "Reproductores" },
           { to: "/inventarios/alevinaje", icon: <EggAltIcon />, label: "Control Reproductivo" },
           { to: "/inventarios/engorda", icon: <Grass />, label: "Engorda" },
