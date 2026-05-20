@@ -74,6 +74,10 @@ export const ENDPOINTS = {
     familiaPorPileta: (piletaId) => `/alevinaje/familia-por-pileta/${piletaId}`,
   },
 
+  historialPeso: {
+    base: "/historial-peso",
+  },
+
   siembras: {
     base: "/siembras",
     byId: (id) => `/siembras/${id}`,
