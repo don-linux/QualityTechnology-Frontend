@@ -43,15 +43,7 @@ export const ENDPOINTS = {
 
   piletas: {
     base: "/piletas",
-    inventario: (granja) => `/piletas/inventario/${path(granja)}`,
-    origen: (granja) => `/piletas/origen/${path(granja)}`,
-    destino: (granja) => `/piletas/destino/${path(granja)}`,
-    siembra: "/piletas/siembra",
     byId: (id) => `/piletas/${id}`,
-    movimientos: (usuario, granja) => `/piletas/movimientos/${usuario}/${path(granja)}`,
-    movimientosFiltro: (usuario, granja) => `/piletas/movimientos/filtro/${usuario}/${path(granja)}`,
-    registrarMovimiento: "/piletas/movimientos/registrar",
-    eliminarMovimientos: "/piletas/movimientos/eliminar",
   },
 
   reproductores: {
@@ -72,11 +64,6 @@ export const ENDPOINTS = {
   alimentos: {
     base: "/alimentos",
     byId: (id) => `/alimentos/${id}`,
-  },
-
-  alevines: {
-    base: "/alevines",
-    byId: (id) => `/alevines/${id}`,
   },
 
   alevinaje: {

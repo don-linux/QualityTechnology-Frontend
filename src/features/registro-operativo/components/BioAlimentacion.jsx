@@ -24,7 +24,7 @@ import {
   removeAlimentacion,
   removeAllAlimentacion,
 } from "../services/alimentacionService";
-import { getOrigenes } from "@features/inventarios/services/piletasService";
+import { listPiletas } from "@features/inventarios/services/piletasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
@@ -100,8 +100,12 @@ export default function BioAlimentacion() {
   const cargarOrigenes = async () => {
     if (!form.ubicacion) { setOrigenes([]); return; }
     try {
-      const res = await getOrigenes(form.ubicacion);
-      setOrigenes(res.data || []);
+      const res = await listPiletas(form.ubicacion, "alevinaje");
+      const rows = (res.data || []).map((p) => ({
+        fi_instalacion_id: p.id ?? p.fi_pileta_id,
+        nombre_instalacion: p.nombre ?? p.fc_nombre ?? p.nombre_pileta,
+      }));
+      setOrigenes(rows);
     } catch {
       showSnackbar("Error al cargar orígenes.", "error");
     }
