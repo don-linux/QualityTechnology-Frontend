@@ -46,32 +46,69 @@ export function getNombreUnidad(unidad) {
  * @param {Array<{ ubicacion_id?: number, nombre: string }>} ubicacionesRows
  * @returns {number|null}
  */
+const STOP_GRANJA_MATCH = new Set(
+  ["granja", "acuícola", "la", "el", "de", "y", "del", "los", "las"].map((s) =>
+    normalizarTexto(s),
+  ),
+);
+
+function nombresGranjaCoinciden(a, b) {
+  const na = normalizarTexto(a);
+  const nb = normalizarTexto(b);
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  const shorter = na.length <= nb.length ? na : nb;
+  const longer = na.length <= nb.length ? nb : na;
+  if (shorter.length < 4 || !longer.includes(shorter)) return false;
+  return !STOP_GRANJA_MATCH.has(shorter);
+}
+
+/**
+ * Indica si un registro (pileta, inventario, bitácora…) pertenece a la opción de sede/granja.
+ * Prioriza `ubicacion_id`; si no hay FK, compara nombres con normalización y alias cortos.
+ */
+export function rowPerteneceAUbicacionGranja(row, op, field = "fc_granja") {
+  if (!row || !op) return false;
+
+  const rowUbicId = row.ubicacion_id ?? row.ubicacionId ?? null;
+  if (
+    rowUbicId != null &&
+    op.ubicacion_id != null &&
+    Number(rowUbicId) === Number(op.ubicacion_id)
+  ) {
+    return true;
+  }
+
+  const raw =
+    row[field] ??
+    row.fc_granja ??
+    row.ubicacion?.nombre ??
+    row.ubicacion ??
+    row.fc_granja_asignada ??
+    "";
+  if (!raw) return false;
+  if (raw === op.value || raw === op.label) return true;
+  return nombresGranjaCoinciden(raw, op.value) || nombresGranjaCoinciden(raw, op.label);
+}
+
 export function matchUbicacionIdForGranjaLabel(label, ubicacionesRows) {
   if (!label || !Array.isArray(ubicacionesRows) || ubicacionesRows.length === 0) return null;
 
   let bestId = null;
   let bestScore = 0;
-  const nt = normalizarTexto(label);
-  const STOP = new Set(
-    ["granja", "acuícola", "la", "el", "de", "y", "del", "los", "las"].map((s) => normalizarTexto(s)),
-  );
-
   for (const u of ubicacionesRows) {
     const name = u?.nombre;
     if (!name || u.ubicacion_id == null) continue;
-    if (normalizarTexto(name) === nt) return u.ubicacion_id;
+    if (normalizarTexto(name) === normalizarTexto(label)) return u.ubicacion_id;
   }
 
   for (const u of ubicacionesRows) {
     const name = u?.nombre;
     if (!name || u.ubicacion_id == null) continue;
-    const un = normalizarTexto(name);
-    const shorter = un.length <= nt.length ? un : nt;
-    const longer = un.length <= nt.length ? nt : un;
-    if (shorter.length < 4 || !longer.includes(shorter)) continue;
-    if (STOP.has(shorter)) continue;
-    if (shorter.length > bestScore) {
-      bestScore = shorter.length;
+    if (!nombresGranjaCoinciden(name, label)) continue;
+    const score = Math.min(normalizarTexto(name).length, normalizarTexto(label).length);
+    if (score > bestScore) {
+      bestScore = score;
       bestId = u.ubicacion_id;
     }
   }

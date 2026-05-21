@@ -1,3 +1,5 @@
+import { rowPerteneceAUbicacionGranja } from "@shared/utils/unidadesNegocio";
+
 /**
  * Ejecuta una petición por cada filtro de ubicación y concatena los resultados.
  * Útil cuando el backend solo expone rutas por granja/sede.
@@ -27,13 +29,11 @@ export async function fetchMergedPorUbicaciones(filtros, fetchFn) {
 
 /** Resuelve el slug/nombre de sede a partir de una pileta del listado. */
 export function resolveGranjaDesdePileta(pileta, ubicacionesGranja) {
+  const match = ubicacionesGranja.find((op) => rowPerteneceAUbicacionGranja(pileta, op));
+  if (match) return match.value;
   const nombre =
     pileta?.fc_granja ?? pileta?.ubicacion?.nombre ?? pileta?.ubicacion ?? "";
-  if (!nombre) return ubicacionesGranja[0]?.value ?? "";
-  const match = ubicacionesGranja.find(
-    (u) => u.value === nombre || u.label === nombre,
-  );
-  return match?.value ?? nombre;
+  return nombre || ubicacionesGranja[0]?.value || "";
 }
 
 export function resolveGranjaDesdePiletaId(piletaId, piletas, ubicacionesGranja) {
@@ -49,9 +49,6 @@ export function resolveGranjaDesdePiletaId(piletaId, piletas, ubicacionesGranja)
 export function filtrarPorUbicacion(items, ubicacion, ubicacionesGranja = []) {
   if (!ubicacion) return items;
   const op = ubicacionesGranja.find((u) => u.value === ubicacion);
-  const nombres = new Set([ubicacion, op?.label].filter(Boolean));
-  return items.filter((item) => {
-    const g = item.fc_granja ?? item.ubicacion?.nombre ?? item.ubicacion ?? "";
-    return nombres.has(g);
-  });
+  if (!op) return items;
+  return items.filter((item) => rowPerteneceAUbicacionGranja(item, op));
 }
