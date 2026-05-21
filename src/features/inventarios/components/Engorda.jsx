@@ -29,6 +29,10 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import {
+  fetchMergedPorUbicaciones,
+  filtrarPorUbicacion,
+} from "@shared/utils/fetchMergedPorUbicaciones";
 
 const MAX_OBSERVACION = 500;
 const TRUNCAR_MAX = 40;
@@ -52,9 +56,8 @@ function EngordaContent() {
   const { confirm, ConfirmModal } = useConfirm();
   const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
 
-  const requiredFields = ["pileta_id", "machos", "hembras", "talla_gr", "observacion"];
+  const requiredFields = ["ubicacion", "pileta_id", "machos", "hembras", "talla_gr", "observacion"];
 
-  const [granjaActiva, setGranjaActiva] = useState("");
   const [engordas, setEngordas] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
   const [piletasEngorda, setPiletasEngorda] = useState([]);
@@ -63,18 +66,22 @@ function EngordaContent() {
   const [seleccionado, setSeleccionado] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
-  const filtroUbicacion = useMemo(
-    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
-    [granjaActiva, resolveFiltroUbicacion],
+  const filtrosUbicacion = useMemo(
+    () => ubicacionesGranja.map((op) => resolveFiltroUbicacion(op.value)),
+    [ubicacionesGranja, resolveFiltroUbicacion],
   );
 
-  /** Solo piletas con inventario declarado (permite traslado desde origen real). */
   const piletasOrigenOcupadas = useMemo(
     () =>
-      (piletasOrigen || []).filter(
+      filtrarPorUbicacion(piletasOrigen, form.ubicacion, ubicacionesGranja).filter(
         (p) => String(p.estado).toLowerCase() === "ocupada",
       ),
-    [piletasOrigen],
+    [piletasOrigen, form.ubicacion, ubicacionesGranja],
+  );
+
+  const piletasEngordaFiltradas = useMemo(
+    () => filtrarPorUbicacion(piletasEngorda, form.ubicacion, ubicacionesGranja),
+    [piletasEngorda, form.ubicacion, ubicacionesGranja],
   );
 
   const cantidadTotalForm = useMemo(() => {
@@ -95,11 +102,10 @@ function EngordaContent() {
        OBTENER DATOS
   ========================================================= */
   const obtenerPiletas = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
       const [resEngorda, resTodas] = await Promise.all([
-        listPiletas(filtroUbicacion, "engorda"),
-        listPiletas(filtroUbicacion),
+        listPiletas(null, "engorda"),
+        listPiletas(),
       ]);
       setPiletasEngorda(Array.isArray(resEngorda.data) ? resEngorda.data : []);
       setPiletasOrigen(Array.isArray(resTodas.data) ? resTodas.data : []);
@@ -108,17 +114,16 @@ function EngordaContent() {
       setPiletasEngorda([]);
       setPiletasOrigen([]);
     }
-  }, [filtroUbicacion]);
+  }, []);
 
   const obtenerEngordas = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const { data } = await listEngordas(filtroUbicacion);
+      const data = await fetchMergedPorUbicaciones(filtrosUbicacion, listEngordas);
       setEngordas(data || []);
     } catch (err) {
       console.error("Error al obtener engordas:", err);
     }
-  }, [filtroUbicacion]);
+  }, [filtrosUbicacion]);
 
   const obtenerMovimientos = useCallback(async () => {
     try {
@@ -131,39 +136,43 @@ function EngordaContent() {
 
   const limpiarFormulario = useCallback(() => {
     setForm({
+      ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
       origen_pileta_id: "",
       pileta_id: "",
       machos: "",
       hembras: "",
       talla_gr: "",
       observacion: "",
-      fc_granja: granjaActiva,
       fi_usuario_id: usuario_id,
     });
     setSeleccionado(null);
     setMostrarFormulario(false);
     clearErrors();
-  }, [granjaActiva, usuario_id, clearErrors]);
+  }, [defaultUbicacion, ubicacionesGranja, usuario_id, clearErrors]);
 
   useEffect(() => {
-    if (!granjaActiva && defaultUbicacion) {
-      setGranjaActiva(defaultUbicacion);
-      return;
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
     }
+  }, [defaultUbicacion, form.ubicacion]);
 
-    if (!granjaActiva) return;
-    limpiarFormulario();
+  useEffect(() => {
     obtenerEngordas();
     obtenerMovimientos();
     obtenerPiletas();
-  }, [defaultUbicacion, granjaActiva, limpiarFormulario, obtenerEngordas, obtenerMovimientos, obtenerPiletas]);
+  }, [obtenerEngordas, obtenerMovimientos, obtenerPiletas]);
 
   /* =========================================================
        FORMULARIO Y CAMBIOS
   ========================================================= */
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    clearFieldError(e.target.name);
+    const { name, value } = e.target;
+    if (name === "ubicacion") {
+      setForm({ ...form, ubicacion: value, origen_pileta_id: "", pileta_id: "" });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
+    clearFieldError(name);
   };
 
   /* =========================================================
@@ -194,7 +203,7 @@ function EngordaContent() {
         talla_gr: form.talla_gr,
         observacion: form.observacion,
         origen_pileta_id: form.origen_pileta_id ? Number(form.origen_pileta_id) : null,
-        fc_granja: granjaActiva,
+        fc_granja: form.ubicacion,
         fi_usuario_id: usuario_id,
       });
 
@@ -275,7 +284,7 @@ function EngordaContent() {
       hembras: e.hembras != null ? String(e.hembras) : "",
       talla_gr: e.talla_gr ?? "",
       observacion: e.observacion ?? "",
-      fc_granja: e.fc_granja || granjaActiva,
+      ubicacion: e.fc_granja || defaultUbicacion || "",
     });
     setMostrarFormulario(true);
   };
@@ -308,23 +317,8 @@ function EngordaContent() {
          Módulo de Engorda — Sistema
       </Typography>
 
-      {/*  Selección de granja */}
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        {ubicacionesGranja.map((op) => (
-          <Button
-            key={op.value}
-            variant={granjaActiva === op.value ? "contained" : "outlined"}
-            color="primary"
-            onClick={() => setGranjaActiva(op.value)}
-          >
-            {op.label}
-          </Button>
-        ))}
-      </Box>
-
       {/*  Resumen */}
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
-        <Typography><b>Ubicación (sede):</b> {granjaActiva}</Typography>
         <Typography><b>Registros en tina:</b> {engordas.length}</Typography>
         <Typography><b>Total organismos en engorda:</b> {totalCantidad.toLocaleString("es-MX")}</Typography>
       </Paper>
@@ -342,6 +336,25 @@ function EngordaContent() {
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Grid container spacing={2}>
+                <Grid size={12}>
+                  <TextField
+                    select
+                    label="Ubicación"
+                    name="ubicacion"
+                    value={form.ubicacion || ""}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errors.ubicacion}
+                    helperText={errors.ubicacion}
+                  >
+                    {ubicacionesGranja.map((op) => (
+                      <MenuItem key={op.value} value={op.value}>
+                        {op.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+
                 {/* PILETA ORIGEN (opcional) */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
@@ -390,14 +403,14 @@ function EngordaContent() {
                     slotProps={{
                       select: {
                         renderValue: (val) => {
-                          const p = piletasEngorda.find((x) => String(x.fi_pileta_id) === String(val));
+                          const p = piletasEngordaFiltradas.find((x) => String(x.fi_pileta_id) === String(val));
                           return p ? `${p.nombre} · ${p.estado}` : "";
                         },
                       },
                     }}
                   >
                     <MenuItem value="">Seleccione un destino</MenuItem>
-                    {piletasEngorda.map((p) => (
+                    {piletasEngordaFiltradas.map((p) => (
                       <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
                         {p.nombre} · {p.estado}
                       </MenuItem>

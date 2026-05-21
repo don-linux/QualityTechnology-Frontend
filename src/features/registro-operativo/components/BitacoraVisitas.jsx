@@ -34,6 +34,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -64,6 +65,7 @@ function BitacoraVisitasContent() {
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
+    "ubicacion",
     "fd_fecha", "fc_nombre_completo", "fc_origen", "fc_motivo",
     "fc_observaciones", "fd_entrada", "fd_salida",
   ];
@@ -81,18 +83,21 @@ function BitacoraVisitasContent() {
   };
 
   const cargarDatos = useCallback(async () => {
-    if (!form.ubicacion) {
+    if (!ubicacionesGranja.length) {
       setData([]);
       return;
     }
 
     try {
-      const res = await listVisitas(form.ubicacion, busqueda);
-      setData(res.data);
+      const granjas = ubicacionesGranja.map((op) => op.value);
+      const rows = await fetchMergedPorUbicaciones(granjas, (g) =>
+        listVisitas(g, busqueda),
+      );
+      setData(rows);
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
     }
-  }, [form.ubicacion, busqueda]);
+  }, [ubicacionesGranja, busqueda]);
 
   useEffect(() => {
     cargarDatos();
@@ -188,8 +193,8 @@ function BitacoraVisitasContent() {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(form.ubicacion);
-    const color = getColor(form.ubicacion);
+    const logo = getLogo(defaultUbicacion);
+    const color = getColor(defaultUbicacion);
 
     try {
       doc.addImage(logo, "PNG", 10, 8, 25, 25);
@@ -198,7 +203,7 @@ function BitacoraVisitasContent() {
     }
 
     doc.setFontSize(14);
-    const ubicLabel = getLabel(form.ubicacion);
+    const ubicLabel = "Todas las ubicaciones";
     doc.text(`Bitácora de Visitas — ${ubicLabel}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Registro de visitas, motivos y observaciones", 45, 26);
@@ -225,7 +230,7 @@ function BitacoraVisitasContent() {
 
     const fecha = new Date().toLocaleDateString();
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Visitas_${form.ubicacion}_${fecha}.pdf`);
+    doc.save(`Bitacora_Visitas_${fecha}.pdf`);
   };
 
   return (
@@ -234,23 +239,7 @@ function BitacoraVisitasContent() {
         Bitacora de Visitas
       </Typography>
 
-      {/* Filtro superior */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <FormControl size="small" sx={{ width: 250, mr: 2 }}>
-          <InputLabel>Ubicación</InputLabel>
-          <Select
-            name="ubicacion"
-            value={form.ubicacion}
-            onChange={handleChange}
-          >
-            {ubicacionesGranja.map((op) => (
-              <MenuItem key={op.value} value={op.value}>
-                {op.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
         <TextField
           label="Buscar Nombre / Origen"
           variant="outlined"
@@ -273,6 +262,26 @@ function BitacoraVisitasContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                error={!!errors.ubicacion}
+                helperText={errors.ubicacion}
+              >
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Fecha"

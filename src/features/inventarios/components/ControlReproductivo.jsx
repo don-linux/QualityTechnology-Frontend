@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listAlevinaje,
   createAlevinaje,
@@ -27,6 +27,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { listPiletas } from "../services/piletasService";
 
 const MAX_OBSERVACION = 500;
@@ -42,22 +43,28 @@ const ControlReproductivo = () => {
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
-  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
+    "ubicacion",
     "fi_pileta_destino_id",
     "cantidad_total",
     "fecha_peso",
     "peso_kg",
   ];
 
-  const [granja, setGranja] = useState("");
   const [piletasDestinoAlevinaje, setPiletasDestinoAlevinaje] = useState([]);
+
+  const piletasFiltradas = useMemo(
+    () => filtrarPorUbicacion(piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja),
+    [piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja],
+  );
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
 
   const [formData, setFormData] = useState({
+    ubicacion: "",
     fi_pileta_destino_id: "",
     cantidad_total: "",
     cantidad_alimento: "",
@@ -86,45 +93,43 @@ const ControlReproductivo = () => {
       if (!soloDecimal(value)) return;
     }
 
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => {
+      if (name === "ubicacion") {
+        return { ...prev, ubicacion: value, fi_pileta_destino_id: "" };
+      }
+      return { ...prev, [name]: value };
+    });
     clearFieldError(name);
   };
 
   const cargarPiletasDestinoAlevinaje = useCallback(async () => {
-    if (!granja) return;
     try {
-      const filtros = resolveFiltroUbicacion(granja);
-      const res = await listPiletas(filtros, "alevinaje");
+      const res = await listPiletas(null, "alevinaje");
       setPiletasDestinoAlevinaje(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error cargando piletas alevinaje:", err);
     }
-  }, [granja, resolveFiltroUbicacion]);
+  }, []);
 
   const cargarRegistros = useCallback(async () => {
-    if (!granja) return;
     try {
-      const filtros = resolveFiltroUbicacion(granja);
-      const res = await listAlevinaje(filtros);
+      const res = await listAlevinaje();
       setRegistros(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error cargando registros de alevinaje:", err);
     }
-  }, [granja, resolveFiltroUbicacion]);
+  }, []);
 
   useEffect(() => {
-    if (!granja && defaultUbicacion) {
-      setGranja(defaultUbicacion);
-      return;
-    }
-    if (!granja) return;
     cargarPiletasDestinoAlevinaje();
-  }, [defaultUbicacion, granja, cargarPiletasDestinoAlevinaje]);
+    cargarRegistros();
+  }, [cargarPiletasDestinoAlevinaje, cargarRegistros]);
 
   useEffect(() => {
-    if (!granja) return;
-    cargarRegistros();
-  }, [granja, cargarRegistros]);
+    if (!formData.ubicacion && defaultUbicacion) {
+      setFormData((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, formData.ubicacion]);
 
   const registrarAlevinaje = async () => {
     if (!validate(formData, requiredFields)) return;
@@ -152,6 +157,7 @@ const ControlReproductivo = () => {
     if (!seleccionado) return;
     clearErrors();
     setFormData({
+      ubicacion: seleccionado.fc_granja || formData.ubicacion || defaultUbicacion || "",
       fi_pileta_destino_id: String(
         seleccionado.fi_pileta_destino_id ?? seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
       ),
@@ -212,6 +218,7 @@ const ControlReproductivo = () => {
 
   const resetFormulario = () => {
     setFormData({
+      ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
       fi_pileta_destino_id: "",
       cantidad_total: "",
       cantidad_alimento: "",
@@ -251,24 +258,6 @@ const ControlReproductivo = () => {
         Alevinaje
       </Typography>
 
-      <Grid container spacing={2} sx={{ mb: 4 }}>
-        {ubicacionesGranja.map((op) => (
-          <Grid size="auto" key={op.value}>
-            <Button
-              variant={granja === op.value ? "contained" : "outlined"}
-              onClick={() => setGranja(op.value)}
-              sx={{
-                background: granja === op.value ? "#0077b6" : "",
-                color: granja === op.value ? "white" : "#0077b6",
-                borderColor: "#0077b6",
-              }}
-            >
-              {op.label}
-            </Button>
-          </Grid>
-        ))}
-      </Grid>
-
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
         <CardContent>
@@ -281,6 +270,25 @@ const ControlReproductivo = () => {
             <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 select
+                label="Ubicación"
+                name="ubicacion"
+                value={formData.ubicacion || ""}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.ubicacion}
+                {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
+              >
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField
+                select
                 label="Pileta (alevinaje)"
                 name="fi_pileta_destino_id"
                 value={formData.fi_pileta_destino_id || ""}
@@ -289,7 +297,7 @@ const ControlReproductivo = () => {
                 error={!!errors.fi_pileta_destino_id}
                 {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
               >
-                {piletasDestinoAlevinaje.map((p) => {
+                {piletasFiltradas.map((p) => {
                   const pid = p.fi_pileta_id ?? p.pileta_id;
                   return (
                     <MenuItem key={pid} value={String(pid)}>
@@ -383,7 +391,7 @@ const ControlReproductivo = () => {
       </FormularioRegistroPanel>
 
       <Typography variant="h6" sx={{ mb: 1, fontWeight: "bold", color: "#023047" }}>
-        Registros (alevinaje) — {granja}
+        Registros (alevinaje)
       </Typography>
 
       <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>

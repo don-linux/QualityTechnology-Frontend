@@ -36,6 +36,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -69,6 +70,7 @@ function BitacoraPlagasContent() {
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
+    "ubicacion",
     "fd_fecha", "fc_num_trampa", "tipo_trampa", "fc_hallazgo",
     "fc_malla", "fc_veneno", "fc_observaciones", "fc_verifico",
     "unidad_produccion",
@@ -97,14 +99,15 @@ function BitacoraPlagasContent() {
 
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
-    if (!form.ubicacion) {
+    if (!ubicacionesGranja.length) {
       setData([]);
       return;
     }
 
     try {
-      const res = await listPlagas(form.ubicacion);
-      const filtrados = res.data.filter((r) => {
+      const granjas = ubicacionesGranja.map((op) => op.value);
+      const rows = await fetchMergedPorUbicaciones(granjas, listPlagas);
+      const filtrados = rows.filter((r) => {
         if (!busqueda) return true;
         return (
           r.tipo_trampa?.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -115,7 +118,7 @@ function BitacoraPlagasContent() {
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
     }
-  }, [form.ubicacion, busqueda]);
+  }, [ubicacionesGranja, busqueda]);
 
   useEffect(() => {
     cargarEmpleados();
@@ -188,23 +191,17 @@ function BitacoraPlagasContent() {
   };
 
   const eliminarTodos = async () => {
-    if (!await confirm(" ¿Eliminar todos los registros de esta ubicación?")) return;
-    await removeAllPlagas(form.ubicacion);
+    if (!await confirm("¿Eliminar todos los registros de todas las ubicaciones?")) return;
+    await Promise.all(ubicacionesGranja.map((op) => removeAllPlagas(op.value)));
     cargarDatos();
   };
 
-  //  Color PDF dinámico
-  const getColorPorUbicacion = () => {
-    return getColor(form.ubicacion);
-  };
-
-  //  Exportar PDF
   const exportarPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(form.ubicacion);
-    const color = getColorPorUbicacion();
+    const logo = getLogo(defaultUbicacion);
+    const color = getColor(defaultUbicacion);
 
     try {
       doc.addImage(logo, "PNG", 10, 8, 25, 25);
@@ -214,7 +211,7 @@ function BitacoraPlagasContent() {
 
     doc.setFontSize(14);
     doc.text(
-      `Bitácora de Control de Plagas — ${getLabel(form.ubicacion)}`,
+      "Bitácora de Control de Plagas — Todas las ubicaciones",
       45,
       20
     );
@@ -254,7 +251,7 @@ function BitacoraPlagasContent() {
 
     const fecha = new Date().toLocaleDateString();
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Plagas_${form.ubicacion}_${fecha}.pdf`);
+    doc.save(`Bitacora_Plagas_${fecha}.pdf`);
   };
 
   return (
@@ -263,24 +260,7 @@ function BitacoraPlagasContent() {
         Control de Plagas
       </Typography>
 
-      {/* Filtros compactos */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 2 }}>
-        <TextField
-          select
-          label="Ubicación"
-          name="ubicacion"
-          value={form.ubicacion}
-          onChange={handleChange}
-          size="small"
-          sx={{ width: 200 }}
-        >
-          {ubicacionesGranja.map((op) => (
-            <MenuItem key={op.value} value={op.value}>
-              {op.label}
-            </MenuItem>
-          ))}
-        </TextField>
-
         <TextField
           label="Buscar Trampa / Tipo"
           variant="outlined"
@@ -304,6 +284,25 @@ function BitacoraPlagasContent() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={1.5}>
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                error={!!errors.ubicacion}
+                helperText={errors.ubicacion}
+              >
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Fecha"

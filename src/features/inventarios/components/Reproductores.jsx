@@ -30,6 +30,10 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import {
+  fetchMergedPorUbicaciones,
+  filtrarPorUbicacion,
+} from "@shared/utils/fetchMergedPorUbicaciones";
 
 const MAX_NUMERICO = 15;
 const MAX_OBSERVACION = 500;
@@ -108,10 +112,9 @@ function ReproductoresContent() {
   const { confirm, ConfirmModal } = useConfirm();
   const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
 
-  const [granjaActiva, setGranjaActiva] = useState("");
-  const filtroUbicacion = useMemo(
-    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
-    [granjaActiva, resolveFiltroUbicacion],
+  const filtrosUbicacion = useMemo(
+    () => ubicacionesGranja.map((op) => resolveFiltroUbicacion(op.value)),
+    [ubicacionesGranja, resolveFiltroUbicacion],
   );
 
   const [reproductores, setReproductores] = useState([]);
@@ -130,6 +133,7 @@ function ReproductoresContent() {
   const origenAporteRef = useRef({ piletaId: null, machos: 0, hembras: 0 });
 
   const [form, setForm] = useState({
+    ubicacion: "",
     origen_pileta_id: "",
     origen_texto: "",
     pileta_id: "",
@@ -176,8 +180,7 @@ const colorDias = (dias) => {
   /* ===================== CARGA DE DATOS ===================== */
 
   const obtenerReproductores = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
-    const { data } = await listReproductoresByGranja(filtroUbicacion);
+    const data = await fetchMergedPorUbicaciones(filtrosUbicacion, listReproductoresByGranja);
     setReproductores(data || []);
     setTotalOrganismos(
       data?.reduce(
@@ -185,14 +188,13 @@ const colorDias = (dias) => {
         0
       ) || 0
     );
-  }, [filtroUbicacion]);
+  }, [filtrosUbicacion]);
 
   const obtenerPiletas = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
       const [resRepro, resTodas] = await Promise.all([
-        listPiletas(filtroUbicacion, "reproductores"),
-        listPiletas(filtroUbicacion),
+        listPiletas(null, "reproductores"),
+        listPiletas(),
       ]);
       const repro = Array.isArray(resRepro.data) ? resRepro.data : [];
       const todas = Array.isArray(resTodas.data) ? resTodas.data : [];
@@ -205,12 +207,14 @@ const colorDias = (dias) => {
       setPiletasOrigen([]);
       setTotalPiletas(0);
     }
-  }, [filtroUbicacion]);
+  }, []);
 
   const obtenerTrazabilidad = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const { data } = await getReproductoresMovimientos(filtroUbicacion);
+      const data = await fetchMergedPorUbicaciones(
+        filtrosUbicacion,
+        getReproductoresMovimientos,
+      );
       setRastreos(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error al cargar trazabilidad:", err);
@@ -220,19 +224,28 @@ const colorDias = (dias) => {
         "error"
       );
     }
-  }, [filtroUbicacion, showSnackbar]);
+  }, [filtrosUbicacion, showSnackbar]);
 
   useEffect(() => {
-    if (!granjaActiva && defaultUbicacion) {
-      setGranjaActiva(defaultUbicacion);
-      return;
-    }
-
-    if (!granjaActiva) return;
     obtenerReproductores();
     obtenerPiletas();
     obtenerTrazabilidad();
-  }, [defaultUbicacion, granjaActiva, obtenerReproductores, obtenerPiletas, obtenerTrazabilidad]);
+  }, [obtenerReproductores, obtenerPiletas, obtenerTrazabilidad]);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
+
+  const piletasReproductoresFiltradas = useMemo(
+    () => filtrarPorUbicacion(piletasReproductores, form.ubicacion, ubicacionesGranja),
+    [piletasReproductores, form.ubicacion, ubicacionesGranja],
+  );
+  const piletasOrigenFiltradas = useMemo(
+    () => filtrarPorUbicacion(piletasOrigen, form.ubicacion, ubicacionesGranja),
+    [piletasOrigen, form.ubicacion, ubicacionesGranja],
+  );
 
   const rastreosFiltrados = rastreos.filter((r) => {
   const texto = filtroTexto.toLowerCase();
@@ -257,6 +270,7 @@ const colorDias = (dias) => {
   const limpiarFormulario = () => {
     origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
     setForm({
+      ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
       origen_pileta_id: "",
       origen_texto: "",
       pileta_id: "",
@@ -338,6 +352,18 @@ const colorDias = (dias) => {
       return;
     }
 
+    if (name === "ubicacion") {
+      setForm({
+        ...form,
+        ubicacion: value,
+        origen_pileta_id: "",
+        pileta_id: "",
+      });
+      origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
+      clearFieldError(name);
+      return;
+    }
+
     if (name === "fn_machos" || name === "fn_hembras") {
       if (!soloEntero(value)) return;
     }
@@ -370,7 +396,7 @@ const colorDias = (dias) => {
   /* ===================== ACCIONES ===================== */
 
   const registrarReproductor = async () => {
-    if (!validate(form, getReproductorRequiredFields(origenTipo))) return;
+    if (!validate(form, [...getReproductorRequiredFields(origenTipo), "ubicacion"])) return;
 
     try {
       await createReproductor({
@@ -384,7 +410,7 @@ const colorDias = (dias) => {
         origen_pileta_id: form.origen_pileta_id ? Number(form.origen_pileta_id) : null,
         origen_texto: form.origen_texto,
         fi_usuario_id: usuario_id,
-        fc_granja: granjaActiva,
+        fc_granja: form.ubicacion,
       });
 
       limpiarFormulario();
@@ -403,6 +429,7 @@ const colorDias = (dias) => {
     setOrigenTipo(r.origen_pileta_id ? "Interno" : "Externo");
 
     setForm({
+      ubicacion: r.fc_granja || defaultUbicacion || "",
       origen_pileta_id: r.origen_pileta_id != null ? String(r.origen_pileta_id) : "",
       origen_texto: r.origen_texto || "",
       pileta_id: r.pileta_id != null ? String(r.pileta_id) : "",
@@ -471,26 +498,10 @@ const colorDias = (dias) => {
             borderLeft: "6px solid #2196F3",
           }}
         >
-        <Typography><strong>Ubicación (sede):</strong> {granjaActiva}</Typography>
         <Typography><strong>Total piletas reproductoras:</strong> {totalPiletas}</Typography>
         <Typography><strong>Total organismos:</strong> {totalOrganismos}</Typography>
       </Paper>
       
-     {/* Selector de granja */}
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        {ubicacionesGranja.map((op) => (
-          <Button
-            key={op.value}
-            variant={granjaActiva === op.value ? "contained" : "outlined"}
-            color="primary"
-            sx={{ minWidth: 180, fontWeight: "bold" }}
-            onClick={() => setGranjaActiva(op.value)}
-          >
-            {op.label}
-          </Button>
-        ))}
-      </Box>
-
       {/* Botón para abrir formulario */}
       <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mb: 2 }}>
         <Button
@@ -509,7 +520,26 @@ const colorDias = (dias) => {
           <Card sx={{ mt: 3 }}>
             <CardContent>
               <Grid container spacing={2}>
-                
+                <Grid size={12}>
+                  <TextField
+                    select
+                    size="small"
+                    label="Ubicación"
+                    name="ubicacion"
+                    value={form.ubicacion}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errors.ubicacion}
+                    helperText={errors.ubicacion}
+                  >
+                    {ubicacionesGranja.map((op) => (
+                      <MenuItem key={op.value} value={op.value}>
+                        {op.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+
                {/* ORIGEN NUEVO */}
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
@@ -548,14 +578,14 @@ const colorDias = (dias) => {
                   slotProps={{
                     select: {
                       renderValue: (val) => {
-                        const p = piletasOrigen.find((x) => String(x.fi_pileta_id) === String(val));
+                        const p = piletasOrigenFiltradas.find((x) => String(x.fi_pileta_id) === String(val));
                         return p ? `${p.nombre} · ${tipoLabel(p.tipo)}` : "";
                       },
                     },
                   }}
                 >
                   <MenuItem value="">Seleccione</MenuItem>
-                  {piletasOrigen.map((p) => (
+                  {piletasOrigenFiltradas.map((p) => (
                     <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
                       {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
                     </MenuItem>
@@ -598,7 +628,7 @@ const colorDias = (dias) => {
                     slotProps={{
                       select: {
                         renderValue: (val) => {
-                          const p = piletasReproductores.find(
+                          const p = piletasReproductoresFiltradas.find(
                             (x) => String(x.fi_pileta_id) === String(val),
                           );
                           return p ? `${p.nombre} · ${p.estado}` : "";
@@ -607,7 +637,7 @@ const colorDias = (dias) => {
                     }}
                   >
                     <MenuItem value="">Seleccione</MenuItem>
-                    {piletasReproductores.map((p) => (
+                    {piletasReproductoresFiltradas.map((p) => (
                       <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
                         {p.nombre} · {p.estado}
                       </MenuItem>

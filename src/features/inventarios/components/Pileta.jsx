@@ -75,40 +75,19 @@ const formatFecha = (fecha) => {
 export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
   const showSnackbar = useSnackbar();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } =
-    useUbicacionesGranja();
-
-  const [granjaActiva, setGranjaActiva] = useState("");
-
-  const filtroUbicacion = useMemo(
-    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
-    [granjaActiva, resolveFiltroUbicacion],
-  );
-
-  const ubicacionSeleccionada = useMemo(
-    () => ubicacionesGranja.find((op) => op.value === granjaActiva),
-    [ubicacionesGranja, granjaActiva],
-  );
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
 
   const [piletas, setPiletas] = useState([]);
 
   const cargarPiletas = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) {
-      setPiletas([]);
-      return;
-    }
     try {
-      const resAll = await listPiletas(filtroUbicacion);
+      const resAll = await listPiletas();
       setPiletas(Array.isArray(resAll.data) ? resAll.data : []);
     } catch {
       setPiletas([]);
       showSnackbar("Error cargando piletas", "error");
     }
-  }, [filtroUbicacion, showSnackbar]);
-
-  useEffect(() => {
-    if (!granjaActiva && defaultUbicacion) setGranjaActiva(defaultUbicacion);
-  }, [defaultUbicacion, granjaActiva]);
+  }, [showSnackbar]);
 
   useEffect(() => {
     cargarPiletas();
@@ -121,27 +100,18 @@ export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
       </Typography>
 
       <Paper sx={{ p: 2, mb: 2, backgroundColor: "#E3F2FD" }} elevation={0}>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-          <Typography variant="body2">
-            <b>Ubicación (sede):</b> {granjaActiva || "—"}
-            {ubicacionSeleccionada?.ubicacion_id ? (
-              <span> · ID ubicación #{ubicacionSeleccionada.ubicacion_id}</span>
-            ) : null}
-          </Typography>
-          <Typography variant="body2">
-            <b>Piletas registradas:</b> {piletas.length}
-          </Typography>
-        </Stack>
+        <Typography variant="body2">
+          <b>Piletas registradas:</b> {piletas.length}
+        </Typography>
       </Paper>
 
       <PiletasTab
-        granjaActiva={granjaActiva}
-        setGranjaActiva={setGranjaActiva}
         piletas={piletas}
         onChange={cargarPiletas}
         showSnackbar={showSnackbar}
         confirm={confirm}
         ubicacionesGranja={ubicacionesGranja}
+        defaultUbicacion={defaultUbicacion}
       />
 
       {ConfirmModal}
@@ -153,17 +123,17 @@ export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
  *  Formulario + tabla — CRUD modelo `Pileta`
  * ========================================================================= */
 function PiletasTab({
-  granjaActiva,
-  setGranjaActiva,
   piletas,
   onChange,
   showSnackbar,
   confirm,
   ubicacionesGranja,
+  defaultUbicacion,
 }) {
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [ubicacionForm, setUbicacionForm] = useState("");
 
   const [estadosConservacion, setEstadosConservacion] = useState([]);
   const [tiposInstancia, setTiposInstancia] = useState([]);
@@ -192,8 +162,8 @@ function PiletasTab({
   ];
 
   const ubicacionActual = useMemo(
-    () => ubicacionesGranja.find((u) => u.value === granjaActiva),
-    [ubicacionesGranja, granjaActiva],
+    () => ubicacionesGranja.find((u) => u.value === ubicacionForm),
+    [ubicacionesGranja, ubicacionForm],
   );
 
   useEffect(() => {
@@ -254,7 +224,7 @@ function PiletasTab({
 
   const guardar = async () => {
     if (!validate(form, required)) return;
-    if (!granjaActiva) {
+    if (!ubicacionForm) {
       showSnackbar("Selecciona una ubicación (sede)", "warning");
       return;
     }
@@ -269,7 +239,7 @@ function PiletasTab({
         tipo: form.tipo,
         estado_conservacion_id: Number(form.estado_conservacion_id),
         tipo_instancia: Number(form.tipo_instancia),
-        granja: granjaActiva,
+        granja: ubicacionForm,
       };
       if (ubicacionActual?.ubicacion_id != null) {
         body.ubicacion_id = ubicacionActual.ubicacion_id;
@@ -300,7 +270,7 @@ function PiletasTab({
     const matchUbicacion = ubicacionesGranja.find(
       (u) => u.value === p.fc_granja || u.label === p.fc_granja,
     );
-    if (matchUbicacion) setGranjaActiva(matchUbicacion.value);
+    setUbicacionForm(matchUbicacion?.value || defaultUbicacion || "");
     setForm({
       nombre: p.nombre || "",
       largo: p.largo ?? "",
@@ -334,8 +304,14 @@ function PiletasTab({
           variant="contained"
           color="success"
           startIcon={mostrarFormulario ? <CloseIcon /> : <AddIcon />}
-          onClick={() => (mostrarFormulario ? limpiar(true) : setMostrarFormulario(true))}
-          disabled={!granjaActiva}
+          onClick={() => {
+            if (mostrarFormulario) {
+              limpiar(true);
+            } else {
+              setUbicacionForm(defaultUbicacion || ubicacionesGranja[0]?.value || "");
+              setMostrarFormulario(true);
+            }
+          }}
         >
           {mostrarFormulario ? "Cerrar formulario" : "Nueva pileta"}
         </Button>
@@ -361,8 +337,8 @@ function PiletasTab({
                   select
                   required
                   label="Ubicación (sede)"
-                  value={granjaActiva || ""}
-                  onChange={(e) => setGranjaActiva(e.target.value)}
+                  value={ubicacionForm || ""}
+                  onChange={(e) => setUbicacionForm(e.target.value)}
                   fullWidth
                   disabled={ubicacionesGranja.length === 0}
                   helperText={

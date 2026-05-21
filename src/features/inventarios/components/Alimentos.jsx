@@ -39,6 +39,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { fetchMergedPorUbicaciones, filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 
 export default function Alimentos() {
   const auth = useAuth();
@@ -46,14 +47,9 @@ export default function Alimentos() {
   const showSnackbar = useSnackbar();
   const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
   const [tab, setTab] = useState("alevinaje");
-  const [granjaActiva, setGranjaActiva] = useState("");
-
-  const filtroUbicacion = useMemo(
-    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
-    [granjaActiva, resolveFiltroUbicacion],
-  );
 
   const [form, setForm] = useState({
+    ubicacion: "",
     fi_alimento_id: null,
     fi_reproductor_id: "",
     fi_pileta_id: "",
@@ -84,62 +80,88 @@ export default function Alimentos() {
     }
   }, [showSnackbar]);
 
+  const filtrosUbicacion = ubicacionesGranja.map((op) =>
+    resolveFiltroUbicacion(op.value),
+  );
+
   const obtenerReproductores = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const res = await listReproductoresByGranja(filtroUbicacion);
-      setReproductores(res.data);
+      const data = await fetchMergedPorUbicaciones(filtrosUbicacion, listReproductoresByGranja);
+      setReproductores(data);
     } catch (error) {
       console.error("Error al obtener reproductores:", error);
       showSnackbar("Error al cargar reproductores", "error");
     }
-  }, [filtroUbicacion, showSnackbar]);
+  }, [filtrosUbicacion, showSnackbar]);
 
   const obtenerPiletas = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const res = await listPiletasByGranja(filtroUbicacion);
+      const res = await listPiletasByGranja();
       setPiletas(res.data);
     } catch (error) {
       console.error("Error al obtener piletas:", error);
       showSnackbar("Error al cargar piletas", "error");
     }
-  }, [filtroUbicacion, showSnackbar]);
+  }, [showSnackbar]);
 
   const obtenerEngorda = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
-      const res = await listEngordaByGranja(filtroUbicacion);
-      setEngorda(res.data);
+      const data = await fetchMergedPorUbicaciones(filtrosUbicacion, listEngordaByGranja);
+      setEngorda(data);
     } catch (error) {
       console.error("Error al obtener engorda:", error);
       showSnackbar("Error al cargar engorda", "error");
     }
-  }, [filtroUbicacion, showSnackbar]);
+  }, [filtrosUbicacion, showSnackbar]);
 
   useEffect(() => {
-    if (!granjaActiva && defaultUbicacion) {
-      setGranjaActiva(defaultUbicacion);
-      return;
-    }
-
-    if (!granjaActiva) return;
     obtenerRegistros();
     obtenerPiletas();
     obtenerReproductores();
     obtenerEngorda();
-  }, [defaultUbicacion, granjaActiva, obtenerRegistros, obtenerPiletas, obtenerReproductores, obtenerEngorda]);
+  }, [obtenerRegistros, obtenerPiletas, obtenerReproductores, obtenerEngorda]);
+
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
+
+  const piletasFiltradas = useMemo(
+    () => filtrarPorUbicacion(piletas, form.ubicacion, ubicacionesGranja),
+    [piletas, form.ubicacion, ubicacionesGranja],
+  );
+  const reproductoresFiltrados = useMemo(
+    () => filtrarPorUbicacion(reproductores, form.ubicacion, ubicacionesGranja),
+    [reproductores, form.ubicacion, ubicacionesGranja],
+  );
+  const engordaFiltrada = useMemo(
+    () => filtrarPorUbicacion(engorda, form.ubicacion, ubicacionesGranja),
+    [engorda, form.ubicacion, ubicacionesGranja],
+  );
 
   // =======================================
   // Registro y acciones
   // =======================================
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    clearFieldError(e.target.name);
+    const { name, value } = e.target;
+    if (name === "ubicacion") {
+      setForm({
+        ...form,
+        ubicacion: value,
+        fi_reproductor_id: "",
+        fi_pileta_id: "",
+        fi_engorda_id: "",
+      });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
+    clearFieldError(name);
   };
 
   const limpiarFormulario = () => {
     setForm({
+      ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
       fi_alimento_id: null,
       fi_reproductor_id: "",
       fi_pileta_id: "",
@@ -155,7 +177,7 @@ export default function Alimentos() {
     const currentField = tab === "alevinaje" ? "fi_pileta_id"
       : tab === "engorda" ? "fi_engorda_id"
       : "fi_reproductor_id";
-    if (!validate(form, [currentField])) return;
+    if (!validate(form, [currentField, "ubicacion"])) return;
 
     let payload = { fi_usuario_id: Number(usuario_id) };
 
@@ -225,19 +247,6 @@ export default function Alimentos() {
          Registro de Alimentación
       </Typography>
 
-      <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 2 }}>
-        {ubicacionesGranja.map((op) => (
-          <Button
-            key={op.value}
-            variant={granjaActiva === op.value ? "contained" : "outlined"}
-            color="primary"
-            onClick={() => setGranjaActiva(op.value)}
-          >
-            {op.label}
-          </Button>
-        ))}
-      </Stack>
-
       {/* TABS SUPERIORES */}
       <Tabs
         value={tab}
@@ -258,6 +267,25 @@ export default function Alimentos() {
       <Card sx={{ borderRadius: 3, boxShadow: 3, marginBottom: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
+            <Grid size={12}>
+              <FormControl fullWidth error={!!errors.ubicacion}>
+                <InputLabel>Ubicación</InputLabel>
+                <Select
+                  name="ubicacion"
+                  value={form.ubicacion}
+                  label="Ubicación"
+                  onChange={handleChange}
+                >
+                  {ubicacionesGranja.map((op) => (
+                    <MenuItem key={op.value} value={op.value}>
+                      {op.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.ubicacion && <FormHelperText>{errors.ubicacion}</FormHelperText>}
+              </FormControl>
+            </Grid>
+
             {tab === "alevinaje" && (
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth error={!!errors.fi_pileta_id}>
@@ -269,7 +297,7 @@ export default function Alimentos() {
                     onChange={handleChange}
                   >
                     <MenuItem value="">Ninguna</MenuItem>
-                    {piletas.map((p) => (
+                    {piletasFiltradas.map((p) => (
                       <MenuItem key={p.fi_pileta_id} value={p.fi_pileta_id}>
                         {p.nombre_instalacion}
                       </MenuItem>
@@ -291,7 +319,7 @@ export default function Alimentos() {
                     onChange={handleChange}
                   >
                     <MenuItem value="">Ninguna</MenuItem>
-                    {engorda.map((e) => (
+                    {engordaFiltrada.map((e) => (
                       <MenuItem key={e.fi_engorda_id} value={e.fi_engorda_id}>
                         {e.instalacion}
                       </MenuItem>
@@ -313,7 +341,7 @@ export default function Alimentos() {
                     onChange={handleChange}
                   >
                     <MenuItem value="">Ninguno</MenuItem>
-                    {reproductores.map((r) => (
+                    {reproductoresFiltrados.map((r) => (
                       <MenuItem key={r.fi_reproductor_id} value={r.fi_reproductor_id}>
                         {r.fc_instalacion}
                       </MenuItem>
