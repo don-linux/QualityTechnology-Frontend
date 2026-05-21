@@ -363,7 +363,7 @@ function BitacoraMedicamentosContent() {
 
       {/* TABLAS POR UBICACIÓN */}
       {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} defaultExpanded>
+        <Accordion key={value}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{label} ({rows.length})</Typography>
           </AccordionSummary>

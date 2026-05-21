@@ -516,7 +516,7 @@ export default function BioBiometrias() {
 
       {/* TABLAS POR UBICACION */}
       {getGroups(data).map(({ value, label, rows }) => (
-        <Accordion key={value} defaultExpanded>
+        <Accordion key={value}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">
               {label} ({rows.length})

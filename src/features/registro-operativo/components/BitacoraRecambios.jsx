@@ -488,7 +488,7 @@ const exportarPDF = async () => {
 
       {/* TABLAS POR UBICACIÓN */}
       {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} defaultExpanded sx={{ mt: 1 }}>
+        <Accordion key={value} sx={{ mt: 1 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{label}</Typography>
           </AccordionSummary>

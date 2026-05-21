@@ -10,7 +10,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 export default function TablasPorUbicacionGranja({
   grupos,
   renderTabla,
-  defaultExpanded = true,
+  defaultExpanded = false,
   accordionSx,
   detailsSx,
 }) {

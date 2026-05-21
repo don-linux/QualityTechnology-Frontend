@@ -448,7 +448,7 @@ export default function BioInsumos() {
       </FormularioRegistroPanel>
 
       {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} defaultExpanded sx={{ mb: 2 }}>
+        <Accordion key={value} sx={{ mb: 2 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{label}</Typography>
           </AccordionSummary>
