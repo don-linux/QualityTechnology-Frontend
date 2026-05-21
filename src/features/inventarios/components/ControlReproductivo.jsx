@@ -54,15 +54,9 @@ const ControlReproductivo = () => {
   ];
 
   const [piletasDestinoAlevinaje, setPiletasDestinoAlevinaje] = useState([]);
-
-  const piletasFiltradas = useMemo(
-    () => filtrarPorUbicacion(piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja),
-    [piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja],
-  );
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
-
   const [formData, setFormData] = useState({
     ubicacion: "",
     fi_pileta_destino_id: "",
@@ -72,6 +66,11 @@ const ControlReproductivo = () => {
     fecha_peso: "",
     observacion: "",
   });
+
+  const piletasFiltradas = useMemo(
+    () => filtrarPorUbicacion(piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja),
+    [piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja],
+  );
 
   const payloadComunBackend = () => ({
     pileta_id: Number(formData.fi_pileta_destino_id),
