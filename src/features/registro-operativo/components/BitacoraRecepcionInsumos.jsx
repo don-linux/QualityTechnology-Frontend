@@ -34,6 +34,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 
 const TRUNCAR_MAX = 40;
@@ -43,7 +44,8 @@ const truncar = (texto) =>
 function RecepcionInsumosContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor, getGroups } =
+    useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_proveedor: "",
@@ -240,6 +242,67 @@ function RecepcionInsumosContent() {
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Recepcion_Insumos_${fecha}.pdf`);
   };
+
+  const gruposUbicacion = getGroups(data);
+
+  const renderTablaRecepcion = (rows) => (
+    <Paper sx={{ width: "100%" }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table sx={{ minWidth: 1320 }}>
+        <TableHead>
+          <TableRow>
+            <TableCell>Fecha</TableCell>
+            <TableCell>Proveedor</TableCell>
+            <TableCell>Producto</TableCell>
+            <TableCell>Lote</TableCell>
+            <TableCell>Cantidad</TableCell>
+            <TableCell>Unidad</TableCell>
+            <TableCell>Condiciones de entrega</TableCell>
+            <TableCell>Encargado entrega</TableCell>
+            <TableCell>Verificó</TableCell>
+            <TableCell>Observaciones</TableCell>
+            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.fi_id}>
+              <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{r.fc_proveedor}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_producto}>{truncar(r.fc_producto)}</span>
+              </TableCell>
+              <TableCell>{r.fc_lote}</TableCell>
+              <TableCell>{r.fc_cantidad}</TableCell>
+              <TableCell>{r.fc_unidad_medida}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_condiciones_entrega}>{truncar(r.fc_condiciones_entrega)}</span>
+              </TableCell>
+              <TableCell>{r.fc_encargado_entrega}</TableCell>
+              <TableCell>{r.fc_verifico}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+              >
+                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                  <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
+                    Editar
+                  </Button>
+                  <Button size="small" variant="contained" color="error" onClick={() => eliminar(r.fi_id)}>
+                    Eliminar
+                  </Button>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
 
   return (
     <Box>
@@ -467,63 +530,7 @@ function RecepcionInsumosContent() {
       </Card>
       </FormularioRegistroPanel>
 
-      {/* TABLA */}
-      <Paper sx={{ width: "100%" }}>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table sx={{ minWidth: 1320 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Proveedor</TableCell>
-              <TableCell>Producto</TableCell>
-              <TableCell>Lote</TableCell>
-              <TableCell>Cantidad</TableCell>
-              <TableCell>Unidad</TableCell>
-              <TableCell>Condiciones de entrega</TableCell>
-              <TableCell>Encargado entrega</TableCell>
-              <TableCell>Verificó</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((r) => (
-              <TableRow key={r.fi_id}>
-                <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
-                <TableCell>{r.fc_proveedor}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_producto}>{truncar(r.fc_producto)}</span>
-                </TableCell>
-                <TableCell>{r.fc_lote}</TableCell>
-                <TableCell>{r.fc_cantidad}</TableCell>
-                <TableCell>{r.fc_unidad_medida}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_condiciones_entrega}>{truncar(r.fc_condiciones_entrega)}</span>
-                </TableCell>
-                <TableCell>{r.fc_encargado_entrega}</TableCell>
-                <TableCell>{r.fc_verifico}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-                >
-                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                    <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
-                      Editar
-                    </Button>
-                    <Button size="small" variant="contained" color="error" onClick={() => eliminar(r.fi_id)}>
-                      Eliminar
-                    </Button>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaRecepcion} />
       {ConfirmModal}
     </Box>
   );

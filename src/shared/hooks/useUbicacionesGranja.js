@@ -90,7 +90,11 @@ export default function useUbicacionesGranja() {
     const getGroups = (rows, field = "ubicacion") =>
       ubicacionesGranja.map((op) => ({
         ...op,
-        rows: rows.filter((row) => row[field] === op.value),
+        rows: rows.filter((row) => {
+          const raw =
+            row[field] ?? row.fc_granja ?? row.ubicacion ?? row.fc_granja_asignada ?? "";
+          return raw === op.value || raw === op.label;
+        }),
       }));
 
     return { getOption, getLabel, getLogo, getColor, getSlug, getGroups };

@@ -30,6 +30,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import {
   fetchMergedPorUbicaciones,
   filtrarPorUbicacion,
@@ -110,7 +111,8 @@ function ReproductoresContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion, getGroups } =
+    useUbicacionesGranja();
 
   const filtrosUbicacion = useMemo(
     () => ubicacionesGranja.map((op) => resolveFiltroUbicacion(op.value)),
@@ -264,6 +266,16 @@ const colorDias = (dias) => {
 
   return coincideTexto && coincideFecha;
 });
+
+  const gruposReproductores = useMemo(
+    () => getGroups(reproductores, "fc_granja"),
+    [reproductores, getGroups],
+  );
+
+  const gruposRastreos = useMemo(
+    () => getGroups(rastreosFiltrados, "fc_granja"),
+    [rastreosFiltrados, getGroups],
+  );
 
   /* ===================== FORMULARIO ===================== */
 
@@ -784,8 +796,11 @@ const colorDias = (dias) => {
         )}
       </Paper>
 
-      {/* TABLA PRINCIPAL */}
-      <Paper sx={{ width: "100%", mb: 6 }}>
+      <TablasPorUbicacionGranja
+        grupos={gruposReproductores}
+        accordionSx={{ mb: 6 }}
+        renderTabla={(rows) => (
+      <Paper sx={{ width: "100%" }}>
         <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
           <Table stickyHeader sx={{ minWidth: 1350 }}>
             <TableHead>
@@ -825,7 +840,7 @@ const colorDias = (dias) => {
             </TableHead>
 
             <TableBody>
-              {reproductores.map((r) => {
+              {rows.map((r) => {
                 const refDiasPila = r.fd_fecha_siembra ?? r.fd_alta_reproductor ?? null;
                 const diasPila = calcularDias(refDiasPila);
                 const diasBiometria = calcularDias(r.fd_fecha_biometria);
@@ -945,6 +960,8 @@ const colorDias = (dias) => {
           </Table>
         </TableContainer>
       </Paper>
+        )}
+      />
 
       {/* TRAZABILIDAD */}
       <Typography variant="h6" sx={{ color: "#E65100", mt: 5, mb: 2 }}>
@@ -999,37 +1016,42 @@ const colorDias = (dias) => {
         LIMPIAR
       </Button>
     </Box>
-    <Paper sx={{ width: "100%", mb: 6, boxShadow: 2 }}>
-      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-        <Table stickyHeader sx={{ minWidth: 960 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Origen</TableCell>
-              <TableCell>Destino</TableCell>
-              <TableCell>Cantidad</TableCell>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Observación</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-           {rastreosFiltrados.map((r) => (
-              <TableRow key={r.fi_movimiento_id}>
-                <TableCell>{r.origen || "—"}</TableCell>
-                <TableCell>{r.destino || "—"}</TableCell>
-                <TableCell>{formatNumber(r.cantidad_trasladada)}</TableCell>
-                <TableCell>{formatFecha(r.fecha_movimiento)}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.observacion || ""}>
-                    {r.observacion ? truncar(r.observacion) : "—"}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      </Paper>
+    <TablasPorUbicacionGranja
+      grupos={gruposRastreos}
+      accordionSx={{ mb: 6, boxShadow: 2 }}
+      renderTabla={(rows) => (
+        <Paper sx={{ width: "100%", boxShadow: 2 }}>
+          <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+            <Table stickyHeader sx={{ minWidth: 960 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Origen</TableCell>
+                  <TableCell>Destino</TableCell>
+                  <TableCell>Cantidad</TableCell>
+                  <TableCell>Fecha</TableCell>
+                  <TableCell>Observación</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rows.map((r) => (
+                  <TableRow key={r.fi_movimiento_id}>
+                    <TableCell>{r.origen || "—"}</TableCell>
+                    <TableCell>{r.destino || "—"}</TableCell>
+                    <TableCell>{formatNumber(r.cantidad_trasladada)}</TableCell>
+                    <TableCell>{formatFecha(r.fecha_movimiento)}</TableCell>
+                    <TableCell sx={{ maxWidth: 160 }}>
+                      <span title={r.observacion || ""}>
+                        {r.observacion ? truncar(r.observacion) : "—"}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
+    />
       {ConfirmModal}
     </Box>
   );

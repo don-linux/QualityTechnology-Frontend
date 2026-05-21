@@ -27,6 +27,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { listPiletas } from "../services/piletasService";
 
@@ -43,7 +44,7 @@ const ControlReproductivo = () => {
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
-  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
   const requiredFields = [
     "ubicacion",
@@ -70,6 +71,11 @@ const ControlReproductivo = () => {
   const piletasFiltradas = useMemo(
     () => filtrarPorUbicacion(piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja),
     [piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja],
+  );
+
+  const gruposRegistros = useMemo(
+    () => getGroups(registros, "fc_granja"),
+    [getGroups, registros],
   );
 
   const payloadComunBackend = () => ({
@@ -393,58 +399,63 @@ const ControlReproductivo = () => {
         Registros (alevinaje)
       </Typography>
 
-      <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table sx={{ minWidth: 900 }}>
-            <TableHead sx={{ backgroundColor: "#006d77" }}>
-              <TableRow>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Peso (kg)</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {registros.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    No hay registros.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                registros.map((l) => (
-                  <TableRow
-                    key={l.fi_id ?? l.id}
-                    onClick={() => setSeleccionado(l)}
-                    style={{
-                      cursor: "pointer",
-                      backgroundColor:
-                        (seleccionado?.fi_id ?? seleccionado?.id) === (l.fi_id ?? l.id)
-                          ? "#e0f7fa"
-                          : "transparent",
-                    }}
-                  >
-                    <TableCell>
-                      {l.nombre_pileta_destino || l.nombre_pileta || "—"}
-                    </TableCell>
-                    <TableCell>{formatNumber(l.cantidad_total)}</TableCell>
-                    <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
-                    <TableCell>{formatNumber(l.peso_kg ?? l.peso)}</TableCell>
-                    <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
-                    <TableCell sx={{ maxWidth: 200 }}>
-                      <span title={l.observacion || ""}>
-                        {l.observacion ? truncar(l.observacion) : "—"}
-                      </span>
-                    </TableCell>
+      <TablasPorUbicacionGranja
+        grupos={gruposRegistros}
+        renderTabla={(rows) => (
+          <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
+            <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+              <Table sx={{ minWidth: 900 }}>
+                <TableHead sx={{ backgroundColor: "#006d77" }}>
+                  <TableRow>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Peso (kg)</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                </TableHead>
+                <TableBody>
+                  {rows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        No hay registros.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    rows.map((l) => (
+                      <TableRow
+                        key={l.fi_id ?? l.id}
+                        onClick={() => setSeleccionado(l)}
+                        style={{
+                          cursor: "pointer",
+                          backgroundColor:
+                            (seleccionado?.fi_id ?? seleccionado?.id) === (l.fi_id ?? l.id)
+                              ? "#e0f7fa"
+                              : "transparent",
+                        }}
+                      >
+                        <TableCell>
+                          {l.nombre_pileta_destino || l.nombre_pileta || "—"}
+                        </TableCell>
+                        <TableCell>{formatNumber(l.cantidad_total)}</TableCell>
+                        <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
+                        <TableCell>{formatNumber(l.peso_kg ?? l.peso)}</TableCell>
+                        <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
+                        <TableCell sx={{ maxWidth: 200 }}>
+                          <span title={l.observacion || ""}>
+                            {l.observacion ? truncar(l.observacion) : "—"}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        )}
+      />
 
       {seleccionado && (
         <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>

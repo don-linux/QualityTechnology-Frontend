@@ -16,7 +16,6 @@ import CardContent from "@mui/material/CardContent";
 import MenuItem from "@mui/material/MenuItem";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
-import Chip from "@mui/material/Chip";
 import {
   listEngordas,
   listMovimientos,
@@ -29,6 +28,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import {
   fetchMergedPorUbicaciones,
   filtrarPorUbicacion,
@@ -54,7 +54,8 @@ function EngordaContent() {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion, getGroups } =
+    useUbicacionesGranja();
 
   const requiredFields = ["ubicacion", "pileta_id", "machos", "hembras", "talla_gr", "observacion"];
 
@@ -82,6 +83,11 @@ function EngordaContent() {
   const piletasEngordaFiltradas = useMemo(
     () => filtrarPorUbicacion(piletasEngorda, form.ubicacion, ubicacionesGranja),
     [piletasEngorda, form.ubicacion, ubicacionesGranja],
+  );
+
+  const gruposEngorda = useMemo(
+    () => getGroups(engordas, "fc_granja"),
+    [engordas, getGroups],
   );
 
   const cantidadTotalForm = useMemo(() => {
@@ -499,61 +505,60 @@ function EngordaContent() {
           </Card>
         )}
 
-        {/* Tabla principal */}
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell>Pileta</TableCell>
-              <TableCell>Cantidad total</TableCell>
-              <TableCell>Machos</TableCell>
-              <TableCell>Hembras</TableCell>
-              <TableCell>Talla (Gr)</TableCell>
-              <TableCell>Última observación (pileta)</TableCell>
-              <TableCell>Última biometría</TableCell>
-              <TableCell>Días desde biometría</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {engordas.map((e) => {
-              const fechaBio = e.fecha_biometria || e.fd_fecha_biometria;
-              const dias = e.dias_transcurridos;
-              return (
-                <TableRow
-                  key={e.fi_engorda_id}
-                  hover
-                  onClick={() => seleccionarRegistro(e)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <TableCell>
-                    {e.nombre_pileta || e.destino_nombre || "—"}
-                    {e.fc_granja ? (
-                      <Chip size="small" sx={{ ml: 1 }} label={e.fc_granja} variant="outlined" />
-                    ) : null}
-                  </TableCell>
-                  <TableCell>{formatNumber(e.cantidad)}</TableCell>
-                  <TableCell>{formatNumber(e.machos)}</TableCell>
-                  <TableCell>{formatNumber(e.hembras)}</TableCell>
-                  <TableCell>{formatNumber(e.talla_gr)}</TableCell>
-                  <TableCell sx={{ maxWidth: 220 }}>
-                    <span title={e.observacion || ""}>
-                      {e.observacion ? truncar(e.observacion) : "—"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {fechaBio ? new Date(fechaBio).toLocaleDateString("es-MX") : "—"}
-                  </TableCell>
-                  <TableCell>
-                    {dias != null ? (
-                      <span style={getBadgeStyle(dias)}>{dias}</span>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
+        <TablasPorUbicacionGranja
+          grupos={gruposEngorda}
+          renderTabla={(rows) => (
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Pileta</TableCell>
+                  <TableCell>Cantidad total</TableCell>
+                  <TableCell>Machos</TableCell>
+                  <TableCell>Hembras</TableCell>
+                  <TableCell>Talla (Gr)</TableCell>
+                  <TableCell>Última observación (pileta)</TableCell>
+                  <TableCell>Última biometría</TableCell>
+                  <TableCell>Días desde biometría</TableCell>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+              </TableHead>
+              <TableBody>
+                {rows.map((e) => {
+                  const fechaBio = e.fecha_biometria || e.fd_fecha_biometria;
+                  const dias = e.dias_transcurridos;
+                  return (
+                    <TableRow
+                      key={e.fi_engorda_id}
+                      hover
+                      onClick={() => seleccionarRegistro(e)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <TableCell>{e.nombre_pileta || e.destino_nombre || "—"}</TableCell>
+                      <TableCell>{formatNumber(e.cantidad)}</TableCell>
+                      <TableCell>{formatNumber(e.machos)}</TableCell>
+                      <TableCell>{formatNumber(e.hembras)}</TableCell>
+                      <TableCell>{formatNumber(e.talla_gr)}</TableCell>
+                      <TableCell sx={{ maxWidth: 220 }}>
+                        <span title={e.observacion || ""}>
+                          {e.observacion ? truncar(e.observacion) : "—"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {fechaBio ? new Date(fechaBio).toLocaleDateString("es-MX") : "—"}
+                      </TableCell>
+                      <TableCell>
+                        {dias != null ? (
+                          <span style={getBadgeStyle(dias)}>{dias}</span>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        />
       </Paper>
 
       {/*  TRAZABILIDAD */}

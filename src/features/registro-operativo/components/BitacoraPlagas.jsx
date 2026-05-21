@@ -36,6 +36,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 
 const TRUNCAR_MAX = 40;
@@ -45,7 +46,8 @@ const truncar = (texto) =>
 function BitacoraPlagasContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor, getGroups } =
+    useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_num_trampa: "",
@@ -253,6 +255,81 @@ function BitacoraPlagasContent() {
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Plagas_${fecha}.pdf`);
   };
+
+  const gruposUbicacion = getGroups(data);
+
+  const renderTablaPlagas = (rows) => (
+    <Paper sx={{ width: "100%" }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table sx={{ minWidth: 1200 }}>
+        <TableHead sx={{ background: "#E3F2FD" }}>
+          <TableRow>
+            <TableCell>Fecha</TableCell>
+            <TableCell>Trampa</TableCell>
+            <TableCell>Tipo</TableCell>
+            <TableCell>Unidad</TableCell>
+            <TableCell>Hallazgo</TableCell>
+            <TableCell>Malla</TableCell>
+            <TableCell>Veneno</TableCell>
+            <TableCell>Verificó</TableCell>
+            <TableCell>Observaciones</TableCell>
+            <TableCell align="center" sx={{ minWidth: 260, whiteSpace: "nowrap" }}>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.fi_id}>
+              <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{r.fc_num_trampa}</TableCell>
+              <TableCell>{r.tipo_trampa}</TableCell>
+              <TableCell>{r.unidad_produccion}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_hallazgo}>{truncar(r.fc_hallazgo)}</span>
+              </TableCell>
+              <TableCell>{r.fc_malla}</TableCell>
+              <TableCell>{r.fc_veneno}</TableCell>
+              <TableCell>{r.fc_verifico}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ minWidth: 260, verticalAlign: "middle", whiteSpace: "nowrap" }}
+              >
+                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="info"
+                    onClick={() => setRegistroDetalle(r)}
+                  >
+                    Ver
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="warning"
+                    onClick={() => editar(r)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    onClick={() => eliminar(r.fi_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
 
   return (
     <Box>
@@ -469,77 +546,7 @@ function BitacoraPlagasContent() {
       </Card>
       </FormularioRegistroPanel>
 
-      {/* TABLA */}
-      <Paper sx={{ width: "100%" }}>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table sx={{ minWidth: 1200 }}>
-          <TableHead sx={{ background: "#E3F2FD" }}>
-            <TableRow>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Trampa</TableCell>
-              <TableCell>Tipo</TableCell>
-              <TableCell>Unidad</TableCell>
-              <TableCell>Hallazgo</TableCell>
-              <TableCell>Malla</TableCell>
-              <TableCell>Veneno</TableCell>
-              <TableCell>Verificó</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell align="center" sx={{ minWidth: 260, whiteSpace: "nowrap" }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((r) => (
-              <TableRow key={r.fi_id}>
-                <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
-                <TableCell>{r.fc_num_trampa}</TableCell>
-                <TableCell>{r.tipo_trampa}</TableCell>
-                <TableCell>{r.unidad_produccion}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_hallazgo}>{truncar(r.fc_hallazgo)}</span>
-                </TableCell>
-                <TableCell>{r.fc_malla}</TableCell>
-                <TableCell>{r.fc_veneno}</TableCell>
-                <TableCell>{r.fc_verifico}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{ minWidth: 260, verticalAlign: "middle", whiteSpace: "nowrap" }}
-                >
-                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="info"
-                      onClick={() => setRegistroDetalle(r)}
-                    >
-                      Ver
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="warning"
-                      onClick={() => editar(r)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="error"
-                      onClick={() => eliminar(r.fi_id)}
-                    >
-                      Eliminar
-                    </Button>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaPlagas} />
       {ConfirmModal}
 
       <Dialog

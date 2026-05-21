@@ -29,6 +29,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -44,7 +45,8 @@ const getTipoBanio = (row) => {
 function BitacoraBanosContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } =
+    useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_tipo_banio: "",
@@ -216,6 +218,71 @@ function BitacoraBanosContent() {
     doc.save(`Bitacora_Banos_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
+  const gruposUbicacion = getGroups(data);
+
+  const renderTablaBanos = (rows) => (
+    <Paper sx={{ width: "100%" }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table sx={{ minWidth: 960 }}>
+        <TableHead sx={{ background: "#E3F2FD" }}>
+          <TableRow>
+            <TableCell>Fecha</TableCell>
+            <TableCell>Tipo de Baño</TableCell>
+            <TableCell>Regadera</TableCell>
+            <TableCell>Realizó</TableCell>
+            <TableCell>Observaciones</TableCell>
+            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.fi_id}>
+              <TableCell sx={{ maxWidth: 160 }}>
+                {r.fd_fecha?.split("T")[0]}
+              </TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={getTipoBanio(r)}>{truncar(getTipoBanio(r))}</span>
+              </TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_regadera}>{truncar(r.fc_regadera)}</span>
+              </TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_realizo}>{truncar(r.fc_realizo)}</span>
+              </TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+              >
+                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="warning"
+                    onClick={() => editar(r)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    onClick={() => eliminar(r.fi_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
+
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
@@ -349,73 +416,7 @@ function BitacoraBanosContent() {
       </Card>
       </FormularioRegistroPanel>
 
-      {/* TABLA */}
-      <Paper sx={{ width: "100%" }}>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table sx={{ minWidth: 960 }}>
-          <TableHead sx={{ background: "#E3F2FD" }}>
-            <TableRow>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Tipo de Baño</TableCell>
-              <TableCell>Regadera</TableCell>
-              <TableCell>Realizó</TableCell>
-              <TableCell>Ubicación</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((r) => (
-              <TableRow key={r.fi_id}>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  {r.fd_fecha?.split("T")[0]}
-                </TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={getTipoBanio(r)}>{truncar(getTipoBanio(r))}</span>
-                </TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_regadera}>{truncar(r.fc_regadera)}</span>
-                </TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_realizo}>{truncar(r.fc_realizo)}</span>
-                </TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={getLabel(r.ubicacion)}>
-                    {truncar(getLabel(r.ubicacion))}
-                  </span>
-                </TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-                >
-                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="warning"
-                      onClick={() => editar(r)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="error"
-                      onClick={() => eliminar(r.fi_id)}
-                    >
-                      Eliminar
-                    </Button>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaBanos} />
       {ConfirmModal}
     </Box>
   );

@@ -34,6 +34,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 
 const TRUNCAR_MAX = 40;
@@ -43,7 +44,8 @@ const truncar = (texto) =>
 function BitacoraVisitasContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor, getGroups } =
+    useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_nombre_completo: "",
@@ -232,6 +234,84 @@ function BitacoraVisitasContent() {
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Visitas_${fecha}.pdf`);
   };
+
+  const gruposUbicacion = getGroups(data);
+
+  const renderTablaVisitas = (rows) => (
+    <Paper sx={{ width: "100%" }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table sx={{ minWidth: 1180 }}>
+        <TableHead sx={{ background: "#FFF9C4" }}>
+          <TableRow>
+            <TableCell>Fecha</TableCell>
+            <TableCell>Nombre</TableCell>
+            <TableCell>Origen</TableCell>
+            <TableCell>Motivo</TableCell>
+            <TableCell>Foto ID</TableCell>
+            <TableCell>Entrada</TableCell>
+            <TableCell>Salida</TableCell>
+            <TableCell>Observaciones</TableCell>
+            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.fi_id}>
+              <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{r.fc_nombre_completo}</TableCell>
+              <TableCell>{r.fc_origen}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_motivo}>{truncar(r.fc_motivo)}</span>
+              </TableCell>
+              <TableCell>
+                {r.fc_foto_identificacion ? (
+                  <a
+                    href={getUploadUrl(r.fc_foto_identificacion)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
+                  >
+                    Ver foto
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </TableCell>
+              <TableCell>{r.fd_entrada}</TableCell>
+              <TableCell>{r.fd_salida}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
+              >
+                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="warning"
+                    onClick={() => editar(r)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    onClick={() => eliminar(r.fi_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
 
   return (
     <Box>
@@ -455,82 +535,7 @@ function BitacoraVisitasContent() {
       </Card>
       </FormularioRegistroPanel>
 
-      {/* TABLA DE REGISTROS */}
-      <Paper sx={{ width: "100%" }}>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table sx={{ minWidth: 1180 }}>
-          <TableHead sx={{ background: "#FFF9C4" }}>
-            <TableRow>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Nombre</TableCell>
-              <TableCell>Origen</TableCell>
-              <TableCell>Motivo</TableCell>
-              <TableCell>Foto ID</TableCell>
-              <TableCell>Entrada</TableCell>
-              <TableCell>Salida</TableCell>
-              <TableCell>Ubicación</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((r) => (
-              <TableRow key={r.fi_id}>
-                <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
-                <TableCell>{r.fc_nombre_completo}</TableCell>
-                <TableCell>{r.fc_origen}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_motivo}>{truncar(r.fc_motivo)}</span>
-                </TableCell>
-                <TableCell>
-                  {r.fc_foto_identificacion ? (
-                    <a
-                      href={getUploadUrl(r.fc_foto_identificacion)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
-                    >
-                      Ver foto
-                    </a>
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-                <TableCell>{r.fd_entrada}</TableCell>
-                <TableCell>{r.fd_salida}</TableCell>
-                <TableCell>{getLabel(r.ubicacion)}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-                >
-                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="warning"
-                      onClick={() => editar(r)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="error"
-                      onClick={() => eliminar(r.fi_id)}
-                    >
-                      Eliminar
-                    </Button>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaVisitas} />
       {ConfirmModal}
     </Box>
   );

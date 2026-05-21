@@ -5,11 +5,22 @@
 export async function fetchMergedPorUbicaciones(filtros, fetchFn) {
   if (!filtros?.length) return [];
   const results = await Promise.all(
-    filtros.map((filtro) =>
-      fetchFn(filtro)
-        .then((res) => (Array.isArray(res?.data) ? res.data : []))
-        .catch(() => []),
-    ),
+    filtros.map((filtro) => {
+      const granjaKey =
+        typeof filtro === "string"
+          ? filtro
+          : filtro?.granja ?? filtro?.ubicacion ?? "";
+      return fetchFn(filtro)
+        .then((res) => {
+          const rows = Array.isArray(res?.data) ? res.data : [];
+          return rows.map((row) => ({
+            ...row,
+            ubicacion: row.ubicacion ?? granjaKey,
+            fc_granja: row.fc_granja ?? granjaKey,
+          }));
+        })
+        .catch(() => []);
+    }),
   );
   return results.flat();
 }
