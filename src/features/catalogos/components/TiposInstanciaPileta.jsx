@@ -26,6 +26,8 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import {
   getTipoInstanciaPiletaId,
   getTipoInstanciaPiletaNombre,
@@ -39,6 +41,7 @@ export default function TiposInstanciaPileta() {
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   useEffect(() => {
     cargar();
@@ -65,6 +68,7 @@ export default function TiposInstanciaPileta() {
   const limpiar = () => {
     setForm({ tipo_instancia_pileta_id: null, nombre: "" });
     clearErrors();
+    cerrarFormulario();
   };
 
   const registrar = async () => {
@@ -124,6 +128,7 @@ export default function TiposInstanciaPileta() {
       nombre: getTipoInstanciaPiletaNombre(item),
     });
     clearErrors();
+    abrirFormulario();
   };
 
   return (
@@ -137,6 +142,7 @@ export default function TiposInstanciaPileta() {
         </Typography>
       </Box>
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
@@ -185,6 +191,7 @@ export default function TiposInstanciaPileta() {
           </Grid>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>

@@ -35,6 +35,8 @@ import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import Clear from "@mui/icons-material/Clear";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -64,6 +66,7 @@ export default function Alimentos() {
   const [engorda, setEngorda] = useState([]);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const safeNumber = (val, decimals = 2) =>
     !isNaN(Number(val)) ? Number(val).toFixed(decimals) : "—";
@@ -143,6 +146,7 @@ export default function Alimentos() {
       fi_engorda_id: "",
     });
     clearErrors();
+    cerrarFormulario();
   };
 
   const registrar = async () => {
@@ -189,6 +193,7 @@ export default function Alimentos() {
       fi_pileta_id: dato.fi_pileta_id || "",
       fi_engorda_id: dato.fi_engorda_id || "",
     });
+    abrirFormulario();
   };
 
   // =======================================
@@ -249,6 +254,7 @@ export default function Alimentos() {
       </Tabs>
 
       {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ borderRadius: 3, boxShadow: 3, marginBottom: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -342,6 +348,7 @@ export default function Alimentos() {
           </Grid>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLA */}
       <Typography variant="h5" gutterBottom>

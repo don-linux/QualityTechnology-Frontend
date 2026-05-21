@@ -30,6 +30,8 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -59,6 +61,7 @@ function BitacoraVisitasContent() {
   const [busqueda, setBusqueda] = useState("");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "fd_fecha", "fc_nombre_completo", "fc_origen", "fc_motivo",
@@ -130,6 +133,7 @@ function BitacoraVisitasContent() {
         await createVisita(formData);
       }
       setEditId(null);
+      cerrarFormulario();
       setForm({
         fd_fecha: "",
         fc_nombre_completo: "",
@@ -163,7 +167,9 @@ function BitacoraVisitasContent() {
       fi_usuario_id: r.fi_usuario_id || usuarioId,
       ubicacion: r.ubicacion || defaultUbicacion,
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   const eliminar = async (id) => {
@@ -263,7 +269,7 @@ function BitacoraVisitasContent() {
         />
       </Box>
 
-      {/* FORMULARIO PRINCIPAL */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -438,6 +444,7 @@ function BitacoraVisitasContent() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLA DE REGISTROS */}
       <Paper sx={{ width: "100%" }}>

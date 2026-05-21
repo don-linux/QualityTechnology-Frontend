@@ -6,6 +6,8 @@ import {
 } from "@features/catalogos/services/ubicacionesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -38,6 +40,7 @@ export default function Ubicaciones({
   const [ubicaciones, setUbicaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   useEffect(() => { cargar(); }, []);
 
@@ -58,7 +61,7 @@ export default function Ubicaciones({
     clearFieldError(e.target.name);
   };
 
-  const limpiar = () => { setForm(EMPTY); clearErrors(); };
+  const limpiar = () => { setForm(EMPTY); clearErrors(); cerrarFormulario(); };
 
   const registrar = async () => {
     if (!validate(form, ["nombre"])) return;
@@ -92,6 +95,7 @@ export default function Ubicaciones({
       direccion:    u.direccion    ?? "",
     });
     clearErrors();
+    abrirFormulario();
   };
 
   return (
@@ -109,6 +113,7 @@ export default function Ubicaciones({
         </Alert>
       ) : null}
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
@@ -161,6 +166,7 @@ export default function Ubicaciones({
           </Grid>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>

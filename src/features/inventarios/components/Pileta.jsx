@@ -162,7 +162,7 @@ function PiletasTab({
   ubicacionesGranja,
 }) {
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const [mostrarFormulario, setMostrarFormulario] = useState(true);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editId, setEditId] = useState(null);
 
   const [estadosConservacion, setEstadosConservacion] = useState([]);

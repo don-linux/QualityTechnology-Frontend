@@ -24,6 +24,8 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { listPiletas } from "../services/piletasService";
 
@@ -39,6 +41,7 @@ const ControlReproductivo = () => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
 
   const requiredFields = [
@@ -166,6 +169,7 @@ const ControlReproductivo = () => {
       observacion: seleccionado.observacion ?? seleccionado.fc_observacion ?? "",
     });
     setModoEdicion(true);
+    abrirFormulario();
   };
 
   const actualizarAlevinajeRegistro = async () => {
@@ -216,6 +220,7 @@ const ControlReproductivo = () => {
       observacion: "",
     });
     clearErrors();
+    cerrarFormulario();
   };
 
   const resetEdicion = () => {
@@ -264,6 +269,7 @@ const ControlReproductivo = () => {
         ))}
       </Grid>
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#005f73" }}>
@@ -374,6 +380,7 @@ const ControlReproductivo = () => {
           </Grid>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       <Typography variant="h6" sx={{ mb: 1, fontWeight: "bold", color: "#023047" }}>
         Registros (alevinaje) — {granja}

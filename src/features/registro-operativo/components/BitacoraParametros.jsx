@@ -29,6 +29,8 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -54,6 +56,7 @@ function BitacoraParametrosContent() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "ubicacion", "fd_fecha", "fn_num_estanque", "fn_oxigeno", "fn_temperatura",
@@ -102,6 +105,7 @@ function BitacoraParametrosContent() {
       else await createParametro(form);
 
       setEditId(null);
+      cerrarFormulario();
       setForm({
         ubicacion: form.ubicacion,
         fd_fecha: "",
@@ -137,7 +141,9 @@ function BitacoraParametrosContent() {
       fc_responsable: r.fc_responsable || "",
       fi_usuario_id: r.fi_usuario_id || usuarioId,
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   const eliminar = async (id) => {
@@ -219,7 +225,7 @@ function BitacoraParametrosContent() {
         Parámetros Fisico-Quimicos
       </Typography>
 
-      {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -393,6 +399,7 @@ function BitacoraParametrosContent() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLAS POR UBICACIÓN */}
       {gruposUbicacion.map(({ value, label, rows }) => (

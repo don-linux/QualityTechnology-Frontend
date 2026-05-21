@@ -23,6 +23,8 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 
 export default function Venta() {
   return <VentaContent />;
@@ -30,6 +32,7 @@ export default function Venta() {
 
 function VentaContent() {
   const showSnackbar = useSnackbar();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   /* ============================================================
       ESTADOS PRINCIPALES
   ============================================================ */
@@ -212,6 +215,7 @@ function VentaContent() {
       fc_observaciones: v.fc_observaciones,
       fc_empresa: v.fc_empresa,
     });
+    abrirFormulario();
   };
 
   /* ============================================================
@@ -234,6 +238,7 @@ function VentaContent() {
 
     setEditando(false);
     setIdEditando(null);
+    cerrarFormulario();
   };
 
   /* ============================================================
@@ -278,6 +283,7 @@ function VentaContent() {
       </Box>
 
       {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ p: 3, mb: 3, borderRadius: 3, boxShadow: 4 }}>
         <Typography variant="h5" textAlign="center" mb={2} fontWeight="bold">
           Control de Ventas
@@ -481,6 +487,7 @@ function VentaContent() {
           </Grid>
         </Grid>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLA */}
      <Card sx={{ p: 2 }}>

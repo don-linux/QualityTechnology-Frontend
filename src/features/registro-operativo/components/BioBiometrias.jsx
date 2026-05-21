@@ -32,6 +32,8 @@ import { listPiletas } from "@features/inventarios/services/piletasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -60,6 +62,7 @@ export default function BioBiometrias() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "ubicacion",
@@ -211,6 +214,7 @@ export default function BioBiometrias() {
       fc_encargado: row.fc_encargado ?? "",
       fi_usuario_id: usuario_id,
     });
+    abrirFormulario();
   };
 
   /* -----------------------------
@@ -244,6 +248,7 @@ export default function BioBiometrias() {
       fc_encargado: "",
       fi_usuario_id: usuario_id,
     }));
+    cerrarFormulario();
   };
 
   const formatNum = (n) => {
@@ -268,7 +273,7 @@ export default function BioBiometrias() {
         Biometrías
       </Typography>
 
-      {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -507,6 +512,7 @@ export default function BioBiometrias() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLAS POR UBICACION */}
       {getGroups(data).map(({ value, label, rows }) => (

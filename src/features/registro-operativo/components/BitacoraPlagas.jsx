@@ -32,6 +32,8 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -64,6 +66,7 @@ function BitacoraPlagasContent() {
   const [registroDetalle, setRegistroDetalle] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "fd_fecha", "fc_num_trampa", "tipo_trampa", "fc_hallazgo",
@@ -137,6 +140,7 @@ function BitacoraPlagasContent() {
       else await createPlaga(form);
 
       setEditId(null);
+      cerrarFormulario();
       setForm({
         fd_fecha: "",
         fc_num_trampa: "",
@@ -172,7 +176,9 @@ function BitacoraPlagasContent() {
       fi_usuario_id: r.fi_usuario_id || usuarioId,
       ubicacion: r.ubicacion || defaultUbicacion,
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   const eliminar = async (id) => {
@@ -294,7 +300,7 @@ function BitacoraPlagasContent() {
         />
       </Box>
 
-      {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={1.5}>
@@ -462,6 +468,7 @@ function BitacoraPlagasContent() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLA */}
       <Paper sx={{ width: "100%" }}>

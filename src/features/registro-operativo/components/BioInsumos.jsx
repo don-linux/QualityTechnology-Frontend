@@ -29,6 +29,8 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -60,6 +62,7 @@ export default function BioInsumos() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "ubicacion",
@@ -123,6 +126,7 @@ export default function BioInsumos() {
         fi_usuario_id: usuarioId,
       });
       setEditId(null);
+      cerrarFormulario();
       cargarDatos();
     } catch (err) {
       const msg = err.response?.data?.error || err.message || "Error guardando registro.";
@@ -144,7 +148,9 @@ export default function BioInsumos() {
       fc_encargado_recepcion: row.fc_encargado_recepcion,
       fi_usuario_id: row.fi_usuario_id,
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   const eliminar = async (id) => {
@@ -286,14 +292,15 @@ export default function BioInsumos() {
         Ingresos / Egresos de Insumos
       </Typography>
 
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
-                select
-                label="Ubicación"
-                name="ubicacion"
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
+        <Card sx={{ mb: 4 }}>
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  select
+                  label="Ubicación"
+                  name="ubicacion"
                 value={form.ubicacion}
                 onChange={handleChange}
                 fullWidth
@@ -438,6 +445,7 @@ export default function BioInsumos() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {gruposUbicacion.map(({ value, label, rows }) => (
         <Accordion key={value} defaultExpanded sx={{ mb: 2 }}>

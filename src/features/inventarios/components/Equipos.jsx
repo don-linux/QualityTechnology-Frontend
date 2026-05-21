@@ -34,6 +34,8 @@ import Close from "@mui/icons-material/Close";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUnidadesNegocioOptions from "@features/catalogos/hooks/useUnidadesNegocioOptions";
 
 function EquiposContent() {
@@ -79,6 +81,7 @@ function EquiposContent() {
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const requiredFields = [
     "fc_nombre", "fc_marca", "fc_modelo", "fc_tipo",
     "fd_fecha_compra", "fn_costo", "fc_estado", "fc_ubicacion",
@@ -165,6 +168,7 @@ function EquiposContent() {
       fc_notas: row.fc_notas,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   const eliminar = async (id) => {
@@ -197,6 +201,7 @@ function EquiposContent() {
     });
     setEditId(null);
     clearErrors();
+    cerrarFormulario();
     showSnackbar("Formulario limpiado correctamente", "info");
   };
 
@@ -293,6 +298,7 @@ function EquiposContent() {
       </Typography>
 
       {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -488,6 +494,7 @@ function EquiposContent() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLA */}
       <Paper>

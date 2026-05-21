@@ -32,6 +32,8 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import FormHelperText from "@mui/material/FormHelperText";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import {
   getUnidadNegocioId,
   getUnidadNegocioNombre,
@@ -66,6 +68,7 @@ export default function UnidadesNegocio() {
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   useEffect(() => {
     obtenerUnidades();
@@ -103,6 +106,7 @@ export default function UnidadesNegocio() {
   const limpiar = () => {
     setForm(EMPTY_FORM);
     clearErrors();
+    cerrarFormulario();
   };
 
   const parseUbicacionId = () => {
@@ -180,6 +184,7 @@ export default function UnidadesNegocio() {
       fi_ubicacion_id: getUnidadNegocioUbicacionId(u),
     });
     clearErrors();
+    abrirFormulario();
   };
 
   return (
@@ -193,6 +198,7 @@ export default function UnidadesNegocio() {
         </Typography>
       </Box>
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
@@ -266,6 +272,7 @@ export default function UnidadesNegocio() {
           </Grid>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>

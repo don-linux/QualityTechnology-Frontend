@@ -25,6 +25,8 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -58,6 +60,7 @@ function BitacoraBanosContent() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "fd_fecha", "fc_tipo_banio",
@@ -121,6 +124,7 @@ function BitacoraBanosContent() {
         ubicacion: form.ubicacion,
       });
       setEditId(null);
+      cerrarFormulario();
       cargarDatos();
     } catch (err) {
       const msg = err.response?.data?.error || err.message || "Error al guardar registro.";
@@ -141,7 +145,9 @@ function BitacoraBanosContent() {
       fi_usuario_id: row.fi_usuario_id,
       ubicacion: row.ubicacion || "",
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   //  Eliminar uno
@@ -216,7 +222,7 @@ function BitacoraBanosContent() {
         Bitacora de Baños
       </Typography>
 
-      {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -341,6 +347,7 @@ function BitacoraBanosContent() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLA */}
       <Paper sx={{ width: "100%" }}>

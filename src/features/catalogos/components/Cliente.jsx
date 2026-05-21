@@ -27,6 +27,8 @@ import Box from "@mui/material/Box";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
 
 const EMPTY_FORM = {
@@ -86,6 +88,7 @@ export default function Cliente() {
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   useEffect(() => {
     obtenerDatos();
@@ -133,6 +136,7 @@ export default function Cliente() {
   const limpiarFormulario = () => {
     clearErrors();
     setForm(EMPTY_FORM);
+    cerrarFormulario();
   };
 
   const validarFormato = () => {
@@ -222,6 +226,7 @@ export default function Cliente() {
       fc_estado: cliente.fc_estado || "",
       fi_ejecutivo_empleado_id: cliente.fi_ejecutivo_empleado_id ? String(cliente.fi_ejecutivo_empleado_id) : "",
     });
+    abrirFormulario();
   };
 
   const renderOpciones = (campo) => {
@@ -258,6 +263,7 @@ export default function Cliente() {
          Registro de Clientes
       </Typography>
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -304,6 +310,7 @@ export default function Cliente() {
           </Stack>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       <Box sx={{ maxHeight: 460, overflow: "auto" }}>
         <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 2 }}>

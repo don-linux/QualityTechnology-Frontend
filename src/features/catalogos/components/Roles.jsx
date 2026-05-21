@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { listRoles, createRol, updateRol, removeRol } from "@features/catalogos/services/rolesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -22,6 +24,7 @@ export default function Roles() {
   const [roles, setRoles] = useState([]);
   const [mensaje, setMensaje] = useState('');
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const requiredFields = ["nombre"];
 
   useEffect(() => {
@@ -46,6 +49,7 @@ export default function Roles() {
     setForm({ rol_id: '', nombre: '' });
     setMensaje('');
     clearErrors();
+    cerrarFormulario();
   };
 
   const registrarRol = async () => {
@@ -95,6 +99,7 @@ export default function Roles() {
     });
     setMensaje('');
     clearErrors();
+    abrirFormulario();
   };
 
   return (
@@ -103,6 +108,7 @@ export default function Roles() {
          Registro de Roles
       </Typography>
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 3, boxShadow: 3, borderRadius: 2 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -191,6 +197,7 @@ export default function Roles() {
           </Grid>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
     </Container>
   );
 }
