@@ -69,9 +69,13 @@ export const ENDPOINTS = {
   alevinaje: {
     base: "/alevinaje",
     byId: (id) => `/alevinaje/${id}`,
-    /** Piletas etapa `reproductores` ocupadas (control reproductivo). */
-    reproductoresOcupadas: (granja) => `/alevinaje/reproductores/${path(granja)}`,
-    familiaPorPileta: (piletaId) => `/alevinaje/familia-por-pileta/${piletaId}`,
+  },
+
+  controlReproductivo: {
+    base: "/control-reproductivo",
+    byId: (id) => `/control-reproductivo/${id}`,
+    reproductoresOcupadas: (granja) => `/control-reproductivo/reproductores/${path(granja)}`,
+    familiaPorPileta: (piletaId) => `/control-reproductivo/familia-por-pileta/${piletaId}`,
   },
 
   historialPeso: {
