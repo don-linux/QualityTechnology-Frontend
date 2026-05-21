@@ -31,6 +31,7 @@ import PoolOutlinedIcon from "@mui/icons-material/PoolOutlined";
 import MenuBook from "@mui/icons-material/MenuBook";
 import Security from "@mui/icons-material/Security";
 import Groups from "@mui/icons-material/Groups";
+import Timeline from "@mui/icons-material/Timeline";
 
 export const DASHBOARD_SECTION = {
   modulo: "Dashboard",
@@ -74,6 +75,7 @@ export const MENU_SECTIONS = [
           { to: "/inventarios/control-reproductivo", icon: <EggAltIcon />, label: "Control Reproductivo" },
           { to: "/inventarios/alevinaje", icon: <WaterDropIcon />, label: "Alevinaje" },
           { to: "/inventarios/engorda", icon: <Grass />, label: "Engorda" },
+          { to: "/inventarios/trazabilidad", icon: <Timeline />, label: "Trazabilidad" },
         ],
       },
       {

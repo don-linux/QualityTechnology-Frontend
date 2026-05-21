@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   listByGranja as listReproductoresByGranja,
-  getMovimientos as getReproductoresMovimientos,
   createReproductor,
   updateReproductor,
   removeReproductor,
@@ -122,10 +121,6 @@ function ReproductoresContent() {
   const [reproductores, setReproductores] = useState([]);
   const [piletasReproductores, setPiletasReproductores] = useState([]);
   const [piletasOrigen, setPiletasOrigen] = useState([]);
-  const [rastreos, setRastreos] = useState([]);
-  const [filtroTexto, setFiltroTexto] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFin, setFechaFin] = useState("");
   const [totalPiletas, setTotalPiletas] = useState(0);
   const [totalOrganismos, setTotalOrganismos] = useState(0);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -211,28 +206,10 @@ const colorDias = (dias) => {
     }
   }, []);
 
-  const obtenerTrazabilidad = useCallback(async () => {
-    try {
-      const data = await fetchMergedPorUbicaciones(
-        filtrosUbicacion,
-        getReproductoresMovimientos,
-      );
-      setRastreos(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error al cargar trazabilidad:", err);
-      setRastreos([]);
-      showSnackbar(
-        err?.response?.data?.error || "No se pudieron cargar los movimientos.",
-        "error"
-      );
-    }
-  }, [filtrosUbicacion, showSnackbar]);
-
   useEffect(() => {
     obtenerReproductores();
     obtenerPiletas();
-    obtenerTrazabilidad();
-  }, [obtenerReproductores, obtenerPiletas, obtenerTrazabilidad]);
+  }, [obtenerReproductores, obtenerPiletas]);
 
   useEffect(() => {
     if (!form.ubicacion && defaultUbicacion) {
@@ -249,32 +226,9 @@ const colorDias = (dias) => {
     [piletasOrigen, form.ubicacion, ubicacionesGranja],
   );
 
-  const rastreosFiltrados = rastreos.filter((r) => {
-  const texto = filtroTexto.toLowerCase();
-
-  const coincideTexto =
-    r.origen?.toLowerCase().includes(texto) ||
-    r.destino?.toLowerCase().includes(texto) ||
-    r.observacion?.toLowerCase().includes(texto);
-
-  const fechaMov = new Date(r.fecha_movimiento);
-  const desde = fechaInicio ? new Date(fechaInicio) : null;
-  const hasta = fechaFin ? new Date(fechaFin) : null;
-
-  const coincideFecha =
-    (!desde || fechaMov >= desde) && (!hasta || fechaMov <= hasta);
-
-  return coincideTexto && coincideFecha;
-});
-
   const gruposReproductores = useMemo(
     () => getGroups(reproductores, "fc_granja"),
     [reproductores, getGroups],
-  );
-
-  const gruposRastreos = useMemo(
-    () => getGroups(rastreosFiltrados, "fc_granja"),
-    [rastreosFiltrados, getGroups],
   );
 
   /* ===================== FORMULARIO ===================== */
@@ -427,7 +381,6 @@ const colorDias = (dias) => {
 
       limpiarFormulario();
       obtenerReproductores();
-      obtenerTrazabilidad();
     } catch (err) {
       console.error("Error al registrar reproductor:", err);
       showSnackbar(err.response?.data?.error || err.message || "No se pudo registrar el reproductor.", "error");
@@ -476,7 +429,6 @@ const colorDias = (dias) => {
 
       limpiarFormulario();
       obtenerReproductores();
-      obtenerTrazabilidad();
     } catch (err) {
       console.error("Error al guardar reproductor:", err);
       showSnackbar(err.response?.data?.error || err.message || "No se pudo guardar el reproductor.", "error");
@@ -488,7 +440,6 @@ const colorDias = (dias) => {
     try {
       await removeReproductor(id);
       obtenerReproductores();
-      obtenerTrazabilidad();
     } catch (err) {
       showSnackbar("Error al eliminar: " + (err.response?.data?.error || err.message), "error");
     }
@@ -963,95 +914,6 @@ const colorDias = (dias) => {
         )}
       />
 
-      {/* TRAZABILIDAD */}
-      <Typography variant="h6" sx={{ color: "#E65100", mt: 5, mb: 2 }}>
-         Trazabilidad de Movimientos
-      </Typography>
-
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-      <TextField
-        size="small"
-        label="Buscar"
-        fullWidth
-        value={filtroTexto}
-        onChange={(e) => setFiltroTexto(e.target.value)}
-      />
-
-      <TextField
-        type="date"
-        size="small"
-        label="Fecha inicio"
-        value={fechaInicio}
-        onChange={(e) => setFechaInicio(e.target.value)}
-        InputLabelProps={{ shrink: true }}
-      />
-
-      <TextField
-        type="date"
-        size="small"
-        label="Fecha fin"
-        value={fechaFin}
-        onChange={(e) => setFechaFin(e.target.value)}
-        InputLabelProps={{ shrink: true }}
-      />
-
-      <Button
-        variant="contained"
-        onClick={() => obtenerTrazabilidad()}
-        sx={{ height: "40px" }}
-      >
-        BUSCAR
-      </Button>
-
-      <Button
-        variant="outlined"
-        color="error"
-        sx={{ height: "40px" }}
-        onClick={() => {
-          setFiltroTexto("");
-          setFechaInicio("");
-          setFechaFin("");
-        }}
-      >
-        LIMPIAR
-      </Button>
-    </Box>
-    <TablasPorUbicacionGranja
-      grupos={gruposRastreos}
-      accordionSx={{ mb: 6, boxShadow: 2 }}
-      renderTabla={(rows) => (
-        <Paper sx={{ width: "100%", boxShadow: 2 }}>
-          <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-            <Table stickyHeader sx={{ minWidth: 960 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Origen</TableCell>
-                  <TableCell>Destino</TableCell>
-                  <TableCell>Cantidad</TableCell>
-                  <TableCell>Fecha</TableCell>
-                  <TableCell>Observación</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((r) => (
-                  <TableRow key={r.fi_movimiento_id}>
-                    <TableCell>{r.origen || "—"}</TableCell>
-                    <TableCell>{r.destino || "—"}</TableCell>
-                    <TableCell>{formatNumber(r.cantidad_trasladada)}</TableCell>
-                    <TableCell>{formatFecha(r.fecha_movimiento)}</TableCell>
-                    <TableCell sx={{ maxWidth: 160 }}>
-                      <span title={r.observacion || ""}>
-                        {r.observacion ? truncar(r.observacion) : "—"}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      )}
-    />
       {ConfirmModal}
     </Box>
   );

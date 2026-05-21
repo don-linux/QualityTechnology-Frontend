@@ -85,6 +85,10 @@ export const ENDPOINTS = {
     byId: (id) => `/siembras/${id}`,
   },
 
+  trazabilidad: {
+    movimientos: (granja) => `/trazabilidad/movimientos/${path(granja)}`,
+  },
+
   equipos: {
     base: "/equipos",
     empleados: "/equipos/empleados",
