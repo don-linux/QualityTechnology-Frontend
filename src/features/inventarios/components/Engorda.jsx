@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listEngordas,
-  listMovimientos,
   createEngorda,
   updateEngorda,
   removeEngorda,
-  removeMovimiento,
 } from "../services/engordaService";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -22,9 +20,7 @@ import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import Divider from "@mui/material/Divider";
-import Box from "@mui/material/Box";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import Delete from "@mui/icons-material/Delete";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
@@ -44,7 +40,6 @@ const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 export default function Engorda() {
-  const usuario_id = localStorage.getItem("usuario_id");
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -61,7 +56,6 @@ export default function Engorda() {
 
   const [piletasDestinoEngorda, setPiletasDestinoEngorda] = useState([]);
   const [registros, setRegistros] = useState([]);
-  const [movimientos, setMovimientos] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState({
@@ -131,21 +125,10 @@ export default function Engorda() {
     }
   }, []);
 
-  const cargarMovimientos = useCallback(async () => {
-    if (!usuario_id) return;
-    try {
-      const { data } = await listMovimientos(usuario_id);
-      setMovimientos(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error al obtener movimientos:", err);
-    }
-  }, [usuario_id]);
-
   useEffect(() => {
     cargarPiletasDestinoEngorda();
     cargarRegistros();
-    cargarMovimientos();
-  }, [cargarPiletasDestinoEngorda, cargarRegistros, cargarMovimientos]);
+  }, [cargarPiletasDestinoEngorda, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
@@ -164,7 +147,6 @@ export default function Engorda() {
       showSnackbar("Registro guardado en engorda", "success");
       resetFormulario();
       cargarRegistros();
-      cargarMovimientos();
     } catch (err) {
       console.error("Error al registrar engorda:", err);
       showSnackbar(
@@ -215,7 +197,6 @@ export default function Engorda() {
       showSnackbar("Registro actualizado", "success");
       resetEdicion();
       cargarRegistros();
-      cargarMovimientos();
     } catch (err) {
       console.error("Error al actualizar engorda:", err);
       showSnackbar(
@@ -237,16 +218,6 @@ export default function Engorda() {
     } catch (err) {
       console.error("Error al eliminar engorda:", err);
       showSnackbar("No se pudo eliminar", "error");
-    }
-  };
-
-  const eliminarMovimiento = async (id) => {
-    if (!await confirm("¿Eliminar este movimiento?")) return;
-    try {
-      await removeMovimiento(id);
-      cargarMovimientos();
-    } catch (err) {
-      console.error(err);
     }
   };
 
@@ -516,53 +487,6 @@ export default function Engorda() {
           </Button>
         </div>
       )}
-
-      <Typography variant="h6" sx={{ mt: 5, mb: 2, fontWeight: "bold", color: "#E65100" }}>
-        Historial de movimientos de engorda
-      </Typography>
-      <Paper sx={{ width: "100%", borderRadius: 3 }}>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table stickyHeader sx={{ minWidth: 1000 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>Origen</TableCell>
-                <TableCell>Destino</TableCell>
-                <TableCell>Cantidad</TableCell>
-                <TableCell>Fecha</TableCell>
-                <TableCell>Observación</TableCell>
-                <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {movimientos.map((m) => (
-                <TableRow key={m.fi_movimiento_id}>
-                  <TableCell>{m.origen_nombre || "Siembra Lote"}</TableCell>
-                  <TableCell>{m.destino_nombre}</TableCell>
-                  <TableCell>{formatNumber(m.cantidad_trasladada)}</TableCell>
-                  <TableCell>{formatearFecha(m.fecha_movimiento)}</TableCell>
-                  <TableCell sx={{ maxWidth: 160 }}>
-                    <span title={m.observacion || ""}>
-                      {m.observacion ? truncar(m.observacion) : "—"}
-                    </span>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box sx={{ display: "inline-flex", gap: 1 }}>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        onClick={() => eliminarMovimiento(m.fi_movimiento_id)}
-                      >
-                        <Delete />
-                      </Button>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
 
       {ConfirmModal}
     </div>

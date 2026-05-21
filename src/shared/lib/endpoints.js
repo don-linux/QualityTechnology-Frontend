@@ -57,8 +57,6 @@ export const ENDPOINTS = {
     base: "/engorda",
     byGranja: (granja) => `/engorda/granja/${path(granja)}`,
     byId: (id) => `/engorda/${id}`,
-    movimientos: (usuario) => `/engorda/movimientos/${usuario}`,
-    deleteMovimiento: (id) => `/engorda/movimientos/${id}`,
   },
 
   alimentos: {

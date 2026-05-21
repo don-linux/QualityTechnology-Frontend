@@ -30,11 +30,3 @@ export function updateEngorda(id, data) {
 export function removeEngorda(id) {
   return axios.delete(ENDPOINTS.engorda.byId(id));
 }
-
-export function listMovimientos(usuarioId) {
-  return axios.get(ENDPOINTS.engorda.movimientos(usuarioId));
-}
-
-export function removeMovimiento(id) {
-  return axios.delete(ENDPOINTS.engorda.deleteMovimiento(id));
-}
