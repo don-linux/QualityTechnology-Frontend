@@ -22,13 +22,11 @@ const TRUNCAR_MAX = 40;
 
 const ETAPA_OPCIONES = [
   { value: "", label: "Todas las etapas" },
-  { value: "reproductores", label: "Reproductores" },
   { value: "alevinaje", label: "Alevinaje" },
   { value: "engorda", label: "Engorda" },
 ];
 
 const ETAPA_COLOR = {
-  reproductores: "#1565C0",
   alevinaje: "#00838F",
   engorda: "#2E7D32",
 };
@@ -126,9 +124,8 @@ export default function Trazabilidad() {
         }}
       >
         <Typography variant="body2" color="text.secondary">
-          Historial unificado de traslados e ingresos entre piletas de reproductores,
-          alevinaje y engorda. Los movimientos se registran al crear inventario en cada
-          etapa del ciclo productivo.
+          Historial unificado de traslados e ingresos entre piletas de alevinaje y engorda.
+          Los movimientos se registran al crear inventario en cada etapa del ciclo productivo.
         </Typography>
       </Paper>
 

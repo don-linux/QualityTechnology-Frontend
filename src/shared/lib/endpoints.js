@@ -49,7 +49,6 @@ export const ENDPOINTS = {
   reproductores: {
     base: "/reproductores",
     byGranja: (granja) => `/reproductores/granja/${path(granja)}`,
-    movimientos: (granja) => `/reproductores/movimientos/${path(granja)}`,
     byId: (id) => `/reproductores/${id}`,
   },
 
