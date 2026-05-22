@@ -14,3 +14,7 @@ export function listMovimientos(filtroUbicacion) {
     params: Object.keys(params).length ? params : undefined,
   });
 }
+
+export function createMovimiento(data) {
+  return axios.post(ENDPOINTS.trazabilidad.movimientosBase, data);
+}

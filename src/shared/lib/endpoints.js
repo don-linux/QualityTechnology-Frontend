@@ -85,6 +85,7 @@ export const ENDPOINTS = {
   },
 
   trazabilidad: {
+    movimientosBase: "/trazabilidad/movimientos",
     movimientos: (granja) => `/trazabilidad/movimientos/${path(granja)}`,
   },
 
