@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -110,25 +110,22 @@ function ListaEsperaContent() {
   const [empleados, setEmpleados] = useState([]);
   const [openCliente, setOpenCliente] = useState(false);
   const [nuevoCliente, setNuevoCliente] = useState(EMPTY_CLIENTE_RAPIDO);
-  const [openConvertir, setOpenConvertir] = useState(false);
-  const [itemConvertir, setItemConvertir] = useState(null);
-  const [piletaOrigenId, setPiletaOrigenId] = useState("");
   const [piletas, setPiletas] = useState([]);
   const [cargandoPiletas, setCargandoPiletas] = useState(false);
 
   const emptyForm = {
     fd_fecha_entrega: "",
-    fc_talla: "",
+    fc_uap_asignada: "",
+    fc_granja_asignada: granjaDefault,
+    pileta_origen_id: "",
     fn_cantidad: "",
     fc_cliente: "",
     fc_lugar_entrega: "",
-    fc_encargado_venta: nombreUsuario,
     fc_unidad_produccion: "",
     fc_hora_embolsado: "",
     fc_hora_entrega: "",
     fn_precio_venta: "",
-    fc_uap_asignada: "",
-    fc_granja_asignada: granjaDefault,
+    fc_encargado_venta: nombreUsuario,
   };
 
   const [form, setForm] = useState(emptyForm);
@@ -138,10 +135,16 @@ function ListaEsperaContent() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
-    "fd_fecha_entrega", "fc_talla", "fn_cantidad", "fc_cliente",
-    "fc_lugar_entrega", "fc_unidad_produccion", "fc_hora_embolsado",
-    "fc_hora_entrega", "fn_precio_venta", "fc_uap_asignada",
+    "fd_fecha_entrega",
+    "fc_uap_asignada",
     "fc_granja_asignada",
+    "fn_cantidad",
+    "fc_cliente",
+    "fc_lugar_entrega",
+    "fc_unidad_produccion",
+    "fc_hora_embolsado",
+    "fc_hora_entrega",
+    "fn_precio_venta",
   ];
 
   const cargarLista = async () => {
@@ -188,9 +191,78 @@ function ListaEsperaContent() {
     }
   }, [form.fc_granja_asignada, granjaDefault]);
 
+  const cargarPiletasForm = useCallback(async (granja, tipoVenta) => {
+    const etapa = etapaPiletaParaTipo(tipoVenta);
+    if (!etapa || !granja) {
+      setPiletas([]);
+      return;
+    }
+    setCargandoPiletas(true);
+    try {
+      const res = await listPiletas(granja, etapa);
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setPiletas(rows.filter((p) => Number(p.cantidad ?? p.fn_cantidad ?? 0) > 0));
+    } catch (err) {
+      console.error("Error al cargar piletas:", err);
+      setPiletas([]);
+    } finally {
+      setCargandoPiletas(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (ventaRequierePileta(form.fc_uap_asignada) && form.fc_granja_asignada) {
+      cargarPiletasForm(form.fc_granja_asignada, form.fc_uap_asignada);
+    } else {
+      setPiletas([]);
+      setForm((prev) => (prev.pileta_origen_id ? { ...prev, pileta_origen_id: "" } : prev));
+    }
+  }, [form.fc_uap_asignada, form.fc_granja_asignada, cargarPiletasForm]);
+
+  const piletaOrigenSeleccionada = useMemo(() => {
+    if (!form.pileta_origen_id) return null;
+    return (
+      piletas.find(
+        (p) => String(p.fi_pileta_id ?? p.pileta_id) === form.pileta_origen_id,
+      ) ?? null
+    );
+  }, [form.pileta_origen_id, piletas]);
+
+  const cantidadPedido = Number(form.fn_cantidad ?? 0);
+  const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
+  const requiereValidacionStock =
+    ventaRequierePileta(form.fc_uap_asignada) && Boolean(form.pileta_origen_id);
+  const cantidadExcedeStock =
+    requiereValidacionStock
+    && stockOrigen != null
+    && cantidadPedido > 0
+    && cantidadPedido > stockOrigen;
+
+  const validarPiletaYCantidad = () => {
+    if (ventaRequierePileta(form.fc_uap_asignada) && !form.pileta_origen_id) {
+      showSnackbar("Seleccione la pileta de origen para ventas de alevines o mojarra.", "warning");
+      return false;
+    }
+    if (cantidadExcedeStock) {
+      showSnackbar(
+        `La cantidad (${formatStock(cantidadPedido)}) supera el stock disponible (${formatStock(stockOrigen)}).`,
+        "error",
+      );
+      return false;
+    }
+    return true;
+  };
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    clearFieldError(e.target.name);
+    const { name, value } = e.target;
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      if (name === "fc_granja_asignada" || name === "fc_uap_asignada") {
+        next.pileta_origen_id = "";
+      }
+      return next;
+    });
+    clearFieldError(name);
   };
 
   const handleNuevoClienteChange = (e) => {
@@ -203,6 +275,7 @@ function ListaEsperaContent() {
 
   const registrar = async () => {
     if (!validate(form, requiredFields)) return;
+    if (!validarPiletaYCantidad()) return;
 
     if (!form.fd_fecha_entrega) {
       showSnackbar("Debes seleccionar una fecha de entrega.", "error");
@@ -212,10 +285,11 @@ function ListaEsperaContent() {
     try {
       await createRegistro(form);
       showSnackbar("Registrado en Lista de Espera", "success");
-      setForm(emptyForm);
+      setForm({ ...emptyForm, fc_granja_asignada: granjaDefault, fc_encargado_venta: nombreUsuario });
       cargarLista();
     } catch (err) {
       console.error("Error al registrar en lista de espera:", err);
+      showSnackbar(err?.response?.data?.error || "Error al registrar en lista de espera", "error");
     }
   };
 
@@ -223,8 +297,10 @@ function ListaEsperaContent() {
     clearErrors();
     setEditId(item.fi_lista_id);
     setForm({
-      fd_fecha_entrega: item.fd_fecha_entrega || "",
-      fc_talla: item.fc_talla || "",
+      fd_fecha_entrega: item.fd_fecha_entrega?.split?.("T")?.[0] || item.fd_fecha_entrega || "",
+      fc_uap_asignada: item.fc_uap_asignada || item.tipo_venta || "",
+      fc_granja_asignada: item.fc_granja_asignada || item.granja || granjaDefault,
+      pileta_origen_id: item.pileta_origen_id ? String(item.pileta_origen_id) : "",
       fn_cantidad: item.fn_cantidad || "",
       fc_cliente: item.fc_cliente || "",
       fc_lugar_entrega: item.fc_lugar_entrega || "",
@@ -233,22 +309,22 @@ function ListaEsperaContent() {
       fc_hora_embolsado: item.fc_hora_embolsado || "",
       fc_hora_entrega: item.fc_hora_entrega || "",
       fn_precio_venta: item.fn_precio_venta || "",
-      fc_uap_asignada: item.fc_uap_asignada || "",
-      fc_granja_asignada: item.fc_granja_asignada || granjaDefault,
     });
   };
 
   const actualizar = async () => {
     if (!validate(form, requiredFields)) return;
+    if (!validarPiletaYCantidad()) return;
 
     try {
       await updateRegistro(editId, form);
       showSnackbar("Actualizado correctamente", "success");
       setEditId(null);
-      setForm(emptyForm);
+      setForm({ ...emptyForm, fc_granja_asignada: granjaDefault, fc_encargado_venta: nombreUsuario });
       cargarLista();
     } catch (err) {
       console.error("Error al actualizar en lista de espera:", err);
+      showSnackbar(err?.response?.data?.error || "Error al actualizar", "error");
     }
   };
 
@@ -266,79 +342,19 @@ function ListaEsperaContent() {
 
   const convertir = async (item) => {
     const tipo = item.fc_uap_asignada ?? item.tipo_venta;
-    if (ventaRequierePileta(tipo)) {
-      setItemConvertir(item);
-      setPiletaOrigenId("");
-      setOpenConvertir(true);
-      await cargarPiletasParaVenta(item.fc_granja_asignada ?? item.granja, tipo);
+    if (ventaRequierePileta(tipo) && !item.pileta_origen_id) {
+      showSnackbar("El pedido debe tener pileta de origen. Edítelo antes de convertir.", "warning");
       return;
     }
 
     if (!await confirm("¿Convertir a venta real?")) return;
 
     try {
-      await convertirAVenta(item.fi_lista_id);
+      const payload = item.pileta_origen_id
+        ? { pileta_origen_id: item.pileta_origen_id }
+        : {};
+      await convertirAVenta(item.fi_lista_id, payload);
       showSnackbar("Convertido a venta correctamente", "success");
-      cargarLista();
-    } catch (err) {
-      const message = err?.response?.data?.error || err.message;
-      showSnackbar("Error al convertir: " + message, "error");
-    }
-  };
-
-  const cargarPiletasParaVenta = async (granja, tipoVenta) => {
-    const etapa = etapaPiletaParaTipo(tipoVenta);
-    if (!etapa) {
-      setPiletas([]);
-      return;
-    }
-    setCargandoPiletas(true);
-    try {
-      const res = await listPiletas(granja || null, etapa);
-      const rows = Array.isArray(res.data) ? res.data : [];
-      setPiletas(rows.filter((p) => Number(p.cantidad ?? p.fn_cantidad ?? 0) > 0));
-    } catch (err) {
-      console.error("Error al cargar piletas:", err);
-      setPiletas([]);
-    } finally {
-      setCargandoPiletas(false);
-    }
-  };
-
-  const piletaSeleccionada = useMemo(() => {
-    if (!piletaOrigenId) return null;
-    return (
-      piletas.find((p) => String(p.fi_pileta_id ?? p.pileta_id) === piletaOrigenId) ?? null
-    );
-  }, [piletaOrigenId, piletas]);
-
-  const cantidadPedido = Number(itemConvertir?.fn_cantidad ?? 0);
-  const stockOrigen = piletaSeleccionada != null ? stockPileta(piletaSeleccionada) : null;
-  const cantidadExcedeStock =
-    stockOrigen != null && cantidadPedido > 0 && cantidadPedido > stockOrigen;
-
-  const confirmarConversion = async () => {
-    if (!itemConvertir) return;
-    if (!piletaOrigenId) {
-      showSnackbar("Selecciona la pileta de origen para la venta.", "error");
-      return;
-    }
-    if (cantidadExcedeStock) {
-      showSnackbar(
-        `La cantidad del pedido (${formatStock(cantidadPedido)}) supera el stock disponible (${formatStock(stockOrigen)}).`,
-        "error",
-      );
-      return;
-    }
-
-    try {
-      await convertirAVenta(itemConvertir.fi_lista_id, {
-        pileta_origen_id: Number(piletaOrigenId),
-      });
-      showSnackbar("Convertido a venta correctamente", "success");
-      setOpenConvertir(false);
-      setItemConvertir(null);
-      setPiletaOrigenId("");
       cargarLista();
     } catch (err) {
       const message = err?.response?.data?.error || err.message;
@@ -413,12 +429,110 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Talla" name="fc_talla" value={form.fc_talla} onChange={handleChange} error={!!errors.fc_talla} helperText={errors.fc_talla} />
+            <FormControl fullWidth error={!!errors.fc_uap_asignada}>
+              <InputLabel>Tipo de Venta</InputLabel>
+              <Select
+                name="fc_uap_asignada"
+                value={form.fc_uap_asignada}
+                onChange={handleChange}
+                label="Tipo de Venta"
+              >
+                <MenuItem value="ALEVIN">Alevines (por pieza)</MenuItem>
+                <MenuItem value="KG">Mojarra (por Kg)</MenuItem>
+                <MenuItem value="ALIMENTO">Alimento</MenuItem>
+                <MenuItem value="MEDICAMENTO">Medicamento</MenuItem>
+              </Select>
+              {errors.fc_uap_asignada && <FormHelperText>{errors.fc_uap_asignada}</FormHelperText>}
+            </FormControl>
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth type="number" label="Cantidad" name="fn_cantidad" value={form.fn_cantidad} onChange={handleChange} error={!!errors.fn_cantidad} helperText={errors.fn_cantidad} />
+            {rol === "Administrador" ? (
+              <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange} error={!!errors.fc_granja_asignada} helperText={errors.fc_granja_asignada}>
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            ) : (
+              <TextField fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} slotProps={{ input: { readOnly: true } }} />
+            )}
           </Grid>
+
+          {ventaRequierePileta(form.fc_uap_asignada) && form.fc_granja_asignada && (
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                fullWidth
+                label="Pileta origen"
+                name="pileta_origen_id"
+                value={form.pileta_origen_id}
+                onChange={handleChange}
+                disabled={cargandoPiletas}
+                error={cantidadExcedeStock}
+                helperText={
+                  cantidadExcedeStock
+                    ? `Stock insuficiente: disponible ${formatStock(stockOrigen)}`
+                    : cargandoPiletas
+                      ? "Cargando piletas..."
+                      : piletas.length === 0
+                        ? "No hay piletas con stock en esta granja"
+                        : stockOrigen != null
+                          ? `Disponible: ${formatStock(stockOrigen)} organismos`
+                          : "Se registrará trazabilidad al convertir a venta"
+                }
+              >
+                <MenuItem value="">— Seleccionar —</MenuItem>
+                {piletas.map((p) => (
+                  <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                    {etiquetaPileta(p)}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          )}
+
+          <Grid size={{ xs: 12, md: 3 }}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Cantidad"
+              name="fn_cantidad"
+              value={form.fn_cantidad}
+              onChange={handleChange}
+              error={!!errors.fn_cantidad || cantidadExcedeStock}
+              helperText={
+                errors.fn_cantidad
+                || (cantidadExcedeStock
+                  ? `Supera el stock (${formatStock(stockOrigen)} organismos)`
+                  : requiereValidacionStock && stockOrigen != null
+                    ? `Máximo disponible: ${formatStock(stockOrigen)} organismos`
+                    : undefined)
+              }
+              inputProps={
+                requiereValidacionStock && stockOrigen != null && stockOrigen > 0
+                  ? { min: 1, max: stockOrigen }
+                  : { min: 1 }
+              }
+            />
+          </Grid>
+
+          {requiereValidacionStock && piletaOrigenSeleccionada && (
+            <Grid size={12}>
+              <Alert severity={cantidadExcedeStock ? "error" : "info"} sx={{ py: 0.5 }}>
+                Stock en <strong>{piletaOrigenSeleccionada.nombre}</strong>:{" "}
+                {formatStock(stockOrigen)} organismos
+                {cantidadPedido > 0 && (
+                  <>
+                    {" "}
+                    · Pedido: {formatStock(cantidadPedido)}
+                    {cantidadExcedeStock && " — cantidad superior al disponible"}
+                  </>
+                )}
+              </Alert>
+            </Grid>
+          )}
 
           {/* CLIENTE AUTOCOMPLETE */}
           <Grid size={{ xs: 12, md: 3 }}>
@@ -464,47 +578,35 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Hora Embolsado" name="fc_hora_embolsado" value={form.fc_hora_embolsado} onChange={handleChange} error={!!errors.fc_hora_embolsado} helperText={errors.fc_hora_embolsado} />
+            <TextField
+              fullWidth
+              type="time"
+              label="Hora Embolsado"
+              name="fc_hora_embolsado"
+              value={form.fc_hora_embolsado}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              error={!!errors.fc_hora_embolsado}
+              helperText={errors.fc_hora_embolsado}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Hora Entrega" name="fc_hora_entrega" value={form.fc_hora_entrega} onChange={handleChange} error={!!errors.fc_hora_entrega} helperText={errors.fc_hora_entrega} />
+            <TextField
+              fullWidth
+              type="time"
+              label="Hora Entrega"
+              name="fc_hora_entrega"
+              value={form.fc_hora_entrega}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              error={!!errors.fc_hora_entrega}
+              helperText={errors.fc_hora_entrega}
+            />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} error={!!errors.fn_precio_venta} helperText={errors.fn_precio_venta} />
-          </Grid>
-
-          <Grid size={{ xs: 12, md: 3 }}>
-            <FormControl fullWidth error={!!errors.fc_uap_asignada}>
-              <InputLabel>Tipo de Venta</InputLabel>
-              <Select
-                name="fc_uap_asignada"
-                value={form.fc_uap_asignada}
-                onChange={handleChange}
-                label="Tipo de Venta"
-              >
-                <MenuItem value="ALEVIN">Alevines (por pieza)</MenuItem>
-                <MenuItem value="KG">Mojarra (por Kg)</MenuItem>
-                <MenuItem value="ALIMENTO">Alimento</MenuItem>
-                <MenuItem value="MEDICAMENTO">Medicamento</MenuItem>
-              </Select>
-              {errors.fc_uap_asignada && <FormHelperText>{errors.fc_uap_asignada}</FormHelperText>}
-            </FormControl>
-          </Grid>
-
-          <Grid size={{ xs: 12, md: 3 }}>
-            {rol === "Administrador" ? (
-              <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange} error={!!errors.fc_granja_asignada} helperText={errors.fc_granja_asignada}>
-                {ubicacionesGranja.map((op) => (
-                  <MenuItem key={op.value} value={op.value}>
-                    {op.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            ) : (
-              <TextField fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} slotProps={{ input: { readOnly: true } }} />
-            )}
+            <TextField fullWidth type="number" label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} error={!!errors.fn_precio_venta} helperText={errors.fn_precio_venta} inputProps={{ min: 0, step: "0.01" }} />
           </Grid>
         </Grid>
 
@@ -546,8 +648,10 @@ function ListaEsperaContent() {
             <TableHead>
               <TableRow>
                 <TableCell>Fecha</TableCell>
+                <TableCell>Tipo</TableCell>
                 <TableCell>Cliente</TableCell>
                 <TableCell>Cantidad</TableCell>
+                <TableCell>Pileta</TableCell>
                 <TableCell>Lugar</TableCell>
                 <TableCell>Granja</TableCell>
                 <TableCell>Precio</TableCell>
@@ -558,8 +662,10 @@ function ListaEsperaContent() {
               {lista.map((item) => (
                 <TableRow key={item.fi_lista_id}>
                   <TableCell>{item.fd_fecha_entrega}</TableCell>
+                  <TableCell>{item.fc_uap_asignada ?? item.tipo_venta ?? "—"}</TableCell>
                   <TableCell>{item.fc_cliente}</TableCell>
                   <TableCell>{item.fn_cantidad}</TableCell>
+                  <TableCell>{item.nombre_pileta_origen ?? "—"}</TableCell>
                   <TableCell>{item.fc_lugar_entrega}</TableCell>
                 <TableCell>{item.fc_granja_asignada ?? item.granja ?? "—"}</TableCell>
                 <TableCell>${item.fn_precio_venta}</TableCell>
@@ -580,84 +686,6 @@ function ListaEsperaContent() {
           </Table>
         </TableContainer>
       </Paper>
-
-      <Dialog
-        open={openConvertir}
-        onClose={() => {
-          setOpenConvertir(false);
-          setItemConvertir(null);
-          setPiletaOrigenId("");
-        }}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Convertir a venta — trazabilidad</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Seleccione la pileta de origen. El inventario se descontará y el movimiento
-            quedará registrado en Trazabilidad.
-          </Typography>
-          {itemConvertir && (
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              Cliente: <strong>{itemConvertir.fc_cliente}</strong> · Cantidad:{" "}
-              <strong>{itemConvertir.fn_cantidad}</strong>
-            </Typography>
-          )}
-          <TextField
-            select
-            fullWidth
-            label="Pileta origen"
-            value={piletaOrigenId}
-            onChange={(e) => setPiletaOrigenId(e.target.value)}
-            disabled={cargandoPiletas}
-            error={cantidadExcedeStock}
-            helperText={
-              cantidadExcedeStock
-                ? `Stock insuficiente: disponible ${formatStock(stockOrigen)}, pedido ${formatStock(cantidadPedido)}`
-                : cargandoPiletas
-                  ? "Cargando piletas..."
-                  : piletas.length === 0
-                    ? "No hay piletas con stock en esta granja"
-                    : stockOrigen != null
-                      ? `Disponible en pileta: ${formatStock(stockOrigen)} organismos`
-                      : "Solo piletas con inventario disponible"
-            }
-          >
-            <MenuItem value="">— Seleccionar —</MenuItem>
-            {piletas.map((p) => (
-              <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
-                {etiquetaPileta(p)}
-              </MenuItem>
-            ))}
-          </TextField>
-          {piletaSeleccionada && (
-            <Alert severity={cantidadExcedeStock ? "error" : "info"} sx={{ mt: 2 }}>
-              {cantidadExcedeStock
-                ? `El pedido requiere ${formatStock(cantidadPedido)} organismos, pero ${piletaSeleccionada.nombre} solo tiene ${formatStock(stockOrigen)}.`
-                : `Stock en ${piletaSeleccionada.nombre}: ${formatStock(stockOrigen)} organismos · Pedido: ${formatStock(cantidadPedido)}`}
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setOpenConvertir(false);
-              setItemConvertir(null);
-              setPiletaOrigenId("");
-            }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={confirmarConversion}
-            disabled={!piletaOrigenId || piletas.length === 0 || cantidadExcedeStock}
-          >
-            Confirmar venta
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Modal para cliente rápido */}
       <Dialog open={openCliente} onClose={() => setOpenCliente(false)} fullWidth maxWidth="sm">
