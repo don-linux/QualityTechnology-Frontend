@@ -47,6 +47,18 @@ export function getUbicacionNombre(u) {
   return u?.nombre ?? u?.fc_nombre ?? "";
 }
 
+export function getRolId(r) {
+  return r?.rol_id ?? r?.fi_rol_id ?? r?.id;
+}
+
+export function getRolNombre(r) {
+  return r?.nombre ?? r?.fc_nombre ?? "";
+}
+
+export function rolEsRoot(r) {
+  return Boolean(r?.es_root ?? r?.fb_es_root);
+}
+
 export function getEstadoConservacionId(e) {
   return e?.estado_conservacion_id ?? e?.id;
 }
