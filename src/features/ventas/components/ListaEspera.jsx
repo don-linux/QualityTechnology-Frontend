@@ -480,7 +480,7 @@ function ListaEsperaContent() {
                         ? "No hay piletas con stock en esta granja"
                         : stockOrigen != null
                           ? `Disponible: ${formatStock(stockOrigen)} organismos`
-                          : "Se registrará trazabilidad al convertir a venta"
+                          : "Al guardar se descontará inventario y registrará trazabilidad"
                 }
               >
                 <MenuItem value="">— Seleccionar —</MenuItem>
