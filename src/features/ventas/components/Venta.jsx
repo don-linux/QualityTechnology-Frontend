@@ -25,6 +25,19 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import { listPiletas } from "@features/inventarios/services/piletasService";
+
+function ventaRequierePileta(tipo) {
+  const t = String(tipo ?? "").trim().toUpperCase();
+  return t === "ALEVINES" || t === "MOJARRA_KG";
+}
+
+function etapaPiletaParaTipo(tipo) {
+  const t = String(tipo ?? "").trim().toUpperCase();
+  if (t === "ALEVINES") return "alevinaje";
+  if (t === "MOJARRA_KG") return "engorda";
+  return null;
+}
 
 export default function Venta() {
   return <VentaContent />;
@@ -43,6 +56,7 @@ function VentaContent() {
 
   const [clientes, setClientes] = useState([]);
   const [expedientes, setExpedientes] = useState([]);
+  const [piletas, setPiletas] = useState([]);
 
   /* ============================================================
       FORM
@@ -58,6 +72,7 @@ function VentaContent() {
     fc_encargado_venta: "",
     fc_observaciones: "",
     fc_empresa: empresa,
+    pileta_origen_id: "",
   });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -132,6 +147,31 @@ function VentaContent() {
     setForm((prev) => ({ ...prev, fc_encargado_venta: "" }));
   }, [obtenerEncargados]);
 
+  const cargarPiletasVenta = useCallback(async (tipoVenta) => {
+    const etapa = etapaPiletaParaTipo(tipoVenta);
+    if (!etapa) {
+      setPiletas([]);
+      return;
+    }
+    try {
+      const res = await listPiletas(null, etapa);
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setPiletas(rows.filter((p) => Number(p.cantidad ?? p.fn_cantidad ?? 0) > 0));
+    } catch (err) {
+      console.error(err);
+      setPiletas([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (ventaRequierePileta(form.fc_tipo_venta)) {
+      cargarPiletasVenta(form.fc_tipo_venta);
+    } else {
+      setPiletas([]);
+      setForm((prev) => (prev.pileta_origen_id ? { ...prev, pileta_origen_id: "" } : prev));
+    }
+  }, [form.fc_tipo_venta, cargarPiletasVenta]);
+
   /* ============================================================
       HANDLE CHANGE
   ============================================================ */
@@ -173,10 +213,19 @@ function VentaContent() {
       return;
     }
 
+    if (ventaRequierePileta(form.fc_tipo_venta) && !form.pileta_origen_id) {
+      showSnackbar("Seleccione la pileta de origen para ventas de alevines o mojarra.", "warning");
+      return;
+    }
+
     const payload = {
       ...form,
       fc_empresa: empresa,
     };
+
+    if (form.pileta_origen_id) {
+      payload.pileta_origen_id = Number(form.pileta_origen_id);
+    }
 
     try {
       if (editando) {
@@ -214,6 +263,7 @@ function VentaContent() {
       fc_encargado_venta: v.fc_encargado_venta,
       fc_observaciones: v.fc_observaciones,
       fc_empresa: v.fc_empresa,
+      pileta_origen_id: "",
     });
     abrirFormulario();
   };
@@ -234,6 +284,7 @@ function VentaContent() {
       fc_encargado_venta: "",
       fc_observaciones: "",
       fc_empresa: empresa,
+      pileta_origen_id: "",
     });
 
     setEditando(false);
@@ -359,6 +410,27 @@ function VentaContent() {
               <MenuItem value="MEDICAMENTO">Venta de Medicamento</MenuItem>
             </TextField>
           </Grid>
+
+          {ventaRequierePileta(form.fc_tipo_venta) && !editando && (
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Pileta origen"
+                name="pileta_origen_id"
+                value={form.pileta_origen_id}
+                onChange={handleChange}
+                fullWidth
+                helperText="Se descontará inventario y registrará trazabilidad"
+              >
+                <MenuItem value="">— Seleccionar —</MenuItem>
+                {piletas.map((p) => (
+                  <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                    {p.nombre} — {Number(p.cantidad ?? p.fn_cantidad ?? 0).toLocaleString("en-US")} org.
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          )}
 
           {/* CANTIDAD */}
           <Grid size={{ xs: 12, md: 3 }}>

@@ -32,6 +32,7 @@ import {
 } from "../services/listaEsperaService";
 import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
 import { listEmpleadosActivosClientes } from "@features/catalogos/services/clientesService";
+import { listPiletas } from "@features/inventarios/services/piletasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import FormHelperText from "@mui/material/FormHelperText";
@@ -54,6 +55,20 @@ const EMPTY_CLIENTE_RAPIDO = {
 
 const CLIENTE_RAPIDO_REQUIRED = Object.keys(EMPTY_CLIENTE_RAPIDO);
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+const TIPOS_VENTA_TRAZABLES = new Set(["ALEVIN", "ALEVINES", "KG", "MOJARRA_KG"]);
+
+function ventaRequierePileta(tipo) {
+  const t = String(tipo ?? "").trim().toUpperCase();
+  return TIPOS_VENTA_TRAZABLES.has(t);
+}
+
+function etapaPiletaParaTipo(tipo) {
+  const t = String(tipo ?? "").trim().toUpperCase();
+  if (t === "ALEVIN" || t === "ALEVINES") return "alevinaje";
+  if (t === "KG" || t === "MOJARRA_KG" || t === "MOJARRA") return "engorda";
+  return null;
+}
 
 function soloDigitos(value) {
   return String(value || "").replace(/\D/g, "").slice(0, 10);
@@ -86,6 +101,11 @@ function ListaEsperaContent() {
   const [empleados, setEmpleados] = useState([]);
   const [openCliente, setOpenCliente] = useState(false);
   const [nuevoCliente, setNuevoCliente] = useState(EMPTY_CLIENTE_RAPIDO);
+  const [openConvertir, setOpenConvertir] = useState(false);
+  const [itemConvertir, setItemConvertir] = useState(null);
+  const [piletaOrigenId, setPiletaOrigenId] = useState("");
+  const [piletas, setPiletas] = useState([]);
+  const [cargandoPiletas, setCargandoPiletas] = useState(false);
 
   const emptyForm = {
     fd_fecha_entrega: "",
@@ -235,17 +255,72 @@ function ListaEsperaContent() {
     }
   };
 
-  const convertir = async (id) => {
+  const convertir = async (item) => {
+    const tipo = item.fc_uap_asignada ?? item.tipo_venta;
+    if (ventaRequierePileta(tipo)) {
+      setItemConvertir(item);
+      setPiletaOrigenId("");
+      setOpenConvertir(true);
+      await cargarPiletasParaVenta(item.fc_granja_asignada ?? item.granja, tipo);
+      return;
+    }
+
     if (!await confirm("¿Convertir a venta real?")) return;
 
     try {
-      await convertirAVenta(id);
+      await convertirAVenta(item.fi_lista_id);
       showSnackbar("Convertido a venta correctamente", "success");
       cargarLista();
     } catch (err) {
       const message = err?.response?.data?.error || err.message;
       showSnackbar("Error al convertir: " + message, "error");
     }
+  };
+
+  const cargarPiletasParaVenta = async (granja, tipoVenta) => {
+    const etapa = etapaPiletaParaTipo(tipoVenta);
+    if (!etapa) {
+      setPiletas([]);
+      return;
+    }
+    setCargandoPiletas(true);
+    try {
+      const res = await listPiletas(granja || null, etapa);
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setPiletas(rows.filter((p) => Number(p.cantidad ?? p.fn_cantidad ?? 0) > 0));
+    } catch (err) {
+      console.error("Error al cargar piletas:", err);
+      setPiletas([]);
+    } finally {
+      setCargandoPiletas(false);
+    }
+  };
+
+  const confirmarConversion = async () => {
+    if (!itemConvertir) return;
+    if (!piletaOrigenId) {
+      showSnackbar("Selecciona la pileta de origen para la venta.", "error");
+      return;
+    }
+
+    try {
+      await convertirAVenta(itemConvertir.fi_lista_id, {
+        pileta_origen_id: Number(piletaOrigenId),
+      });
+      showSnackbar("Convertido a venta correctamente", "success");
+      setOpenConvertir(false);
+      setItemConvertir(null);
+      setPiletaOrigenId("");
+      cargarLista();
+    } catch (err) {
+      const message = err?.response?.data?.error || err.message;
+      showSnackbar("Error al convertir: " + message, "error");
+    }
+  };
+
+  const etiquetaPileta = (p) => {
+    const stock = Number(p.cantidad ?? p.fn_cantidad ?? 0).toLocaleString("en-US");
+    return `${p.nombre} — ${stock} org.`;
   };
 
   const registrarClienteRapido = async () => {
@@ -461,25 +536,91 @@ function ListaEsperaContent() {
                   <TableCell>{item.fc_cliente}</TableCell>
                   <TableCell>{item.fn_cantidad}</TableCell>
                   <TableCell>{item.fc_lugar_entrega}</TableCell>
-                  <TableCell>{item.fc_granja_asignada}</TableCell>
-                  <TableCell>${item.fn_precio_venta}</TableCell>
-                  <TableCell>
-                    <Button variant="outlined" color="warning" sx={{ mr: 1 }} onClick={() => editar(item)}>
-                      Editar
-                    </Button>
-                    <Button variant="outlined" color="error" sx={{ mr: 1 }} onClick={() => eliminar(item.fi_lista_id)}>
-                      Eliminar
-                    </Button>
-                    <Button variant="contained" color="success" onClick={() => convertir(item.fi_lista_id)}>
-                      Convertir
-                    </Button>
-                  </TableCell>
+                <TableCell>{item.fc_granja_asignada ?? item.granja ?? "—"}</TableCell>
+                <TableCell>${item.fn_precio_venta}</TableCell>
+                <TableCell>
+                  <Button variant="outlined" color="warning" sx={{ mr: 1 }} onClick={() => editar(item)}>
+                    Editar
+                  </Button>
+                  <Button variant="outlined" color="error" sx={{ mr: 1 }} onClick={() => eliminar(item.fi_lista_id)}>
+                    Eliminar
+                  </Button>
+                  <Button variant="contained" color="success" onClick={() => convertir(item)}>
+                    Convertir
+                  </Button>
+                </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       </Paper>
+
+      <Dialog
+        open={openConvertir}
+        onClose={() => {
+          setOpenConvertir(false);
+          setItemConvertir(null);
+          setPiletaOrigenId("");
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Convertir a venta — trazabilidad</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Seleccione la pileta de origen. El inventario se descontará y el movimiento
+            quedará registrado en Trazabilidad.
+          </Typography>
+          {itemConvertir && (
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Cliente: <strong>{itemConvertir.fc_cliente}</strong> · Cantidad:{" "}
+              <strong>{itemConvertir.fn_cantidad}</strong>
+            </Typography>
+          )}
+          <TextField
+            select
+            fullWidth
+            label="Pileta origen"
+            value={piletaOrigenId}
+            onChange={(e) => setPiletaOrigenId(e.target.value)}
+            disabled={cargandoPiletas}
+            helperText={
+              cargandoPiletas
+                ? "Cargando piletas..."
+                : piletas.length === 0
+                  ? "No hay piletas con stock en esta granja"
+                  : "Solo piletas con inventario disponible"
+            }
+          >
+            <MenuItem value="">— Seleccionar —</MenuItem>
+            {piletas.map((p) => (
+              <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                {etiquetaPileta(p)}
+              </MenuItem>
+            ))}
+          </TextField>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOpenConvertir(false);
+              setItemConvertir(null);
+              setPiletaOrigenId("");
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={confirmarConversion}
+            disabled={!piletaOrigenId || piletas.length === 0}
+          >
+            Confirmar venta
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Modal para cliente rápido */}
       <Dialog open={openCliente} onClose={() => setOpenCliente(false)} fullWidth maxWidth="sm">

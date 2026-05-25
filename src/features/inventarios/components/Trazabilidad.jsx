@@ -37,6 +37,7 @@ const ETAPA_OPCIONES = [
   { value: "", label: "Todas las etapas" },
   { value: "alevinaje", label: "Alevinaje" },
   { value: "engorda", label: "Engorda" },
+  { value: "venta", label: "Venta" },
 ];
 
 const TIPO_MOVIMIENTO_OPCIONES = [
@@ -48,6 +49,7 @@ const TIPO_MOVIMIENTO_OPCIONES = [
 const ETAPA_COLOR = {
   alevinaje: "#00838F",
   engorda: "#2E7D32",
+  venta: "#6A1B9A",
 };
 
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
@@ -299,7 +301,9 @@ export default function Trazabilidad() {
       r.observacion?.toLowerCase().includes(texto) ||
       r.fc_etapa?.toLowerCase().includes(texto);
 
-    const coincideEtapa = !filtroEtapa || r.etapa === filtroEtapa;
+    const coincideEtapa =
+      !filtroEtapa ||
+      (filtroEtapa === "venta" ? r.es_venta : r.etapa === filtroEtapa);
 
     const fechaMov = new Date(r.fecha_movimiento);
     const desde = fechaInicio ? new Date(fechaInicio) : null;
@@ -333,7 +337,8 @@ export default function Trazabilidad() {
         }}
       >
         <Typography variant="body2" color="text.secondary">
-          Historial unificado de traslados e ingresos entre piletas de alevinaje y engorda.
+          Historial unificado de traslados e ingresos entre piletas de alevinaje y engorda,
+          y egresos por venta de alevines o mojarra desde Próximas Ventas o Control de Ventas.
           Use el formulario para registrar traslados, ingresos externos o mortalidad; el
           inventario de las piletas se actualiza automáticamente.
         </Typography>
@@ -635,7 +640,7 @@ export default function Trazabilidad() {
                             label={r.fc_etapa}
                             size="small"
                             sx={{
-                              bgcolor: ETAPA_COLOR[r.etapa] ?? "#757575",
+                              bgcolor: ETAPA_COLOR[r.es_venta ? "venta" : r.etapa] ?? "#757575",
                               color: "#fff",
                               fontWeight: 600,
                             }}

@@ -21,8 +21,8 @@ export function removeRegistro(id) {
   return axios.delete(ENDPOINTS.listaEspera.byId(id));
 }
 
-export function convertirAVenta(id) {
-  return axios.post(ENDPOINTS.listaEspera.convertir(id));
+export function convertirAVenta(id, data = {}) {
+  return axios.post(ENDPOINTS.listaEspera.convertir(id), data);
 }
 
 export function createClienteRapido(data) {
