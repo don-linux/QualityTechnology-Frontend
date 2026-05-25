@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
@@ -68,6 +69,14 @@ function etapaPiletaParaTipo(tipo) {
   if (t === "ALEVIN" || t === "ALEVINES") return "alevinaje";
   if (t === "KG" || t === "MOJARRA_KG" || t === "MOJARRA") return "engorda";
   return null;
+}
+
+function stockPileta(p) {
+  return Number(p?.cantidad ?? p?.fn_cantidad ?? 0);
+}
+
+function formatStock(num) {
+  return Number(num ?? 0).toLocaleString("en-US");
 }
 
 function soloDigitos(value) {
@@ -296,10 +305,29 @@ function ListaEsperaContent() {
     }
   };
 
+  const piletaSeleccionada = useMemo(() => {
+    if (!piletaOrigenId) return null;
+    return (
+      piletas.find((p) => String(p.fi_pileta_id ?? p.pileta_id) === piletaOrigenId) ?? null
+    );
+  }, [piletaOrigenId, piletas]);
+
+  const cantidadPedido = Number(itemConvertir?.fn_cantidad ?? 0);
+  const stockOrigen = piletaSeleccionada != null ? stockPileta(piletaSeleccionada) : null;
+  const cantidadExcedeStock =
+    stockOrigen != null && cantidadPedido > 0 && cantidadPedido > stockOrigen;
+
   const confirmarConversion = async () => {
     if (!itemConvertir) return;
     if (!piletaOrigenId) {
       showSnackbar("Selecciona la pileta de origen para la venta.", "error");
+      return;
+    }
+    if (cantidadExcedeStock) {
+      showSnackbar(
+        `La cantidad del pedido (${formatStock(cantidadPedido)}) supera el stock disponible (${formatStock(stockOrigen)}).`,
+        "error",
+      );
       return;
     }
 
@@ -318,10 +346,7 @@ function ListaEsperaContent() {
     }
   };
 
-  const etiquetaPileta = (p) => {
-    const stock = Number(p.cantidad ?? p.fn_cantidad ?? 0).toLocaleString("en-US");
-    return `${p.nombre} — ${stock} org.`;
-  };
+  const etiquetaPileta = (p) => `${p.nombre} — ${formatStock(stockPileta(p))} org.`;
 
   const registrarClienteRapido = async () => {
     const missingField = CLIENTE_RAPIDO_REQUIRED.find((field) => !nuevoCliente[field]);
@@ -585,12 +610,17 @@ function ListaEsperaContent() {
             value={piletaOrigenId}
             onChange={(e) => setPiletaOrigenId(e.target.value)}
             disabled={cargandoPiletas}
+            error={cantidadExcedeStock}
             helperText={
-              cargandoPiletas
-                ? "Cargando piletas..."
-                : piletas.length === 0
-                  ? "No hay piletas con stock en esta granja"
-                  : "Solo piletas con inventario disponible"
+              cantidadExcedeStock
+                ? `Stock insuficiente: disponible ${formatStock(stockOrigen)}, pedido ${formatStock(cantidadPedido)}`
+                : cargandoPiletas
+                  ? "Cargando piletas..."
+                  : piletas.length === 0
+                    ? "No hay piletas con stock en esta granja"
+                    : stockOrigen != null
+                      ? `Disponible en pileta: ${formatStock(stockOrigen)} organismos`
+                      : "Solo piletas con inventario disponible"
             }
           >
             <MenuItem value="">— Seleccionar —</MenuItem>
@@ -600,6 +630,13 @@ function ListaEsperaContent() {
               </MenuItem>
             ))}
           </TextField>
+          {piletaSeleccionada && (
+            <Alert severity={cantidadExcedeStock ? "error" : "info"} sx={{ mt: 2 }}>
+              {cantidadExcedeStock
+                ? `El pedido requiere ${formatStock(cantidadPedido)} organismos, pero ${piletaSeleccionada.nombre} solo tiene ${formatStock(stockOrigen)}.`
+                : `Stock en ${piletaSeleccionada.nombre}: ${formatStock(stockOrigen)} organismos · Pedido: ${formatStock(cantidadPedido)}`}
+            </Alert>
+          )}
         </DialogContent>
         <DialogActions>
           <Button
@@ -615,7 +652,7 @@ function ListaEsperaContent() {
             variant="contained"
             color="success"
             onClick={confirmarConversion}
-            disabled={!piletaOrigenId || piletas.length === 0}
+            disabled={!piletaOrigenId || piletas.length === 0 || cantidadExcedeStock}
           >
             Confirmar venta
           </Button>
