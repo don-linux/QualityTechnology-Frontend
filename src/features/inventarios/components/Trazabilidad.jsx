@@ -26,6 +26,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import ProximaVentaModal from "@features/ventas/components/ProximaVentaModal";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
 import { listPiletas } from "../services/piletasService";
@@ -128,6 +129,22 @@ function hoyISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function idPileta(p) {
+  return p?.fi_pileta_id ?? p?.pileta_id ?? null;
+}
+
+function piletaOrigenIdDePedido(pedido) {
+  if (!pedido) return "";
+  const id = pedido.pileta_origen_id ?? pedido.fi_pileta_origen_id;
+  return id ? String(id) : "";
+}
+
+function piletaOrigenIdUnica(piletas) {
+  if (piletas.length !== 1) return "";
+  const id = idPileta(piletas[0]);
+  return id ? String(id) : "";
+}
+
 const EMPTY_FORM = {
   tipo_movimiento: "ALEVINAJE_A_ALEVINAJE",
   lista_espera_id: "",
@@ -178,11 +195,9 @@ export default function Trazabilidad() {
   }, [piletas, tipoConfig.etapaDestino]);
 
   const piletaOrigenSeleccionada = useMemo(() => {
-    const id = form.pileta_origen_id || pedidoSeleccionado?.pileta_origen_id;
+    const id = form.pileta_origen_id || piletaOrigenIdDePedido(pedidoSeleccionado);
     if (!id) return null;
-    return piletasOrigen.find(
-      (p) => String(p.fi_pileta_id ?? p.pileta_id) === String(id),
-    ) ?? null;
+    return piletasOrigen.find((p) => String(idPileta(p)) === String(id)) ?? null;
   }, [form.pileta_origen_id, pedidoSeleccionado, piletasOrigen]);
 
   const cantidadVenta = Number(pedidoSeleccionado?.fn_cantidad ?? pedidoSeleccionado?.cantidad_peces ?? 0);
@@ -214,9 +229,12 @@ export default function Trazabilidad() {
 
   const proximaVentaDefaults = useMemo(() => {
     const granjaLabel = ubicacionesGranja.find((op) => op.value === granja)?.label ?? granja;
-    const piletaId = form.pileta_origen_id || "";
+    const piletaId =
+      form.pileta_origen_id
+      || piletaOrigenIdDePedido(pedidoSeleccionado)
+      || piletaOrigenIdUnica(piletasOrigen);
     const pileta = piletaId
-      ? piletasOrigen.find((p) => String(p.fi_pileta_id ?? p.pileta_id) === String(piletaId))
+      ? piletasOrigen.find((p) => String(idPileta(p)) === String(piletaId))
       : null;
     const stock = pileta ? stockPileta(pileta) : 0;
 
@@ -232,6 +250,7 @@ export default function Trazabilidad() {
     granja,
     form.fecha_movimiento,
     form.pileta_origen_id,
+    pedidoSeleccionado,
     tipoConfig.etapaOrigen,
     ubicacionesGranja,
     piletasOrigen,
@@ -255,22 +274,21 @@ export default function Trazabilidad() {
 
   const cargarPiletas = useCallback(async () => {
     if (!granja) return;
-    const filtroUbicacion = resolveFiltroUbicacion(granja);
     try {
       const [alevRes, engRes] = await Promise.all([
-        listPiletas(filtroUbicacion, "alevinaje"),
-        listPiletas(filtroUbicacion, "engorda"),
+        listPiletas(null, "alevinaje"),
+        listPiletas(null, "engorda"),
       ]);
       const rows = [
         ...(Array.isArray(alevRes.data) ? alevRes.data : []),
         ...(Array.isArray(engRes.data) ? engRes.data : []),
       ];
-      setPiletas(rows);
+      setPiletas(filtrarPorUbicacion(rows, granja, ubicacionesGranja));
     } catch (err) {
       console.error("Error al cargar piletas:", err);
       setPiletas([]);
     }
-  }, [granja, resolveFiltroUbicacion]);
+  }, [granja, ubicacionesGranja]);
 
   const cargarPedidos = useCallback(async () => {
     try {
@@ -307,7 +325,8 @@ export default function Trazabilidad() {
         };
       }
       if (name === "lista_espera_id") {
-        next.pileta_origen_id = "";
+        const pedido = pedidos.find((p) => String(p.fi_lista_id) === String(value));
+        next.pileta_origen_id = piletaOrigenIdDePedido(pedido);
       }
       return next;
     });
@@ -324,7 +343,7 @@ export default function Trazabilidad() {
         showSnackbar("Seleccione un pedido de próximas ventas", "warning");
         return false;
       }
-      const piletaId = form.pileta_origen_id || pedidoSeleccionado?.pileta_origen_id;
+      const piletaId = form.pileta_origen_id || piletaOrigenIdDePedido(pedidoSeleccionado);
       if (!piletaId) {
         showSnackbar("Seleccione la pileta de origen", "warning");
         return false;
@@ -380,7 +399,7 @@ export default function Trazabilidad() {
     if (esVenta) {
       payload.lista_espera_id = Number(form.lista_espera_id);
       payload.pileta_origen_id = Number(
-        form.pileta_origen_id || pedidoSeleccionado?.pileta_origen_id,
+        form.pileta_origen_id || piletaOrigenIdDePedido(pedidoSeleccionado),
       );
     } else if (esMortalidad) {
       payload.pileta_origen_id = Number(form.pileta_origen_id);
@@ -431,10 +450,8 @@ export default function Trazabilidad() {
     });
     setForm((prev) => ({
       ...prev,
-      lista_espera_id: String(pedido.fi_lista_id),
-      pileta_origen_id: pedido.pileta_origen_id
-        ? String(pedido.pileta_origen_id)
-        : prev.pileta_origen_id,
+      lista_espera_id: String(pedido.fi_lista_id ?? pedido.lista_id),
+      pileta_origen_id: piletaOrigenIdDePedido(pedido) || prev.pileta_origen_id,
     }));
     cargarPedidos();
   };
@@ -564,7 +581,7 @@ export default function Trazabilidad() {
                       fullWidth
                       label={`Pileta origen (${tipoConfig.etapaOrigen})`}
                       name="pileta_origen_id"
-                      value={form.pileta_origen_id || (pedidoSeleccionado?.pileta_origen_id ? String(pedidoSeleccionado.pileta_origen_id) : "")}
+                      value={form.pileta_origen_id || piletaOrigenIdDePedido(pedidoSeleccionado)}
                       onChange={handleChange}
                       error={cantidadExcedeStock}
                       helperText={

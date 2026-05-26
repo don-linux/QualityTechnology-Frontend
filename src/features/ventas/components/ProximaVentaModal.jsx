@@ -65,6 +65,10 @@ function buildEmptyForm(defaults = {}, nombreUsuario = "") {
   };
 }
 
+function idPileta(p) {
+  return p?.fi_pileta_id ?? p?.pileta_id ?? null;
+}
+
 export default function ProximaVentaModal({
   open,
   onClose,
@@ -101,6 +105,28 @@ export default function ProximaVentaModal({
     }
     wasOpenRef.current = open;
   }, [open, defaults, nombreUsuario, clearErrors, cargarClientes]);
+
+  useEffect(() => {
+    if (!open || !ventaRequierePileta(form.fc_uap_asignada)) return;
+    if (form.pileta_origen_id) return;
+
+    const fromDefaults = defaults.pileta_origen_id ? String(defaults.pileta_origen_id) : "";
+    const unica =
+      piletas.length === 1 && idPileta(piletas[0]) ? String(idPileta(piletas[0])) : "";
+    const piletaId = fromDefaults || unica;
+    if (!piletaId) return;
+
+    setForm((prev) => {
+      if (prev.pileta_origen_id) return prev;
+      const pileta = piletas.find((p) => String(idPileta(p)) === piletaId);
+      const stock = pileta ? stockPileta(pileta) : 0;
+      return {
+        ...prev,
+        pileta_origen_id: piletaId,
+        fn_cantidad: prev.fn_cantidad || (stock > 0 ? String(stock) : ""),
+      };
+    });
+  }, [open, defaults.pileta_origen_id, piletas, form.pileta_origen_id, form.fc_uap_asignada]);
 
   const piletaOrigenSeleccionada = useMemo(() => {
     if (!form.pileta_origen_id) return null;
