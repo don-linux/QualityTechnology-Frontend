@@ -1,671 +1,627 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Box from "@mui/material/Box";
+import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
-import MenuItem from "@mui/material/MenuItem";
-import Chip from "@mui/material/Chip";
-import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Divider from "@mui/material/Divider";
-import Alert from "@mui/material/Alert";
+import FormControl from "@mui/material/FormControl";
+import Grid from "@mui/material/Grid";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Select from "@mui/material/Select";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useSnackbar from "@shared/hooks/useSnackbar";
-import useFormValidation from "@shared/hooks/useFormValidation";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
-import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
-import {
-  fetchMergedPorUbicaciones,
-  filtrarPorUbicacion,
-} from "@shared/utils/fetchMergedPorUbicaciones";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
 import { listPiletas } from "../services/piletasService";
+import { listLista } from "@features/ventas/services/listaEsperaService";
 
-const TRUNCAR_MAX = 40;
-const MAX_OBSERVACION = 500;
-
-const ETAPA_OPCIONES = [
-  { value: "", label: "Todas las etapas" },
-  { value: "alevinaje", label: "Alevinaje" },
-  { value: "engorda", label: "Engorda" },
-  { value: "venta", label: "Venta" },
-];
-
-const TIPO_MOVIMIENTO_OPCIONES = [
+const TIPOS_MOVIMIENTO = [
+  { value: "VENTA", label: "Venta (próxima venta)" },
   { value: "TRASLADO", label: "Traslado entre piletas" },
-  { value: "INGRESO", label: "Ingreso externo (sin origen)" },
-  { value: "MORTALIDAD", label: "Mortalidad (baja en pileta)" },
+  { value: "INGRESO", label: "Ingreso externo" },
+  { value: "MORTALIDAD", label: "Mortalidad" },
 ];
 
-const ETAPA_COLOR = {
-  alevinaje: "#00838F",
-  engorda: "#2E7D32",
-  venta: "#6A1B9A",
-};
+const TIPOS_VENTA_TRAZABLES = new Set(["ALEVIN", "ALEVINES", "KG", "MOJARRA_KG"]);
 
-const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
+function etapaPiletaParaTipo(tipo) {
+  const t = String(tipo ?? "").trim().toUpperCase();
+  if (t === "ALEVIN" || t === "ALEVINES") return "alevinaje";
+  if (t === "KG" || t === "MOJARRA_KG" || t === "MOJARRA") return "engorda";
+  return null;
+}
 
-const hoyISO = () => new Date().toISOString().slice(0, 10);
+function stockPileta(p) {
+  return Number(p?.cantidad ?? p?.fn_cantidad ?? 0);
+}
 
-const truncar = (texto) =>
-  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+function formatStock(num) {
+  return Number(num ?? 0).toLocaleString("en-US");
+}
 
-const formInicial = () => ({
-  ubicacion: "",
-  tipo_movimiento: "TRASLADO",
+function formatFecha(value) {
+  if (!value) return "—";
+  const s = String(value);
+  return s.includes("T") ? s.split("T")[0] : s.slice(0, 10);
+}
+
+const EMPTY_FORM = {
+  tipo_movimiento: "VENTA",
+  lista_espera_id: "",
   pileta_origen_id: "",
   pileta_destino_id: "",
   cantidad: "",
   mortalidad: "",
-  fecha_movimiento: hoyISO(),
+  fecha_movimiento: "",
   observacion: "",
-});
+};
 
 export default function Trazabilidad() {
   const showSnackbar = useSnackbar();
-  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const {
-    visible: mostrarFormulario,
-    toggle: toggleFormulario,
-    cerrar: cerrarFormulario,
-  } = useFormularioVisible();
-  const {
-    ubicacionesGranja,
-    defaultUbicacion,
-    resolveFiltroUbicacion,
-    getGroups,
-  } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } =
+    useFormularioVisible();
 
-  const filtrosUbicacion = useMemo(
-    () => ubicacionesGranja.map((op) => resolveFiltroUbicacion(op.value)),
-    [ubicacionesGranja, resolveFiltroUbicacion],
-  );
-
-  const [rastreos, setRastreos] = useState([]);
+  const [granja, setGranja] = useState(defaultUbicacion || "");
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [movimientos, setMovimientos] = useState([]);
   const [piletas, setPiletas] = useState([]);
-  const [form, setForm] = useState(() => formInicial());
-  const [filtroTexto, setFiltroTexto] = useState("");
-  const [filtroEtapa, setFiltroEtapa] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFin, setFechaFin] = useState("");
+  const [pedidos, setPedidos] = useState([]);
+  const [cargando, setCargando] = useState(false);
 
-  const esTraslado = form.tipo_movimiento === "TRASLADO";
-  const esIngreso = form.tipo_movimiento === "INGRESO";
-  const esMortalidad = form.tipo_movimiento === "MORTALIDAD";
+  useEffect(() => {
+    if (!granja && defaultUbicacion) setGranja(defaultUbicacion);
+  }, [granja, defaultUbicacion]);
 
-  const requiredFields = useMemo(() => {
-    const base = ["ubicacion", "tipo_movimiento", "cantidad", "fecha_movimiento"];
-    if (esTraslado) return [...base, "pileta_origen_id", "pileta_destino_id"];
-    if (esIngreso) return [...base, "pileta_destino_id"];
-    if (esMortalidad) return [...base, "pileta_origen_id"];
-    return base;
-  }, [esTraslado, esIngreso, esMortalidad]);
+  const pedidoSeleccionado = useMemo(() => {
+    if (!form.lista_espera_id) return null;
+    return pedidos.find((p) => String(p.fi_lista_id) === String(form.lista_espera_id)) ?? null;
+  }, [form.lista_espera_id, pedidos]);
 
-  const piletasFiltradas = useMemo(
-    () => filtrarPorUbicacion(piletas, form.ubicacion, ubicacionesGranja),
-    [piletas, form.ubicacion, ubicacionesGranja],
-  );
+  const etapaVenta = pedidoSeleccionado
+    ? etapaPiletaParaTipo(pedidoSeleccionado.fc_uap_asignada ?? pedidoSeleccionado.tipo_venta)
+    : null;
 
-  const piletasConStock = useMemo(
-    () => piletasFiltradas.filter((p) => Number(p.cantidad ?? p.fn_cantidad ?? 0) > 0),
-    [piletasFiltradas],
-  );
+  const piletasOrigenVenta = useMemo(() => {
+    if (!etapaVenta) return [];
+    return piletas.filter((p) => {
+      const tipo = String(p.tipo ?? p.fc_tipo ?? "").toLowerCase();
+      return tipo === etapaVenta && stockPileta(p) > 0;
+    });
+  }, [piletas, etapaVenta]);
 
   const piletaOrigenSeleccionada = useMemo(() => {
-    if (!form.pileta_origen_id) return null;
-    return piletasFiltradas.find(
-      (p) => String(p.fi_pileta_id ?? p.pileta_id) === form.pileta_origen_id,
+    const id = form.pileta_origen_id || pedidoSeleccionado?.pileta_origen_id;
+    if (!id) return null;
+    return piletasOrigenVenta.find(
+      (p) => String(p.fi_pileta_id ?? p.pileta_id) === String(id),
     ) ?? null;
-  }, [form.pileta_origen_id, piletasFiltradas]);
+  }, [form.pileta_origen_id, pedidoSeleccionado, piletasOrigenVenta]);
 
-  const stockOrigen = useMemo(() => {
-    if (!piletaOrigenSeleccionada) return null;
-    return Number(piletaOrigenSeleccionada.cantidad ?? piletaOrigenSeleccionada.fn_cantidad ?? 0);
-  }, [piletaOrigenSeleccionada]);
-
+  const cantidadVenta = Number(pedidoSeleccionado?.fn_cantidad ?? pedidoSeleccionado?.cantidad_peces ?? 0);
+  const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
   const cantidadExcedeStock =
-    !esIngreso &&
-    stockOrigen != null &&
-    form.cantidad !== "" &&
-    Number(form.cantidad) > stockOrigen;
+    form.tipo_movimiento === "VENTA"
+    && stockOrigen != null
+    && cantidadVenta > 0
+    && cantidadVenta > stockOrigen;
 
-  const formatNumber = (num) => {
-    if (!num && num !== 0) return "—";
-    const n = Number(num);
-    return Number.isInteger(n)
-      ? n.toLocaleString("en-US")
-      : n.toLocaleString("en-US", { minimumFractionDigits: 2 });
-  };
-
-  const formatFecha = (fecha) => {
-    if (!fecha) return "—";
-    const f = new Date(fecha);
-    return f.toLocaleDateString("es-MX");
-  };
-
-  const etiquetaPileta = (p) => {
-    const etapa = p.tipo ? p.tipo.charAt(0).toUpperCase() + p.tipo.slice(1) : "";
-    const stock = formatNumber(p.cantidad ?? p.fn_cantidad ?? 0);
-    return `${p.nombre} (${etapa}) — ${stock} org.`;
-  };
+  const cargarMovimientos = useCallback(async () => {
+    if (!granja) return;
+    try {
+      const res = await listMovimientos(granja);
+      setMovimientos(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error al cargar movimientos:", err);
+      setMovimientos([]);
+    }
+  }, [granja]);
 
   const cargarPiletas = useCallback(async () => {
+    if (!granja) return;
     try {
-      const res = await listPiletas(null);
-      const rows = Array.isArray(res.data) ? res.data : [];
-      setPiletas(rows.filter((p) => p.tipo === "alevinaje" || p.tipo === "engorda"));
+      const [alevRes, engRes] = await Promise.all([
+        listPiletas(granja, "alevinaje"),
+        listPiletas(granja, "engorda"),
+      ]);
+      const rows = [
+        ...(Array.isArray(alevRes.data) ? alevRes.data : []),
+        ...(Array.isArray(engRes.data) ? engRes.data : []),
+      ];
+      setPiletas(rows);
     } catch (err) {
       console.error("Error al cargar piletas:", err);
       setPiletas([]);
     }
-  }, []);
+  }, [granja]);
 
-  const obtenerTrazabilidad = useCallback(async () => {
+  const cargarPedidos = useCallback(async () => {
     try {
-      const data = await fetchMergedPorUbicaciones(filtrosUbicacion, listMovimientos);
-      setRastreos(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error al cargar trazabilidad:", err);
-      setRastreos([]);
-      showSnackbar(
-        err?.response?.data?.error || "No se pudieron cargar los movimientos.",
-        "error",
+      const res = await listLista();
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setPedidos(
+        rows.filter((p) => {
+          const tipo = String(p.fc_uap_asignada ?? p.tipo_venta ?? "").trim().toUpperCase();
+          const granjaPedido = p.fc_granja_asignada ?? p.granja ?? "";
+          return TIPOS_VENTA_TRAZABLES.has(tipo) && !p.venta_id && !p.fi_venta_id && granjaPedido === granja;
+        }),
       );
+    } catch (err) {
+      console.error("Error al cargar pedidos:", err);
+      setPedidos([]);
     }
-  }, [filtrosUbicacion, showSnackbar]);
+  }, [granja]);
 
   useEffect(() => {
-    obtenerTrazabilidad();
+    cargarMovimientos();
     cargarPiletas();
-  }, [obtenerTrazabilidad, cargarPiletas]);
-
-  useEffect(() => {
-    if (!form.ubicacion && defaultUbicacion) {
-      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
-    }
-  }, [defaultUbicacion, form.ubicacion]);
-
-  const resetFormulario = () => {
-    clearErrors();
-    setForm({
-      ...formInicial(),
-      ubicacion: form.ubicacion || defaultUbicacion || "",
-    });
-    cerrarFormulario();
-  };
+    cargarPedidos();
+  }, [cargarMovimientos, cargarPiletas, cargarPedidos]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === "cantidad" || name === "mortalidad") {
-      if (!soloEntero(value)) return;
-    }
-
     setForm((prev) => {
-      if (name === "ubicacion") {
-        return {
-          ...prev,
-          ubicacion: value,
-          pileta_origen_id: "",
-          pileta_destino_id: "",
-        };
-      }
+      const next = { ...prev, [name]: value };
       if (name === "tipo_movimiento") {
         return {
-          ...prev,
+          ...EMPTY_FORM,
           tipo_movimiento: value,
-          pileta_origen_id: "",
-          pileta_destino_id: "",
-          mortalidad: "",
+          fecha_movimiento: prev.fecha_movimiento,
         };
       }
-      return { ...prev, [name]: value };
+      if (name === "lista_espera_id") {
+        next.pileta_origen_id = "";
+      }
+      return next;
     });
-    clearFieldError(name);
   };
 
-  const registrarMovimiento = async () => {
-    if (!validate(form, requiredFields)) return;
-
-    const cantidad = Number(form.cantidad || 0);
-    const mortalidad = Number(form.mortalidad || 0);
-
-    if (cantidad < 1) {
-      showSnackbar("La cantidad debe ser mayor a cero.", "error");
-      return;
+  const validarFormulario = () => {
+    if (!granja) {
+      showSnackbar("Seleccione una granja", "warning");
+      return false;
     }
 
-    if (esTraslado && mortalidad >= cantidad) {
-      showSnackbar("La mortalidad debe ser menor a la cantidad trasladada.", "error");
-      return;
+    if (form.tipo_movimiento === "VENTA") {
+      if (!form.lista_espera_id) {
+        showSnackbar("Seleccione un pedido de próximas ventas", "warning");
+        return false;
+      }
+      const piletaId = form.pileta_origen_id || pedidoSeleccionado?.pileta_origen_id;
+      if (!piletaId) {
+        showSnackbar("Seleccione la pileta de origen", "warning");
+        return false;
+      }
+      if (cantidadExcedeStock) {
+        showSnackbar(
+          `Stock insuficiente: disponible ${formatStock(stockOrigen)}, pedido ${formatStock(cantidadVenta)}`,
+          "error",
+        );
+        return false;
+      }
+      return true;
     }
 
-    if (esTraslado && form.pileta_origen_id === form.pileta_destino_id) {
-      showSnackbar("Origen y destino deben ser piletas distintas.", "error");
-      return;
+    const cantidad = Number(form.cantidad);
+    if (!cantidad || cantidad <= 0) {
+      showSnackbar("La cantidad debe ser mayor a cero", "warning");
+      return false;
     }
 
-    if (!esIngreso && stockOrigen != null && cantidad > stockOrigen) {
-      showSnackbar(
-        `La cantidad supera el stock disponible (${formatNumber(stockOrigen)} organismos).`,
-        "error",
-      );
-      return;
+    if (form.tipo_movimiento === "INGRESO" && !form.pileta_destino_id) {
+      showSnackbar("Seleccione la pileta destino", "warning");
+      return false;
     }
+
+    if (form.tipo_movimiento === "MORTALIDAD" && !form.pileta_origen_id) {
+      showSnackbar("Seleccione la pileta", "warning");
+      return false;
+    }
+
+    if (form.tipo_movimiento === "TRASLADO" && (!form.pileta_origen_id || !form.pileta_destino_id)) {
+      showSnackbar("Seleccione pileta origen y destino", "warning");
+      return false;
+    }
+
+    return true;
+  };
+
+  const registrar = async () => {
+    if (!validarFormulario()) return;
 
     const payload = {
       tipo_movimiento: form.tipo_movimiento,
-      cantidad,
-      fecha_movimiento: form.fecha_movimiento,
-      observacion: form.observacion?.trim() || null,
+      fecha_movimiento: form.fecha_movimiento || undefined,
+      observacion: form.observacion || undefined,
     };
 
-    if (esMortalidad) {
+    if (form.tipo_movimiento === "VENTA") {
+      payload.lista_espera_id = Number(form.lista_espera_id);
+      payload.pileta_origen_id = Number(
+        form.pileta_origen_id || pedidoSeleccionado?.pileta_origen_id,
+      );
+    } else if (form.tipo_movimiento === "MORTALIDAD") {
       payload.pileta_origen_id = Number(form.pileta_origen_id);
-    } else if (esIngreso) {
+      payload.cantidad = Number(form.cantidad);
+    } else if (form.tipo_movimiento === "INGRESO") {
       payload.pileta_destino_id = Number(form.pileta_destino_id);
+      payload.cantidad = Number(form.cantidad);
     } else {
       payload.pileta_origen_id = Number(form.pileta_origen_id);
       payload.pileta_destino_id = Number(form.pileta_destino_id);
-      if (mortalidad > 0) payload.mortalidad = mortalidad;
+      payload.cantidad = Number(form.cantidad);
+      if (form.mortalidad) payload.mortalidad = Number(form.mortalidad);
     }
 
+    setCargando(true);
     try {
       await createMovimiento(payload);
-      showSnackbar("Movimiento registrado correctamente", "success");
-      resetFormulario();
-      await Promise.all([obtenerTrazabilidad(), cargarPiletas()]);
-    } catch (err) {
       showSnackbar(
-        err?.response?.data?.error || "No se pudo registrar el movimiento.",
-        "error",
+        form.tipo_movimiento === "VENTA"
+          ? "Venta registrada en trazabilidad"
+          : "Movimiento registrado",
+        "success",
       );
+      setForm({ ...EMPTY_FORM, fecha_movimiento: form.fecha_movimiento });
+      cerrarFormulario();
+      cargarMovimientos();
+      cargarPiletas();
+      cargarPedidos();
+    } catch (err) {
+      showSnackbar(err?.response?.data?.error || "Error al registrar movimiento", "error");
+    } finally {
+      setCargando(false);
     }
   };
 
-  const rastreosFiltrados = rastreos.filter((r) => {
-    const texto = filtroTexto.toLowerCase();
+  const etiquetaPedido = (p) => {
+    const cliente = p.fc_cliente ?? p.cliente_nombre ?? "Cliente";
+    const cant = formatStock(p.fn_cantidad ?? p.cantidad_peces);
+    const fecha = formatFecha(p.fd_fecha_entrega ?? p.fecha_entrega);
+    return `#${p.fi_lista_id} · ${cliente} · ${cant} org. · ${fecha}`;
+  };
 
-    const coincideTexto =
-      r.origen?.toLowerCase().includes(texto) ||
-      r.destino?.toLowerCase().includes(texto) ||
-      r.observacion?.toLowerCase().includes(texto) ||
-      r.fc_etapa?.toLowerCase().includes(texto);
-
-    const coincideEtapa =
-      !filtroEtapa ||
-      (filtroEtapa === "venta" ? r.es_venta : r.etapa === filtroEtapa);
-
-    const fechaMov = new Date(r.fecha_movimiento);
-    const desde = fechaInicio ? new Date(fechaInicio) : null;
-    const hasta = fechaFin ? new Date(fechaFin) : null;
-
-    const coincideFecha =
-      (!desde || fechaMov >= desde) && (!hasta || fechaMov <= hasta);
-
-    return coincideTexto && coincideEtapa && coincideFecha;
-  });
-
-  const gruposRastreos = useMemo(
-    () => getGroups(rastreosFiltrados, "fc_granja"),
-    [rastreosFiltrados, getGroups],
-  );
+  const etiquetaPileta = (p) => `${p.nombre} — ${formatStock(stockPileta(p))} org.`;
 
   return (
-    <Box>
-      <Typography variant="h4" fontWeight="bold" mb={2} color="#004C7D">
-        Trazabilidad de Movimientos
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
+        Trazabilidad
       </Typography>
 
-      <Paper
-        elevation={0}
-        sx={{
-          backgroundColor: "#FFF3E0",
-          p: 2,
-          mb: 3,
-          borderRadius: 2,
-          borderLeft: "6px solid #E65100",
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Historial unificado de traslados e ingresos entre piletas de alevinaje y engorda,
-          y egresos por venta de alevines o mojarra desde Próximas Ventas o Control de Ventas.
-          Use el formulario para registrar traslados, ingresos externos o mortalidad; el
-          inventario de las piletas se actualiza automáticamente.
-        </Typography>
-      </Paper>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <TextField
+            select
+            fullWidth
+            label="Granja"
+            value={granja}
+            onChange={(e) => setGranja(e.target.value)}
+          >
+            {ubicacionesGranja.map((op) => (
+              <MenuItem key={op.value} value={op.value}>
+                {op.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid size={{ xs: 12, md: 8 }} sx={{ display: "flex", alignItems: "center" }}>
+          <Button
+            variant="contained"
+            startIcon={<AddCircleIcon />}
+            onClick={mostrarFormulario ? cerrarFormulario : abrirFormulario}
+          >
+            {mostrarFormulario ? "Ocultar formulario" : "Nuevo movimiento"}
+          </Button>
+        </Grid>
+      </Grid>
 
-      <FormularioRegistroPanel
-        visible={mostrarFormulario}
-        onToggle={toggleFormulario}
-        label="+ REGISTRAR MOVIMIENTO"
-      >
-        <Card sx={{ mb: 3, boxShadow: 2 }}>
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
+        <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Typography variant="h6" fontWeight="bold" mb={2} color="#004C7D">
-              Nuevo movimiento
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+              Registrar movimiento
             </Typography>
+
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  select
-                  fullWidth
-                  size="small"
-                  label="Ubicación"
-                  name="ubicacion"
-                  value={form.ubicacion}
-                  onChange={handleChange}
-                  error={!!errors.ubicacion}
-                  helperText={errors.ubicacion}
-                >
-                  {ubicacionesGranja.map((op) => (
-                    <MenuItem key={op.value} value={op.value}>
-                      {op.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Tipo de movimiento</InputLabel>
+                  <Select
+                    name="tipo_movimiento"
+                    value={form.tipo_movimiento}
+                    label="Tipo de movimiento"
+                    onChange={handleChange}
+                  >
+                    {TIPOS_MOVIMIENTO.map((t) => (
+                      <MenuItem key={t.value} value={t.value}>
+                        {t.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
 
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
-                  select
                   fullWidth
-                  size="small"
-                  label="Tipo de movimiento"
-                  name="tipo_movimiento"
-                  value={form.tipo_movimiento}
-                  onChange={handleChange}
-                  error={!!errors.tipo_movimiento}
-                  helperText={errors.tipo_movimiento}
-                >
-                  {TIPO_MOVIMIENTO_OPCIONES.map((op) => (
-                    <MenuItem key={op.value} value={op.value}>
-                      {op.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
                   type="date"
-                  fullWidth
-                  size="small"
                   label="Fecha del movimiento"
                   name="fecha_movimiento"
                   value={form.fecha_movimiento}
                   onChange={handleChange}
-                  error={!!errors.fecha_movimiento}
-                  helperText={errors.fecha_movimiento || "No puede ser una fecha futura"}
                   InputLabelProps={{ shrink: true }}
-                  inputProps={{ max: hoyISO() }}
                 />
               </Grid>
 
-              {!esIngreso && (
-                <Grid item xs={12} sm={6} md={4}>
-                  <TextField
-                    select
-                    fullWidth
-                    size="small"
-                    label={esMortalidad ? "Pileta" : "Pileta origen"}
-                    name="pileta_origen_id"
-                    value={form.pileta_origen_id}
-                    onChange={handleChange}
-                    error={!!errors.pileta_origen_id}
-                    helperText={
-                      errors.pileta_origen_id ||
-                      (esMortalidad
-                        ? "Pileta donde se registra la baja"
-                        : "Se descontará inventario de esta pileta")
-                    }
-                  >
-                    <MenuItem value="">— Seleccionar —</MenuItem>
-                    {piletasConStock.map((p) => (
-                      <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
-                        {etiquetaPileta(p)}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-              )}
+              {form.tipo_movimiento === "VENTA" && (
+                <>
+                  <Grid size={{ xs: 12, md: 8 }}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Pedido (próxima venta)"
+                      name="lista_espera_id"
+                      value={form.lista_espera_id}
+                      onChange={handleChange}
+                      helperText={
+                        pedidos.length === 0
+                          ? "No hay pedidos pendientes de trazabilidad en esta granja"
+                          : "Al registrar se creará la venta y se descontará inventario"
+                      }
+                    >
+                      <MenuItem value="">— Seleccionar pedido —</MenuItem>
+                      {pedidos.map((p) => (
+                        <MenuItem key={p.fi_lista_id} value={String(p.fi_lista_id)}>
+                          {etiquetaPedido(p)}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
 
-              {!esMortalidad && (
-                <Grid item xs={12} sm={6} md={4}>
-                  <TextField
-                    select
-                    fullWidth
-                    size="small"
-                    label="Pileta destino"
-                    name="pileta_destino_id"
-                    value={form.pileta_destino_id}
-                    onChange={handleChange}
-                    error={!!errors.pileta_destino_id}
-                    helperText={
-                      errors.pileta_destino_id ||
-                      (esIngreso
-                        ? "Se sumará inventario a esta pileta"
-                        : "Se sumará inventario (neto de mortalidad)")
-                    }
-                  >
-                    <MenuItem value="">— Seleccionar —</MenuItem>
-                    {piletasFiltradas
-                      .filter((p) => !esTraslado || String(p.fi_pileta_id ?? p.pileta_id) !== form.pileta_origen_id)
-                      .map((p) => (
+                  {pedidoSeleccionado && (
+                    <Grid size={12}>
+                      <Alert severity="info">
+                        Cliente: <strong>{pedidoSeleccionado.fc_cliente}</strong>
+                        {" · "}
+                        Cantidad: {formatStock(cantidadVenta)} org.
+                        {" · "}
+                        Tipo: {pedidoSeleccionado.fc_uap_asignada ?? pedidoSeleccionado.tipo_venta}
+                      </Alert>
+                    </Grid>
+                  )}
+
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Pileta origen"
+                      name="pileta_origen_id"
+                      value={form.pileta_origen_id || (pedidoSeleccionado?.pileta_origen_id ? String(pedidoSeleccionado.pileta_origen_id) : "")}
+                      onChange={handleChange}
+                      error={cantidadExcedeStock}
+                      helperText={
+                        cantidadExcedeStock
+                          ? `Stock insuficiente: ${formatStock(stockOrigen)} disponibles`
+                          : stockOrigen != null
+                            ? `Disponible: ${formatStock(stockOrigen)} organismos`
+                            : "Seleccione pileta con stock suficiente"
+                      }
+                    >
+                      <MenuItem value="">— Seleccionar —</MenuItem>
+                      {piletasOrigenVenta.map((p) => (
                         <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
                           {etiquetaPileta(p)}
                         </MenuItem>
                       ))}
-                  </TextField>
-                </Grid>
+                    </TextField>
+                  </Grid>
+                </>
               )}
 
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label={esMortalidad ? "Cantidad de baja" : "Cantidad"}
-                  name="cantidad"
-                  value={form.cantidad}
-                  onChange={handleChange}
-                  error={!!errors.cantidad || cantidadExcedeStock}
-                  helperText={
-                    errors.cantidad ||
-                    (cantidadExcedeStock
-                      ? `Supera el stock disponible (${formatNumber(stockOrigen)})`
-                      : !esIngreso && stockOrigen != null
-                        ? `Máximo disponible: ${formatNumber(stockOrigen)} organismos`
-                        : undefined)
-                  }
-                  inputProps={
-                    !esIngreso && stockOrigen != null && stockOrigen > 0
-                      ? { max: stockOrigen }
-                      : undefined
-                  }
-                />
-              </Grid>
+              {form.tipo_movimiento === "MORTALIDAD" && (
+                <>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Pileta"
+                      name="pileta_origen_id"
+                      value={form.pileta_origen_id}
+                      onChange={handleChange}
+                    >
+                      <MenuItem value="">— Seleccionar —</MenuItem>
+                      {piletas.filter((p) => stockPileta(p) > 0).map((p) => (
+                        <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                          {etiquetaPileta(p)}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Cantidad"
+                      name="cantidad"
+                      value={form.cantidad}
+                      onChange={handleChange}
+                      inputProps={{ min: 1 }}
+                    />
+                  </Grid>
+                </>
+              )}
 
-              {esTraslado && (
-                <Grid item xs={12} sm={6} md={4}>
+              {form.tipo_movimiento === "INGRESO" && (
+                <>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Pileta destino"
+                      name="pileta_destino_id"
+                      value={form.pileta_destino_id}
+                      onChange={handleChange}
+                    >
+                      <MenuItem value="">— Seleccionar —</MenuItem>
+                      {piletas.map((p) => (
+                        <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                          {p.nombre}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Cantidad"
+                      name="cantidad"
+                      value={form.cantidad}
+                      onChange={handleChange}
+                      inputProps={{ min: 1 }}
+                    />
+                  </Grid>
+                </>
+              )}
+
+              {form.tipo_movimiento === "TRASLADO" && (
+                <>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Pileta origen"
+                      name="pileta_origen_id"
+                      value={form.pileta_origen_id}
+                      onChange={handleChange}
+                    >
+                      <MenuItem value="">— Seleccionar —</MenuItem>
+                      {piletas.filter((p) => stockPileta(p) > 0).map((p) => (
+                        <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                          {etiquetaPileta(p)}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Pileta destino"
+                      name="pileta_destino_id"
+                      value={form.pileta_destino_id}
+                      onChange={handleChange}
+                    >
+                      <MenuItem value="">— Seleccionar —</MenuItem>
+                      {piletas.map((p) => (
+                        <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                          {p.nombre}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Cantidad"
+                      name="cantidad"
+                      value={form.cantidad}
+                      onChange={handleChange}
+                      inputProps={{ min: 1 }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Mortalidad (opcional)"
+                      name="mortalidad"
+                      value={form.mortalidad}
+                      onChange={handleChange}
+                      inputProps={{ min: 0 }}
+                    />
+                  </Grid>
+                </>
+              )}
+
+              {form.tipo_movimiento !== "VENTA" && (
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
-                    size="small"
-                    label="Mortalidad en traslado (opcional)"
-                    name="mortalidad"
-                    value={form.mortalidad}
+                    multiline
+                    minRows={2}
+                    label="Observación"
+                    name="observacion"
+                    value={form.observacion}
                     onChange={handleChange}
-                    helperText="Organismos que no llegan al destino"
                   />
                 </Grid>
               )}
-
-              {!esIngreso && stockOrigen != null && form.pileta_origen_id && (
-                <Grid item xs={12}>
-                  <Alert severity={stockOrigen > 0 ? "info" : "warning"} sx={{ py: 0.5 }}>
-                    Stock en{" "}
-                    <strong>{piletaOrigenSeleccionada?.nombre ?? "pileta origen"}</strong>:{" "}
-                    {formatNumber(stockOrigen)} organismos
-                    {stockOrigen === 0 && " — seleccione otra pileta con inventario disponible"}
-                  </Alert>
-                </Grid>
-              )}
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  multiline
-                  minRows={2}
-                  label="Observación"
-                  name="observacion"
-                  value={form.observacion}
-                  onChange={handleChange}
-                  inputProps={{ maxLength: MAX_OBSERVACION }}
-                  helperText={`${form.observacion.length}/${MAX_OBSERVACION}`}
-                />
-              </Grid>
             </Grid>
 
-            <Divider sx={{ my: 2 }} />
-
-            <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-              <Button variant="outlined" color="inherit" onClick={resetFormulario}>
-                Cancelar
-              </Button>
-              <Button variant="contained" onClick={registrarMovimiento} disabled={cantidadExcedeStock}>
-                Registrar movimiento
+            <Box sx={{ mt: 3 }}>
+              <Button variant="contained" onClick={registrar} disabled={cargando}>
+                Registrar
               </Button>
             </Box>
           </CardContent>
         </Card>
       </FormularioRegistroPanel>
 
-      <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
-        <TextField
-          size="small"
-          label="Buscar"
-          sx={{ flex: "1 1 200px" }}
-          value={filtroTexto}
-          onChange={(e) => setFiltroTexto(e.target.value)}
-        />
-
-        <TextField
-          select
-          size="small"
-          label="Etapa"
-          sx={{ minWidth: 180 }}
-          value={filtroEtapa}
-          onChange={(e) => setFiltroEtapa(e.target.value)}
-        >
-          {ETAPA_OPCIONES.map((op) => (
-            <MenuItem key={op.value || "todas"} value={op.value}>
-              {op.label}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        <TextField
-          type="date"
-          size="small"
-          label="Fecha inicio"
-          value={fechaInicio}
-          onChange={(e) => setFechaInicio(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-
-        <TextField
-          type="date"
-          size="small"
-          label="Fecha fin"
-          value={fechaFin}
-          onChange={(e) => setFechaFin(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-
-        <Button
-          variant="contained"
-          onClick={() => obtenerTrazabilidad()}
-          sx={{ height: "40px" }}
-        >
-          BUSCAR
-        </Button>
-
-        <Button
-          variant="outlined"
-          color="error"
-          sx={{ height: "40px" }}
-          onClick={() => {
-            setFiltroTexto("");
-            setFiltroEtapa("");
-            setFechaInicio("");
-            setFechaFin("");
-          }}
-        >
-          LIMPIAR
-        </Button>
-      </Box>
-
-      <TablasPorUbicacionGranja
-        grupos={gruposRastreos}
-        accordionSx={{ mb: 6, boxShadow: 2 }}
-        renderTabla={(rows) => (
-          <Paper sx={{ width: "100%", boxShadow: 2 }}>
-            <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-              <Table stickyHeader sx={{ minWidth: 1060 }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Etapa</TableCell>
-                    <TableCell>Origen</TableCell>
-                    <TableCell>Destino</TableCell>
-                    <TableCell>Cantidad</TableCell>
-                    <TableCell>Fecha</TableCell>
-                    <TableCell>Observación</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map((r) => (
-                    <TableRow key={`${r.fc_granja}-${r.fi_movimiento_id}`}>
-                      <TableCell>
-                        {r.fc_etapa ? (
-                          <Chip
-                            label={r.fc_etapa}
-                            size="small"
-                            sx={{
-                              bgcolor: ETAPA_COLOR[r.es_venta ? "venta" : r.etapa] ?? "#757575",
-                              color: "#fff",
-                              fontWeight: 600,
-                            }}
-                          />
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                      <TableCell>{r.origen || "—"}</TableCell>
-                      <TableCell>{r.destino || "—"}</TableCell>
-                      <TableCell>{formatNumber(r.cantidad_trasladada)}</TableCell>
-                      <TableCell>{formatFecha(r.fecha_movimiento)}</TableCell>
-                      <TableCell sx={{ maxWidth: 160 }}>
-                        <span title={r.observacion || ""}>
-                          {r.observacion ? truncar(r.observacion) : "—"}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-        )}
-      />
+      <Paper sx={{ p: 3 }}>
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+          Historial de movimientos
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Fecha</TableCell>
+                <TableCell>Etapa</TableCell>
+                <TableCell>Origen</TableCell>
+                <TableCell>Destino</TableCell>
+                <TableCell align="right">Cantidad</TableCell>
+                <TableCell>Observación</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {movimientos.map((row) => (
+                <TableRow key={row.fi_movimiento_id}>
+                  <TableCell>{formatFecha(row.fecha_movimiento)}</TableCell>
+                  <TableCell>{row.fc_etapa ?? "—"}</TableCell>
+                  <TableCell>{row.origen ?? "—"}</TableCell>
+                  <TableCell>{row.destino ?? "—"}</TableCell>
+                  <TableCell align="right">{formatStock(row.cantidad_trasladada)}</TableCell>
+                  <TableCell>{row.observacion ?? "—"}</TableCell>
+                </TableRow>
+              ))}
+              {movimientos.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    No hay movimientos registrados para esta granja.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
     </Box>
   );
 }

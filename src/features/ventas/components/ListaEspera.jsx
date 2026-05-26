@@ -79,6 +79,13 @@ function formatStock(num) {
   return Number(num ?? 0).toLocaleString("en-US");
 }
 
+function etiquetaEstatus(item) {
+  if (item.venta_id ?? item.fi_venta_id) return "Trazabilidad registrada";
+  const tipo = String(item.fc_uap_asignada ?? item.tipo_venta ?? "").trim().toUpperCase();
+  if (TIPOS_VENTA_TRAZABLES.has(tipo)) return "Pendiente trazabilidad";
+  return "Pendiente";
+}
+
 function soloDigitos(value) {
   return String(value || "").replace(/\D/g, "").slice(0, 10);
 }
@@ -243,13 +250,6 @@ function ListaEsperaContent() {
       showSnackbar("Seleccione la pileta de origen para ventas de alevines o mojarra.", "warning");
       return false;
     }
-    if (cantidadExcedeStock) {
-      showSnackbar(
-        `La cantidad (${formatStock(cantidadPedido)}) supera el stock disponible (${formatStock(stockOrigen)}).`,
-        "error",
-      );
-      return false;
-    }
     return true;
   };
 
@@ -342,12 +342,22 @@ function ListaEsperaContent() {
 
   const convertir = async (item) => {
     const tipo = item.fc_uap_asignada ?? item.tipo_venta;
+    const tieneVenta = Boolean(item.venta_id ?? item.fi_venta_id);
+
+    if (ventaRequierePileta(tipo) && !tieneVenta) {
+      showSnackbar(
+        "Registre primero la venta en el módulo de Trazabilidad (tipo Venta).",
+        "warning",
+      );
+      return;
+    }
+
     if (ventaRequierePileta(tipo) && !item.pileta_origen_id) {
       showSnackbar("El pedido debe tener pileta de origen. Edítelo antes de convertir.", "warning");
       return;
     }
 
-    if (!await confirm("¿Convertir a venta real?")) return;
+    if (!await confirm("¿Convertir a venta real y retirar de la lista?")) return;
 
     try {
       const payload = item.pileta_origen_id
@@ -476,11 +486,9 @@ function ListaEsperaContent() {
                     ? `Stock insuficiente: disponible ${formatStock(stockOrigen)}`
                     : cargandoPiletas
                       ? "Cargando piletas..."
-                      : piletas.length === 0
+                        : piletas.length === 0
                         ? "No hay piletas con stock en esta granja"
-                        : stockOrigen != null
-                          ? `Disponible: ${formatStock(stockOrigen)} organismos`
-                          : "Al guardar se descontará inventario y registrará trazabilidad"
+                        : "Referencia para el egreso en Trazabilidad"
                 }
               >
                 <MenuItem value="">— Seleccionar —</MenuItem>
@@ -655,6 +663,7 @@ function ListaEsperaContent() {
                 <TableCell>Lugar</TableCell>
                 <TableCell>Granja</TableCell>
                 <TableCell>Precio</TableCell>
+                <TableCell>Estatus</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -669,8 +678,15 @@ function ListaEsperaContent() {
                   <TableCell>{item.fc_lugar_entrega}</TableCell>
                 <TableCell>{item.fc_granja_asignada ?? item.granja ?? "—"}</TableCell>
                 <TableCell>${item.fn_precio_venta}</TableCell>
+                <TableCell>{etiquetaEstatus(item)}</TableCell>
                 <TableCell>
-                  <Button variant="outlined" color="warning" sx={{ mr: 1 }} onClick={() => editar(item)}>
+                  <Button
+                    variant="outlined"
+                    color="warning"
+                    sx={{ mr: 1 }}
+                    onClick={() => editar(item)}
+                    disabled={Boolean(item.venta_id ?? item.fi_venta_id)}
+                  >
                     Editar
                   </Button>
                   <Button variant="outlined" color="error" sx={{ mr: 1 }} onClick={() => eliminar(item.fi_lista_id)}>
