@@ -19,7 +19,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -129,7 +128,7 @@ const EMPTY_FORM = {
 export default function Trazabilidad() {
   const showSnackbar = useSnackbar();
   const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
-  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } =
+  const { visible: mostrarFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } =
     useFormularioVisible();
 
   const [granja, setGranja] = useState(defaultUbicacion || "");
@@ -385,33 +384,6 @@ export default function Trazabilidad() {
         Trazabilidad
       </Typography>
 
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <TextField
-            select
-            fullWidth
-            label="Granja"
-            value={granja}
-            onChange={(e) => setGranja(e.target.value)}
-          >
-            {ubicacionesGranja.map((op) => (
-              <MenuItem key={op.value} value={op.value}>
-                {op.label}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-        <Grid size={{ xs: 12, md: 8 }} sx={{ display: "flex", alignItems: "center" }}>
-          <Button
-            variant="contained"
-            startIcon={<AddCircleIcon />}
-            onClick={mostrarFormulario ? cerrarFormulario : abrirFormulario}
-          >
-            {mostrarFormulario ? "Ocultar formulario" : "Nuevo movimiento"}
-          </Button>
-        </Grid>
-      </Grid>
-
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
         <Card sx={{ mb: 3 }}>
           <CardContent>
@@ -420,6 +392,22 @@ export default function Trazabilidad() {
             </Typography>
 
             <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Granja"
+                  value={granja}
+                  onChange={(e) => setGranja(e.target.value)}
+                >
+                  {ubicacionesGranja.map((op) => (
+                    <MenuItem key={op.value} value={op.value}>
+                      {op.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
               <Grid size={{ xs: 12, md: 4 }}>
                 <FormControl fullWidth>
                   <InputLabel>Tipo de movimiento</InputLabel>
@@ -645,6 +633,7 @@ export default function Trazabilidad() {
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
           Historial de movimientos
+          {granja ? ` — ${ubicacionesGranja.find((op) => op.value === granja)?.label ?? granja}` : ""}
         </Typography>
         <Divider sx={{ mb: 2 }} />
         <TableContainer>
