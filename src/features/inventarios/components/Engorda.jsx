@@ -29,6 +29,7 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
+import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
 import { listPiletas } from "../services/piletasService";
 
 const MAX_OBSERVACION = 500;
@@ -73,9 +74,11 @@ export default function Engorda() {
     [piletasDestinoEngorda, formData.ubicacion, ubicacionesGranja],
   );
 
+  const registrosVista = useMemo(() => vistaActualPorPileta(registros), [registros]);
+
   const gruposRegistros = useMemo(
-    () => getGroups(registros, "fc_granja"),
-    [getGroups, registros],
+    () => getGroups(registrosVista, "fc_granja"),
+    [getGroups, registrosVista],
   );
 
   const payloadComunBackend = () => ({
@@ -144,7 +147,7 @@ export default function Engorda() {
     }
     try {
       await createEngorda(payloadComunBackend());
-      showSnackbar("Registro guardado en engorda", "success");
+      showSnackbar("Registro periódico guardado (vista actual actualizada)", "success");
       resetFormulario();
       cargarRegistros();
     } catch (err) {
@@ -405,8 +408,11 @@ export default function Engorda() {
         </Card>
       </FormularioRegistroPanel>
 
-      <Typography variant="h6" sx={{ mb: 1, fontWeight: "bold", color: "#023047" }}>
-        Registros (engorda)
+      <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
+        Estado actual por pileta
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        Muestra el último registro periódico de cada pileta. El historial de movimientos está en Trazabilidad.
       </Typography>
 
       <TablasPorUbicacionGranja

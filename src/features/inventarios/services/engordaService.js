@@ -3,8 +3,9 @@ import { ENDPOINTS } from "@shared/lib/endpoints";
 import { filtrosUbicacionAParams } from "./piletasService";
 
 /**
- * CRUD del modelo `engorda` (etapa en piletas tipo "engorda").
- * Mismos campos operativos que alevinaje: cantidad_total, cantidad_alimento, peso, fecha_peso.
+ * Registros periódicos del modelo `engorda` (historial en BD).
+ * GET devuelve por defecto la vista actual (último registro por pileta);
+ * use `?historial=true` para todos los registros.
  */
 
 export function listEngordas(filtroUbicacion, piletaId) {

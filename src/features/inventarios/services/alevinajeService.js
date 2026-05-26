@@ -3,9 +3,9 @@ import { ENDPOINTS } from "@shared/lib/endpoints";
 import { filtrosUbicacionAParams } from "./piletasService";
 
 /**
- * CRUD del modelo `alevinaje` (etapa cría en piletas tipo "alevinaje").
- * Backend persiste la observación con pileta_id + proceso "alevinaje" para
- * que aparezca como "última observación" al consultar la pileta.
+ * Registros periódicos del modelo `alevinaje` (historial en BD).
+ * GET devuelve por defecto la vista actual (último registro por pileta);
+ * use `?historial=true` para todos los registros.
  */
 
 export function listAlevinaje(filtroUbicacion, piletaId) {
