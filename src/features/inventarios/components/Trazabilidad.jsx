@@ -7,6 +7,7 @@ import CardContent from "@mui/material/CardContent";
 import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import Grid from "@mui/material/Grid";
+import IconButton from "@mui/material/IconButton";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
@@ -18,11 +19,14 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
+import AddIcon from "@mui/icons-material/Add";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import ProximaVentaModal from "@features/ventas/components/ProximaVentaModal";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
 import { listPiletas } from "../services/piletasService";
 import { listLista } from "@features/ventas/services/listaEsperaService";
@@ -114,6 +118,16 @@ function formatFecha(value) {
   return s.includes("T") ? s.split("T")[0] : s.slice(0, 10);
 }
 
+function tipoVentaParaEtapa(etapa) {
+  if (etapa === "alevinaje") return "ALEVIN";
+  if (etapa === "engorda") return "KG";
+  return "";
+}
+
+function hoyISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 const EMPTY_FORM = {
   tipo_movimiento: "ALEVINAJE_A_ALEVINAJE",
   lista_espera_id: "",
@@ -127,7 +141,7 @@ const EMPTY_FORM = {
 
 export default function Trazabilidad() {
   const showSnackbar = useSnackbar();
-  const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
   const { visible: mostrarFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } =
     useFormularioVisible();
 
@@ -137,6 +151,7 @@ export default function Trazabilidad() {
   const [piletas, setPiletas] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [cargando, setCargando] = useState(false);
+  const [openProximaVenta, setOpenProximaVenta] = useState(false);
 
   useEffect(() => {
     if (!granja && defaultUbicacion) setGranja(defaultUbicacion);
@@ -197,23 +212,54 @@ export default function Trazabilidad() {
     });
   }, [pedidos, esVenta, tipoConfig.etapaOrigen]);
 
+  const proximaVentaDefaults = useMemo(() => {
+    const granjaLabel = ubicacionesGranja.find((op) => op.value === granja)?.label ?? granja;
+    const piletaId = form.pileta_origen_id || "";
+    const pileta = piletaId
+      ? piletasOrigen.find((p) => String(p.fi_pileta_id ?? p.pileta_id) === String(piletaId))
+      : null;
+    const stock = pileta ? stockPileta(pileta) : 0;
+
+    return {
+      fd_fecha_entrega: form.fecha_movimiento || hoyISO(),
+      fc_uap_asignada: tipoVentaParaEtapa(tipoConfig.etapaOrigen),
+      fc_granja_asignada: granja,
+      pileta_origen_id: piletaId,
+      fn_cantidad: stock > 0 ? String(stock) : "",
+      fc_unidad_produccion: granjaLabel,
+    };
+  }, [
+    granja,
+    form.fecha_movimiento,
+    form.pileta_origen_id,
+    tipoConfig.etapaOrigen,
+    ubicacionesGranja,
+    piletasOrigen,
+  ]);
+
   const cargarMovimientos = useCallback(async () => {
     if (!granja) return;
     try {
-      const res = await listMovimientos(granja);
-      setMovimientos(Array.isArray(res.data) ? res.data : []);
+      const res = await listMovimientos(resolveFiltroUbicacion(granja));
+      const rows = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.data)
+          ? res.data.data
+          : [];
+      setMovimientos(rows);
     } catch (err) {
       console.error("Error al cargar movimientos:", err);
       setMovimientos([]);
     }
-  }, [granja]);
+  }, [granja, resolveFiltroUbicacion]);
 
   const cargarPiletas = useCallback(async () => {
     if (!granja) return;
+    const filtroUbicacion = resolveFiltroUbicacion(granja);
     try {
       const [alevRes, engRes] = await Promise.all([
-        listPiletas(granja, "alevinaje"),
-        listPiletas(granja, "engorda"),
+        listPiletas(filtroUbicacion, "alevinaje"),
+        listPiletas(filtroUbicacion, "engorda"),
       ]);
       const rows = [
         ...(Array.isArray(alevRes.data) ? alevRes.data : []),
@@ -224,7 +270,7 @@ export default function Trazabilidad() {
       console.error("Error al cargar piletas:", err);
       setPiletas([]);
     }
-  }, [granja]);
+  }, [granja, resolveFiltroUbicacion]);
 
   const cargarPedidos = useCallback(async () => {
     try {
@@ -369,6 +415,30 @@ export default function Trazabilidad() {
     }
   };
 
+  const abrirModalProximaVenta = () => {
+    if (!granja) {
+      showSnackbar("Seleccione una granja primero", "warning");
+      return;
+    }
+    setOpenProximaVenta(true);
+  };
+
+  const handleProximaVentaCreada = (pedido) => {
+    setPedidos((prev) => {
+      const id = String(pedido.fi_lista_id);
+      if (prev.some((p) => String(p.fi_lista_id) === id)) return prev;
+      return [...prev, pedido];
+    });
+    setForm((prev) => ({
+      ...prev,
+      lista_espera_id: String(pedido.fi_lista_id),
+      pileta_origen_id: pedido.pileta_origen_id
+        ? String(pedido.pileta_origen_id)
+        : prev.pileta_origen_id,
+    }));
+    cargarPedidos();
+  };
+
   const etiquetaPedido = (p) => {
     const cliente = p.fc_cliente ?? p.cliente_nombre ?? "Cliente";
     const cant = formatStock(p.fn_cantidad ?? p.cantidad_peces);
@@ -441,26 +511,39 @@ export default function Trazabilidad() {
               {esVenta && (
                 <>
                   <Grid size={{ xs: 12, md: 8 }}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Pedido (próxima venta)"
-                      name="lista_espera_id"
-                      value={form.lista_espera_id}
-                      onChange={handleChange}
-                      helperText={
-                        pedidosVenta.length === 0
-                          ? `No hay pedidos pendientes de ${tipoConfig.etapaOrigen} en esta granja`
-                          : "Al registrar se creará la venta y se descontará inventario"
-                      }
-                    >
-                      <MenuItem value="">— Seleccionar pedido —</MenuItem>
-                      {pedidosVenta.map((p) => (
-                        <MenuItem key={p.fi_lista_id} value={String(p.fi_lista_id)}>
-                          {etiquetaPedido(p)}
-                        </MenuItem>
-                      ))}
-                    </TextField>
+                    <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Pedido (próxima venta)"
+                        name="lista_espera_id"
+                        value={form.lista_espera_id}
+                        onChange={handleChange}
+                        helperText={
+                          pedidosVenta.length === 0
+                            ? `No hay pedidos pendientes de ${tipoConfig.etapaOrigen} en esta granja`
+                            : "Al registrar se creará la venta y se descontará inventario"
+                        }
+                        sx={{ flex: 1 }}
+                      >
+                        <MenuItem value="">— Seleccionar pedido —</MenuItem>
+                        {pedidosVenta.map((p) => (
+                          <MenuItem key={p.fi_lista_id} value={String(p.fi_lista_id)}>
+                            {etiquetaPedido(p)}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                      <Tooltip title="Registrar nueva próxima venta">
+                        <IconButton
+                          color="primary"
+                          aria-label="Registrar nueva próxima venta"
+                          onClick={abrirModalProximaVenta}
+                          sx={{ mt: 1 }}
+                        >
+                          <AddIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </Grid>
 
                   {pedidoSeleccionado && (
@@ -670,6 +753,16 @@ export default function Trazabilidad() {
           </Table>
         </TableContainer>
       </Paper>
+
+      <ProximaVentaModal
+        open={openProximaVenta}
+        onClose={() => setOpenProximaVenta(false)}
+        onCreated={handleProximaVentaCreada}
+        defaults={proximaVentaDefaults}
+        piletas={piletasOrigen}
+        lockTipoVenta
+        lockGranja
+      />
     </Box>
   );
 }
