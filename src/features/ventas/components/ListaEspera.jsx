@@ -26,7 +26,7 @@ import {
   listLista,
   listClientes,
   updateRegistro,
-  removeRegistro,
+  cancelarRegistro,
   convertirAVenta,
   createClienteRapido,
 } from "../services/listaEsperaService";
@@ -307,15 +307,27 @@ function ListaEsperaContent() {
     }
   };
 
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar este registro?")) return;
+  const cancelar = async (item) => {
+    const tieneTrazabilidad = Boolean(item.venta_id ?? item.fi_venta_id);
+    const esTrazable = ventaRequierePileta(item.fc_uap_asignada ?? item.tipo_venta);
+    const mensaje = tieneTrazabilidad && esTrazable
+      ? "¿Cancelar este pedido? Se registrará la devolución en trazabilidad y los organismos volverán a su pileta de origen."
+      : "¿Cancelar este pedido?";
+
+    if (!await confirm(mensaje)) return;
 
     try {
-      await removeRegistro(id);
-      showSnackbar("Eliminado", "success");
+      const res = await cancelarRegistro(item.fi_lista_id);
+      showSnackbar(res.data?.mensaje || "Pedido cancelado", "success");
+      if (editId === item.fi_lista_id) {
+        setEditId(null);
+        setForm(emptyForm);
+        clearErrors();
+      }
       cargarLista();
     } catch (err) {
-      console.error("Error al eliminar en lista de espera:", err);
+      console.error("Error al cancelar pedido:", err);
+      showSnackbar(err?.response?.data?.error || "Error al cancelar el pedido", "error");
     }
   };
 
@@ -662,8 +674,8 @@ function ListaEsperaContent() {
                   >
                     Editar
                   </Button>
-                  <Button variant="outlined" color="error" sx={{ mr: 1 }} onClick={() => eliminar(item.fi_lista_id)}>
-                    Eliminar
+                  <Button variant="outlined" color="error" sx={{ mr: 1 }} onClick={() => cancelar(item)}>
+                    Cancelar
                   </Button>
                   <Button variant="contained" color="success" onClick={() => convertir(item)}>
                     Convertir

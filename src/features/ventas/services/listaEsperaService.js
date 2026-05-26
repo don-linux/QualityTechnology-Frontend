@@ -17,7 +17,7 @@ export function updateRegistro(id, form) {
   return axios.put(ENDPOINTS.listaEspera.byId(id), form);
 }
 
-export function removeRegistro(id) {
+export function cancelarRegistro(id) {
   return axios.delete(ENDPOINTS.listaEspera.byId(id));
 }
 
