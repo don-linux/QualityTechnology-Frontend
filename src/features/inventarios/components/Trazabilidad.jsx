@@ -34,35 +34,49 @@ const TIPOS_MOVIMIENTO = [
     label: "De alevinaje a alevinaje",
     etapaOrigen: "alevinaje",
     etapaDestino: "alevinaje",
-    esVenta: false,
+    modo: "TRASLADO",
   },
   {
     value: "ALEVINAJE_A_ENGORDA",
     label: "De alevinaje a engorda",
     etapaOrigen: "alevinaje",
     etapaDestino: "engorda",
-    esVenta: false,
+    modo: "TRASLADO",
   },
   {
     value: "ALEVINAJE_A_VENTA",
     label: "De alevinaje a venta",
     etapaOrigen: "alevinaje",
     etapaDestino: null,
-    esVenta: true,
+    modo: "VENTA",
   },
   {
     value: "ENGORDA_A_ENGORDA",
     label: "De engorda a engorda",
     etapaOrigen: "engorda",
     etapaDestino: "engorda",
-    esVenta: false,
+    modo: "TRASLADO",
   },
   {
     value: "ENGORDA_A_VENTA",
     label: "De engorda a venta",
     etapaOrigen: "engorda",
     etapaDestino: null,
-    esVenta: true,
+    modo: "VENTA",
+  },
+  {
+    value: "MORTALIDAD_ALEVINAJE",
+    label: "Mortalidad en alevinaje",
+    etapaOrigen: "alevinaje",
+    etapaDestino: null,
+    modo: "MORTALIDAD",
+  },
+  {
+    value: "MORTALIDAD_ENGORDA",
+    label: "Mortalidad en engorda",
+    etapaOrigen: "engorda",
+    etapaDestino: null,
+    modo: "MORTALIDAD",
   },
 ];
 
@@ -159,19 +173,30 @@ export default function Trazabilidad() {
 
   const cantidadVenta = Number(pedidoSeleccionado?.fn_cantidad ?? pedidoSeleccionado?.cantidad_peces ?? 0);
   const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
+  const esVenta = tipoConfig.modo === "VENTA";
+  const esMortalidad = tipoConfig.modo === "MORTALIDAD";
+  const esTraslado = tipoConfig.modo === "TRASLADO";
+
+  const cantidadMortalidad = Number(form.cantidad);
+  const cantidadExcedeStockMortalidad =
+    esMortalidad
+    && stockOrigen != null
+    && cantidadMortalidad > 0
+    && cantidadMortalidad > stockOrigen;
+
   const cantidadExcedeStock =
-    tipoConfig.esVenta
+    esVenta
     && stockOrigen != null
     && cantidadVenta > 0
     && cantidadVenta > stockOrigen;
 
   const pedidosVenta = useMemo(() => {
-    if (!tipoConfig.esVenta) return [];
+    if (!esVenta) return [];
     return pedidos.filter((p) => {
       const etapa = etapaPiletaParaTipo(p.fc_uap_asignada ?? p.tipo_venta);
       return etapa === tipoConfig.etapaOrigen;
     });
-  }, [pedidos, tipoConfig.esVenta, tipoConfig.etapaOrigen]);
+  }, [pedidos, esVenta, tipoConfig.etapaOrigen]);
 
   const cargarMovimientos = useCallback(async () => {
     if (!granja) return;
@@ -249,7 +274,7 @@ export default function Trazabilidad() {
       return false;
     }
 
-    if (tipoConfig.esVenta) {
+    if (esVenta) {
       if (!form.lista_espera_id) {
         showSnackbar("Seleccione un pedido de próximas ventas", "warning");
         return false;
@@ -275,6 +300,21 @@ export default function Trazabilidad() {
       return false;
     }
 
+    if (esMortalidad) {
+      if (!form.pileta_origen_id) {
+        showSnackbar("Seleccione la pileta", "warning");
+        return false;
+      }
+      if (cantidadExcedeStockMortalidad) {
+        showSnackbar(
+          `Stock insuficiente: disponible ${formatStock(stockOrigen)}, mortalidad ${formatStock(cantidadMortalidad)}`,
+          "error",
+        );
+        return false;
+      }
+      return true;
+    }
+
     if (!form.pileta_origen_id || !form.pileta_destino_id) {
       showSnackbar("Seleccione pileta origen y destino", "warning");
       return false;
@@ -292,11 +332,14 @@ export default function Trazabilidad() {
       observacion: form.observacion || undefined,
     };
 
-    if (tipoConfig.esVenta) {
+    if (esVenta) {
       payload.lista_espera_id = Number(form.lista_espera_id);
       payload.pileta_origen_id = Number(
         form.pileta_origen_id || pedidoSeleccionado?.pileta_origen_id,
       );
+    } else if (esMortalidad) {
+      payload.pileta_origen_id = Number(form.pileta_origen_id);
+      payload.cantidad = Number(form.cantidad);
     } else {
       payload.pileta_origen_id = Number(form.pileta_origen_id);
       payload.pileta_destino_id = Number(form.pileta_destino_id);
@@ -308,9 +351,11 @@ export default function Trazabilidad() {
     try {
       await createMovimiento(payload);
       showSnackbar(
-        tipoConfig.esVenta
+        esVenta
           ? "Venta registrada en trazabilidad"
-          : "Movimiento registrado",
+          : esMortalidad
+            ? "Mortalidad registrada"
+            : "Movimiento registrado",
         "success",
       );
       setForm({ ...EMPTY_FORM, fecha_movimiento: form.fecha_movimiento });
@@ -405,7 +450,7 @@ export default function Trazabilidad() {
                 />
               </Grid>
 
-              {tipoConfig.esVenta && (
+              {esVenta && (
                 <>
                   <Grid size={{ xs: 12, md: 8 }}>
                     <TextField
@@ -470,7 +515,49 @@ export default function Trazabilidad() {
                 </>
               )}
 
-              {!tipoConfig.esVenta && (
+              {esMortalidad && (
+                <>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      select
+                      fullWidth
+                      label={`Pileta (${tipoConfig.etapaOrigen})`}
+                      name="pileta_origen_id"
+                      value={form.pileta_origen_id}
+                      onChange={handleChange}
+                      error={cantidadExcedeStockMortalidad}
+                      helperText={
+                        cantidadExcedeStockMortalidad
+                          ? `Stock insuficiente: ${formatStock(stockOrigen)} disponibles`
+                          : stockOrigen != null
+                            ? `Disponible: ${formatStock(stockOrigen)} organismos`
+                            : `Piletas de ${tipoConfig.etapaOrigen} con stock`
+                      }
+                    >
+                      <MenuItem value="">— Seleccionar —</MenuItem>
+                      {piletasOrigen.map((p) => (
+                        <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                          {etiquetaPileta(p)}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Cantidad de bajas"
+                      name="cantidad"
+                      value={form.cantidad}
+                      onChange={handleChange}
+                      inputProps={{ min: 1 }}
+                      helperText="Organismos que murieron en la pileta"
+                    />
+                  </Grid>
+                </>
+              )}
+
+              {esTraslado && (
                 <>
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
@@ -521,7 +608,7 @@ export default function Trazabilidad() {
                     <TextField
                       fullWidth
                       type="number"
-                      label="Mortalidad (opcional)"
+                      label="Mortalidad en traslado (opcional)"
                       name="mortalidad"
                       value={form.mortalidad}
                       onChange={handleChange}
@@ -531,7 +618,7 @@ export default function Trazabilidad() {
                 </>
               )}
 
-              {!tipoConfig.esVenta && (
+              {!esVenta && (
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
