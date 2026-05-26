@@ -25,7 +25,6 @@ import AddIcon from "@mui/icons-material/Add";
 import {
   listLista,
   listClientes,
-  createRegistro,
   updateRegistro,
   removeRegistro,
   convertirAVenta,
@@ -273,26 +272,6 @@ function ListaEsperaContent() {
     });
   };
 
-  const registrar = async () => {
-    if (!validate(form, requiredFields)) return;
-    if (!validarPiletaYCantidad()) return;
-
-    if (!form.fd_fecha_entrega) {
-      showSnackbar("Debes seleccionar una fecha de entrega.", "error");
-      return;
-    }
-
-    try {
-      await createRegistro(form);
-      showSnackbar("Registrado en Lista de Espera", "success");
-      setForm({ ...emptyForm, fc_granja_asignada: granjaDefault, fc_encargado_venta: nombreUsuario });
-      cargarLista();
-    } catch (err) {
-      console.error("Error al registrar en lista de espera:", err);
-      showSnackbar(err?.response?.data?.error || "Error al registrar en lista de espera", "error");
-    }
-  };
-
   const editar = (item) => {
     clearErrors();
     setEditId(item.fi_lista_id);
@@ -418,9 +397,10 @@ function ListaEsperaContent() {
          Lista de Espera
       </Typography>
 
+      {editId && (
       <Paper sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          Registrar / Editar Pedido
+          Editar Pedido
         </Typography>
 
         <Grid container spacing={2}>
@@ -619,31 +599,24 @@ function ListaEsperaContent() {
         </Grid>
 
         <Box sx={{ mt: 3 }}>
-          {!editId ? (
-            <Button variant="contained" onClick={registrar}>
-              Registrar en Lista de Espera
-            </Button>
-          ) : (
-            <>
-              <Button variant="contained" color="warning" onClick={actualizar}>
-                Actualizar
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                sx={{ ml: 2 }}
-                onClick={() => {
-                  setEditId(null);
-                  setForm(emptyForm);
-                  clearErrors();
-                }}
-              >
-                Cancelar
-              </Button>
-            </>
-          )}
+          <Button variant="contained" color="warning" onClick={actualizar}>
+            Actualizar
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            sx={{ ml: 2 }}
+            onClick={() => {
+              setEditId(null);
+              setForm(emptyForm);
+              clearErrors();
+            }}
+          >
+            Cancelar
+          </Button>
         </Box>
       </Paper>
+      )}
 
       {/* Tabla */}
       <Paper sx={{ p: 3 }}>
