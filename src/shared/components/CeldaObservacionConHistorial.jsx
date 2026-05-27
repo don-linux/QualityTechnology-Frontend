@@ -31,12 +31,30 @@ const ETIQUETA_PROCESO = {
   engorda: "Engorda",
   trazabilidad: "Trazabilidad",
   venta: "Venta",
+  biometria: "Biometría",
+  reproductor: "Reproductores",
+  control_reproductivo: "Control reproductivo",
+  siembra: "Siembra",
+  alimentacion: "Alimentación",
+  recambio: "Recambio de agua",
+  inventario_alevines: "Inventario alevines",
+  parametros: "Parámetros de agua",
+  medicamentos: "Medicamentos",
+  plagas: "Plagas",
+  insumos: "Insumos",
+  visitas: "Visitas",
+  banos: "Baños",
+  recepcion_insumos: "Recepción insumos",
 };
 
 function etiquetaProceso(proceso) {
-  if (!proceso) return null;
+  if (!proceso) return "General";
   const key = String(proceso).trim().toLowerCase();
-  return ETIQUETA_PROCESO[key] ?? proceso;
+  if (ETIQUETA_PROCESO[key]) return ETIQUETA_PROCESO[key];
+  return key
+    .split("_")
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(" ");
 }
 
 function normalizarHistorialObservaciones(rows) {
@@ -175,11 +193,7 @@ export default function CeldaObservacionConHistorial({
                   {idx > 0 && <Divider component="li" />}
                   <ListItem alignItems="flex-start" sx={{ px: 0 }}>
                     <ListItemText
-                      primary={
-                        item.proceso
-                          ? `${formatearFecha(item.fecha)} · ${item.proceso}`
-                          : formatearFecha(item.fecha)
-                      }
+                      primary={`${formatearFecha(item.fecha)} · ${item.proceso || "General"}`}
                       secondary={item.comentario}
                       primaryTypographyProps={{ fontWeight: 600, variant: "body2" }}
                       secondaryTypographyProps={{

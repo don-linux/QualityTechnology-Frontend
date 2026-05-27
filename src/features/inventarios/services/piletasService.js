@@ -38,9 +38,9 @@ export function removePileta(id) {
 }
 
 /**
- * Historial de la tabla `observacion` para una pileta (incluye trazabilidad, registros periódicos, etc.).
+ * Historial completo de `observacion` para una pileta (todos los procesos y bitácoras vinculadas).
  * @param {number|string} piletaId
- * @param {string[]} [procesos] ej. ['alevinaje','trazabilidad']
+ * @param {string[]} [procesos] Filtro opcional; si se omite, devuelve todas las vinculadas a la pileta.
  */
 export function listObservacionesPileta(piletaId, procesos) {
   const params = {};

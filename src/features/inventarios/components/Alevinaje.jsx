@@ -260,7 +260,7 @@ const Alevinaje = () => {
   };
 
   const cargarHistorialObservaciones = useCallback(
-    (piletaId) => listObservacionesPileta(piletaId, ["alevinaje", "trazabilidad", "venta"]),
+    (piletaId) => listObservacionesPileta(piletaId),
     [],
   );
 
