@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listEngordas,
-  listEngordasHistorialPileta,
   createEngorda,
   updateEngorda,
   removeEngorda,
 } from "../services/engordaService";
+import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -265,8 +265,8 @@ export default function Engorda() {
   );
 
   const cargarHistorialObservaciones = useCallback(
-    (piletaId) => listEngordasHistorialPileta(piletaId, formData.ubicacion || defaultUbicacion),
-    [formData.ubicacion, defaultUbicacion],
+    (piletaId) => listObservacionesPileta(piletaId, ["engorda", "trazabilidad"]),
+    [],
   );
 
   return (

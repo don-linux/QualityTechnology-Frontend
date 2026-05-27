@@ -26,15 +26,35 @@ const formatearFecha = (fechaISO) => {
   return d.toLocaleDateString("es-MX");
 };
 
-function extraerObservacionesDeRegistros(rows) {
+const ETIQUETA_PROCESO = {
+  alevinaje: "Alevinaje",
+  engorda: "Engorda",
+  trazabilidad: "Trazabilidad",
+};
+
+function etiquetaProceso(proceso) {
+  if (!proceso) return null;
+  const key = String(proceso).trim().toLowerCase();
+  return ETIQUETA_PROCESO[key] ?? proceso;
+}
+
+function normalizarHistorialObservaciones(rows) {
   return (Array.isArray(rows) ? rows : [])
     .map((r) => {
-      const comentario = (r.observacion ?? r.fc_observacion ?? "").trim();
+      const comentario = (r.comentario ?? r.observacion ?? r.fc_observacion ?? "").trim();
       if (!comentario) return null;
       return {
-        fecha: r.fecha_peso ?? r.fd_fecha_peso ?? r.fd_ultima_observacion_pileta ?? null,
+        fecha:
+          r.created_at ??
+          r.fd_fecha ??
+          r.fecha ??
+          r.fecha_peso ??
+          r.fd_fecha_peso ??
+          r.fd_ultima_observacion_pileta ??
+          null,
         comentario,
-        registroId: r.fi_id ?? r.fi_engorda_id ?? r.id ?? null,
+        proceso: etiquetaProceso(r.proceso ?? r.fc_proceso),
+        registroId: r.fi_observacion_id ?? r.observacion_id ?? r.fi_id ?? r.fi_engorda_id ?? r.id ?? null,
       };
     })
     .filter(Boolean)
@@ -71,7 +91,7 @@ export default function CeldaObservacionConHistorial({
       setHistorial([]);
       try {
         const res = await cargarHistorial(piletaId);
-        setHistorial(extraerObservacionesDeRegistros(res.data));
+        setHistorial(normalizarHistorialObservaciones(res.data));
       } catch (err) {
         console.error("Error cargando historial de observaciones:", err);
         setError("No se pudo cargar el historial de observaciones.");
@@ -154,7 +174,11 @@ export default function CeldaObservacionConHistorial({
                   {idx > 0 && <Divider component="li" />}
                   <ListItem alignItems="flex-start" sx={{ px: 0 }}>
                     <ListItemText
-                      primary={formatearFecha(item.fecha)}
+                      primary={
+                        item.proceso
+                          ? `${formatearFecha(item.fecha)} · ${item.proceso}`
+                          : formatearFecha(item.fecha)
+                      }
                       secondary={item.comentario}
                       primaryTypographyProps={{ fontWeight: 600, variant: "body2" }}
                       secondaryTypographyProps={{

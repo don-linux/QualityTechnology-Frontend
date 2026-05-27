@@ -44,6 +44,7 @@ export const ENDPOINTS = {
   piletas: {
     base: "/piletas",
     byId: (id) => `/piletas/${id}`,
+    observaciones: (id) => `/piletas/${id}/observaciones`,
   },
 
   reproductores: {

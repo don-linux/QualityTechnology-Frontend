@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listAlevinaje,
-  listAlevinajeHistorialPileta,
   createAlevinaje,
   updateAlevinaje,
   removeAlevinaje,
 } from "../services/alevinajeService";
+import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -260,8 +260,8 @@ const Alevinaje = () => {
   };
 
   const cargarHistorialObservaciones = useCallback(
-    (piletaId) => listAlevinajeHistorialPileta(piletaId, formData.ubicacion || defaultUbicacion),
-    [formData.ubicacion, defaultUbicacion],
+    (piletaId) => listObservacionesPileta(piletaId, ["alevinaje", "trazabilidad"]),
+    [],
   );
 
   return (

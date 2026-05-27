@@ -36,3 +36,14 @@ export function updatePileta(id, data) {
 export function removePileta(id) {
   return axios.delete(ENDPOINTS.piletas.byId(id));
 }
+
+/**
+ * Historial de la tabla `observacion` para una pileta (incluye trazabilidad, registros periódicos, etc.).
+ * @param {number|string} piletaId
+ * @param {string[]} [procesos] ej. ['alevinaje','trazabilidad']
+ */
+export function listObservacionesPileta(piletaId, procesos) {
+  const params = {};
+  if (procesos?.length) params.proceso = procesos.join(",");
+  return axios.get(ENDPOINTS.piletas.observaciones(piletaId), { params });
+}
