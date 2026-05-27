@@ -265,7 +265,7 @@ export default function Engorda() {
   );
 
   const cargarHistorialObservaciones = useCallback(
-    (piletaId) => listObservacionesPileta(piletaId, ["engorda", "trazabilidad"]),
+    (piletaId) => listObservacionesPileta(piletaId, ["engorda", "trazabilidad", "venta"]),
     [],
   );
 

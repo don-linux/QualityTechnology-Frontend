@@ -30,6 +30,7 @@ const ETIQUETA_PROCESO = {
   alevinaje: "Alevinaje",
   engorda: "Engorda",
   trazabilidad: "Trazabilidad",
+  venta: "Venta",
 };
 
 function etiquetaProceso(proceso) {
