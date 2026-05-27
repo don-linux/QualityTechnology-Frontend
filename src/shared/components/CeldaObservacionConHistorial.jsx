@@ -2,17 +2,17 @@ import React, { useState, useCallback } from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
+import Stack from "@mui/material/Stack";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import CloseIcon from "@mui/icons-material/Close";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 const TRUNCAR_MAX = 40;
 
@@ -24,6 +24,13 @@ const formatearFecha = (fechaISO) => {
   const d = new Date(fechaISO);
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleDateString("es-MX");
+};
+
+const formatearHora = (fechaISO) => {
+  if (!fechaISO) return null;
+  const d = new Date(fechaISO);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: true });
 };
 
 const ETIQUETA_PROCESO = {
@@ -57,22 +64,33 @@ function etiquetaProceso(proceso) {
     .join(" ");
 }
 
+function etiquetaRol(rol) {
+  if (!rol) return null;
+  const texto = String(rol).trim();
+  if (!texto) return null;
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
 function normalizarHistorialObservaciones(rows) {
   return (Array.isArray(rows) ? rows : [])
     .map((r) => {
       const comentario = (r.comentario ?? r.observacion ?? r.fc_observacion ?? "").trim();
       if (!comentario) return null;
+      const fecha =
+        r.created_at ??
+        r.fd_fecha ??
+        r.fecha ??
+        r.fecha_peso ??
+        r.fd_fecha_peso ??
+        r.fd_ultima_observacion_pileta ??
+        null;
       return {
-        fecha:
-          r.created_at ??
-          r.fd_fecha ??
-          r.fecha ??
-          r.fecha_peso ??
-          r.fd_fecha_peso ??
-          r.fd_ultima_observacion_pileta ??
-          null,
+        fecha,
         comentario,
         proceso: etiquetaProceso(r.proceso ?? r.fc_proceso),
+        usuarioNombre: r.usuario_nombre ?? r.fc_usuario ?? null,
+        rolNombre: etiquetaRol(r.rol_nombre ?? r.fc_rol),
+        hora: formatearHora(fecha),
         registroId: r.fi_observacion_id ?? r.observacion_id ?? r.fi_id ?? r.fi_engorda_id ?? r.id ?? null,
       };
     })
@@ -83,6 +101,44 @@ function normalizarHistorialObservaciones(rows) {
       if (tb !== ta) return tb - ta;
       return Number(b.registroId ?? 0) - Number(a.registroId ?? 0);
     });
+}
+
+function EntradaHistorial({ item }) {
+  const autorLinea = [item.rolNombre, item.usuarioNombre].filter(Boolean).join(": ");
+
+  return (
+    <Box sx={{ py: 2 }}>
+      <Typography variant="body2" fontWeight={700} color="text.primary" sx={{ mb: 1 }}>
+        {formatearFecha(item.fecha)} • {item.proceso || "General"}
+      </Typography>
+
+      <Typography
+        variant="body1"
+        fontWeight={600}
+        color="text.primary"
+        sx={{ whiteSpace: "pre-wrap", mb: 1.25, lineHeight: 1.5 }}
+      >
+        {item.comentario}
+      </Typography>
+
+      {autorLinea ? (
+        <Stack direction="row" alignItems="center" spacing={0.75} flexWrap="wrap">
+          <PersonOutlineIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+          <Typography variant="caption" color="text.secondary">
+            {autorLinea}
+          </Typography>
+          {item.hora ? (
+            <>
+              <AccessTimeIcon sx={{ fontSize: 14, color: "text.secondary", ml: 0.5 }} />
+              <Typography variant="caption" color="text.secondary">
+                {item.hora}
+              </Typography>
+            </>
+          ) : null}
+        </Stack>
+      ) : null}
+    </Box>
+  );
 }
 
 /**
@@ -165,50 +221,94 @@ export default function CeldaObservacionConHistorial({
         )}
       </Box>
 
-      <Dialog open={abierto} onClose={cerrarModal} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          Historial de observaciones
-          {piletaNombre ? ` — ${piletaNombre}` : ""}
+      <Dialog
+        open={abierto}
+        onClose={cerrarModal}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2 } }}
+      >
+        <Box sx={{ px: 3, pt: 2.5, pb: 2, position: "relative" }}>
+          <IconButton
+            aria-label="Cerrar"
+            onClick={cerrarModal}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: "text.secondary",
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          <Typography
+            variant="h6"
+            component="h2"
+            fontWeight={700}
+            color="primary.main"
+            sx={{ pr: 4, lineHeight: 1.3 }}
+          >
+            Historial de observaciones
+            {piletaNombre ? ` — ${piletaNombre}` : ""}
+          </Typography>
+
           {etapaLabel ? (
-            <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5 }}>
+            <Typography
+              variant="caption"
+              display="block"
+              color="text.secondary"
+              sx={{ mt: 0.75, letterSpacing: "0.06em", textTransform: "uppercase" }}
+            >
               {etapaLabel}
             </Typography>
           ) : null}
-        </DialogTitle>
-        <DialogContent dividers>
+        </Box>
+
+        <Divider />
+
+        <DialogContent sx={{ px: 3, py: 0 }}>
           {cargando ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
               <CircularProgress size={32} />
             </Box>
           ) : error ? (
-            <Typography color="error">{error}</Typography>
+            <Typography color="error" sx={{ py: 2 }}>
+              {error}
+            </Typography>
           ) : historial.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
               No hay observaciones registradas para esta pileta.
             </Typography>
           ) : (
-            <List dense disablePadding>
+            <Box>
               {historial.map((item, idx) => (
                 <React.Fragment key={`${item.registroId ?? idx}-${item.fecha ?? idx}`}>
-                  {idx > 0 && <Divider component="li" />}
-                  <ListItem alignItems="flex-start" sx={{ px: 0 }}>
-                    <ListItemText
-                      primary={`${formatearFecha(item.fecha)} · ${item.proceso || "General"}`}
-                      secondary={item.comentario}
-                      primaryTypographyProps={{ fontWeight: 600, variant: "body2" }}
-                      secondaryTypographyProps={{
-                        variant: "body2",
-                        sx: { whiteSpace: "pre-wrap", mt: 0.5 },
-                      }}
-                    />
-                  </ListItem>
+                  {idx > 0 && <Divider />}
+                  <EntradaHistorial item={item} />
                 </React.Fragment>
               ))}
-            </List>
+            </Box>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={cerrarModal}>Cerrar</Button>
+
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={cerrarModal}
+            sx={{
+              color: "primary.main",
+              borderColor: "grey.300",
+              fontWeight: 600,
+              px: 3,
+              "&:hover": {
+                borderColor: "primary.main",
+                backgroundColor: "action.hover",
+              },
+            }}
+          >
+            CERRAR
+          </Button>
         </DialogActions>
       </Dialog>
     </>
