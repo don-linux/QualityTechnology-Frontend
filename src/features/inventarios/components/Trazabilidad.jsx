@@ -4,7 +4,6 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
@@ -26,7 +25,11 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
-import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import {
+  fetchMergedPorUbicaciones,
+  filtrarPorUbicacion,
+} from "@shared/utils/fetchMergedPorUbicaciones";
 import ProximaVentaModal from "@features/ventas/components/ProximaVentaModal";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
 import { listPiletas } from "../services/piletasService";
@@ -158,7 +161,8 @@ const EMPTY_FORM = {
 
 export default function Trazabilidad() {
   const showSnackbar = useSnackbar();
-  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion, getGroups } =
+    useUbicacionesGranja();
   const { visible: mostrarFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } =
     useFormularioVisible();
 
@@ -257,20 +261,19 @@ export default function Trazabilidad() {
   ]);
 
   const cargarMovimientos = useCallback(async () => {
-    if (!granja) return;
+    if (!ubicacionesGranja.length) {
+      setMovimientos([]);
+      return;
+    }
     try {
-      const res = await listMovimientos(resolveFiltroUbicacion(granja));
-      const rows = Array.isArray(res.data)
-        ? res.data
-        : Array.isArray(res.data?.data)
-          ? res.data.data
-          : [];
+      const filtros = ubicacionesGranja.map((op) => resolveFiltroUbicacion(op.value));
+      const rows = await fetchMergedPorUbicaciones(filtros, listMovimientos);
       setMovimientos(rows);
     } catch (err) {
       console.error("Error al cargar movimientos:", err);
       setMovimientos([]);
     }
-  }, [granja, resolveFiltroUbicacion]);
+  }, [ubicacionesGranja, resolveFiltroUbicacion]);
 
   const cargarPiletas = useCallback(async () => {
     if (!granja) return;
@@ -464,6 +467,52 @@ export default function Trazabilidad() {
   };
 
   const etiquetaPileta = (p) => `${p.nombre} — ${formatStock(stockPileta(p))} org.`;
+
+  const gruposMovimientos = useMemo(
+    () => getGroups(movimientos, "fc_granja"),
+    [getGroups, movimientos],
+  );
+
+  const renderTablaMovimientos = (rows) => (
+    <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table size="small" sx={{ minWidth: 900 }}>
+          <TableHead sx={{ backgroundColor: "#006d77" }}>
+            <TableRow>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tipo</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Origen</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Destino</TableCell>
+              <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>
+                Cantidad
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  No hay movimientos registrados.
+                </TableCell>
+              </TableRow>
+            ) : (
+              rows.map((row) => (
+                <TableRow key={row.fi_movimiento_id}>
+                  <TableCell>{formatFecha(row.fecha_movimiento)}</TableCell>
+                  <TableCell>{row.fc_etapa ?? "—"}</TableCell>
+                  <TableCell>{row.origen ?? "—"}</TableCell>
+                  <TableCell>{row.destino ?? "—"}</TableCell>
+                  <TableCell align="right">{formatStock(row.cantidad_trasladada)}</TableCell>
+                  <TableCell>{row.observacion ?? "—"}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
 
   return (
     <Box sx={{ p: 3 }}>
@@ -730,46 +779,17 @@ export default function Trazabilidad() {
         </Card>
       </FormularioRegistroPanel>
 
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          Historial de movimientos
-          {granja ? ` — ${ubicacionesGranja.find((op) => op.value === granja)?.label ?? granja}` : ""}
-        </Typography>
-        <Divider sx={{ mb: 2 }} />
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Fecha</TableCell>
-                <TableCell>Tipo</TableCell>
-                <TableCell>Origen</TableCell>
-                <TableCell>Destino</TableCell>
-                <TableCell align="right">Cantidad</TableCell>
-                <TableCell>Observación</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {movimientos.map((row) => (
-                <TableRow key={row.fi_movimiento_id}>
-                  <TableCell>{formatFecha(row.fecha_movimiento)}</TableCell>
-                  <TableCell>{row.fc_etapa ?? "—"}</TableCell>
-                  <TableCell>{row.origen ?? "—"}</TableCell>
-                  <TableCell>{row.destino ?? "—"}</TableCell>
-                  <TableCell align="right">{formatStock(row.cantidad_trasladada)}</TableCell>
-                  <TableCell>{row.observacion ?? "—"}</TableCell>
-                </TableRow>
-              ))}
-              {movimientos.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    No hay movimientos registrados para esta granja.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
+        Historial de movimientos
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        Trazabilidad agrupada por sede, igual que en alevinaje y engorda.
+      </Typography>
+
+      <TablasPorUbicacionGranja
+        grupos={gruposMovimientos}
+        renderTabla={renderTablaMovimientos}
+      />
 
       <ProximaVentaModal
         open={openProximaVenta}
