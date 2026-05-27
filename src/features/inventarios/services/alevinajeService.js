@@ -8,11 +8,17 @@ import { filtrosUbicacionAParams } from "./piletasService";
  * use `?historial=true` para todos los registros.
  */
 
-export function listAlevinaje(filtroUbicacion, piletaId) {
+export function listAlevinaje(filtroUbicacion, piletaId, opciones = {}) {
   const params = {};
   filtrosUbicacionAParams(params, filtroUbicacion);
   if (piletaId) params.pileta_id = piletaId;
+  if (opciones.historial) params.historial = true;
   return axios.get(ENDPOINTS.alevinaje.base, { params });
+}
+
+/** Todos los registros periódicos de una pileta (incluye observaciones históricas). */
+export function listAlevinajeHistorialPileta(piletaId, filtroUbicacion) {
+  return listAlevinaje(filtroUbicacion, piletaId, { historial: true });
 }
 
 export function createAlevinaje(data) {

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listEngordas,
+  listEngordasHistorialPileta,
   createEngorda,
   updateEngorda,
   removeEngorda,
 } from "../services/engordaService";
+import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
@@ -33,12 +35,9 @@ import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
 import { listPiletas } from "../services/piletasService";
 
 const MAX_OBSERVACION = 500;
-const TRUNCAR_MAX = 40;
 
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
-const truncar = (texto) =>
-  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 export default function Engorda() {
   const showSnackbar = useSnackbar();
@@ -265,6 +264,11 @@ export default function Engorda() {
     0,
   );
 
+  const cargarHistorialObservaciones = useCallback(
+    (piletaId) => listEngordasHistorialPileta(piletaId, formData.ubicacion || defaultUbicacion),
+    [formData.ubicacion, defaultUbicacion],
+  );
+
   return (
     <div style={{ padding: "25px" }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
@@ -459,10 +463,16 @@ export default function Engorda() {
                         <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
                         <TableCell>{formatNumber(l.peso_kg ?? l.peso)}</TableCell>
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
-                        <TableCell sx={{ maxWidth: 200 }}>
-                          <span title={l.observacion || ""}>
-                            {l.observacion ? truncar(l.observacion) : "—"}
-                          </span>
+                        <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
+                          <CeldaObservacionConHistorial
+                            texto={l.observacion ?? l.fc_observacion ?? ""}
+                            piletaId={
+                              l.fi_pileta_destino_id ?? l.pileta_destino_id ?? l.pileta_id
+                            }
+                            piletaNombre={l.nombre_pileta_destino || l.nombre_pileta}
+                            etapaLabel="Engorda"
+                            cargarHistorial={cargarHistorialObservaciones}
+                          />
                         </TableCell>
                       </TableRow>
                     ))

@@ -8,16 +8,22 @@ import { filtrosUbicacionAParams } from "./piletasService";
  * use `?historial=true` para todos los registros.
  */
 
-export function listEngordas(filtroUbicacion, piletaId) {
+export function listEngordas(filtroUbicacion, piletaId, opciones = {}) {
   const params = {};
   filtrosUbicacionAParams(params, filtroUbicacion);
   if (piletaId) params.pileta_id = piletaId;
+  if (opciones.historial) params.historial = true;
   const nombre =
     filtroUbicacion && typeof filtroUbicacion === "object"
       ? filtroUbicacion.granja ?? filtroUbicacion.nombre ?? ""
       : String(filtroUbicacion ?? "");
   const base = nombre ? ENDPOINTS.engorda.byGranja(nombre) : ENDPOINTS.engorda.base;
   return axios.get(base, { params: Object.keys(params).length ? params : undefined });
+}
+
+/** Todos los registros periódicos de una pileta (incluye observaciones históricas). */
+export function listEngordasHistorialPileta(piletaId, filtroUbicacion) {
+  return listEngordas(filtroUbicacion, piletaId, { historial: true });
 }
 
 export function createEngorda(data) {
