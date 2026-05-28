@@ -19,6 +19,8 @@ import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
 import PasswordField from "@shared/components/PasswordField";
 import useConfirm from "@shared/hooks/useConfirm";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUsuarios from "../hooks/useUsuarios";
 
 function uid(u) {
@@ -77,6 +79,7 @@ export default function UsuariosRegistro() {
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const { usuarios, roles, departamentos, puestos, unidadesNegocio, crearUsuario, actualizarUsuario, toggleActivo } = useUsuarios();
 
   const rolSeleccionado = roles.find((r) => rid(r) === Number(form.rol_id));
@@ -127,6 +130,7 @@ export default function UsuariosRegistro() {
       fi_unidad_negocio_id: "",
     });
     clearErrors();
+    abrirFormulario();
   };
 
   const limpiarFormulario = () => {
@@ -137,6 +141,7 @@ export default function UsuariosRegistro() {
     });
     setUsuarioSeleccionado(null);
     clearErrors();
+    cerrarFormulario();
   };
 
   const obtenerNombreRol = (rolId) => {
@@ -157,6 +162,7 @@ export default function UsuariosRegistro() {
         </Typography>
       </Box>
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
@@ -234,6 +240,7 @@ export default function UsuariosRegistro() {
           </Grid>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 2 }}>
         <Table>

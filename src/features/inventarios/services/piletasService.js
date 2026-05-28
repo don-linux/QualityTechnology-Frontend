@@ -18,10 +18,6 @@ export function filtrosUbicacionAParams(params, filtros) {
   params.granja = filtros;
 }
 
-/* ============================================================================
-   CRUD físico piletas (+ última observación si el backend la incluye)
-============================================================================ */
-
 export function listPiletas(filtroUbicacion, tipo) {
   const params = {};
   filtrosUbicacionAParams(params, filtroUbicacion);
@@ -37,59 +33,17 @@ export function updatePileta(id, data) {
   return axios.put(ENDPOINTS.piletas.byId(id), data);
 }
 
-/* ============================================================================
-   Inventario / Orígenes / Destinos
-============================================================================ */
-
-export function getInventario(granja) {
-  return axios.get(ENDPOINTS.piletas.inventario(granja));
-}
-
-export function getOrigenes(granja) {
-  return axios.get(ENDPOINTS.piletas.origen(granja));
-}
-
-export function getDestinos(granja) {
-  return axios.get(ENDPOINTS.piletas.destino(granja));
-}
-
-/* ============================================================================
-   Siembra (create / update via POST con `fi_pileta_id` opcional)
-============================================================================ */
-
-export function registrarSiembra(data) {
-  return axios.post(ENDPOINTS.piletas.siembra, data);
-}
-
 export function removePileta(id) {
   return axios.delete(ENDPOINTS.piletas.byId(id));
 }
 
-/* ============================================================================
-   Trazabilidad / Movimientos
-============================================================================ */
-
-export function getMovimientos(usuarioId, granja) {
-  return axios.get(ENDPOINTS.piletas.movimientos(usuarioId, granja));
-}
-
-export function filtrarMovimientos(usuarioId, granja, queryString) {
-  const url = ENDPOINTS.piletas.movimientosFiltro(usuarioId, granja);
-  return axios.get(queryString ? `${url}?${queryString}` : url);
-}
-
-export function registrarMovimiento(data) {
-  return axios.post(ENDPOINTS.piletas.registrarMovimiento, data);
-}
-
-export function eliminarMovimiento(id) {
-  return axios.delete(ENDPOINTS.piletas.eliminarMovimientos, {
-    data: { movimiento_id: id },
-  });
-}
-
-export function eliminarTodosMovimientos(granja) {
-  return axios.delete(ENDPOINTS.piletas.eliminarMovimientos, {
-    data: { eliminar_todos: true, granja },
-  });
+/**
+ * Historial completo de `observacion` para una pileta (todos los procesos y bitácoras vinculadas).
+ * @param {number|string} piletaId
+ * @param {string[]} [procesos] Filtro opcional; si se omite, devuelve todas las vinculadas a la pileta.
+ */
+export function listObservacionesPileta(piletaId, procesos) {
+  const params = {};
+  if (procesos?.length) params.proceso = procesos.join(",");
+  return axios.get(ENDPOINTS.piletas.observaciones(piletaId), { params });
 }

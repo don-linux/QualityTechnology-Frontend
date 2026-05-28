@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { listRoles, createRol, updateRol, removeRol } from "@features/catalogos/services/rolesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
+import useConfirm from "@shared/hooks/useConfirm";
+import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import { getRolId, getRolNombre, rolEsRoot } from "@features/catalogos/utils/catalogEntityGetters";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -15,25 +20,39 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function Roles() {
-  const [form, setForm] = useState({ rol_id: '', nombre: '' });
+  const showSnackbar = useSnackbar();
+  const [form, setForm] = useState({ fi_rol_id: null, fc_nombre: "" });
   const [roles, setRoles] = useState([]);
-  const [mensaje, setMensaje] = useState('');
+  const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const requiredFields = ["nombre"];
+  const { confirm, ConfirmModal } = useConfirm();
+  const {
+    visible: mostrarFormulario,
+    abrir: abrirFormulario,
+    cerrar: cerrarFormulario,
+    toggle: toggleFormulario,
+  } = useFormularioVisible();
 
   useEffect(() => {
     obtenerRoles();
   }, []);
 
   const obtenerRoles = async () => {
+    setLoading(true);
     try {
-      const res = await listRoles();
-      setRoles(res.data);
+      const { data } = await listRoles();
+      setRoles(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Error al obtener roles', error);
+      console.error("Error al obtener roles", error);
+      showSnackbar("Error al cargar roles", "error");
+      setRoles([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,155 +61,182 @@ export default function Roles() {
     clearFieldError(e.target.name);
   };
 
-  const limpiarFormulario = () => {
-    setForm({ rol_id: '', nombre: '' });
-    setMensaje('');
+  const limpiar = () => {
+    setForm({ fi_rol_id: null, fc_nombre: "" });
     clearErrors();
+    cerrarFormulario();
   };
 
-  const registrarRol = async () => {
-    if (!validate(form, requiredFields)) return;
+  const registrar = async () => {
+    if (!validate(form, ["fc_nombre"])) return;
     try {
-      await createRol(form.nombre);
-      setMensaje(' Rol registrado correctamente');
-      limpiarFormulario();
+      await createRol(form.fc_nombre.trim());
+      showSnackbar("Rol registrado correctamente", "success");
       obtenerRoles();
+      limpiar();
     } catch (error) {
-      console.error('Error al registrar rol', error);
-      setMensaje(' Error al registrar rol');
+      console.error("Error al registrar rol", error);
+      showSnackbar(error?.response?.data?.error || "Error al registrar rol", "error");
     }
   };
 
-  const actualizarRol = async () => {
-    if (!form.rol_id) return setMensaje(' Selecciona un rol para actualizar');
-    if (!validate(form, requiredFields)) return;
+  const actualizar = async () => {
+    if (!form.fi_rol_id) return;
+    if (!validate(form, ["fc_nombre"])) return;
     try {
-      await updateRol(form.rol_id, form.nombre);
-      setMensaje(' Rol actualizado correctamente');
-      limpiarFormulario();
+      await updateRol(form.fi_rol_id, form.fc_nombre.trim());
+      showSnackbar("Rol actualizado correctamente", "success");
       obtenerRoles();
+      limpiar();
     } catch (error) {
-      console.error('Error al actualizar rol', error);
-      setMensaje(' Error al actualizar rol');
+      console.error("Error al actualizar rol", error);
+      showSnackbar(error?.response?.data?.error || "Error al actualizar rol", "error");
     }
   };
 
-  const eliminarRol = async () => {
-    if (!form.rol_id) return setMensaje(' Selecciona un rol para eliminar');
+  const eliminar = async (id, nombre) => {
+    if (!await confirm(`¿Eliminar el rol "${nombre}"?`)) return;
     try {
-      await removeRol(form.rol_id);
-      setMensaje(' Rol eliminado correctamente');
-      limpiarFormulario();
+      await removeRol(id);
+      showSnackbar("Rol eliminado correctamente", "success");
       obtenerRoles();
+      if (form.fi_rol_id === id) limpiar();
     } catch (error) {
-      console.error('Error al eliminar rol', error);
-      setMensaje(' Error al eliminar rol');
+      console.error("Error al eliminar rol", error);
+      showSnackbar(error?.response?.data?.error || "Error al eliminar rol", "error");
     }
   };
 
-  const seleccionarRol = (rol) => {
+  const seleccionar = (rol) => {
     setForm({
-      rol_id: rol.rol_id ?? rol.fi_rol_id ?? rol.id,
-      nombre: rol.nombre ?? rol.fc_nombre,
+      fi_rol_id: getRolId(rol),
+      fc_nombre: getRolNombre(rol),
     });
-    setMensaje('');
     clearErrors();
+    abrirFormulario();
   };
 
   return (
-    <Container maxWidth="sm" sx={{ pt: 2, pb: 4 }}>
-      <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: "bold" }}>
-         Registro de Roles
-      </Typography>
+    <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
+      <Box textAlign="center" mb={3}>
+        <Typography variant="h4" fontWeight="bold">
+          Catálogo de Roles
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Administra los roles de acceso del sistema
+        </Typography>
+      </Box>
 
-      <Card sx={{ mb: 3, boxShadow: 3, borderRadius: 2 }}>
-        <CardContent>
-          <Grid container spacing={2}>
-            <Grid size={12}>
-              <TextField
-                name="nombre"
-                label="Nombre del Rol"
-                fullWidth
-                value={form.nombre}
-                onChange={handleChange}
-                error={!!errors.nombre}
-                helperText={errors.nombre}
-              />
-            </Grid>
-
-            {mensaje && (
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
+        <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
+          <CardContent>
+            <Typography variant="subtitle1" mb={2} fontWeight="bold">
+              {form.fi_rol_id ? "Editando Rol" : "Nuevo Rol"}
+            </Typography>
+            <Grid container spacing={2}>
               <Grid size={12}>
-                <Typography color={mensaje.includes('correctamente') ? 'green' : 'error'}>{mensaje}</Typography>
+                <TextField
+                  name="fc_nombre"
+                  label="Nombre del Rol"
+                  fullWidth
+                  value={form.fc_nombre}
+                  onChange={handleChange}
+                  error={!!errors.fc_nombre}
+                  helperText={errors.fc_nombre}
+                />
               </Grid>
-            )}
-
-            <Grid size={12}>
-              <Stack direction="row" spacing={2}>
+            </Grid>
+            <Grid container spacing={2} mt={1}>
+              <Grid size={{ xs: 6, sm: 3 }}>
                 <Button
+                  fullWidth
                   variant="contained"
                   color="success"
-                  onClick={registrarRol}
-                  disabled={!!form.rol_id}
+                  onClick={registrar}
+                  disabled={!!form.fi_rol_id}
                 >
                   Registrar
                 </Button>
+              </Grid>
+              <Grid size={{ xs: 6, sm: 3 }}>
                 <Button
+                  fullWidth
                   variant="contained"
-                  color="primary"
-                  onClick={actualizarRol}
-                  disabled={!form.rol_id}
+                  onClick={actualizar}
+                  disabled={!form.fi_rol_id}
                 >
                   Actualizar
                 </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={eliminarRol}
-                  disabled={!form.rol_id}
-                >
-                  Eliminar
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={limpiarFormulario}
-                  sx={{ backgroundColor: 'gray', color: 'white' }}
-                >
+              </Grid>
+              <Grid size={{ xs: 6, sm: 3 }}>
+                <Button fullWidth variant="outlined" onClick={limpiar}>
                   Limpiar
                 </Button>
-              </Stack>
+              </Grid>
             </Grid>
+          </CardContent>
+        </Card>
+      </FormularioRegistroPanel>
 
-            <Grid size={12}>
-              <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
-                <Table>
-                  <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
-                    <TableRow>
-                      <TableCell><strong>Nombre</strong></TableCell>
-                      <TableCell><strong>Acción</strong></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {roles.map((rol) => (
-                      <TableRow key={rol.rol_id ?? rol.fi_rol_id ?? rol.id} hover>
-                        <TableCell>{rol.nombre ?? rol.fc_nombre}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => seleccionarRol(rol)}
-                          >
-                            Seleccionar
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
+          <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 2 }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Nombre</TableCell>
+                  <TableCell>Tipo</TableCell>
+                  <TableCell align="center">Acciones</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {roles.map((rol) => (
+                  <TableRow key={getRolId(rol) ?? ""} hover>
+                    <TableCell>{getRolId(rol)}</TableCell>
+                    <TableCell>{getRolNombre(rol)}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={rolEsRoot(rol) ? "Root" : "Estándar"}
+                        color={rolEsRoot(rol) ? "warning" : "default"}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Box
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 1,
+                          flexWrap: "nowrap",
+                        }}
+                      >
+                        <Button size="small" variant="outlined" onClick={() => seleccionar(rol)}>
+                          Seleccionar
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          onClick={() => eliminar(getRolId(rol), getRolNombre(rol))}
+                        >
+                          Eliminar
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
+      {ConfirmModal}
     </Container>
   );
 }

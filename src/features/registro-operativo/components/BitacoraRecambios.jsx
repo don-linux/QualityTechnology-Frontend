@@ -29,6 +29,8 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -60,6 +62,7 @@ function BitacoraRecambiosContent() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "ubicacion",
@@ -112,6 +115,7 @@ function BitacoraRecambiosContent() {
       else await createRecambio(form);
 
       setEditId(null);
+      cerrarFormulario();
       setForm({
         ubicacion: form.ubicacion,
         fc_mes: "",
@@ -159,7 +163,9 @@ function BitacoraRecambiosContent() {
       fc_responsable: r.fc_responsable || "",
       fi_usuario_id: r.fi_usuario_id || usuarioId,
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   const eliminar = async (id) => {
@@ -354,7 +360,7 @@ const exportarPDF = async () => {
         Recambios de Trampas
       </Typography>
 
-      {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -478,10 +484,11 @@ const exportarPDF = async () => {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLAS POR UBICACIÓN */}
       {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} defaultExpanded sx={{ mt: 1 }}>
+        <Accordion key={value} sx={{ mt: 1 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{label}</Typography>
           </AccordionSummary>

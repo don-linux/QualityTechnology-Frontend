@@ -27,6 +27,8 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -49,6 +51,7 @@ function BitacoraInventarioContent() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "ubicacion",
@@ -89,6 +92,7 @@ function BitacoraInventarioContent() {
         await createInventario(form);
 
       setEditId(null);
+      cerrarFormulario();
       setForm({
         ubicacion: form.ubicacion,
         fn_num_instalacion: "",
@@ -120,7 +124,9 @@ function BitacoraInventarioContent() {
       fd_fecha_salida_hormonado: r.fd_fecha_salida_hormonado?.split("T")[0],
       fi_usuario_id: r.fi_usuario_id || usuarioId,
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   const eliminar = async (id) => {
@@ -253,7 +259,7 @@ function BitacoraInventarioContent() {
         Inventario de Alevines
       </Typography>
 
-      {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -385,10 +391,11 @@ function BitacoraInventarioContent() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLAS POR UBICACIÓN */}
       {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} defaultExpanded sx={{ mt: 1 }}>
+        <Accordion key={value} sx={{ mt: 1 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{label}</Typography>
           </AccordionSummary>

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   listByGranja as listReproductoresByGranja,
-  getMovimientos as getReproductoresMovimientos,
   createReproductor,
   updateReproductor,
   removeReproductor,
@@ -30,6 +29,11 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import {
+  fetchMergedPorUbicaciones,
+  filtrarPorUbicacion,
+} from "@shared/utils/fetchMergedPorUbicaciones";
 
 const MAX_NUMERICO = 15;
 const MAX_OBSERVACION = 500;
@@ -106,21 +110,17 @@ function ReproductoresContent() {
   const usuario_id = localStorage.getItem("usuario_id");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion, getGroups } =
+    useUbicacionesGranja();
 
-  const [granjaActiva, setGranjaActiva] = useState("");
-  const filtroUbicacion = useMemo(
-    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
-    [granjaActiva, resolveFiltroUbicacion],
+  const filtrosUbicacion = useMemo(
+    () => ubicacionesGranja.map((op) => resolveFiltroUbicacion(op.value)),
+    [ubicacionesGranja, resolveFiltroUbicacion],
   );
 
   const [reproductores, setReproductores] = useState([]);
   const [piletasReproductores, setPiletasReproductores] = useState([]);
   const [piletasOrigen, setPiletasOrigen] = useState([]);
-  const [rastreos, setRastreos] = useState([]);
-  const [filtroTexto, setFiltroTexto] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFin, setFechaFin] = useState("");
   const [totalPiletas, setTotalPiletas] = useState(0);
   const [totalOrganismos, setTotalOrganismos] = useState(0);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -130,6 +130,7 @@ function ReproductoresContent() {
   const origenAporteRef = useRef({ piletaId: null, machos: 0, hembras: 0 });
 
   const [form, setForm] = useState({
+    ubicacion: "",
     origen_pileta_id: "",
     origen_texto: "",
     pileta_id: "",
@@ -176,8 +177,7 @@ const colorDias = (dias) => {
   /* ===================== CARGA DE DATOS ===================== */
 
   const obtenerReproductores = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
-    const { data } = await listReproductoresByGranja(filtroUbicacion);
+    const data = await fetchMergedPorUbicaciones(filtrosUbicacion, listReproductoresByGranja);
     setReproductores(data || []);
     setTotalOrganismos(
       data?.reduce(
@@ -185,14 +185,13 @@ const colorDias = (dias) => {
         0
       ) || 0
     );
-  }, [filtroUbicacion]);
+  }, [filtrosUbicacion]);
 
   const obtenerPiletas = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
     try {
       const [resRepro, resTodas] = await Promise.all([
-        listPiletas(filtroUbicacion, "reproductores"),
-        listPiletas(filtroUbicacion),
+        listPiletas(null, "reproductores"),
+        listPiletas(),
       ]);
       const repro = Array.isArray(resRepro.data) ? resRepro.data : [];
       const todas = Array.isArray(resTodas.data) ? resTodas.data : [];
@@ -205,58 +204,39 @@ const colorDias = (dias) => {
       setPiletasOrigen([]);
       setTotalPiletas(0);
     }
-  }, [filtroUbicacion]);
-
-  const obtenerTrazabilidad = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) return;
-    try {
-      const { data } = await getReproductoresMovimientos(filtroUbicacion);
-      setRastreos(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error al cargar trazabilidad:", err);
-      setRastreos([]);
-      showSnackbar(
-        err?.response?.data?.error || "No se pudieron cargar los movimientos.",
-        "error"
-      );
-    }
-  }, [filtroUbicacion, showSnackbar]);
+  }, []);
 
   useEffect(() => {
-    if (!granjaActiva && defaultUbicacion) {
-      setGranjaActiva(defaultUbicacion);
-      return;
-    }
-
-    if (!granjaActiva) return;
     obtenerReproductores();
     obtenerPiletas();
-    obtenerTrazabilidad();
-  }, [defaultUbicacion, granjaActiva, obtenerReproductores, obtenerPiletas, obtenerTrazabilidad]);
+  }, [obtenerReproductores, obtenerPiletas]);
 
-  const rastreosFiltrados = rastreos.filter((r) => {
-  const texto = filtroTexto.toLowerCase();
+  useEffect(() => {
+    if (!form.ubicacion && defaultUbicacion) {
+      setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
+    }
+  }, [defaultUbicacion, form.ubicacion]);
 
-  const coincideTexto =
-    r.origen?.toLowerCase().includes(texto) ||
-    r.destino?.toLowerCase().includes(texto) ||
-    r.observacion?.toLowerCase().includes(texto);
+  const piletasReproductoresFiltradas = useMemo(
+    () => filtrarPorUbicacion(piletasReproductores, form.ubicacion, ubicacionesGranja),
+    [piletasReproductores, form.ubicacion, ubicacionesGranja],
+  );
+  const piletasOrigenFiltradas = useMemo(
+    () => filtrarPorUbicacion(piletasOrigen, form.ubicacion, ubicacionesGranja),
+    [piletasOrigen, form.ubicacion, ubicacionesGranja],
+  );
 
-  const fechaMov = new Date(r.fecha_movimiento);
-  const desde = fechaInicio ? new Date(fechaInicio) : null;
-  const hasta = fechaFin ? new Date(fechaFin) : null;
-
-  const coincideFecha =
-    (!desde || fechaMov >= desde) && (!hasta || fechaMov <= hasta);
-
-  return coincideTexto && coincideFecha;
-});
+  const gruposReproductores = useMemo(
+    () => getGroups(reproductores, "fc_granja"),
+    [reproductores, getGroups],
+  );
 
   /* ===================== FORMULARIO ===================== */
 
   const limpiarFormulario = () => {
     origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
     setForm({
+      ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
       origen_pileta_id: "",
       origen_texto: "",
       pileta_id: "",
@@ -338,6 +318,18 @@ const colorDias = (dias) => {
       return;
     }
 
+    if (name === "ubicacion") {
+      setForm({
+        ...form,
+        ubicacion: value,
+        origen_pileta_id: "",
+        pileta_id: "",
+      });
+      origenAporteRef.current = { piletaId: null, machos: 0, hembras: 0 };
+      clearFieldError(name);
+      return;
+    }
+
     if (name === "fn_machos" || name === "fn_hembras") {
       if (!soloEntero(value)) return;
     }
@@ -370,7 +362,7 @@ const colorDias = (dias) => {
   /* ===================== ACCIONES ===================== */
 
   const registrarReproductor = async () => {
-    if (!validate(form, getReproductorRequiredFields(origenTipo))) return;
+    if (!validate(form, [...getReproductorRequiredFields(origenTipo), "ubicacion"])) return;
 
     try {
       await createReproductor({
@@ -384,12 +376,11 @@ const colorDias = (dias) => {
         origen_pileta_id: form.origen_pileta_id ? Number(form.origen_pileta_id) : null,
         origen_texto: form.origen_texto,
         fi_usuario_id: usuario_id,
-        fc_granja: granjaActiva,
+        fc_granja: form.ubicacion,
       });
 
       limpiarFormulario();
       obtenerReproductores();
-      obtenerTrazabilidad();
     } catch (err) {
       console.error("Error al registrar reproductor:", err);
       showSnackbar(err.response?.data?.error || err.message || "No se pudo registrar el reproductor.", "error");
@@ -403,6 +394,7 @@ const colorDias = (dias) => {
     setOrigenTipo(r.origen_pileta_id ? "Interno" : "Externo");
 
     setForm({
+      ubicacion: r.fc_granja || defaultUbicacion || "",
       origen_pileta_id: r.origen_pileta_id != null ? String(r.origen_pileta_id) : "",
       origen_texto: r.origen_texto || "",
       pileta_id: r.pileta_id != null ? String(r.pileta_id) : "",
@@ -437,7 +429,6 @@ const colorDias = (dias) => {
 
       limpiarFormulario();
       obtenerReproductores();
-      obtenerTrazabilidad();
     } catch (err) {
       console.error("Error al guardar reproductor:", err);
       showSnackbar(err.response?.data?.error || err.message || "No se pudo guardar el reproductor.", "error");
@@ -449,7 +440,6 @@ const colorDias = (dias) => {
     try {
       await removeReproductor(id);
       obtenerReproductores();
-      obtenerTrazabilidad();
     } catch (err) {
       showSnackbar("Error al eliminar: " + (err.response?.data?.error || err.message), "error");
     }
@@ -471,26 +461,10 @@ const colorDias = (dias) => {
             borderLeft: "6px solid #2196F3",
           }}
         >
-        <Typography><strong>Ubicación (sede):</strong> {granjaActiva}</Typography>
         <Typography><strong>Total piletas reproductoras:</strong> {totalPiletas}</Typography>
         <Typography><strong>Total organismos:</strong> {totalOrganismos}</Typography>
       </Paper>
       
-     {/* Selector de granja */}
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        {ubicacionesGranja.map((op) => (
-          <Button
-            key={op.value}
-            variant={granjaActiva === op.value ? "contained" : "outlined"}
-            color="primary"
-            sx={{ minWidth: 180, fontWeight: "bold" }}
-            onClick={() => setGranjaActiva(op.value)}
-          >
-            {op.label}
-          </Button>
-        ))}
-      </Box>
-
       {/* Botón para abrir formulario */}
       <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mb: 2 }}>
         <Button
@@ -509,7 +483,26 @@ const colorDias = (dias) => {
           <Card sx={{ mt: 3 }}>
             <CardContent>
               <Grid container spacing={2}>
-                
+                <Grid size={12}>
+                  <TextField
+                    select
+                    size="small"
+                    label="Ubicación"
+                    name="ubicacion"
+                    value={form.ubicacion}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errors.ubicacion}
+                    helperText={errors.ubicacion}
+                  >
+                    {ubicacionesGranja.map((op) => (
+                      <MenuItem key={op.value} value={op.value}>
+                        {op.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+
                {/* ORIGEN NUEVO */}
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
@@ -548,14 +541,14 @@ const colorDias = (dias) => {
                   slotProps={{
                     select: {
                       renderValue: (val) => {
-                        const p = piletasOrigen.find((x) => String(x.fi_pileta_id) === String(val));
+                        const p = piletasOrigenFiltradas.find((x) => String(x.fi_pileta_id) === String(val));
                         return p ? `${p.nombre} · ${tipoLabel(p.tipo)}` : "";
                       },
                     },
                   }}
                 >
                   <MenuItem value="">Seleccione</MenuItem>
-                  {piletasOrigen.map((p) => (
+                  {piletasOrigenFiltradas.map((p) => (
                     <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
                       {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
                     </MenuItem>
@@ -598,7 +591,7 @@ const colorDias = (dias) => {
                     slotProps={{
                       select: {
                         renderValue: (val) => {
-                          const p = piletasReproductores.find(
+                          const p = piletasReproductoresFiltradas.find(
                             (x) => String(x.fi_pileta_id) === String(val),
                           );
                           return p ? `${p.nombre} · ${p.estado}` : "";
@@ -607,7 +600,7 @@ const colorDias = (dias) => {
                     }}
                   >
                     <MenuItem value="">Seleccione</MenuItem>
-                    {piletasReproductores.map((p) => (
+                    {piletasReproductoresFiltradas.map((p) => (
                       <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
                         {p.nombre} · {p.estado}
                       </MenuItem>
@@ -754,8 +747,11 @@ const colorDias = (dias) => {
         )}
       </Paper>
 
-      {/* TABLA PRINCIPAL */}
-      <Paper sx={{ width: "100%", mb: 6 }}>
+      <TablasPorUbicacionGranja
+        grupos={gruposReproductores}
+        accordionSx={{ mb: 6 }}
+        renderTabla={(rows) => (
+      <Paper sx={{ width: "100%" }}>
         <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
           <Table stickyHeader sx={{ minWidth: 1350 }}>
             <TableHead>
@@ -795,7 +791,7 @@ const colorDias = (dias) => {
             </TableHead>
 
             <TableBody>
-              {reproductores.map((r) => {
+              {rows.map((r) => {
                 const refDiasPila = r.fd_fecha_siembra ?? r.fd_alta_reproductor ?? null;
                 const diasPila = calcularDias(refDiasPila);
                 const diasBiometria = calcularDias(r.fd_fecha_biometria);
@@ -915,91 +911,9 @@ const colorDias = (dias) => {
           </Table>
         </TableContainer>
       </Paper>
-
-      {/* TRAZABILIDAD */}
-      <Typography variant="h6" sx={{ color: "#E65100", mt: 5, mb: 2 }}>
-         Trazabilidad de Movimientos
-      </Typography>
-
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-      <TextField
-        size="small"
-        label="Buscar"
-        fullWidth
-        value={filtroTexto}
-        onChange={(e) => setFiltroTexto(e.target.value)}
+        )}
       />
 
-      <TextField
-        type="date"
-        size="small"
-        label="Fecha inicio"
-        value={fechaInicio}
-        onChange={(e) => setFechaInicio(e.target.value)}
-        InputLabelProps={{ shrink: true }}
-      />
-
-      <TextField
-        type="date"
-        size="small"
-        label="Fecha fin"
-        value={fechaFin}
-        onChange={(e) => setFechaFin(e.target.value)}
-        InputLabelProps={{ shrink: true }}
-      />
-
-      <Button
-        variant="contained"
-        onClick={() => obtenerTrazabilidad()}
-        sx={{ height: "40px" }}
-      >
-        BUSCAR
-      </Button>
-
-      <Button
-        variant="outlined"
-        color="error"
-        sx={{ height: "40px" }}
-        onClick={() => {
-          setFiltroTexto("");
-          setFechaInicio("");
-          setFechaFin("");
-        }}
-      >
-        LIMPIAR
-      </Button>
-    </Box>
-    <Paper sx={{ width: "100%", mb: 6, boxShadow: 2 }}>
-      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-        <Table stickyHeader sx={{ minWidth: 960 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Origen</TableCell>
-              <TableCell>Destino</TableCell>
-              <TableCell>Cantidad</TableCell>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Observación</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-           {rastreosFiltrados.map((r) => (
-              <TableRow key={r.fi_movimiento_id}>
-                <TableCell>{r.origen || "—"}</TableCell>
-                <TableCell>{r.destino || "—"}</TableCell>
-                <TableCell>{formatNumber(r.cantidad_trasladada)}</TableCell>
-                <TableCell>{formatFecha(r.fecha_movimiento)}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.observacion || ""}>
-                    {r.observacion ? truncar(r.observacion) : "—"}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      </Paper>
       {ConfirmModal}
     </Box>
   );

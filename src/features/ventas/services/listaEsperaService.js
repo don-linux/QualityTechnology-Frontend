@@ -17,12 +17,12 @@ export function updateRegistro(id, form) {
   return axios.put(ENDPOINTS.listaEspera.byId(id), form);
 }
 
-export function removeRegistro(id) {
+export function cancelarRegistro(id) {
   return axios.delete(ENDPOINTS.listaEspera.byId(id));
 }
 
-export function convertirAVenta(id) {
-  return axios.post(ENDPOINTS.listaEspera.convertir(id));
+export function convertirAVenta(id, data = {}) {
+  return axios.post(ENDPOINTS.listaEspera.convertir(id), data);
 }
 
 export function createClienteRapido(data) {

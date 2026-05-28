@@ -32,8 +32,12 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -42,7 +46,8 @@ const truncar = (texto) =>
 function BitacoraPlagasContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor, getGroups } =
+    useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
     fc_num_trampa: "",
@@ -64,8 +69,10 @@ function BitacoraPlagasContent() {
   const [registroDetalle, setRegistroDetalle] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
+    "ubicacion",
     "fd_fecha", "fc_num_trampa", "tipo_trampa", "fc_hallazgo",
     "fc_malla", "fc_veneno", "fc_observaciones", "fc_verifico",
     "unidad_produccion",
@@ -94,14 +101,15 @@ function BitacoraPlagasContent() {
 
   //  Cargar y filtrar registros
   const cargarDatos = useCallback(async () => {
-    if (!form.ubicacion) {
+    if (!ubicacionesGranja.length) {
       setData([]);
       return;
     }
 
     try {
-      const res = await listPlagas(form.ubicacion);
-      const filtrados = res.data.filter((r) => {
+      const granjas = ubicacionesGranja.map((op) => op.value);
+      const rows = await fetchMergedPorUbicaciones(granjas, listPlagas);
+      const filtrados = rows.filter((r) => {
         if (!busqueda) return true;
         return (
           r.tipo_trampa?.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -112,7 +120,7 @@ function BitacoraPlagasContent() {
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
     }
-  }, [form.ubicacion, busqueda]);
+  }, [ubicacionesGranja, busqueda]);
 
   useEffect(() => {
     cargarEmpleados();
@@ -137,6 +145,7 @@ function BitacoraPlagasContent() {
       else await createPlaga(form);
 
       setEditId(null);
+      cerrarFormulario();
       setForm({
         fd_fecha: "",
         fc_num_trampa: "",
@@ -172,7 +181,9 @@ function BitacoraPlagasContent() {
       fi_usuario_id: r.fi_usuario_id || usuarioId,
       ubicacion: r.ubicacion || defaultUbicacion,
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   const eliminar = async (id) => {
@@ -182,23 +193,17 @@ function BitacoraPlagasContent() {
   };
 
   const eliminarTodos = async () => {
-    if (!await confirm(" ¿Eliminar todos los registros de esta ubicación?")) return;
-    await removeAllPlagas(form.ubicacion);
+    if (!await confirm("¿Eliminar todos los registros de todas las ubicaciones?")) return;
+    await Promise.all(ubicacionesGranja.map((op) => removeAllPlagas(op.value)));
     cargarDatos();
   };
 
-  //  Color PDF dinámico
-  const getColorPorUbicacion = () => {
-    return getColor(form.ubicacion);
-  };
-
-  //  Exportar PDF
   const exportarPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(form.ubicacion);
-    const color = getColorPorUbicacion();
+    const logo = getLogo(defaultUbicacion);
+    const color = getColor(defaultUbicacion);
 
     try {
       doc.addImage(logo, "PNG", 10, 8, 25, 25);
@@ -208,7 +213,7 @@ function BitacoraPlagasContent() {
 
     doc.setFontSize(14);
     doc.text(
-      `Bitácora de Control de Plagas — ${getLabel(form.ubicacion)}`,
+      "Bitácora de Control de Plagas — Todas las ubicaciones",
       45,
       20
     );
@@ -248,8 +253,83 @@ function BitacoraPlagasContent() {
 
     const fecha = new Date().toLocaleDateString();
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Plagas_${form.ubicacion}_${fecha}.pdf`);
+    doc.save(`Bitacora_Plagas_${fecha}.pdf`);
   };
+
+  const gruposUbicacion = getGroups(data);
+
+  const renderTablaPlagas = (rows) => (
+    <Paper sx={{ width: "100%" }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table sx={{ minWidth: 1200 }}>
+        <TableHead sx={{ background: "#E3F2FD" }}>
+          <TableRow>
+            <TableCell>Fecha</TableCell>
+            <TableCell>Trampa</TableCell>
+            <TableCell>Tipo</TableCell>
+            <TableCell>Unidad</TableCell>
+            <TableCell>Hallazgo</TableCell>
+            <TableCell>Malla</TableCell>
+            <TableCell>Veneno</TableCell>
+            <TableCell>Verificó</TableCell>
+            <TableCell>Observaciones</TableCell>
+            <TableCell align="center" sx={{ minWidth: 260, whiteSpace: "nowrap" }}>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.fi_id}>
+              <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{r.fc_num_trampa}</TableCell>
+              <TableCell>{r.tipo_trampa}</TableCell>
+              <TableCell>{r.unidad_produccion}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_hallazgo}>{truncar(r.fc_hallazgo)}</span>
+              </TableCell>
+              <TableCell>{r.fc_malla}</TableCell>
+              <TableCell>{r.fc_veneno}</TableCell>
+              <TableCell>{r.fc_verifico}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ minWidth: 260, verticalAlign: "middle", whiteSpace: "nowrap" }}
+              >
+                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="info"
+                    onClick={() => setRegistroDetalle(r)}
+                  >
+                    Ver
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="warning"
+                    onClick={() => editar(r)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    onClick={() => eliminar(r.fi_id)}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
 
   return (
     <Box>
@@ -257,24 +337,7 @@ function BitacoraPlagasContent() {
         Control de Plagas
       </Typography>
 
-      {/* Filtros compactos */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 2 }}>
-        <TextField
-          select
-          label="Ubicación"
-          name="ubicacion"
-          value={form.ubicacion}
-          onChange={handleChange}
-          size="small"
-          sx={{ width: 200 }}
-        >
-          {ubicacionesGranja.map((op) => (
-            <MenuItem key={op.value} value={op.value}>
-              {op.label}
-            </MenuItem>
-          ))}
-        </TextField>
-
         <TextField
           label="Buscar Trampa / Tipo"
           variant="outlined"
@@ -294,10 +357,29 @@ function BitacoraPlagasContent() {
         />
       </Box>
 
-      {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={1.5}>
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                error={!!errors.ubicacion}
+                helperText={errors.ubicacion}
+              >
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Fecha"
@@ -462,78 +544,9 @@ function BitacoraPlagasContent() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
-      {/* TABLA */}
-      <Paper sx={{ width: "100%" }}>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table sx={{ minWidth: 1200 }}>
-          <TableHead sx={{ background: "#E3F2FD" }}>
-            <TableRow>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Trampa</TableCell>
-              <TableCell>Tipo</TableCell>
-              <TableCell>Unidad</TableCell>
-              <TableCell>Hallazgo</TableCell>
-              <TableCell>Malla</TableCell>
-              <TableCell>Veneno</TableCell>
-              <TableCell>Verificó</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell align="center" sx={{ minWidth: 260, whiteSpace: "nowrap" }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((r) => (
-              <TableRow key={r.fi_id}>
-                <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
-                <TableCell>{r.fc_num_trampa}</TableCell>
-                <TableCell>{r.tipo_trampa}</TableCell>
-                <TableCell>{r.unidad_produccion}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_hallazgo}>{truncar(r.fc_hallazgo)}</span>
-                </TableCell>
-                <TableCell>{r.fc_malla}</TableCell>
-                <TableCell>{r.fc_veneno}</TableCell>
-                <TableCell>{r.fc_verifico}</TableCell>
-                <TableCell sx={{ maxWidth: 160 }}>
-                  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{ minWidth: 260, verticalAlign: "middle", whiteSpace: "nowrap" }}
-                >
-                  <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="info"
-                      onClick={() => setRegistroDetalle(r)}
-                    >
-                      Ver
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="warning"
-                      onClick={() => editar(r)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="error"
-                      onClick={() => eliminar(r.fi_id)}
-                    >
-                      Eliminar
-                    </Button>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaPlagas} />
       {ConfirmModal}
 
       <Dialog

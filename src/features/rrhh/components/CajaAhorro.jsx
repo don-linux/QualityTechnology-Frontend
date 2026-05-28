@@ -15,6 +15,10 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import CleaningServices from "@mui/icons-material/CleaningServices";
 import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
@@ -31,15 +35,16 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 
 export default function CajaAhorro() {
   const showSnackbar = useSnackbar();
   const { ubicacionesGranja, defaultUbicacion } = useUbicacionesGranja();
   const [registros, setRegistros] = useState([]);
   const [busqueda, setBusqueda] = useState("");
-  const [granja, setGranja] = useState("");
   const [openNuevo, setOpenNuevo] = useState(false);
   const [nuevaCategoria, setNuevaCategoria] = useState("");
+  const [granjaNueva, setGranjaNueva] = useState("");
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -50,24 +55,19 @@ export default function CajaAhorro() {
       Obtener datos por granja
      ========================================================= */
   const obtenerDatos = useCallback(async () => {
-    if (!granja) return;
     try {
-      const res = await listByGranja(granja);
-      setRegistros(res.data);
+      const granjas = ubicacionesGranja.map((op) => op.value);
+      const data = await fetchMergedPorUbicaciones(granjas, listByGranja);
+      setRegistros(data);
     } catch (err) {
       console.error(" Error al cargar caja de ahorro:", err);
     }
-  }, [granja]);
+  }, [ubicacionesGranja]);
 
   useEffect(() => {
-    if (!granja && defaultUbicacion) {
-      setGranja(defaultUbicacion);
-      return;
-    }
-
-    if (!granja) return;
+    if (ubicacionesGranja.length === 0) return;
     obtenerDatos();
-  }, [defaultUbicacion, granja, obtenerDatos]);
+  }, [ubicacionesGranja, obtenerDatos]);
 
   /* =========================================================
       Buscar categoría
@@ -88,13 +88,18 @@ export default function CajaAhorro() {
   const crearRegistro = async () => {
     clearErrors();
     setNuevaCategoria("");
+    setGranjaNueva(defaultUbicacion || ubicacionesGranja[0]?.value || "");
     setOpenNuevo(true);
   };
 
   const guardarNuevaCategoria = async () => {
     if (!validate({ nuevaCategoria }, requiredFields)) return;
+    if (!granjaNueva) {
+      showSnackbar("Selecciona una ubicación.", "error");
+      return;
+    }
     try {
-      await createCategoria({ categoria: nuevaCategoria.trim(), granja });
+      await createCategoria({ categoria: nuevaCategoria.trim(), granja: granjaNueva });
       setOpenNuevo(false);
       obtenerDatos();
     } catch (err) {
@@ -127,8 +132,9 @@ export default function CajaAhorro() {
       Eliminar todo por granja
      ========================================================= */
   const eliminarTodo = async () => {
-    if (!await confirm(` Eliminar TODOS los registros de ${granja}?`)) return;
-    await removeAllByGranja(granja);
+    if (!await confirm("¿Eliminar TODOS los registros de caja de ahorro?")) return;
+    const granjas = [...new Set(ubicacionesGranja.map((op) => op.value))];
+    await Promise.all(granjas.map((g) => removeAllByGranja(g)));
     obtenerDatos();
   };
 
@@ -177,20 +183,6 @@ export default function CajaAhorro() {
         <EventAvailable sx={{ mr: 1, color: "#1565c0" }} />
         Control de Caja de Ahorro (Mensual)
       </Typography>
-
-      {/*  Selector de granja */}
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-        {ubicacionesGranja.map((op) => (
-          <Button
-            key={op.value}
-            variant={granja === op.value ? "contained" : "outlined"}
-            color="primary"
-            onClick={() => setGranja(op.value)}
-          >
-            {op.label}
-          </Button>
-        ))}
-      </Box>
 
       {/*  Barra de acciones */}
       <Paper sx={{ p: 2, mb: 3, background: "#f8f9fa" }}>
@@ -249,6 +241,20 @@ export default function CajaAhorro() {
       <Dialog open={openNuevo} onClose={() => setOpenNuevo(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Nueva categoría</DialogTitle>
         <DialogContent dividers>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Ubicación</InputLabel>
+            <Select
+              value={granjaNueva}
+              label="Ubicación"
+              onChange={(e) => setGranjaNueva(e.target.value)}
+            >
+              {ubicacionesGranja.map((op) => (
+                <MenuItem key={op.value} value={op.value}>
+                  {op.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <TextField
             label="Nombre de la categoría"
             value={nuevaCategoria}

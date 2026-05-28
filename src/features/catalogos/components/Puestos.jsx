@@ -20,6 +20,8 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import { getPuestoId, getPuestoNombre, puestoActivo } from "@features/catalogos/utils/catalogEntityGetters";
 
 export default function Puestos() {
@@ -29,6 +31,7 @@ export default function Puestos() {
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   useEffect(() => { obtenerPuestos(); }, []);
 
@@ -50,7 +53,7 @@ export default function Puestos() {
     clearFieldError(e.target.name);
   };
 
-  const limpiar = () => { setForm({ fi_puesto_id: null, fc_nombre: "" }); clearErrors(); };
+  const limpiar = () => { setForm({ fi_puesto_id: null, fc_nombre: "" }); clearErrors(); cerrarFormulario(); };
 
   const registrar = async () => {
     if (!validate(form, ["fc_nombre"])) return;
@@ -92,6 +95,7 @@ export default function Puestos() {
   const seleccionar = (p) => {
     setForm({ fi_puesto_id: getPuestoId(p), fc_nombre: getPuestoNombre(p) });
     clearErrors();
+    abrirFormulario();
   };
 
   return (
@@ -101,6 +105,7 @@ export default function Puestos() {
         <Typography variant="body2" color="text.secondary">Administra los puestos del sistema</Typography>
       </Box>
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
@@ -124,6 +129,7 @@ export default function Puestos() {
           </Grid>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}><CircularProgress /></Box>

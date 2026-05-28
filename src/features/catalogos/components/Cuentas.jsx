@@ -11,6 +11,8 @@ import { TIPO_CUENTA_OPTIONS } from "@shared/constants/cuentas";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -53,6 +55,7 @@ export default function Cuentas() {
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const esEdicion = !!form.fi_cuenta_id;
 
@@ -94,6 +97,7 @@ export default function Cuentas() {
   const limpiar = () => {
     setForm(EMPTY_FORM);
     clearErrors();
+    cerrarFormulario();
   };
 
   const construirPayload = () => ({
@@ -167,6 +171,7 @@ export default function Cuentas() {
       fc_tipo: cuenta.fc_tipo || "",
     });
     clearErrors();
+    abrirFormulario();
   };
 
   return (
@@ -178,6 +183,7 @@ export default function Cuentas() {
         </Typography>
       </Box>
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
@@ -274,6 +280,7 @@ export default function Cuentas() {
           </Grid>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}><CircularProgress /></Box>

@@ -22,6 +22,8 @@ import Edit from "@mui/icons-material/Edit";
 import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 
 export default function Nomina() {
@@ -44,6 +46,7 @@ export default function Nomina() {
   const [busqueda, setBusqueda] = useState({ nombre: "", fecha: "" });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "fc_nombre_empleado",
@@ -118,6 +121,24 @@ export default function Nomina() {
     });
     setEditId(null);
     clearErrors();
+    cerrarFormulario();
+  };
+
+  const editarNomina = (r) => {
+    clearErrors();
+    setEditId(r.fi_nomina_id);
+    setForm({
+      fc_nombre_empleado: r.fc_nombre_empleado ?? "",
+      fi_empleado_id: r.fi_empleado_id ?? "",
+      fd_fecha_pago: r.fd_fecha_pago?.split("T")[0] ?? "",
+      fn_total: r.fn_total ?? "",
+      fn_bono: r.fn_bono ?? "",
+      fn_deuda: r.fn_deuda ?? "",
+      fn_descuento: r.fn_descuento ?? "",
+      fn_anticipo: r.fn_anticipo ?? "",
+      fi_usuario_id: usuarioId,
+    });
+    abrirFormulario();
   };
 
   const buscar = async () => {
@@ -149,6 +170,7 @@ export default function Nomina() {
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}> Nómina</Typography>
 
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -185,6 +207,7 @@ export default function Nomina() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* BUSCADOR */}
       <Card sx={{ mb: 3 }}>
@@ -229,7 +252,7 @@ export default function Nomina() {
                 <TableCell>${r.fn_anticipo}</TableCell>
                 <TableCell>{r.fd_fecha_pago?.split("T")[0]}</TableCell>
                 <TableCell>
-                  <Button size="small" color="warning" variant="contained" onClick={() => { clearErrors(); setForm(r); }}>
+                  <Button size="small" color="warning" variant="contained" onClick={() => editarNomina(r)}>
                     <Edit fontSize="small" />
                   </Button>
                 </TableCell>

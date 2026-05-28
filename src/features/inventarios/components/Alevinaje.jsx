@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  listEngordas,
-  createEngorda,
-  updateEngorda,
-  removeEngorda,
-} from "../services/engordaService";
+  listAlevinaje,
+  createAlevinaje,
+  updateAlevinaje,
+  removeAlevinaje,
+} from "../services/alevinajeService";
 import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
 import Button from "@mui/material/Button";
@@ -39,7 +39,7 @@ const MAX_OBSERVACION = 500;
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 
-export default function Engorda() {
+const Alevinaje = () => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -54,7 +54,7 @@ export default function Engorda() {
     "peso_kg",
   ];
 
-  const [piletasDestinoEngorda, setPiletasDestinoEngorda] = useState([]);
+  const [piletasDestinoAlevinaje, setPiletasDestinoAlevinaje] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -69,8 +69,8 @@ export default function Engorda() {
   });
 
   const piletasFiltradas = useMemo(
-    () => filtrarPorUbicacion(piletasDestinoEngorda, formData.ubicacion, ubicacionesGranja),
-    [piletasDestinoEngorda, formData.ubicacion, ubicacionesGranja],
+    () => filtrarPorUbicacion(piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja),
+    [piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja],
   );
 
   const registrosVista = useMemo(() => vistaActualPorPileta(registros), [registros]);
@@ -109,28 +109,28 @@ export default function Engorda() {
     clearFieldError(name);
   };
 
-  const cargarPiletasDestinoEngorda = useCallback(async () => {
+  const cargarPiletasDestinoAlevinaje = useCallback(async () => {
     try {
-      const res = await listPiletas(null, "engorda");
-      setPiletasDestinoEngorda(Array.isArray(res.data) ? res.data : []);
+      const res = await listPiletas(null, "alevinaje");
+      setPiletasDestinoAlevinaje(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error cargando piletas engorda:", err);
+      console.error("Error cargando piletas alevinaje:", err);
     }
   }, []);
 
   const cargarRegistros = useCallback(async () => {
     try {
-      const res = await listEngordas();
+      const res = await listAlevinaje();
       setRegistros(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error cargando registros de engorda:", err);
+      console.error("Error cargando registros de alevinaje:", err);
     }
   }, []);
 
   useEffect(() => {
-    cargarPiletasDestinoEngorda();
+    cargarPiletasDestinoAlevinaje();
     cargarRegistros();
-  }, [cargarPiletasDestinoEngorda, cargarRegistros]);
+  }, [cargarPiletasDestinoAlevinaje, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
@@ -138,19 +138,19 @@ export default function Engorda() {
     }
   }, [defaultUbicacion, formData.ubicacion]);
 
-  const registrarEngorda = async () => {
+  const registrarAlevinaje = async () => {
     if (!validate(formData, requiredFields)) return;
     if (Number(formData.cantidad_total || 0) < 1) {
       showSnackbar("La cantidad total debe ser mayor a cero.", "error");
       return;
     }
     try {
-      await createEngorda(payloadComunBackend());
+      await createAlevinaje(payloadComunBackend());
       showSnackbar("Registro periódico guardado (vista actual actualizada)", "success");
       resetFormulario();
       cargarRegistros();
     } catch (err) {
-      console.error("Error al registrar engorda:", err);
+      console.error("Error al registrar alevinaje:", err);
       showSnackbar(
         err?.response?.data?.error ||
           err?.response?.data?.detalle ||
@@ -168,7 +168,7 @@ export default function Engorda() {
       fi_pileta_destino_id: String(
         seleccionado.fi_pileta_destino_id ?? seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
       ),
-      cantidad_total: String(seleccionado.cantidad_total ?? seleccionado.cantidad ?? ""),
+      cantidad_total: String(seleccionado.cantidad_total ?? ""),
       cantidad_alimento: String(seleccionado.cantidad_alimento ?? ""),
       peso_kg:
         seleccionado.peso_kg != null
@@ -185,22 +185,22 @@ export default function Engorda() {
     abrirFormulario();
   };
 
-  const actualizarEngordaRegistro = async () => {
+  const actualizarAlevinajeRegistro = async () => {
     if (!validate(formData, requiredFields)) return;
     if (Number(formData.cantidad_total || 0) < 1) {
       showSnackbar("La cantidad total debe ser mayor a cero.", "error");
       return;
     }
     try {
-      await updateEngorda(
-        seleccionado.fi_engorda_id ?? seleccionado.fi_id ?? seleccionado.id,
+      await updateAlevinaje(
+        seleccionado.fi_id ?? seleccionado.id,
         payloadComunBackend(),
       );
       showSnackbar("Registro actualizado", "success");
       resetEdicion();
       cargarRegistros();
     } catch (err) {
-      console.error("Error al actualizar engorda:", err);
+      console.error("Error al actualizar alevinaje:", err);
       showSnackbar(
         err?.response?.data?.error ||
           err?.response?.data?.detalle ||
@@ -210,15 +210,15 @@ export default function Engorda() {
     }
   };
 
-  const eliminarEngordaRegistro = async (id) => {
-    if (!await confirm("¿Seguro que deseas eliminar este registro de engorda?")) return;
+  const eliminarAlevinajeRegistro = async (id) => {
+    if (!await confirm("¿Seguro que deseas eliminar este registro de alevinaje?")) return;
     try {
-      await removeEngorda(id);
+      await removeAlevinaje(id);
       showSnackbar("Registro eliminado", "success");
       cargarRegistros();
       resetEdicion();
     } catch (err) {
-      console.error("Error al eliminar engorda:", err);
+      console.error("Error al eliminar alevinaje:", err);
       showSnackbar("No se pudo eliminar", "error");
     }
   };
@@ -259,11 +259,6 @@ export default function Engorda() {
     });
   };
 
-  const totalCantidad = registros.reduce(
-    (acc, e) => acc + Number(e.cantidad_total ?? e.cantidad ?? 0),
-    0,
-  );
-
   const cargarHistorialObservaciones = useCallback(
     (piletaId) => listObservacionesPileta(piletaId),
     [],
@@ -272,144 +267,139 @@ export default function Engorda() {
   return (
     <div style={{ padding: "25px" }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
-        Engorda
+        Alevinaje
       </Typography>
 
-      <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
-        <Typography><b>Registros:</b> {registros.length}</Typography>
-        <Typography><b>Total organismos en engorda:</b> {totalCantidad.toLocaleString("es-MX")}</Typography>
-      </Paper>
-
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
-        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#005f73" }}>
-              {modoEdicion ? "Editar registro" : "Registrar nueva engorda"}
-            </Typography>
-            <Divider sx={{ mb: 3 }} />
+      <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#005f73" }}>
+            {modoEdicion ? "Editar registro" : "Registrar nuevo alevinaje"}
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  select
-                  label="Ubicación"
-                  name="ubicacion"
-                  value={formData.ubicacion || ""}
-                  onChange={handleChange}
-                  fullWidth
-                  error={!!errors.ubicacion}
-                  {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
-                >
-                  {ubicacionesGranja.map((op) => (
-                    <MenuItem key={op.value} value={op.value}>
-                      {op.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  select
-                  label="Pileta (engorda)"
-                  name="fi_pileta_destino_id"
-                  value={formData.fi_pileta_destino_id || ""}
-                  onChange={handleChange}
-                  fullWidth
-                  error={!!errors.fi_pileta_destino_id}
-                  {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
-                >
-                  {piletasFiltradas.map((p) => {
-                    const pid = p.fi_pileta_id ?? p.pileta_id;
-                    return (
-                      <MenuItem key={pid} value={String(pid)}>
-                        {p.nombre}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Cantidad total"
-                  name="cantidad_total"
-                  type="number"
-                  value={formData.cantidad_total}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ min: 0, inputMode: "numeric" }}
-                  error={!!errors.cantidad_total}
-                  {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Cantidad alimento"
-                  name="cantidad_alimento"
-                  type="number"
-                  value={formData.cantidad_alimento}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ min: 0, inputMode: "numeric" }}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Peso (kg)"
-                  name="peso_kg"
-                  value={formData.peso_kg}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ inputMode: "decimal" }}
-                  error={!!errors.peso_kg}
-                  {...(errors.peso_kg ? { helperText: errors.peso_kg } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Fecha peso"
-                  type="date"
-                  name="fecha_peso"
-                  value={formData.fecha_peso}
-                  onChange={handleChange}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  error={!!errors.fecha_peso}
-                  {...(errors.fecha_peso ? { helperText: errors.fecha_peso } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  label="Observación"
-                  name="observacion"
-                  value={formData.observacion}
-                  onChange={handleChange}
-                  fullWidth
-                  multiline
-                  rows={2}
-                  inputProps={{ maxLength: MAX_OBSERVACION }}
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <Button
-                  variant="contained"
-                  startIcon={<AddCircleIcon />}
-                  color="success"
-                  onClick={modoEdicion ? actualizarEngordaRegistro : registrarEngorda}
-                  sx={{ mt: 1, fontWeight: "bold" }}
-                >
-                  {modoEdicion ? "Guardar cambios" : "Registrar engorda"}
-                </Button>
-              </Grid>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
+                value={formData.ubicacion || ""}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.ubicacion}
+                {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
+              >
+                {ubicacionesGranja.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
-          </CardContent>
-        </Card>
+
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <TextField
+                select
+                label="Pileta (alevinaje)"
+                name="fi_pileta_destino_id"
+                value={formData.fi_pileta_destino_id || ""}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fi_pileta_destino_id}
+                {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
+              >
+                {piletasFiltradas.map((p) => {
+                  const pid = p.fi_pileta_id ?? p.pileta_id;
+                  return (
+                    <MenuItem key={pid} value={String(pid)}>
+                      {p.nombre}
+                    </MenuItem>
+                  );
+                })}
+              </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Cantidad total"
+                name="cantidad_total"
+                type="number"
+                value={formData.cantidad_total}
+                onChange={handleChange}
+                fullWidth
+                inputProps={{ min: 0, inputMode: "numeric" }}
+                error={!!errors.cantidad_total}
+                {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Cantidad alimento"
+                name="cantidad_alimento"
+                type="number"
+                value={formData.cantidad_alimento}
+                onChange={handleChange}
+                fullWidth
+                inputProps={{ min: 0, inputMode: "numeric" }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Peso (kg)"
+                name="peso_kg"
+                value={formData.peso_kg}
+                onChange={handleChange}
+                fullWidth
+                inputProps={{ inputMode: "decimal" }}
+                error={!!errors.peso_kg}
+                {...(errors.peso_kg ? { helperText: errors.peso_kg } : {})}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Fecha peso"
+                type="date"
+                name="fecha_peso"
+                value={formData.fecha_peso}
+                onChange={handleChange}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.fecha_peso}
+                {...(errors.fecha_peso ? { helperText: errors.fecha_peso } : {})}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 8 }}>
+              <TextField
+                label="Observación"
+                name="observacion"
+                value={formData.observacion}
+                onChange={handleChange}
+                fullWidth
+                multiline
+                rows={2}
+                inputProps={{ maxLength: MAX_OBSERVACION }}
+              />
+            </Grid>
+
+            <Grid size={12}>
+              <Button
+                variant="contained"
+                startIcon={<AddCircleIcon />}
+                color="success"
+                onClick={modoEdicion ? actualizarAlevinajeRegistro : registrarAlevinaje}
+                sx={{ mt: 1, fontWeight: "bold" }}
+              >
+                {modoEdicion ? "Guardar cambios" : "Registrar alevinaje"}
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
       </FormularioRegistroPanel>
 
       <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
@@ -445,13 +435,12 @@ export default function Engorda() {
                   ) : (
                     rows.map((l) => (
                       <TableRow
-                        key={l.fi_engorda_id ?? l.fi_id ?? l.id}
+                        key={l.fi_id ?? l.id}
                         onClick={() => setSeleccionado(l)}
                         style={{
                           cursor: "pointer",
                           backgroundColor:
-                            (seleccionado?.fi_engorda_id ?? seleccionado?.fi_id ?? seleccionado?.id) ===
-                            (l.fi_engorda_id ?? l.fi_id ?? l.id)
+                            (seleccionado?.fi_id ?? seleccionado?.id) === (l.fi_id ?? l.id)
                               ? "#e0f7fa"
                               : "transparent",
                         }}
@@ -459,7 +448,7 @@ export default function Engorda() {
                         <TableCell>
                           {l.nombre_pileta_destino || l.nombre_pileta || "—"}
                         </TableCell>
-                        <TableCell>{formatNumber(l.cantidad_total ?? l.cantidad)}</TableCell>
+                        <TableCell>{formatNumber(l.cantidad_total)}</TableCell>
                         <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
                         <TableCell>{formatNumber(l.peso_kg ?? l.peso)}</TableCell>
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
@@ -470,7 +459,7 @@ export default function Engorda() {
                               l.fi_pileta_destino_id ?? l.pileta_destino_id ?? l.pileta_id
                             }
                             piletaNombre={l.nombre_pileta_destino || l.nombre_pileta}
-                            etapaLabel="Engorda"
+                            etapaLabel="Alevinaje"
                             cargarHistorial={cargarHistorialObservaciones}
                           />
                         </TableCell>
@@ -492,9 +481,7 @@ export default function Engorda() {
           <Button
             variant="contained"
             color="error"
-            onClick={() =>
-              eliminarEngordaRegistro(seleccionado.fi_engorda_id ?? seleccionado.fi_id ?? seleccionado.id)
-            }
+            onClick={() => eliminarAlevinajeRegistro(seleccionado.fi_id ?? seleccionado.id)}
           >
             Eliminar registro
           </Button>
@@ -503,8 +490,9 @@ export default function Engorda() {
           </Button>
         </div>
       )}
-
       {ConfirmModal}
     </div>
   );
-}
+};
+
+export default Alevinaje;

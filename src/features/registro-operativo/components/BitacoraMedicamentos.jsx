@@ -29,6 +29,8 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -61,6 +63,7 @@ function BitacoraMedicamentosContent() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "ubicacion",
@@ -111,6 +114,7 @@ function BitacoraMedicamentosContent() {
       else await createMedicamento(form);
 
       setEditId(null);
+      cerrarFormulario();
       setForm({
         fd_fecha_hora: "",
         fn_num_estanque: "",
@@ -146,7 +150,9 @@ function BitacoraMedicamentosContent() {
       ubicacion: r.ubicacion || "",
       fi_usuario_id: r.fi_usuario_id || usuarioId,
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   //  Eliminar uno
@@ -225,7 +231,7 @@ function BitacoraMedicamentosContent() {
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>Aplicación de Medicamentos</Typography>
 
-      {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -353,10 +359,11 @@ function BitacoraMedicamentosContent() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLAS POR UBICACIÓN */}
       {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} defaultExpanded>
+        <Accordion key={value}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{label} ({rows.length})</Typography>
           </AccordionSummary>

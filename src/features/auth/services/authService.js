@@ -6,5 +6,5 @@ export function login(nombre, password) {
 }
 
 export function logout(refreshToken) {
-  return axios.post(ENDPOINTS.auth.logout, { refreshToken });
+  return axios.post(ENDPOINTS.auth.logout, { refreshToken }, { _skipAuth: true });
 }

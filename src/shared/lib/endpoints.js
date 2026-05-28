@@ -43,21 +43,13 @@ export const ENDPOINTS = {
 
   piletas: {
     base: "/piletas",
-    inventario: (granja) => `/piletas/inventario/${path(granja)}`,
-    origen: (granja) => `/piletas/origen/${path(granja)}`,
-    destino: (granja) => `/piletas/destino/${path(granja)}`,
-    siembra: "/piletas/siembra",
     byId: (id) => `/piletas/${id}`,
-    movimientos: (usuario, granja) => `/piletas/movimientos/${usuario}/${path(granja)}`,
-    movimientosFiltro: (usuario, granja) => `/piletas/movimientos/filtro/${usuario}/${path(granja)}`,
-    registrarMovimiento: "/piletas/movimientos/registrar",
-    eliminarMovimientos: "/piletas/movimientos/eliminar",
+    observaciones: (id) => `/piletas/${id}/observaciones`,
   },
 
   reproductores: {
     base: "/reproductores",
     byGranja: (granja) => `/reproductores/granja/${path(granja)}`,
-    movimientos: (granja) => `/reproductores/movimientos/${path(granja)}`,
     byId: (id) => `/reproductores/${id}`,
   },
 
@@ -65,8 +57,6 @@ export const ENDPOINTS = {
     base: "/engorda",
     byGranja: (granja) => `/engorda/granja/${path(granja)}`,
     byId: (id) => `/engorda/${id}`,
-    movimientos: (usuario) => `/engorda/movimientos/${usuario}`,
-    deleteMovimiento: (id) => `/engorda/movimientos/${id}`,
   },
 
   alimentos: {
@@ -74,22 +64,30 @@ export const ENDPOINTS = {
     byId: (id) => `/alimentos/${id}`,
   },
 
-  alevines: {
-    base: "/alevines",
-    byId: (id) => `/alevines/${id}`,
-  },
-
   alevinaje: {
     base: "/alevinaje",
     byId: (id) => `/alevinaje/${id}`,
-    /** Piletas etapa `reproductores` ocupadas (control reproductivo). */
-    reproductoresOcupadas: (granja) => `/alevinaje/reproductores/${path(granja)}`,
-    familiaPorPileta: (piletaId) => `/alevinaje/familia-por-pileta/${piletaId}`,
+  },
+
+  controlReproductivo: {
+    base: "/control-reproductivo",
+    byId: (id) => `/control-reproductivo/${id}`,
+    reproductoresOcupadas: (granja) => `/control-reproductivo/reproductores/${path(granja)}`,
+    familiaPorPileta: (piletaId) => `/control-reproductivo/familia-por-pileta/${piletaId}`,
+  },
+
+  historialPeso: {
+    base: "/historial-peso",
   },
 
   siembras: {
     base: "/siembras",
     byId: (id) => `/siembras/${id}`,
+  },
+
+  trazabilidad: {
+    movimientosBase: "/trazabilidad/movimientos",
+    movimientos: (granja) => `/trazabilidad/movimientos/${path(granja)}`,
   },
 
   equipos: {
@@ -227,6 +225,22 @@ export const ENDPOINTS = {
     byId: (id) => `/ubicaciones/${id}`,
     activate: (id) => `/ubicaciones/${id}/activate`,
     deactivate: (id) => `/ubicaciones/${id}/deactivate`,
+  },
+
+  estadosConservacion: {
+    base: "/estados-conservacion",
+    activos: "/estados-conservacion/activos",
+    byId: (id) => `/estados-conservacion/${id}`,
+    activate: (id) => `/estados-conservacion/${id}/activate`,
+    deactivate: (id) => `/estados-conservacion/${id}/deactivate`,
+  },
+
+  tiposInstanciaPileta: {
+    base: "/tipos-instancia-pileta",
+    activos: "/tipos-instancia-pileta/activos",
+    byId: (id) => `/tipos-instancia-pileta/${id}`,
+    activate: (id) => `/tipos-instancia-pileta/${id}/activate`,
+    deactivate: (id) => `/tipos-instancia-pileta/${id}/deactivate`,
   },
 
   bitacoras: {

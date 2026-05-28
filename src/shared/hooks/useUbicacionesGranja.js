@@ -6,6 +6,7 @@ import {
   getUnidadGranjaLogo,
   getUnidadGranjaSlug,
   matchUbicacionIdForGranjaLabel,
+  rowPerteneceAUbicacionGranja,
 } from "@shared/utils/unidadesNegocio";
 
 /**
@@ -90,7 +91,7 @@ export default function useUbicacionesGranja() {
     const getGroups = (rows, field = "ubicacion") =>
       ubicacionesGranja.map((op) => ({
         ...op,
-        rows: rows.filter((row) => row[field] === op.value),
+        rows: rows.filter((row) => rowPerteneceAUbicacionGranja(row, op, field)),
       }));
 
     return { getOption, getLabel, getLogo, getColor, getSlug, getGroups };

@@ -14,7 +14,11 @@ export const logout = async () => {
   const refreshToken = localStorage.getItem("refreshToken");
   if (refreshToken) {
     try {
-      await axiosInstance.post(ENDPOINTS.auth.logout, { refreshToken });
+      await axiosInstance.post(
+        ENDPOINTS.auth.logout,
+        { refreshToken },
+        { _skipAuth: true }
+      );
     } catch (err) {
       console.error("Error al cerrar sesión en servidor:", err);
     }

@@ -47,6 +47,42 @@ export function getUbicacionNombre(u) {
   return u?.nombre ?? u?.fc_nombre ?? "";
 }
 
+export function getRolId(r) {
+  return r?.rol_id ?? r?.fi_rol_id ?? r?.id;
+}
+
+export function getRolNombre(r) {
+  return r?.nombre ?? r?.fc_nombre ?? "";
+}
+
+export function rolEsRoot(r) {
+  return Boolean(r?.es_root ?? r?.fb_es_root);
+}
+
+export function getEstadoConservacionId(e) {
+  return e?.estado_conservacion_id ?? e?.id;
+}
+
+export function getEstadoConservacionNombre(e) {
+  return e?.nombre ?? e?.fc_nombre ?? "";
+}
+
+export function estadoConservacionActivo(e) {
+  return e?.activo ?? e?.esta_activo ?? e?.fb_activo ?? false;
+}
+
+export function getTipoInstanciaPiletaId(t) {
+  return t?.tipo_instancia_pileta_id ?? t?.id;
+}
+
+export function getTipoInstanciaPiletaNombre(t) {
+  return t?.nombre ?? t?.fc_nombre ?? "";
+}
+
+export function tipoInstanciaPiletaActivo(t) {
+  return t?.activo ?? t?.esta_activo ?? t?.fb_activo ?? false;
+}
+
 /** Sede física enlazada (`unidadNegocio.ubicacionId` / serializers). */
 export function getUnidadNegocioUbicacionId(u) {
   const v = u?.fi_ubicacion_id ?? u?.ubicacion_id;

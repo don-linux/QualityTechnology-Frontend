@@ -2,39 +2,23 @@ import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
 import { filtrosUbicacionAParams } from "./piletasService";
 
-function normalizarFiltrosUbicacion(filtros) {
-  const obj =
-    typeof filtros === "object" && filtros != null ? filtros : { granja: filtros ?? "" };
-  const granjaPath = String(obj.granja ?? obj.nombre ?? "").trim();
-  const params = {};
-  filtrosUbicacionAParams(params, obj);
-  return { granjaPath, params };
-}
-
 /**
- * CRUD del modelo `alevinaje` (etapa cría en piletas tipo "alevinaje").
- * Backend persiste la observación con pileta_id + proceso "alevinaje" para
- * que aparezca como "última observación" al consultar la pileta.
+ * Registros periódicos del modelo `alevinaje` (historial en BD).
+ * GET devuelve por defecto la vista actual (último registro por pileta);
+ * use `?historial=true` para todos los registros.
  */
 
-export function listAlevinaje(filtroUbicacion, piletaId) {
+export function listAlevinaje(filtroUbicacion, piletaId, opciones = {}) {
   const params = {};
   filtrosUbicacionAParams(params, filtroUbicacion);
   if (piletaId) params.pileta_id = piletaId;
+  if (opciones.historial) params.historial = true;
   return axios.get(ENDPOINTS.alevinaje.base, { params });
 }
 
-/** Piletas tipo reproductores, estado ocupada (selector en control reproductivo). */
-export function listReproductoresOcupadas(filtros) {
-  const { granjaPath, params } = normalizarFiltrosUbicacion(filtros);
-  return axios.get(ENDPOINTS.alevinaje.reproductoresOcupadas(granjaPath), {
-    params: Object.keys(params).length ? params : undefined,
-  });
-}
-
-/** Familia asociada a la pileta (reproductor o último registro `alevinaje`). */
-export function getFamiliaPorPileta(piletaId) {
-  return axios.get(ENDPOINTS.alevinaje.familiaPorPileta(piletaId));
+/** Todos los registros periódicos de una pileta (incluye observaciones históricas). */
+export function listAlevinajeHistorialPileta(piletaId, filtroUbicacion) {
+  return listAlevinaje(filtroUbicacion, piletaId, { historial: true });
 }
 
 export function createAlevinaje(data) {

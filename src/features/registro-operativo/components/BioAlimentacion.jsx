@@ -24,10 +24,12 @@ import {
   removeAlimentacion,
   removeAllAlimentacion,
 } from "../services/alimentacionService";
-import { getOrigenes } from "@features/inventarios/services/piletasService";
+import { listPiletas } from "@features/inventarios/services/piletasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -74,6 +76,7 @@ export default function BioAlimentacion() {
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "ubicacion",
@@ -100,8 +103,12 @@ export default function BioAlimentacion() {
   const cargarOrigenes = async () => {
     if (!form.ubicacion) { setOrigenes([]); return; }
     try {
-      const res = await getOrigenes(form.ubicacion);
-      setOrigenes(res.data || []);
+      const res = await listPiletas(form.ubicacion, "alevinaje");
+      const rows = (res.data || []).map((p) => ({
+        fi_instalacion_id: p.id ?? p.fi_pileta_id,
+        nombre_instalacion: p.nombre ?? p.fc_nombre ?? p.nombre_pileta,
+      }));
+      setOrigenes(rows);
     } catch {
       showSnackbar("Error al cargar orígenes.", "error");
     }
@@ -166,6 +173,7 @@ export default function BioAlimentacion() {
       });
 
       setEditId(null);
+      cerrarFormulario();
       cargarDatos();
     } catch (err) {
       const msg = err.response?.data?.error || err.message || "Error al guardar registro.";
@@ -192,7 +200,9 @@ export default function BioAlimentacion() {
       fc_observaciones: row.fc_observaciones,
       fi_usuario_id: row.fi_usuario_id,
     });
+    
     window.scrollTo({ top: 0, behavior: "smooth" });
+    abrirFormulario();
   };
 
   const eliminar = async (id) => {
@@ -351,14 +361,15 @@ export default function BioAlimentacion() {
         Alimentación
       </Typography>
 
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
-                select
-                label="Ubicación"
-                name="ubicacion"
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
+        <Card sx={{ mb: 4 }}>
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  select
+                  label="Ubicación"
+                  name="ubicacion"
                 value={form.ubicacion}
                 onChange={(e) => {
                   handleChange(e);
@@ -571,9 +582,10 @@ export default function BioAlimentacion() {
           </Box>
         </CardContent>
       </Card>
+      </FormularioRegistroPanel>
 
       {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} defaultExpanded sx={{ mt: 1 }}>
+        <Accordion key={value} sx={{ mt: 1 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography component="span" fontWeight="bold">{label}</Typography>
           </AccordionSummary>

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Box from "@mui/material/Box";
+import Alert from "@mui/material/Alert";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
@@ -23,6 +24,29 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import { listPiletas } from "@features/inventarios/services/piletasService";
+
+function ventaRequierePileta(tipo) {
+  const t = String(tipo ?? "").trim().toUpperCase();
+  return t === "ALEVINES" || t === "MOJARRA_KG";
+}
+
+function etapaPiletaParaTipo(tipo) {
+  const t = String(tipo ?? "").trim().toUpperCase();
+  if (t === "ALEVINES") return "alevinaje";
+  if (t === "MOJARRA_KG") return "engorda";
+  return null;
+}
+
+function stockPileta(p) {
+  return Number(p?.cantidad ?? p?.fn_cantidad ?? 0);
+}
+
+function formatStock(num) {
+  return Number(num ?? 0).toLocaleString("en-US");
+}
 
 export default function Venta() {
   return <VentaContent />;
@@ -30,6 +54,7 @@ export default function Venta() {
 
 function VentaContent() {
   const showSnackbar = useSnackbar();
+  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   /* ============================================================
       ESTADOS PRINCIPALES
   ============================================================ */
@@ -40,6 +65,7 @@ function VentaContent() {
 
   const [clientes, setClientes] = useState([]);
   const [expedientes, setExpedientes] = useState([]);
+  const [piletas, setPiletas] = useState([]);
 
   /* ============================================================
       FORM
@@ -55,6 +81,7 @@ function VentaContent() {
     fc_encargado_venta: "",
     fc_observaciones: "",
     fc_empresa: empresa,
+    pileta_origen_id: "",
   });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -129,6 +156,31 @@ function VentaContent() {
     setForm((prev) => ({ ...prev, fc_encargado_venta: "" }));
   }, [obtenerEncargados]);
 
+  const cargarPiletasVenta = useCallback(async (tipoVenta) => {
+    const etapa = etapaPiletaParaTipo(tipoVenta);
+    if (!etapa) {
+      setPiletas([]);
+      return;
+    }
+    try {
+      const res = await listPiletas(null, etapa);
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setPiletas(rows.filter((p) => Number(p.cantidad ?? p.fn_cantidad ?? 0) > 0));
+    } catch (err) {
+      console.error(err);
+      setPiletas([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (ventaRequierePileta(form.fc_tipo_venta)) {
+      cargarPiletasVenta(form.fc_tipo_venta);
+    } else {
+      setPiletas([]);
+      setForm((prev) => (prev.pileta_origen_id ? { ...prev, pileta_origen_id: "" } : prev));
+    }
+  }, [form.fc_tipo_venta, cargarPiletasVenta]);
+
   /* ============================================================
       HANDLE CHANGE
   ============================================================ */
@@ -159,6 +211,25 @@ function VentaContent() {
     LIQUIDADO: "green",
   };
 
+  const piletaOrigenSeleccionada = useMemo(() => {
+    if (!form.pileta_origen_id) return null;
+    return (
+      piletas.find(
+        (p) => String(p.fi_pileta_id ?? p.pileta_id) === form.pileta_origen_id,
+      ) ?? null
+    );
+  }, [form.pileta_origen_id, piletas]);
+
+  const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
+  const cantidadVenta = Number(form.fn_cantidad_vendida || 0);
+  const requiereValidacionStock =
+    ventaRequierePileta(form.fc_tipo_venta) && !editando && Boolean(form.pileta_origen_id);
+  const cantidadExcedeStock =
+    requiereValidacionStock &&
+    stockOrigen != null &&
+    cantidadVenta > 0 &&
+    cantidadVenta > stockOrigen;
+
   /* ============================================================
       GUARDAR
   ============================================================ */
@@ -170,10 +241,27 @@ function VentaContent() {
       return;
     }
 
+    if (ventaRequierePileta(form.fc_tipo_venta) && !form.pileta_origen_id) {
+      showSnackbar("Seleccione la pileta de origen para ventas de alevines o mojarra.", "warning");
+      return;
+    }
+
+    if (cantidadExcedeStock) {
+      showSnackbar(
+        `La cantidad (${formatStock(cantidadVenta)}) supera el stock disponible (${formatStock(stockOrigen)}).`,
+        "error",
+      );
+      return;
+    }
+
     const payload = {
       ...form,
       fc_empresa: empresa,
     };
+
+    if (form.pileta_origen_id) {
+      payload.pileta_origen_id = Number(form.pileta_origen_id);
+    }
 
     try {
       if (editando) {
@@ -188,7 +276,7 @@ function VentaContent() {
       obtenerVentas();
     } catch (err) {
       console.error(err);
-      showSnackbar("Error al guardar. Ver consola.", "error");
+      showSnackbar(err?.response?.data?.error || "Error al guardar la venta.", "error");
     }
   };
 
@@ -211,7 +299,9 @@ function VentaContent() {
       fc_encargado_venta: v.fc_encargado_venta,
       fc_observaciones: v.fc_observaciones,
       fc_empresa: v.fc_empresa,
+      pileta_origen_id: "",
     });
+    abrirFormulario();
   };
 
   /* ============================================================
@@ -230,10 +320,12 @@ function VentaContent() {
       fc_encargado_venta: "",
       fc_observaciones: "",
       fc_empresa: empresa,
+      pileta_origen_id: "",
     });
 
     setEditando(false);
     setIdEditando(null);
+    cerrarFormulario();
   };
 
   /* ============================================================
@@ -278,6 +370,7 @@ function VentaContent() {
       </Box>
 
       {/* FORMULARIO */}
+      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ p: 3, mb: 3, borderRadius: 3, boxShadow: 4 }}>
         <Typography variant="h5" textAlign="center" mb={2} fontWeight="bold">
           Control de Ventas
@@ -354,6 +447,34 @@ function VentaContent() {
             </TextField>
           </Grid>
 
+          {ventaRequierePileta(form.fc_tipo_venta) && !editando && (
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Pileta origen"
+                name="pileta_origen_id"
+                value={form.pileta_origen_id}
+                onChange={handleChange}
+                fullWidth
+                error={cantidadExcedeStock}
+                helperText={
+                  cantidadExcedeStock
+                    ? `Stock insuficiente: disponible ${formatStock(stockOrigen)}`
+                    : stockOrigen != null
+                      ? `Disponible: ${formatStock(stockOrigen)} organismos`
+                      : "Se descontará inventario y registrará trazabilidad"
+                }
+              >
+                <MenuItem value="">— Seleccionar —</MenuItem>
+                {piletas.map((p) => (
+                  <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                    {p.nombre} — {formatStock(stockPileta(p))} org.
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          )}
+
           {/* CANTIDAD */}
           <Grid size={{ xs: 12, md: 3 }}>
             <TextField
@@ -362,10 +483,38 @@ function VentaContent() {
               value={form.fn_cantidad_vendida}
               onChange={handleChange}
               fullWidth
-              error={!!errors.fn_cantidad_vendida}
-              helperText={errors.fn_cantidad_vendida}
+              error={!!errors.fn_cantidad_vendida || cantidadExcedeStock}
+              helperText={
+                errors.fn_cantidad_vendida ||
+                (cantidadExcedeStock
+                  ? `Supera el stock (${formatStock(stockOrigen)} organismos)`
+                  : requiereValidacionStock && stockOrigen != null
+                    ? `Máximo disponible: ${formatStock(stockOrigen)} organismos`
+                    : undefined)
+              }
+              inputProps={
+                requiereValidacionStock && stockOrigen != null && stockOrigen > 0
+                  ? { max: stockOrigen }
+                  : undefined
+              }
             />
           </Grid>
+
+          {requiereValidacionStock && piletaOrigenSeleccionada && (
+            <Grid size={12}>
+              <Alert severity={cantidadExcedeStock ? "error" : "info"} sx={{ py: 0.5 }}>
+                Stock en <strong>{piletaOrigenSeleccionada.nombre}</strong>:{" "}
+                {formatStock(stockOrigen)} organismos
+                {cantidadVenta > 0 && (
+                  <>
+                    {" "}
+                    · Venta: {formatStock(cantidadVenta)}
+                    {cantidadExcedeStock && " — cantidad superior al disponible"}
+                  </>
+                )}
+              </Alert>
+            </Grid>
+          )}
 
           {/* PRECIO */}
           <Grid size={{ xs: 12, md: 3 }}>
@@ -464,6 +613,7 @@ function VentaContent() {
               variant="contained"
               color="success"
               onClick={guardar}
+              disabled={cantidadExcedeStock}
             >
               {editando ? "Actualizar Venta" : "Registrar Venta"}
             </Button>
@@ -481,6 +631,7 @@ function VentaContent() {
           </Grid>
         </Grid>
       </Card>
+      </FormularioRegistroPanel>
 
       {/* TABLA */}
      <Card sx={{ p: 2 }}>

@@ -30,11 +30,20 @@ import {
   updatePileta,
   removePileta,
 } from "../services/piletasService";
+import { listEstadosConservacionActivos } from "@features/catalogos/services/estadosConservacionService";
+import { listTiposInstanciaPiletaActivos } from "@features/catalogos/services/tiposInstanciaPiletaService";
+import {
+  getEstadoConservacionId,
+  getEstadoConservacionNombre,
+  getTipoInstanciaPiletaId,
+  getTipoInstanciaPiletaNombre,
+} from "@features/catalogos/utils/catalogEntityGetters";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 
 const TRUNCAR_MAX = 60;
 const truncar = (texto) =>
@@ -64,43 +73,22 @@ const formatFecha = (fecha) => {
 /* ============================================================================
  *  PANTALLA PRINCIPAL — solo piletas físicas (CRUD)
  * ========================================================================= */
-export default function Pileta({ pageTitle = "Piletas físicas" } = {}) {
+export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
   const showSnackbar = useSnackbar();
   const { confirm, ConfirmModal } = useConfirm();
-  const { ubicacionesGranja, defaultUbicacion, resolveFiltroUbicacion } =
-    useUbicacionesGranja();
-
-  const [granjaActiva, setGranjaActiva] = useState("");
-
-  const filtroUbicacion = useMemo(
-    () => (granjaActiva ? resolveFiltroUbicacion(granjaActiva) : null),
-    [granjaActiva, resolveFiltroUbicacion],
-  );
-
-  const ubicacionSeleccionada = useMemo(
-    () => ubicacionesGranja.find((op) => op.value === granjaActiva),
-    [ubicacionesGranja, granjaActiva],
-  );
+  const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
   const [piletas, setPiletas] = useState([]);
 
   const cargarPiletas = useCallback(async () => {
-    if (!filtroUbicacion?.granja && !filtroUbicacion?.ubicacion_id) {
-      setPiletas([]);
-      return;
-    }
     try {
-      const resAll = await listPiletas(filtroUbicacion);
+      const resAll = await listPiletas();
       setPiletas(Array.isArray(resAll.data) ? resAll.data : []);
     } catch {
       setPiletas([]);
       showSnackbar("Error cargando piletas", "error");
     }
-  }, [filtroUbicacion, showSnackbar]);
-
-  useEffect(() => {
-    if (!granjaActiva && defaultUbicacion) setGranjaActiva(defaultUbicacion);
-  }, [defaultUbicacion, granjaActiva]);
+  }, [showSnackbar]);
 
   useEffect(() => {
     cargarPiletas();
@@ -113,27 +101,19 @@ export default function Pileta({ pageTitle = "Piletas físicas" } = {}) {
       </Typography>
 
       <Paper sx={{ p: 2, mb: 2, backgroundColor: "#E3F2FD" }} elevation={0}>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-          <Typography variant="body2">
-            <b>Ubicación (sede):</b> {granjaActiva || "—"}
-            {ubicacionSeleccionada?.ubicacion_id ? (
-              <span> · ID ubicación #{ubicacionSeleccionada.ubicacion_id}</span>
-            ) : null}
-          </Typography>
-          <Typography variant="body2">
-            <b>Piletas registradas:</b> {piletas.length}
-          </Typography>
-        </Stack>
+        <Typography variant="body2">
+          <b>Piletas registradas:</b> {piletas.length}
+        </Typography>
       </Paper>
 
       <PiletasTab
-        granjaActiva={granjaActiva}
-        setGranjaActiva={setGranjaActiva}
         piletas={piletas}
         onChange={cargarPiletas}
         showSnackbar={showSnackbar}
         confirm={confirm}
         ubicacionesGranja={ubicacionesGranja}
+        defaultUbicacion={defaultUbicacion}
+        getGroups={getGroups}
       />
 
       {ConfirmModal}
@@ -145,17 +125,21 @@ export default function Pileta({ pageTitle = "Piletas físicas" } = {}) {
  *  Formulario + tabla — CRUD modelo `Pileta`
  * ========================================================================= */
 function PiletasTab({
-  granjaActiva,
-  setGranjaActiva,
   piletas,
   onChange,
   showSnackbar,
   confirm,
   ubicacionesGranja,
+  defaultUbicacion,
+  getGroups,
 }) {
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const [mostrarFormulario, setMostrarFormulario] = useState(true);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [ubicacionForm, setUbicacionForm] = useState("");
+
+  const [estadosConservacion, setEstadosConservacion] = useState([]);
+  const [tiposInstancia, setTiposInstancia] = useState([]);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -165,14 +149,39 @@ function PiletasTab({
     material: "",
     estado: "vacia",
     tipo: "",
+    estado_conservacion_id: "",
+    tipo_instancia: "",
   });
 
-  const required = ["nombre", "largo", "ancho", "alto", "material", "tipo"];
+  const required = [
+    "nombre",
+    "largo",
+    "ancho",
+    "alto",
+    "material",
+    "tipo",
+    "estado_conservacion_id",
+    "tipo_instancia",
+  ];
 
   const ubicacionActual = useMemo(
-    () => ubicacionesGranja.find((u) => u.value === granjaActiva),
-    [ubicacionesGranja, granjaActiva],
+    () => ubicacionesGranja.find((u) => u.value === ubicacionForm),
+    [ubicacionesGranja, ubicacionForm],
   );
+
+  const gruposPiletas = useMemo(
+    () => getGroups(piletas, "fc_granja"),
+    [getGroups, piletas],
+  );
+
+  useEffect(() => {
+    listEstadosConservacionActivos()
+      .then(({ data }) => setEstadosConservacion(Array.isArray(data) ? data : []))
+      .catch(() => setEstadosConservacion([]));
+    listTiposInstanciaPiletaActivos()
+      .then(({ data }) => setTiposInstancia(Array.isArray(data) ? data : []))
+      .catch(() => setTiposInstancia([]));
+  }, []);
 
   const m3 = useMemo(() => {
     const l = Number(form.largo) || 0;
@@ -198,6 +207,8 @@ function PiletasTab({
       material: "",
       estado: "vacia",
       tipo: "",
+      estado_conservacion_id: "",
+      tipo_instancia: "",
     });
     if (cerrarPanel) setMostrarFormulario(false);
   };
@@ -214,12 +225,14 @@ function PiletasTab({
       material: "",
       estado: "vacia",
       tipo: "",
+      estado_conservacion_id: "",
+      tipo_instancia: "",
     });
   };
 
   const guardar = async () => {
     if (!validate(form, required)) return;
-    if (!granjaActiva) {
+    if (!ubicacionForm) {
       showSnackbar("Selecciona una ubicación (sede)", "warning");
       return;
     }
@@ -232,7 +245,9 @@ function PiletasTab({
         material: form.material,
         estado: form.estado,
         tipo: form.tipo,
-        granja: granjaActiva,
+        estado_conservacion_id: Number(form.estado_conservacion_id),
+        tipo_instancia: Number(form.tipo_instancia),
+        granja: ubicacionForm,
       };
       if (ubicacionActual?.ubicacion_id != null) {
         body.ubicacion_id = ubicacionActual.ubicacion_id;
@@ -263,7 +278,7 @@ function PiletasTab({
     const matchUbicacion = ubicacionesGranja.find(
       (u) => u.value === p.fc_granja || u.label === p.fc_granja,
     );
-    if (matchUbicacion) setGranjaActiva(matchUbicacion.value);
+    setUbicacionForm(matchUbicacion?.value || defaultUbicacion || "");
     setForm({
       nombre: p.nombre || "",
       largo: p.largo ?? "",
@@ -272,6 +287,9 @@ function PiletasTab({
       material: p.material || "",
       estado: p.estado || "vacia",
       tipo: p.tipo || "",
+      estado_conservacion_id:
+        p.estado_conservacion_id != null ? String(p.estado_conservacion_id) : "",
+      tipo_instancia: p.tipo_instancia != null ? String(p.tipo_instancia) : "",
     });
     setMostrarFormulario(true);
   };
@@ -294,8 +312,14 @@ function PiletasTab({
           variant="contained"
           color="success"
           startIcon={mostrarFormulario ? <CloseIcon /> : <AddIcon />}
-          onClick={() => (mostrarFormulario ? limpiar(true) : setMostrarFormulario(true))}
-          disabled={!granjaActiva}
+          onClick={() => {
+            if (mostrarFormulario) {
+              limpiar(true);
+            } else {
+              setUbicacionForm(defaultUbicacion || ubicacionesGranja[0]?.value || "");
+              setMostrarFormulario(true);
+            }
+          }}
         >
           {mostrarFormulario ? "Cerrar formulario" : "Nueva pileta"}
         </Button>
@@ -321,8 +345,8 @@ function PiletasTab({
                   select
                   required
                   label="Ubicación (sede)"
-                  value={granjaActiva || ""}
-                  onChange={(e) => setGranjaActiva(e.target.value)}
+                  value={ubicacionForm || ""}
+                  onChange={(e) => setUbicacionForm(e.target.value)}
                   fullWidth
                   disabled={ubicacionesGranja.length === 0}
                   helperText={
@@ -457,6 +481,61 @@ function PiletasTab({
                   ))}
                 </TextField>
               </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  select
+                  required
+                  label="Estado de conservación"
+                  name="estado_conservacion_id"
+                  value={form.estado_conservacion_id}
+                  onChange={handleChange}
+                  fullWidth
+                  error={!!errors.estado_conservacion_id}
+                  helperText={
+                    errors.estado_conservacion_id ||
+                    (estadosConservacion.length === 0
+                      ? "Configure valores en Catálogos → Estados de conservación"
+                      : "")
+                  }
+                >
+                  <MenuItem value="">Seleccione</MenuItem>
+                  {estadosConservacion.map((ec) => (
+                    <MenuItem key={getEstadoConservacionId(ec)} value={String(getEstadoConservacionId(ec))}>
+                      {getEstadoConservacionNombre(ec)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  select
+                  required
+                  label="Tipo de instancia"
+                  name="tipo_instancia"
+                  value={form.tipo_instancia}
+                  onChange={handleChange}
+                  fullWidth
+                  error={!!errors.tipo_instancia}
+                  helperText={
+                    errors.tipo_instancia ||
+                    (tiposInstancia.length === 0
+                      ? "Configure valores en Catálogos → Tipos de instancia"
+                      : "")
+                  }
+                >
+                  <MenuItem value="">Seleccione</MenuItem>
+                  {tiposInstancia.map((ti) => (
+                    <MenuItem
+                      key={getTipoInstanciaPiletaId(ti)}
+                      value={String(getTipoInstanciaPiletaId(ti))}
+                    >
+                      {getTipoInstanciaPiletaNombre(ti)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
             </Grid>
 
             <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
@@ -474,98 +553,107 @@ function PiletasTab({
         </Card>
       )}
 
-      <Paper>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table stickyHeader sx={{ minWidth: 1100 }}>
-            <TableHead sx={{ background: "#E3F2FD" }}>
-              <TableRow>
-                <TableCell>Nombre</TableCell>
-                <TableCell>Etapa</TableCell>
-                <TableCell>Estado</TableCell>
-                <TableCell align="right">Vol. m³</TableCell>
-                <TableCell>Material</TableCell>
-                <TableCell>Ubicación</TableCell>
-                <TableCell>Última observación</TableCell>
-                <TableCell align="center" sx={{ minWidth: 120 }}>
-                  Acciones
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {piletas.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                    Sin piletas para esta ubicación.
-                  </TableCell>
-                </TableRow>
-              )}
-              {piletas.map((p) => (
-                <TableRow key={p.fi_pileta_id} hover>
-                  <TableCell>{p.nombre}</TableCell>
-                  <TableCell>
-                    <Chip size="small" variant="outlined" label={tipoLabel(p.tipo)} />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      size="small"
-                      color={p.estado === "ocupada" ? "warning" : "default"}
-                      variant="outlined"
-                      label={p.estado}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    {formatNumber(p.metros_cubicos, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 3,
-                    })}
-                  </TableCell>
-                  <TableCell>{p.material}</TableCell>
-                  <TableCell>{p.fc_granja || "—"}</TableCell>
-                  <TableCell sx={{ maxWidth: 260 }}>
-                    {p.ultima_observacion ? (
-                      <>
-                        <span title={p.ultima_observacion}>
-                          {truncar(p.ultima_observacion)}
-                        </span>
-                        {(p.fc_ultima_observacion_proceso || p.fd_ultima_observacion) && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            display="block"
-                          >
-                            {[
-                              p.fc_ultima_observacion_proceso,
-                              p.fd_ultima_observacion
-                                ? formatFecha(p.fd_ultima_observacion)
-                                : null,
-                            ]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </Typography>
+      <TablasPorUbicacionGranja
+        grupos={gruposPiletas}
+        renderTabla={(rows) => (
+          <Paper>
+            <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+              <Table stickyHeader sx={{ minWidth: 1200 }}>
+                <TableHead sx={{ background: "#E3F2FD" }}>
+                  <TableRow>
+                    <TableCell>Nombre</TableCell>
+                    <TableCell>Etapa</TableCell>
+                    <TableCell>Tipo instancia</TableCell>
+                    <TableCell>Estado</TableCell>
+                    <TableCell>Conservación</TableCell>
+                    <TableCell align="right">Cantidad</TableCell>
+                    <TableCell align="right">Vol. m³</TableCell>
+                    <TableCell>Material</TableCell>
+                    <TableCell>Última observación</TableCell>
+                    <TableCell align="center" sx={{ minWidth: 120 }}>
+                      Acciones
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={10} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                        Sin piletas en esta ubicación.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {rows.map((p) => (
+                    <TableRow key={p.fi_pileta_id} hover>
+                      <TableCell>{p.nombre}</TableCell>
+                      <TableCell>
+                        <Chip size="small" variant="outlined" label={tipoLabel(p.tipo)} />
+                      </TableCell>
+                      <TableCell>{p.fc_tipo_instancia || "—"}</TableCell>
+                      <TableCell>
+                        <Chip
+                          size="small"
+                          color={p.estado === "ocupada" ? "warning" : "default"}
+                          variant="outlined"
+                          label={p.estado}
+                        />
+                      </TableCell>
+                      <TableCell>{p.fc_estado_conservacion || "—"}</TableCell>
+                      <TableCell align="right">{formatNumber(p.cantidad ?? p.fn_cantidad)}</TableCell>
+                      <TableCell align="right">
+                        {formatNumber(p.metros_cubicos, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 3,
+                        })}
+                      </TableCell>
+                      <TableCell>{p.material}</TableCell>
+                      <TableCell sx={{ maxWidth: 260 }}>
+                        {p.ultima_observacion ? (
+                          <>
+                            <span title={p.ultima_observacion}>
+                              {truncar(p.ultima_observacion)}
+                            </span>
+                            {(p.fc_ultima_observacion_proceso || p.fd_ultima_observacion) && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                display="block"
+                              >
+                                {[
+                                  p.fc_ultima_observacion_proceso,
+                                  p.fd_ultima_observacion
+                                    ? formatFecha(p.fd_ultima_observacion)
+                                    : null,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </Typography>
+                            )}
+                          </>
+                        ) : (
+                          "—"
                         )}
-                      </>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
-                    <Tooltip title="Editar">
-                      <IconButton size="small" color="primary" onClick={() => editar(p)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Eliminar">
-                      <IconButton size="small" color="error" onClick={() => eliminar(p)}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                      </TableCell>
+                      <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
+                        <Tooltip title="Editar">
+                          <IconButton size="small" color="primary" onClick={() => editar(p)}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Eliminar">
+                          <IconButton size="small" color="error" onClick={() => eliminar(p)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        )}
+      />
     </>
   );
 }
