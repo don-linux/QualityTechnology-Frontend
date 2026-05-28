@@ -30,14 +30,12 @@ import {
   updatePileta,
   removePileta,
 } from "../services/piletasService";
-import { listEstadosConservacionActivos } from "@features/catalogos/services/estadosConservacionService";
 import { listTiposInstanciaPiletaActivos } from "@features/catalogos/services/tiposInstanciaPiletaService";
 import {
-  getEstadoConservacionId,
-  getEstadoConservacionNombre,
   getTipoInstanciaPiletaId,
   getTipoInstanciaPiletaNombre,
 } from "@features/catalogos/utils/catalogEntityGetters";
+import { ESTADOS_CONSERVACION_PILETA } from "@shared/constants/estadosConservacionPileta";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -138,7 +136,6 @@ function PiletasTab({
   const [editId, setEditId] = useState(null);
   const [ubicacionForm, setUbicacionForm] = useState("");
 
-  const [estadosConservacion, setEstadosConservacion] = useState([]);
   const [tiposInstancia, setTiposInstancia] = useState([]);
 
   const [form, setForm] = useState({
@@ -149,7 +146,7 @@ function PiletasTab({
     material: "",
     estado: "vacia",
     tipo: "",
-    estado_conservacion_id: "",
+    estado_conservacion: "",
     tipo_instancia: "",
   });
 
@@ -160,7 +157,7 @@ function PiletasTab({
     "alto",
     "material",
     "tipo",
-    "estado_conservacion_id",
+    "estado_conservacion",
     "tipo_instancia",
   ];
 
@@ -175,9 +172,6 @@ function PiletasTab({
   );
 
   useEffect(() => {
-    listEstadosConservacionActivos()
-      .then(({ data }) => setEstadosConservacion(Array.isArray(data) ? data : []))
-      .catch(() => setEstadosConservacion([]));
     listTiposInstanciaPiletaActivos()
       .then(({ data }) => setTiposInstancia(Array.isArray(data) ? data : []))
       .catch(() => setTiposInstancia([]));
@@ -207,7 +201,7 @@ function PiletasTab({
       material: "",
       estado: "vacia",
       tipo: "",
-      estado_conservacion_id: "",
+      estado_conservacion: "",
       tipo_instancia: "",
     });
     if (cerrarPanel) setMostrarFormulario(false);
@@ -225,7 +219,7 @@ function PiletasTab({
       material: "",
       estado: "vacia",
       tipo: "",
-      estado_conservacion_id: "",
+      estado_conservacion: "",
       tipo_instancia: "",
     });
   };
@@ -245,7 +239,7 @@ function PiletasTab({
         material: form.material,
         estado: form.estado,
         tipo: form.tipo,
-        estado_conservacion_id: Number(form.estado_conservacion_id),
+        estado_conservacion: form.estado_conservacion,
         tipo_instancia: Number(form.tipo_instancia),
         granja: ubicacionForm,
       };
@@ -287,8 +281,7 @@ function PiletasTab({
       material: p.material || "",
       estado: p.estado || "vacia",
       tipo: p.tipo || "",
-      estado_conservacion_id:
-        p.estado_conservacion_id != null ? String(p.estado_conservacion_id) : "",
+      estado_conservacion: p.fc_estado_conservacion || p.estado_conservacion || "",
       tipo_instancia: p.tipo_instancia != null ? String(p.tipo_instancia) : "",
     });
     setMostrarFormulario(true);
@@ -487,22 +480,17 @@ function PiletasTab({
                   select
                   required
                   label="Estado de conservación"
-                  name="estado_conservacion_id"
-                  value={form.estado_conservacion_id}
+                  name="estado_conservacion"
+                  value={form.estado_conservacion}
                   onChange={handleChange}
                   fullWidth
-                  error={!!errors.estado_conservacion_id}
-                  helperText={
-                    errors.estado_conservacion_id ||
-                    (estadosConservacion.length === 0
-                      ? "Configure valores en Catálogos → Estados de conservación"
-                      : "")
-                  }
+                  error={!!errors.estado_conservacion}
+                  helperText={errors.estado_conservacion}
                 >
                   <MenuItem value="">Seleccione</MenuItem>
-                  {estadosConservacion.map((ec) => (
-                    <MenuItem key={getEstadoConservacionId(ec)} value={String(getEstadoConservacionId(ec))}>
-                      {getEstadoConservacionNombre(ec)}
+                  {ESTADOS_CONSERVACION_PILETA.map((ec) => (
+                    <MenuItem key={ec} value={ec}>
+                      {ec}
                     </MenuItem>
                   ))}
                 </TextField>

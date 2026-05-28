@@ -59,18 +59,6 @@ export function rolEsRoot(r) {
   return Boolean(r?.es_root ?? r?.fb_es_root);
 }
 
-export function getEstadoConservacionId(e) {
-  return e?.estado_conservacion_id ?? e?.id;
-}
-
-export function getEstadoConservacionNombre(e) {
-  return e?.nombre ?? e?.fc_nombre ?? "";
-}
-
-export function estadoConservacionActivo(e) {
-  return e?.activo ?? e?.esta_activo ?? e?.fb_activo ?? false;
-}
-
 export function getTipoInstanciaPiletaId(t) {
   return t?.tipo_instancia_pileta_id ?? t?.id;
 }

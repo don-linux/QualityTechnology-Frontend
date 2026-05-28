@@ -23,7 +23,6 @@ import Badge from "@mui/icons-material/Badge";
 import Business from "@mui/icons-material/Business";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
-import BuildIcon from "@mui/icons-material/Build";
 import CategoryIcon from "@mui/icons-material/Category";
 import EggAltIcon from "@mui/icons-material/EggAlt";
 import WaterDropIcon from "@mui/icons-material/WaterDrop";
@@ -131,7 +130,6 @@ export const MENU_SECTIONS = [
       { to: "/puestos", icon: <Work />, label: "Puestos" },
       { to: "/unidades-negocio", icon: <Business />, label: "Unidades de Negocio" },
       { to: "/ubicaciones",     icon: <HomeWorkIcon />, label: "Ubicaciones" },
-      { to: "/estados-conservacion", icon: <BuildIcon />, label: "Estados de conservación" },
       { to: "/tipos-instancia-pileta", icon: <CategoryIcon />, label: "Tipos de instancia" },
     ],
   },
