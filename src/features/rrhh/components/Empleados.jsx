@@ -31,8 +31,6 @@ import useConfirm from "@shared/hooks/useConfirm";
 import DocumentosEmpleado from "./DocumentosEmpleado";
 import ActasAdministrativas from "./ActasAdministrativas";
 import useSnackbar from "@shared/hooks/useSnackbar";
-import useFormularioVisible from "@shared/hooks/useFormularioVisible";
-import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
 
 const todayString = () => new Date().toISOString().slice(0, 10);
@@ -47,7 +45,6 @@ export default function Empleados() {
   const [seleccionado, setSeleccionado] = useState(null);
   const [loading, setLoading] = useState(false);
   const { confirm, ConfirmModal } = useConfirm();
-  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const [form, setForm] = useState({
     fc_nombre: "", fc_apellido_paterno: "", fc_apellido_materno: "",
@@ -100,7 +97,6 @@ export default function Empleados() {
       fd_fecha_baja: e.fd_fecha_baja ? e.fd_fecha_baja.substring(0, 10) : "",
       fn_uniformes: e.fn_uniformes ?? 0,
     });
-    abrirFormulario();
   };
 
   const limpiar = () => {
@@ -113,7 +109,6 @@ export default function Empleados() {
       fi_departamento_id: "", fi_puesto_id: "", fi_unidad_negocio_id: "",
       fd_fecha_contratacion: "", fd_fecha_baja: "", fn_uniformes: 0,
     });
-    cerrarFormulario();
   };
 
   const actualizarEmpleado = async () => {
@@ -154,7 +149,6 @@ export default function Empleados() {
         </Typography>
       </Box>
 
-      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       {seleccionado && (
         <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
           <CardContent>
@@ -257,7 +251,6 @@ export default function Empleados() {
           </CardContent>
         </Card>
       )}
-      </FormularioRegistroPanel>
 
       {loading ? (
         <Typography textAlign="center">Cargando...</Typography>
