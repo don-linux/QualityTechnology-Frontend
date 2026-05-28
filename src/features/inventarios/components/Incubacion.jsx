@@ -38,6 +38,17 @@ const MAX_OBSERVACION = 500;
 
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
+const soloLote = (valor) => valor === "" || /^[A-Za-z0-9-]*$/.test(valor);
+const hoyISO = () => new Date().toISOString().split("T")[0];
+
+function calcularDiasEnPileta(fechaIngreso, fechaEgreso) {
+  if (!fechaIngreso) return "";
+  const inicio = new Date(`${fechaIngreso}T00:00:00`);
+  const fin = fechaEgreso ? new Date(`${fechaEgreso}T00:00:00`) : new Date();
+  if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) return "";
+  const diff = Math.floor((fin.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+  return String(Math.max(0, diff));
+}
 
 const Incubacion = () => {
   const showSnackbar = useSnackbar();
@@ -49,9 +60,8 @@ const Incubacion = () => {
   const requiredFields = [
     "ubicacion",
     "fi_pileta_destino_id",
-    "cantidad_total",
-    "fecha_peso",
-    "peso_kg",
+    "lote",
+    "fecha_ingreso",
   ];
 
   const [piletasDestinoIncubacion, setPiletasDestinoIncubacion] = useState([]);
@@ -61,10 +71,11 @@ const Incubacion = () => {
   const [formData, setFormData] = useState({
     ubicacion: "",
     fi_pileta_destino_id: "",
-    cantidad_total: "",
-    cantidad_alimento: "",
-    peso_kg: "",
-    fecha_peso: "",
+    lote: "",
+    huevos_ml: "",
+    fecha_ingreso: hoyISO(),
+    dias_en_pileta: "",
+    fecha_egreso: "",
     observacion: "",
   });
 
@@ -83,28 +94,36 @@ const Incubacion = () => {
   const payloadComunBackend = () => ({
     pileta_id: Number(formData.fi_pileta_destino_id),
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
-    cantidad_total: Number(formData.cantidad_total || 0),
-    cantidad_alimento: Number(formData.cantidad_alimento || 0),
-    peso_kg: formData.peso_kg === "" ? null : Number(formData.peso_kg),
-    fecha_peso: formData.fecha_peso || null,
+    lote: formData.lote.trim().toUpperCase(),
+    huevos_ml: formData.huevos_ml === "" ? null : Number(formData.huevos_ml),
+    fecha_ingreso: formData.fecha_ingreso || null,
+    dias_en_pileta: formData.dias_en_pileta === "" ? null : Number(formData.dias_en_pileta),
+    fecha_egreso: formData.fecha_egreso || null,
     observacion: formData.observacion,
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "cantidad_total" || name === "cantidad_alimento") {
-      if (!soloEntero(value)) return;
+    if (name === "lote") {
+      if (!soloLote(value)) return;
     }
-    if (name === "peso_kg") {
-      if (!soloDecimal(value)) return;
+    if (name === "huevos_ml" || name === "dias_en_pileta") {
+      if (name === "huevos_ml" && !soloDecimal(value)) return;
+      if (name === "dias_en_pileta" && !soloEntero(value)) return;
     }
 
     setFormData((prev) => {
+      const next = { ...prev, [name]: value };
       if (name === "ubicacion") {
-        return { ...prev, ubicacion: value, fi_pileta_destino_id: "" };
+        return { ...next, fi_pileta_destino_id: "" };
       }
-      return { ...prev, [name]: value };
+      if (name === "fecha_ingreso" || name === "fecha_egreso") {
+        const ingreso = name === "fecha_ingreso" ? value : prev.fecha_ingreso;
+        const egreso = name === "fecha_egreso" ? value : prev.fecha_egreso;
+        next.dias_en_pileta = calcularDiasEnPileta(ingreso, egreso);
+      }
+      return next;
     });
     clearFieldError(name);
   };
@@ -140,10 +159,6 @@ const Incubacion = () => {
 
   const registrarIncubacion = async () => {
     if (!validate(formData, requiredFields)) return;
-    if (Number(formData.cantidad_total || 0) < 1) {
-      showSnackbar("La cantidad total debe ser mayor a cero.", "error");
-      return;
-    }
     try {
       await createIncubacion(payloadComunBackend());
       showSnackbar("Registro periódico guardado (vista actual actualizada)", "success");
@@ -163,22 +178,25 @@ const Incubacion = () => {
   const activarEdicion = () => {
     if (!seleccionado) return;
     clearErrors();
+    const fechaIngreso = seleccionado.fecha_ingreso
+      ? String(seleccionado.fecha_ingreso).split("T")[0]
+      : "";
+    const fechaEgreso = seleccionado.fecha_egreso
+      ? String(seleccionado.fecha_egreso).split("T")[0]
+      : "";
     setFormData({
       ubicacion: seleccionado.fc_granja || formData.ubicacion || defaultUbicacion || "",
       fi_pileta_destino_id: String(
         seleccionado.fi_pileta_destino_id ?? seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
       ),
-      cantidad_total: String(seleccionado.cantidad_total ?? ""),
-      cantidad_alimento: String(seleccionado.cantidad_alimento ?? ""),
-      peso_kg:
-        seleccionado.peso_kg != null
-          ? String(seleccionado.peso_kg)
-          : seleccionado.peso != null
-            ? String(seleccionado.peso)
-            : "",
-      fecha_peso: seleccionado.fecha_peso
-        ? String(seleccionado.fecha_peso).split("T")[0]
-        : "",
+      lote: seleccionado.lote ?? seleccionado.fc_lote ?? "",
+      huevos_ml: seleccionado.huevos_ml != null ? String(seleccionado.huevos_ml) : "",
+      fecha_ingreso: fechaIngreso,
+      dias_en_pileta:
+        seleccionado.dias_en_pileta != null
+          ? String(seleccionado.dias_en_pileta)
+          : calcularDiasEnPileta(fechaIngreso, fechaEgreso),
+      fecha_egreso: fechaEgreso,
       observacion: seleccionado.observacion ?? seleccionado.fc_observacion ?? "",
     });
     setModoEdicion(true);
@@ -187,10 +205,6 @@ const Incubacion = () => {
 
   const actualizarIncubacionRegistro = async () => {
     if (!validate(formData, requiredFields)) return;
-    if (Number(formData.cantidad_total || 0) < 1) {
-      showSnackbar("La cantidad total debe ser mayor a cero.", "error");
-      return;
-    }
     try {
       await updateIncubacion(
         seleccionado.fi_id ?? seleccionado.id,
@@ -227,10 +241,11 @@ const Incubacion = () => {
     setFormData({
       ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
       fi_pileta_destino_id: "",
-      cantidad_total: "",
-      cantidad_alimento: "",
-      peso_kg: "",
-      fecha_peso: "",
+      lote: "",
+      huevos_ml: "",
+      fecha_ingreso: hoyISO(),
+      dias_en_pileta: "0",
+      fecha_egreso: "",
       observacion: "",
     });
     clearErrors();
@@ -322,54 +337,62 @@ const Incubacion = () => {
 
             <Grid size={{ xs: 12, sm: 2 }}>
               <TextField
-                label="Cantidad total"
-                name="cantidad_total"
-                type="number"
-                value={formData.cantidad_total}
+                label="Lote"
+                name="lote"
+                value={formData.lote}
                 onChange={handleChange}
                 fullWidth
-                inputProps={{ min: 0, inputMode: "numeric" }}
-                error={!!errors.cantidad_total}
-                {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
+                inputProps={{ style: { textTransform: "uppercase" } }}
+                error={!!errors.lote}
+                {...(errors.lote ? { helperText: errors.lote } : {})}
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 2 }}>
               <TextField
-                label="Cantidad alimento"
-                name="cantidad_alimento"
-                type="number"
-                value={formData.cantidad_alimento}
-                onChange={handleChange}
-                fullWidth
-                inputProps={{ min: 0, inputMode: "numeric" }}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 2 }}>
-              <TextField
-                label="Peso (kg)"
-                name="peso_kg"
-                value={formData.peso_kg}
+                label="Huevos/ml"
+                name="huevos_ml"
+                value={formData.huevos_ml}
                 onChange={handleChange}
                 fullWidth
                 inputProps={{ inputMode: "decimal" }}
-                error={!!errors.peso_kg}
-                {...(errors.peso_kg ? { helperText: errors.peso_kg } : {})}
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 2 }}>
               <TextField
-                label="Fecha peso"
+                label="Fecha de ingreso"
                 type="date"
-                name="fecha_peso"
-                value={formData.fecha_peso}
+                name="fecha_ingreso"
+                value={formData.fecha_ingreso}
                 onChange={handleChange}
                 fullWidth
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.fecha_peso}
-                {...(errors.fecha_peso ? { helperText: errors.fecha_peso } : {})}
+                error={!!errors.fecha_ingreso}
+                {...(errors.fecha_ingreso ? { helperText: errors.fecha_ingreso } : {})}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Días en pileta"
+                name="dias_en_pileta"
+                value={formData.dias_en_pileta}
+                onChange={handleChange}
+                fullWidth
+                inputProps={{ min: 0, inputMode: "numeric" }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField
+                label="Fecha de egreso"
+                type="date"
+                name="fecha_egreso"
+                value={formData.fecha_egreso}
+                onChange={handleChange}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
               />
             </Grid>
 
@@ -418,17 +441,18 @@ const Incubacion = () => {
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Peso (kg)</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Huevos/ml</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha ingreso</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Días en pileta</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha egreso</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {rows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
@@ -448,10 +472,11 @@ const Incubacion = () => {
                         <TableCell>
                           {l.nombre_pileta_destino || l.nombre_pileta || "—"}
                         </TableCell>
-                        <TableCell>{formatNumber(l.cantidad_total)}</TableCell>
-                        <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
-                        <TableCell>{formatNumber(l.peso_kg ?? l.peso)}</TableCell>
-                        <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
+                        <TableCell>{l.lote ?? l.fc_lote ?? "—"}</TableCell>
+                        <TableCell>{formatNumber(l.huevos_ml ?? l.fn_huevos_ml)}</TableCell>
+                        <TableCell>{formatearFecha(l.fecha_ingreso ?? l.fd_fecha_ingreso)}</TableCell>
+                        <TableCell>{formatNumber(l.dias_en_pileta ?? l.fn_dias_en_pileta)}</TableCell>
+                        <TableCell>{formatearFecha(l.fecha_egreso ?? l.fd_fecha_egreso)}</TableCell>
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                           <CeldaObservacionConHistorial
                             texto={l.observacion ?? l.fc_observacion ?? ""}
