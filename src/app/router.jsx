@@ -25,6 +25,7 @@ const Reproductores = lazy(() => import("@pages/inventarios/ReproductoresPage"))
 const Engorda = lazy(() => import("@pages/inventarios/EngordaPage"));
 const Equipos = lazy(() => import("@pages/inventarios/EquiposPage"));
 const Alevinaje = lazy(() => import("@pages/inventarios/AlevinajePage"));
+const Incubacion = lazy(() => import("@pages/inventarios/IncubacionPage"));
 const ControlReproductivo = lazy(() => import("@pages/inventarios/ControlReproductivoPage"));
 const Trazabilidad = lazy(() => import("@pages/inventarios/TrazabilidadPage"));
 
@@ -137,6 +138,7 @@ export default function AppRouter() {
             <Route path="inventarios/lotes" element={<Navigate to="/inventarios/control-reproductivo" replace />} />
             <Route path="inventarios/control-reproductivo" element={<ControlReproductivo />} />
             <Route path="inventarios/alevinaje" element={<Alevinaje />} />
+            <Route path="inventarios/incubacion" element={<Incubacion />} />
             <Route path="inventarios/trazabilidad" element={<Trazabilidad />} />
             <Route path="inventarios/equipos" element={<Equipos />} />
           </Route>

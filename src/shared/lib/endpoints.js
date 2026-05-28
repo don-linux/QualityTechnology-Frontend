@@ -64,6 +64,11 @@ export const ENDPOINTS = {
     byId: (id) => `/alevinaje/${id}`,
   },
 
+  incubacion: {
+    base: "/incubacion",
+    byId: (id) => `/incubacion/${id}`,
+  },
+
   controlReproductivo: {
     base: "/control-reproductivo",
     byId: (id) => `/control-reproductivo/${id}`,

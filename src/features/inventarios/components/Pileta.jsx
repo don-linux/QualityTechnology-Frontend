@@ -47,13 +47,13 @@ const TRUNCAR_MAX = 60;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-const TIPOS_PILETA = ["alevinaje", "reproductores", "engorda"];
+const TIPOS_PILETA = ["alevinaje", "reproductores", "engorda", "incubacion"];
 const ESTADOS_PILETA = ["vacia", "ocupada"];
 const MATERIALES = ["concreto", "geomembrana", "fibra", "tierra", "otro"];
 
 const tipoLabel = (t) => {
   if (!t) return "—";
-  const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda" };
+  const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda", incubacion: "Incubación" };
   return map[String(t).toLowerCase()] || t;
 };
 
