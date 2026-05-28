@@ -30,10 +30,10 @@ import {
   updatePileta,
   removePileta,
 } from "../services/piletasService";
-import { listTiposInstanciaPiletaActivos } from "@features/catalogos/services/tiposInstanciaPiletaService";
+import { listTiposPiletaActivos } from "@features/catalogos/services/tiposPiletaService";
 import {
-  getTipoInstanciaPiletaId,
-  getTipoInstanciaPiletaNombre,
+  getTipoPiletaId,
+  getTipoPiletaNombre,
 } from "@features/catalogos/utils/catalogEntityGetters";
 import { ESTADOS_CONSERVACION_PILETA } from "@shared/constants/estadosConservacionPileta";
 
@@ -136,7 +136,7 @@ function PiletasTab({
   const [editId, setEditId] = useState(null);
   const [ubicacionForm, setUbicacionForm] = useState("");
 
-  const [tiposInstancia, setTiposInstancia] = useState([]);
+  const [tiposPileta, setTiposPileta] = useState([]);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -147,7 +147,7 @@ function PiletasTab({
     estado: "vacia",
     tipo: "",
     estado_conservacion: "",
-    tipo_instancia: "",
+    tipo_pileta_id: "",
   });
 
   const required = [
@@ -158,7 +158,7 @@ function PiletasTab({
     "material",
     "tipo",
     "estado_conservacion",
-    "tipo_instancia",
+    "tipo_pileta_id",
   ];
 
   const ubicacionActual = useMemo(
@@ -172,9 +172,9 @@ function PiletasTab({
   );
 
   useEffect(() => {
-    listTiposInstanciaPiletaActivos()
-      .then(({ data }) => setTiposInstancia(Array.isArray(data) ? data : []))
-      .catch(() => setTiposInstancia([]));
+    listTiposPiletaActivos()
+      .then(({ data }) => setTiposPileta(Array.isArray(data) ? data : []))
+      .catch(() => setTiposPileta([]));
   }, []);
 
   const m3 = useMemo(() => {
@@ -202,7 +202,7 @@ function PiletasTab({
       estado: "vacia",
       tipo: "",
       estado_conservacion: "",
-      tipo_instancia: "",
+      tipo_pileta_id: "",
     });
     if (cerrarPanel) setMostrarFormulario(false);
   };
@@ -220,7 +220,7 @@ function PiletasTab({
       estado: "vacia",
       tipo: "",
       estado_conservacion: "",
-      tipo_instancia: "",
+      tipo_pileta_id: "",
     });
   };
 
@@ -240,7 +240,7 @@ function PiletasTab({
         estado: form.estado,
         tipo: form.tipo,
         estado_conservacion: form.estado_conservacion,
-        tipo_instancia: Number(form.tipo_instancia),
+        tipo_pileta_id: Number(form.tipo_pileta_id),
         granja: ubicacionForm,
       };
       if (ubicacionActual?.ubicacion_id != null) {
@@ -282,7 +282,7 @@ function PiletasTab({
       estado: p.estado || "vacia",
       tipo: p.tipo || "",
       estado_conservacion: p.fc_estado_conservacion || p.estado_conservacion || "",
-      tipo_instancia: p.tipo_instancia != null ? String(p.tipo_instancia) : "",
+      tipo_pileta_id: p.tipo_pileta_id != null ? String(p.tipo_pileta_id) : "",
     });
     setMostrarFormulario(true);
   };
@@ -500,26 +500,26 @@ function PiletasTab({
                 <TextField
                   select
                   required
-                  label="Tipo de instancia"
-                  name="tipo_instancia"
-                  value={form.tipo_instancia}
+                  label="Tipo de pileta"
+                  name="tipo_pileta_id"
+                  value={form.tipo_pileta_id}
                   onChange={handleChange}
                   fullWidth
-                  error={!!errors.tipo_instancia}
+                  error={!!errors.tipo_pileta_id}
                   helperText={
-                    errors.tipo_instancia ||
-                    (tiposInstancia.length === 0
-                      ? "Configure valores en Catálogos → Tipos de instancia"
+                    errors.tipo_pileta_id ||
+                    (tiposPileta.length === 0
+                      ? "Configure valores en Catálogos → Tipos de pileta"
                       : "")
                   }
                 >
                   <MenuItem value="">Seleccione</MenuItem>
-                  {tiposInstancia.map((ti) => (
+                  {tiposPileta.map((ti) => (
                     <MenuItem
-                      key={getTipoInstanciaPiletaId(ti)}
-                      value={String(getTipoInstanciaPiletaId(ti))}
+                      key={getTipoPiletaId(ti)}
+                      value={String(getTipoPiletaId(ti))}
                     >
-                      {getTipoInstanciaPiletaNombre(ti)}
+                      {getTipoPiletaNombre(ti)}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -551,7 +551,7 @@ function PiletasTab({
                   <TableRow>
                     <TableCell>Nombre</TableCell>
                     <TableCell>Etapa</TableCell>
-                    <TableCell>Tipo instancia</TableCell>
+                    <TableCell>Tipo de pileta</TableCell>
                     <TableCell>Estado</TableCell>
                     <TableCell>Conservación</TableCell>
                     <TableCell align="right">Cantidad</TableCell>
@@ -577,7 +577,7 @@ function PiletasTab({
                       <TableCell>
                         <Chip size="small" variant="outlined" label={tipoLabel(p.tipo)} />
                       </TableCell>
-                      <TableCell>{p.fc_tipo_instancia || "—"}</TableCell>
+                      <TableCell>{p.fc_tipo_pileta || "—"}</TableCell>
                       <TableCell>
                         <Chip
                           size="small"

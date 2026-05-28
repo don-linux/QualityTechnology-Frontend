@@ -130,7 +130,7 @@ export const MENU_SECTIONS = [
       { to: "/puestos", icon: <Work />, label: "Puestos" },
       { to: "/unidades-negocio", icon: <Business />, label: "Unidades de Negocio" },
       { to: "/ubicaciones",     icon: <HomeWorkIcon />, label: "Ubicaciones" },
-      { to: "/tipos-instancia-pileta", icon: <CategoryIcon />, label: "Tipos de instancia" },
+      { to: "/tipos-pileta", icon: <CategoryIcon />, label: "Tipos de pileta" },
     ],
   },
   {

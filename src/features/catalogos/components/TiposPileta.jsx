@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
-  listTiposInstanciaPileta,
-  createTipoInstanciaPileta,
-  updateTipoInstanciaPileta,
-  activateTipoInstanciaPileta,
-  deactivateTipoInstanciaPileta,
-} from "@features/catalogos/services/tiposInstanciaPiletaService";
+  listTiposPileta,
+  createTipoPileta,
+  updateTipoPileta,
+  activateTipoPileta,
+  deactivateTipoPileta,
+} from "@features/catalogos/services/tiposPiletaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import Container from "@mui/material/Container";
@@ -29,14 +29,14 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import {
-  getTipoInstanciaPiletaId,
-  getTipoInstanciaPiletaNombre,
-  tipoInstanciaPiletaActivo,
+  getTipoPiletaId,
+  getTipoPiletaNombre,
+  tipoPiletaActivo,
 } from "@features/catalogos/utils/catalogEntityGetters";
 
-export default function TiposInstanciaPileta() {
+export default function TiposPileta() {
   const showSnackbar = useSnackbar();
-  const [form, setForm] = useState({ tipo_instancia_pileta_id: null, nombre: "" });
+  const [form, setForm] = useState({ tipo_pileta_id: null, nombre: "" });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -50,11 +50,11 @@ export default function TiposInstanciaPileta() {
   const cargar = async () => {
     setLoading(true);
     try {
-      const { data } = await listTiposInstanciaPileta();
+      const { data } = await listTiposPileta();
       setItems(data);
     } catch (e) {
       console.error(e);
-      showSnackbar("Error al cargar tipos de instancia", "error");
+      showSnackbar("Error al cargar tipos de pileta", "error");
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function TiposInstanciaPileta() {
   };
 
   const limpiar = () => {
-    setForm({ tipo_instancia_pileta_id: null, nombre: "" });
+    setForm({ tipo_pileta_id: null, nombre: "" });
     clearErrors();
     cerrarFormulario();
   };
@@ -74,8 +74,8 @@ export default function TiposInstanciaPileta() {
   const registrar = async () => {
     if (!validate(form, ["nombre"])) return;
     try {
-      await createTipoInstanciaPileta(form.nombre);
-      showSnackbar("Tipo de instancia registrado", "success");
+      await createTipoPileta(form.nombre);
+      showSnackbar("Tipo de pileta registrado", "success");
       cargar();
       limpiar();
     } catch (e) {
@@ -85,11 +85,11 @@ export default function TiposInstanciaPileta() {
   };
 
   const actualizar = async () => {
-    if (!form.tipo_instancia_pileta_id) return;
+    if (!form.tipo_pileta_id) return;
     if (!validate(form, ["nombre"])) return;
     try {
-      await updateTipoInstanciaPileta(form.tipo_instancia_pileta_id, form.nombre);
-      showSnackbar("Tipo de instancia actualizado", "success");
+      await updateTipoPileta(form.tipo_pileta_id, form.nombre);
+      showSnackbar("Tipo de pileta actualizado", "success");
       cargar();
       limpiar();
     } catch (e) {
@@ -101,7 +101,7 @@ export default function TiposInstanciaPileta() {
   const desactivar = async (id, nombre) => {
     if (!(await confirm(`¿Desactivar el tipo "${nombre}"?`))) return;
     try {
-      await deactivateTipoInstanciaPileta(id);
+      await deactivateTipoPileta(id);
       cargar();
       limpiar();
     } catch (e) {
@@ -113,7 +113,7 @@ export default function TiposInstanciaPileta() {
   const activar = async (id, nombre) => {
     if (!(await confirm(`¿Activar el tipo "${nombre}"?`))) return;
     try {
-      await activateTipoInstanciaPileta(id);
+      await activateTipoPileta(id);
       cargar();
       limpiar();
     } catch (e) {
@@ -124,8 +124,8 @@ export default function TiposInstanciaPileta() {
 
   const seleccionar = (item) => {
     setForm({
-      tipo_instancia_pileta_id: getTipoInstanciaPiletaId(item),
-      nombre: getTipoInstanciaPiletaNombre(item),
+      tipo_pileta_id: getTipoPiletaId(item),
+      nombre: getTipoPiletaNombre(item),
     });
     clearErrors();
     abrirFormulario();
@@ -135,7 +135,7 @@ export default function TiposInstanciaPileta() {
     <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
       <Box textAlign="center" mb={3}>
         <Typography variant="h4" fontWeight="bold">
-          Tipos de instancia
+          Tipos de pileta
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Catálogo de formatos físicos: piscina, estanque, sanja, cubeta, etc.
@@ -146,7 +146,7 @@ export default function TiposInstanciaPileta() {
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
-            {form.tipo_instancia_pileta_id ? "Editando tipo" : "Nuevo tipo"}
+            {form.tipo_pileta_id ? "Editando tipo" : "Nuevo tipo"}
           </Typography>
           <Grid container spacing={2}>
             <Grid size={12}>
@@ -168,7 +168,7 @@ export default function TiposInstanciaPileta() {
                 variant="contained"
                 color="success"
                 onClick={registrar}
-                disabled={!!form.tipo_instancia_pileta_id}
+                disabled={!!form.tipo_pileta_id}
               >
                 Registrar
               </Button>
@@ -178,7 +178,7 @@ export default function TiposInstanciaPileta() {
                 fullWidth
                 variant="contained"
                 onClick={actualizar}
-                disabled={!form.tipo_instancia_pileta_id}
+                disabled={!form.tipo_pileta_id}
               >
                 Actualizar
               </Button>
@@ -211,13 +211,13 @@ export default function TiposInstanciaPileta() {
               </TableHead>
               <TableBody>
                 {items.map((item) => (
-                  <TableRow key={getTipoInstanciaPiletaId(item) ?? ""} hover>
-                    <TableCell>{getTipoInstanciaPiletaId(item)}</TableCell>
-                    <TableCell>{getTipoInstanciaPiletaNombre(item)}</TableCell>
+                  <TableRow key={getTipoPiletaId(item) ?? ""} hover>
+                    <TableCell>{getTipoPiletaId(item)}</TableCell>
+                    <TableCell>{getTipoPiletaNombre(item)}</TableCell>
                     <TableCell>
                       <Chip
-                        label={tipoInstanciaPiletaActivo(item) ? "Activo" : "Inactivo"}
-                        color={tipoInstanciaPiletaActivo(item) ? "success" : "default"}
+                        label={tipoPiletaActivo(item) ? "Activo" : "Inactivo"}
+                        color={tipoPiletaActivo(item) ? "success" : "default"}
                         size="small"
                       />
                     </TableCell>
@@ -234,15 +234,15 @@ export default function TiposInstanciaPileta() {
                         <Button size="small" variant="outlined" onClick={() => seleccionar(item)}>
                           Seleccionar
                         </Button>
-                        {tipoInstanciaPiletaActivo(item) ? (
+                        {tipoPiletaActivo(item) ? (
                           <Button
                             size="small"
                             variant="outlined"
                             color="error"
                             onClick={() =>
                               desactivar(
-                                getTipoInstanciaPiletaId(item),
-                                getTipoInstanciaPiletaNombre(item),
+                                getTipoPiletaId(item),
+                                getTipoPiletaNombre(item),
                               )
                             }
                           >
@@ -255,8 +255,8 @@ export default function TiposInstanciaPileta() {
                             color="success"
                             onClick={() =>
                               activar(
-                                getTipoInstanciaPiletaId(item),
-                                getTipoInstanciaPiletaNombre(item),
+                                getTipoPiletaId(item),
+                                getTipoPiletaNombre(item),
                               )
                             }
                           >

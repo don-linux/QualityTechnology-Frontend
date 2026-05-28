@@ -227,12 +227,12 @@ export const ENDPOINTS = {
     deactivate: (id) => `/ubicaciones/${id}/deactivate`,
   },
 
-  tiposInstanciaPileta: {
-    base: "/tipos-instancia-pileta",
-    activos: "/tipos-instancia-pileta/activos",
-    byId: (id) => `/tipos-instancia-pileta/${id}`,
-    activate: (id) => `/tipos-instancia-pileta/${id}/activate`,
-    deactivate: (id) => `/tipos-instancia-pileta/${id}/deactivate`,
+  tiposPileta: {
+    base: "/tipos-pileta",
+    activos: "/tipos-pileta/activos",
+    byId: (id) => `/tipos-pileta/${id}`,
+    activate: (id) => `/tipos-pileta/${id}/activate`,
+    deactivate: (id) => `/tipos-pileta/${id}/deactivate`,
   },
 
   bitacoras: {

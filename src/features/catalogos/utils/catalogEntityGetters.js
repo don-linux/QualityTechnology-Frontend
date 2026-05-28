@@ -59,15 +59,15 @@ export function rolEsRoot(r) {
   return Boolean(r?.es_root ?? r?.fb_es_root);
 }
 
-export function getTipoInstanciaPiletaId(t) {
-  return t?.tipo_instancia_pileta_id ?? t?.id;
+export function getTipoPiletaId(t) {
+  return t?.tipo_pileta_id ?? t?.id;
 }
 
-export function getTipoInstanciaPiletaNombre(t) {
+export function getTipoPiletaNombre(t) {
   return t?.nombre ?? t?.fc_nombre ?? "";
 }
 
-export function tipoInstanciaPiletaActivo(t) {
+export function tipoPiletaActivo(t) {
   return t?.activo ?? t?.esta_activo ?? t?.fb_activo ?? false;
 }
 
