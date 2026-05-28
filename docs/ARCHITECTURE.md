@@ -50,7 +50,7 @@ src/
 │   │   ├── components/           # Usuarios, Roles, Puestos, Departamentos, Cliente
 │   │   └── services/             # usuariosService, rolesService, puestosService, ...
 │   ├── inventarios/
-│   │   ├── components/           # Pileta, Instalaciones, Reproductores, Alimentos, Engorda, Equipos, Lotes, Alevines
+│   │   ├── components/           # Pileta, Instalaciones, Reproductores, Engorda, Equipos, Lotes, Alevines
 │   │   └── services/             # piletasService, instalacionesService, ...
 │   ├── ventas/
 │   │   ├── components/           # Venta, ListaEspera, FlujoCaja, TesoreriaGeneral, FormDialog, CuentasDialog

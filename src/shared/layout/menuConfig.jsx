@@ -7,7 +7,6 @@ import AccountBalance from "@mui/icons-material/AccountBalance";
 import People from "@mui/icons-material/People";
 import Handyman from "@mui/icons-material/Handyman";
 import Science from "@mui/icons-material/Science";
-import LocalMall from "@mui/icons-material/LocalMall";
 import LocalAtm from "@mui/icons-material/LocalAtm";
 import Person from "@mui/icons-material/Person";
 import Savings from "@mui/icons-material/Savings";
@@ -81,7 +80,6 @@ export const MENU_SECTIONS = [
         sublabel: "Otros Inventarios",
         sublabelColor: "#e3eb72ff",
         items: [
-          { to: "/inventarios/alimentos", icon: <LocalMall />, label: "Alimento e Insumos" },
           { to: "/inventarios/equipos", icon: <Handyman />, label: "Equipo y Herramientas" },
         ],
       },

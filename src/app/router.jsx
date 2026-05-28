@@ -22,7 +22,6 @@ const TiposPileta = lazy(() => import("@pages/catalogos/TiposPiletaPage"));
 // Inventarios
 const PiletasFisicas = lazy(() => import("@pages/inventarios/PiletasFisicasPage"));
 const Reproductores = lazy(() => import("@pages/inventarios/ReproductoresPage"));
-const Alimentos = lazy(() => import("@pages/inventarios/AlimentosPage"));
 const Engorda = lazy(() => import("@pages/inventarios/EngordaPage"));
 const Equipos = lazy(() => import("@pages/inventarios/EquiposPage"));
 const Alevinaje = lazy(() => import("@pages/inventarios/AlevinajePage"));
@@ -134,7 +133,6 @@ export default function AppRouter() {
             <Route path="inventarios/piletas" element={<Navigate to="/inventarios/piletas-fisicas" replace />} />
             <Route path="inventarios/piletas-fisicas" element={<PiletasFisicas />} />
             <Route path="inventarios/reproductores" element={<Reproductores />} />
-            <Route path="inventarios/alimentos" element={<Alimentos />} />
             <Route path="inventarios/engorda" element={<Engorda />} />
             <Route path="inventarios/lotes" element={<Navigate to="/inventarios/control-reproductivo" replace />} />
             <Route path="inventarios/control-reproductivo" element={<ControlReproductivo />} />

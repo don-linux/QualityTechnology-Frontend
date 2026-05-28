@@ -59,11 +59,6 @@ export const ENDPOINTS = {
     byId: (id) => `/engorda/${id}`,
   },
 
-  alimentos: {
-    base: "/alimentos",
-    byId: (id) => `/alimentos/${id}`,
-  },
-
   alevinaje: {
     base: "/alevinaje",
     byId: (id) => `/alevinaje/${id}`,

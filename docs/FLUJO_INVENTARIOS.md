@@ -35,11 +35,7 @@ El módulo **Instalaciones** se retiró de la app: la **infraestructura base** e
           ┌────────────────────────┐
           │    Engorda             │  ← pileta destino etapa engorda;
           │                        │     origen opcional = otra pileta
-          └───────────┬────────────┘
-                      ▼
-          ┌────────────────┐
-          │    Alimentos   │  ← Alevines | Engorda | Reproductores
-          └────────────────┘
+          └────────────────────────┘
 ```
 
 ## 2. Orden correcto de captura
@@ -51,8 +47,7 @@ El módulo **Instalaciones** se retiró de la app: la **infraestructura base** e
 | 3 | Lotes | `/inventarios/lotes` | Reproductores registrados (el selector usa `GET /lotes/instalaciones/:granja`; nombre legacy, origen = circuito reproductivo). |
 | 4 | Alevinaje | `/inventarios/piletas` (pestaña *Alevinaje* por defecto) | Paso 1: al menos una pileta **etapa *Alevinaje***. Opcional: vincular a **siembra de ingreso** si existen siembras con destino en esa pileta (`GET /siembras`). |
 | 5 | Engorda | `/inventarios/engorda` | Al menos una pileta **etapa *Engorda***; **origen** opcional (`origen_pileta_id`) vía `listPiletas`. |
-| 6 | Alimentos | `/inventarios/alimentos` | Piletas / registros de engorda / reproductores según pestaña |
-| 7 | Equipos | `/inventarios/equipos` | Independiente (cualquier momento) |
+| 6 | Equipos | `/inventarios/equipos` | Independiente (cualquier momento) |
 
 **Antes de empezar:** elige siempre la **granja activa** (`Medellín` o `La Ceiba`) con los botones del encabezado. Cada granja tiene su propio inventario aislado.
 
@@ -80,14 +75,14 @@ Sustituye al antiguo módulo **Instalaciones** (ya no hay ruta `/inventarios/ins
 2. Ir a **Piletas físicas** y **`Nueva pileta`**.
 3. Completar el formulario y elegir la **etapa** acorde a lo que necesitas después:
    - **Reproductores** — para el módulo Reproductores y la cadena de Lotes.
-   - **Alevinaje** — para registrar en la pestaña *Alevinaje* y para alimentación de alevines.
-   - **Engorda** — para movimientos de engorda y su alimentación.
+   - **Alevinaje** — para registrar en la pestaña *Alevinaje*.
+   - **Engorda** — para movimientos de engorda.
 4. **REGISTRAR**. Repite por cada unidad física.
 
 ### Qué habilita
 - **Etapa reproductores** → aparece en *Pileta destino* y en el circuito que alimenta el selector de **Lotes** (vía reproductores registrados).
-- **Etapa alevinaje** → alimenta la pestaña **Alevinaje** y, con datos operativos, el selector de **Alimentos** › Alevines.
-- **Etapa engorda** → selectores de **Engorda** y **Alimentos** › Engorda.
+- **Etapa alevinaje** → alimenta la pestaña **Alevinaje**.
+- **Etapa engorda** → selectores de **Engorda**.
 
 ### Errores frecuentes
 - Crear la pileta con **etapa incorrecta** para el módulo siguiente → no aparecerá en el filtro correspondiente.
@@ -193,7 +188,7 @@ Tras elegir **pileta**, el combo enlaza con `GET /siembras` filtrando `pileta_de
 
 ### Qué habilita aguas abajo
 
-- Registros de alevinaje alimentan trazabilidad y la pestaña **Alevines** de `Alimentos.jsx` (`listPiletasByGranja`).
+- Registros de alevinaje alimentan trazabilidad.
 
 ### Reglas y errores frecuentes
 
@@ -227,7 +222,6 @@ El registro de organismos en **piletas tipo engorda**, con **pileta origen** opc
 4. Click en **Registrar** (`createEngorda`).
 
 ### Qué habilita
-- El registro aparece en el selector *Instalación Engorda* de la pestaña **Engorda** en `Alimentos.jsx`.
 - Genera un movimiento en la **trazabilidad** (historial de movimientos abajo en la misma pantalla).
 
 ### Errores frecuentes
@@ -236,41 +230,7 @@ El registro de organismos en **piletas tipo engorda**, con **pileta origen** opc
 
 ---
 
-## 8. Paso 6 — Alimentos
-
-**Ruta:** `/inventarios/alimentos`
-**Archivo:** `src/features/inventarios/components/Alimentos.jsx`
-**Servicio:** `src/features/inventarios/services/alimentosService.js`
-
-![Módulo Alimentos](./images/inventarios/06-alimentos.png)
-
-### Qué representa
-El registro de **alimentación diaria** por unidad productiva. Tiene tres pestañas independientes: `Alevines`, `Engorda`, `Reproductores`.
-
-### Prerrequisito (por pestaña)
-- **Alevines**: piletas creadas en el paso 1 (etapa alevinaje) y, para datos útiles en operación, registros de **Alevinaje** (paso 4).
-- **Engorda**: al menos un registro de engorda (paso 5).
-- **Reproductores**: al menos un reproductor registrado (paso 2).
-
-### Pasos
-1. Elegir la granja.
-2. Elegir la pestaña (`Alevines` | `Engorda` | `Reproductores`).
-3. Seleccionar la unidad productiva correspondiente en el dropdown:
-   - Pestaña **Alevines** → selector `Pileta` (muestra `nombre_instalacion`).
-   - Pestaña **Engorda** → selector `Instalación Engorda`.
-   - Pestaña **Reproductores** → selector `Reproductor`.
-4. Click en **Registrar**.
-
-### Qué hace el backend
-Crea un registro en la tabla `alimentos` vinculado a `fi_pileta_id` / `fi_engorda_id` / `fi_reproductor_id`. Los cálculos posteriores (`partícula_mm`, `alimento_dia`, `porcion`, `gasto_alimento`) se derivan de otros módulos (por ejemplo, biometrías).
-
-### Errores frecuentes
-- El selector de piletas aparece vacío → revisar que hay piletas creadas en la granja activa (nombre exacto `Granja Acuícola Medellin` o `Granja Acuícola La Ceiba`).
-- Dropdown muestra piletas sin alevines (cantidad = 0): hoy el filtro solo es por granja, no por cantidad. Es comportamiento actual, no un bug.
-
----
-
-## 9. Paso 7 — Equipos (independiente)
+## 8. Paso 6 — Equipos (independiente)
 
 **Ruta:** `/inventarios/equipos`
 **Archivo:** `src/features/inventarios/components/Equipos.jsx`
@@ -309,8 +269,7 @@ Para llenar los inventarios **desde cero en una granja nueva**, sigue este check
 - [ ] **3. Lotes** — control reproductivo; la familia se autocompleta desde el selector (API legacy `instalaciones`).
 - [ ] **4. Alevinaje** — registros en `/inventarios/piletas` sobre piletas **etapa alevinaje**; siembra de ingreso opcional.
 - [ ] **5. Engorda** — registros en piletas **etapa engorda**, con pileta origen opcional.
-- [ ] **6. Alimentos** — alimentación por pestaña (Alevines / Engorda / Reproductores).
-- [ ] **7. Equipos** — cuando haga falta, sin orden forzado.
+- [ ] **6. Equipos** — cuando haga falta, sin orden forzado.
 
 ## 11. Punto clave sobre granjas
 
@@ -334,7 +293,7 @@ Si no ves datos que sabes que existen, lo primero a revisar es que el botón de 
 
 ## 13. Regenerar capturas
 
-Las capturas viven en `docs/images/inventarios/`. Convención sugerida: `01-piletas-fisicas.png` … `07-equipos.png` (el antiguo `01-instalaciones.png` ya no aplica: no existe la ruta de Instalaciones). Fueron tomadas con una sesión logueada sobre `http://localhost:3000`, viewport `1440×900`, `deviceScaleFactor: 1.25`, en `fullPage`.
+Las capturas viven en `docs/images/inventarios/`. Convención sugerida: `01-piletas-fisicas.png` … `06-equipos.png` (el antiguo `01-instalaciones.png` ya no aplica: no existe la ruta de Instalaciones). Fueron tomadas con una sesión logueada sobre `http://localhost:3000`, viewport `1440×900`, `deviceScaleFactor: 1.25`, en `fullPage`.
 
 Si cambia la UI y hay que actualizarlas, se puede hacer con Playwright siguiendo estos pasos:
 
@@ -362,8 +321,7 @@ const routes = [
   { slug: "03-lotes", path: "/inventarios/lotes" },
   { slug: "04-piletas", path: "/inventarios/piletas" },
   { slug: "05-engorda", path: "/inventarios/engorda" },
-  { slug: "06-alimentos", path: "/inventarios/alimentos" },
-  { slug: "07-equipos", path: "/inventarios/equipos" },
+  { slug: "06-equipos", path: "/inventarios/equipos" },
 ];
 
 const browser = await chromium.launch({ headless: true });
