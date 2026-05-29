@@ -32,6 +32,13 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
+import {
+  BloqueSeccionGris,
+  CampoConEtiquetaArriba,
+  TituloSeccionFormulario,
+  botonRegistroInventarioSx,
+  campoFormSx,
+} from "@shared/components/FormularioInventarioSecciones";
 
 const MAX_OBSERVACION = 500;
 const MAX_TEXTO_CORTO = 60;
@@ -97,54 +104,6 @@ const colorDias = (dias) => {
   if (d <= 15) return "#f9a825";
   return "#c62828";
 };
-
-const campoFormSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: 2,
-    backgroundColor: "#fff",
-  },
-};
-
-function TituloSeccionFormulario({ letra, colorFondo, titulo }) {
-  return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 1.5, mt: 2.5 }}>
-      <Box
-        sx={{
-          width: 28,
-          height: 28,
-          borderRadius: "50%",
-          bgcolor: colorFondo,
-          color: "#fff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: 700,
-          fontSize: "0.8rem",
-          flexShrink: 0,
-        }}
-      >
-        {letra}
-      </Box>
-      <Typography
-        variant="subtitle2"
-        sx={{ fontWeight: 700, letterSpacing: 0.6, color: "text.primary", textTransform: "uppercase" }}
-      >
-        {titulo}
-      </Typography>
-    </Box>
-  );
-}
-
-function CampoConEtiquetaArriba({ label, children }) {
-  return (
-    <Box>
-      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.75, fontWeight: 500 }}>
-        {label}
-      </Typography>
-      {children}
-    </Box>
-  );
-}
 
 export default function Reproductores() {
   const showSnackbar = useSnackbar();
@@ -562,21 +521,7 @@ export default function Reproductores() {
               </Grid>
 
               <Grid size={12}>
-                <Box
-                  sx={{
-                    bgcolor: "#f0f2f4",
-                    borderRadius: 2,
-                    px: { xs: 2, sm: 2.5 },
-                    py: 2,
-                    mt: 1,
-                  }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", mb: 2 }}
-                  >
-                    Datos técnicos
-                  </Typography>
+                <BloqueSeccionGris titulo="Datos técnicos">
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <CampoConEtiquetaArriba label="Total reproductores">
@@ -621,7 +566,7 @@ export default function Reproductores() {
                       </CampoConEtiquetaArriba>
                     </Grid>
                   </Grid>
-                </Box>
+                </BloqueSeccionGris>
               </Grid>
 
               <Grid size={12}>
@@ -649,16 +594,7 @@ export default function Reproductores() {
                   color="primary"
                   startIcon={<AddCircleIcon />}
                   onClick={modoEdicion ? actualizarRegistro : registrarReproductor}
-                  sx={{
-                    mt: 1,
-                    py: 1.25,
-                    px: 3,
-                    fontWeight: 700,
-                    letterSpacing: 0.8,
-                    textTransform: "uppercase",
-                    borderRadius: 2,
-                    boxShadow: "0 4px 12px rgba(0, 109, 82, 0.35)",
-                  }}
+                  sx={botonRegistroInventarioSx}
                 >
                   {modoEdicion ? "Guardar cambios" : "Registrar reproductor"}
                 </Button>

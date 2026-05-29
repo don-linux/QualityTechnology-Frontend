@@ -7,6 +7,12 @@ import {
 } from "../services/engordaService";
 import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
+import {
+  CampoConEtiquetaArriba,
+  TituloSeccionFormulario,
+  botonRegistroInventarioSx,
+  campoFormSx,
+} from "@shared/components/FormularioInventarioSecciones";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
@@ -21,7 +27,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
-import Divider from "@mui/material/Divider";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -281,15 +286,14 @@ export default function Engorda() {
       </Paper>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
-        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#005f73" }}>
+        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+            <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
               {modoEdicion ? "Editar registro" : "Registrar nueva engorda"}
             </Typography>
-            <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
                   label="Ubicación"
@@ -297,6 +301,7 @@ export default function Engorda() {
                   value={formData.ubicacion || ""}
                   onChange={handleChange}
                   fullWidth
+                  sx={campoFormSx}
                   error={!!errors.ubicacion}
                   {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
                 >
@@ -308,7 +313,7 @@ export default function Engorda() {
                 </TextField>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
                   label="Pileta (engorda)"
@@ -316,6 +321,7 @@ export default function Engorda() {
                   value={formData.fi_pileta_destino_id || ""}
                   onChange={handleChange}
                   fullWidth
+                  sx={campoFormSx}
                   error={!!errors.fi_pileta_destino_id}
                   {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
                 >
@@ -330,79 +336,96 @@ export default function Engorda() {
                 </TextField>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Cantidad total"
-                  name="cantidad_total"
-                  type="number"
-                  value={formData.cantidad_total}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ min: 0, inputMode: "numeric" }}
-                  error={!!errors.cantidad_total}
-                  {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
-                />
+              <Grid size={12}>
+                <TituloSeccionFormulario letra="C" colorFondo="#1976d2" titulo="Información de cantidades" mt={0} />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Cantidad inicial"
+                      name="cantidad_total"
+                      value={formData.cantidad_total}
+                      onChange={handleChange}
+                      fullWidth
+                      placeholder="Cantidad inicial"
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, inputMode: "numeric" }}
+                      error={!!errors.cantidad_total}
+                      {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Cantidad actual"
+                      name="cantidad_alimento"
+                      value={formData.cantidad_alimento}
+                      onChange={handleChange}
+                      fullWidth
+                      placeholder="Cantidad actual"
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, inputMode: "numeric" }}
+                    />
+                  </Grid>
+                </Grid>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Cantidad alimento"
-                  name="cantidad_alimento"
-                  type="number"
-                  value={formData.cantidad_alimento}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ min: 0, inputMode: "numeric" }}
-                />
+              <Grid size={12}>
+                <TituloSeccionFormulario letra="D" colorFondo="#f59e0b" titulo="Datos biométricos" />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Peso (kg)"
+                      name="peso_kg"
+                      value={formData.peso_kg}
+                      onChange={handleChange}
+                      fullWidth
+                      placeholder="Peso (kg)"
+                      sx={campoFormSx}
+                      inputProps={{ inputMode: "decimal" }}
+                      error={!!errors.peso_kg}
+                      {...(errors.peso_kg ? { helperText: errors.peso_kg } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Fecha peso"
+                      type="date"
+                      name="fecha_peso"
+                      value={formData.fecha_peso}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.fecha_peso}
+                      {...(errors.fecha_peso ? { helperText: errors.fecha_peso } : {})}
+                    />
+                  </Grid>
+                </Grid>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Peso (kg)"
-                  name="peso_kg"
-                  value={formData.peso_kg}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ inputMode: "decimal" }}
-                  error={!!errors.peso_kg}
-                  {...(errors.peso_kg ? { helperText: errors.peso_kg } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Fecha peso"
-                  type="date"
-                  name="fecha_peso"
-                  value={formData.fecha_peso}
-                  onChange={handleChange}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  error={!!errors.fecha_peso}
-                  {...(errors.fecha_peso ? { helperText: errors.fecha_peso } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  label="Observación"
-                  name="observacion"
-                  value={formData.observacion}
-                  onChange={handleChange}
-                  fullWidth
-                  multiline
-                  rows={2}
-                  inputProps={{ maxLength: MAX_OBSERVACION }}
-                />
+              <Grid size={12}>
+                <CampoConEtiquetaArriba label="Observaciones">
+                  <TextField
+                    name="observacion"
+                    value={formData.observacion}
+                    onChange={handleChange}
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    placeholder="Escriba aquí cualquier detalle adicional..."
+                    sx={campoFormSx}
+                    hiddenLabel
+                    inputProps={{ maxLength: MAX_OBSERVACION }}
+                  />
+                </CampoConEtiquetaArriba>
               </Grid>
 
               <Grid size={12}>
                 <Button
                   variant="contained"
+                  color="primary"
                   startIcon={<AddCircleIcon />}
-                  color="success"
                   onClick={modoEdicion ? actualizarEngordaRegistro : registrarEngorda}
-                  sx={{ mt: 1, fontWeight: "bold" }}
+                  sx={botonRegistroInventarioSx}
                 >
                   {modoEdicion ? "Guardar cambios" : "Registrar engorda"}
                 </Button>
