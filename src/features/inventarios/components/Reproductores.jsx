@@ -405,17 +405,18 @@ export default function Reproductores() {
               </Grid>
 
               <Grid size={12}>
-                <TituloSeccionFormulario letra="M" colorFondo="#1976d2" titulo="Información machos" />
+                <TituloSeccionFormulario titulo="Información machos" />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextField
                       label="Machos"
                       name="fn_machos"
+                      type="number"
                       value={formData.fn_machos}
                       onChange={handleChange}
                       fullWidth
                       sx={campoFormSx}
-                      inputProps={{ min: 0, inputMode: "numeric" }}
+                      inputProps={{ min: 0, step: 1 }}
                       error={!!errors.fn_machos}
                       {...(errors.fn_machos ? { helperText: errors.fn_machos } : {})}
                     />
@@ -463,17 +464,18 @@ export default function Reproductores() {
               </Grid>
 
               <Grid size={12}>
-                <TituloSeccionFormulario letra="H" colorFondo="#d81b60" titulo="Información hembras" />
+                <TituloSeccionFormulario titulo="Información hembras" />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextField
                       label="Hembras"
                       name="fn_hembras"
+                      type="number"
                       value={formData.fn_hembras}
                       onChange={handleChange}
                       fullWidth
                       sx={campoFormSx}
-                      inputProps={{ min: 0, inputMode: "numeric" }}
+                      inputProps={{ min: 0, step: 1 }}
                       error={!!errors.fn_hembras}
                       {...(errors.fn_hembras ? { helperText: errors.fn_hembras } : {})}
                     />

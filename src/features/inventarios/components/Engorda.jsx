@@ -337,18 +337,19 @@ export default function Engorda() {
               </Grid>
 
               <Grid size={12}>
-                <TituloSeccionFormulario letra="C" colorFondo="#1976d2" titulo="Información de cantidades" mt={0} />
+                <TituloSeccionFormulario titulo="Información de cantidades" mt={0} />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       label="Cantidad inicial"
                       name="cantidad_total"
+                      type="number"
                       value={formData.cantidad_total}
                       onChange={handleChange}
                       fullWidth
                       placeholder="Cantidad inicial"
                       sx={campoFormSx}
-                      inputProps={{ min: 0, inputMode: "numeric" }}
+                      inputProps={{ min: 0, step: 1 }}
                       error={!!errors.cantidad_total}
                       {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
                     />
@@ -357,30 +358,32 @@ export default function Engorda() {
                     <TextField
                       label="Cantidad actual"
                       name="cantidad_alimento"
+                      type="number"
                       value={formData.cantidad_alimento}
                       onChange={handleChange}
                       fullWidth
                       placeholder="Cantidad actual"
                       sx={campoFormSx}
-                      inputProps={{ min: 0, inputMode: "numeric" }}
+                      inputProps={{ min: 0, step: 1 }}
                     />
                   </Grid>
                 </Grid>
               </Grid>
 
               <Grid size={12}>
-                <TituloSeccionFormulario letra="D" colorFondo="#f59e0b" titulo="Datos biométricos" />
+                <TituloSeccionFormulario titulo="Datos biométricos" />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       label="Peso (kg)"
                       name="peso_kg"
+                      type="number"
                       value={formData.peso_kg}
                       onChange={handleChange}
                       fullWidth
                       placeholder="Peso (kg)"
                       sx={campoFormSx}
-                      inputProps={{ inputMode: "decimal" }}
+                      inputProps={{ min: 0, step: "any" }}
                       error={!!errors.peso_kg}
                       {...(errors.peso_kg ? { helperText: errors.peso_kg } : {})}
                     />

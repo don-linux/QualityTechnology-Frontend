@@ -19,33 +19,22 @@ export const botonRegistroInventarioSx = {
   boxShadow: "0 4px 12px rgba(0, 109, 82, 0.35)",
 };
 
-export function TituloSeccionFormulario({ letra, colorFondo, titulo, mt = 2.5 }) {
+export function TituloSeccionFormulario({ titulo, mt = 2.5 }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 1.5, mt }}>
-      <Box
-        sx={{
-          width: 28,
-          height: 28,
-          borderRadius: "50%",
-          bgcolor: colorFondo,
-          color: "#fff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: 700,
-          fontSize: "0.8rem",
-          flexShrink: 0,
-        }}
-      >
-        {letra}
-      </Box>
-      <Typography
-        variant="subtitle2"
-        sx={{ fontWeight: 700, letterSpacing: 0.6, color: "text.primary", textTransform: "uppercase" }}
-      >
-        {titulo}
-      </Typography>
-    </Box>
+    <Typography
+      variant="subtitle2"
+      sx={{
+        display: "block",
+        fontWeight: 700,
+        letterSpacing: 0.6,
+        color: "text.primary",
+        textTransform: "uppercase",
+        mb: 1.5,
+        mt,
+      }}
+    >
+      {titulo}
+    </Typography>
   );
 }
 
