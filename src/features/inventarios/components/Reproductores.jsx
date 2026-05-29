@@ -310,6 +310,14 @@ export default function Reproductores() {
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
     machos: Number(formData.fn_machos || 0),
     hembras: Number(formData.fn_hembras || 0),
+    fc_tipo_procedencia_machos: formData.fc_tipo_procedencia_machos || undefined,
+    fc_procedencia_machos_pileta_id: formData.fc_procedencia_machos_pileta_id
+      ? Number(formData.fc_procedencia_machos_pileta_id)
+      : undefined,
+    fc_tipo_procedencia_hembras: formData.fc_tipo_procedencia_hembras || undefined,
+    fc_procedencia_hembras_pileta_id: formData.fc_procedencia_hembras_pileta_id
+      ? Number(formData.fc_procedencia_hembras_pileta_id)
+      : undefined,
     genetica_machos: formData.fc_genetica_machos,
     familia_machos: formData.fc_familia_machos,
     procedencia_machos: resolverProcedencia(
