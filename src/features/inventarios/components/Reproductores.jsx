@@ -22,7 +22,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
-import Divider from "@mui/material/Divider";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -98,6 +97,54 @@ const colorDias = (dias) => {
   if (d <= 15) return "#f9a825";
   return "#c62828";
 };
+
+const campoFormSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 2,
+    backgroundColor: "#fff",
+  },
+};
+
+function TituloSeccionFormulario({ letra, colorFondo, titulo }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 1.5, mt: 2.5 }}>
+      <Box
+        sx={{
+          width: 28,
+          height: 28,
+          borderRadius: "50%",
+          bgcolor: colorFondo,
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 700,
+          fontSize: "0.8rem",
+          flexShrink: 0,
+        }}
+      >
+        {letra}
+      </Box>
+      <Typography
+        variant="subtitle2"
+        sx={{ fontWeight: 700, letterSpacing: 0.6, color: "text.primary", textTransform: "uppercase" }}
+      >
+        {titulo}
+      </Typography>
+    </Box>
+  );
+}
+
+function CampoConEtiquetaArriba({ label, children }) {
+  return (
+    <Box>
+      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.75, fontWeight: 500 }}>
+        {label}
+      </Typography>
+      {children}
+    </Box>
+  );
+}
 
 export default function Reproductores() {
   const showSnackbar = useSnackbar();
@@ -348,15 +395,14 @@ export default function Reproductores() {
       </Paper>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
-        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#005f73" }}>
+        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+            <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
               {modoEdicion ? "Editar registro" : "Registrar nuevo inventario"}
             </Typography>
-            <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
                   label="Ubicación"
@@ -364,6 +410,7 @@ export default function Reproductores() {
                   value={formData.ubicacion || ""}
                   onChange={handleChange}
                   fullWidth
+                  sx={campoFormSx}
                   error={!!errors.ubicacion}
                   {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
                 >
@@ -375,7 +422,7 @@ export default function Reproductores() {
                 </TextField>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
                   label="Pileta (reproductores)"
@@ -383,6 +430,7 @@ export default function Reproductores() {
                   value={formData.fi_pileta_destino_id || ""}
                   onChange={handleChange}
                   fullWidth
+                  sx={campoFormSx}
                   error={!!errors.fi_pileta_destino_id}
                   {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
                 >
@@ -397,166 +445,220 @@ export default function Reproductores() {
                 </TextField>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Machos"
-                  name="fn_machos"
-                  value={formData.fn_machos}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ min: 0, inputMode: "numeric" }}
-                  error={!!errors.fn_machos}
-                  {...(errors.fn_machos ? { helperText: errors.fn_machos } : {})}
-                />
+              <Grid size={12}>
+                <TituloSeccionFormulario letra="M" colorFondo="#1976d2" titulo="Información machos" />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      label="Machos"
+                      name="fn_machos"
+                      value={formData.fn_machos}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, inputMode: "numeric" }}
+                      error={!!errors.fn_machos}
+                      {...(errors.fn_machos ? { helperText: errors.fn_machos } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      label="Genética machos"
+                      name="fc_genetica_machos"
+                      value={formData.fc_genetica_machos}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      inputProps={{ maxLength: MAX_TEXTO_CORTO }}
+                      error={!!errors.fc_genetica_machos}
+                      {...(errors.fc_genetica_machos ? { helperText: errors.fc_genetica_machos } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      label="Familia machos"
+                      name="fc_familia_machos"
+                      value={formData.fc_familia_machos}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      inputProps={{ maxLength: MAX_TEXTO_CORTO }}
+                      error={!!errors.fc_familia_machos}
+                      {...(errors.fc_familia_machos ? { helperText: errors.fc_familia_machos } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      label="Procedencia machos"
+                      name="fc_procedencia_machos"
+                      value={formData.fc_procedencia_machos}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      inputProps={{ maxLength: MAX_PROCEDENCIA }}
+                      error={!!errors.fc_procedencia_machos}
+                      {...(errors.fc_procedencia_machos ? { helperText: errors.fc_procedencia_machos } : {})}
+                    />
+                  </Grid>
+                </Grid>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  label="Genética machos"
-                  name="fc_genetica_machos"
-                  value={formData.fc_genetica_machos}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ maxLength: MAX_TEXTO_CORTO }}
-                  error={!!errors.fc_genetica_machos}
-                  {...(errors.fc_genetica_machos ? { helperText: errors.fc_genetica_machos } : {})}
-                />
+              <Grid size={12}>
+                <TituloSeccionFormulario letra="H" colorFondo="#d81b60" titulo="Información hembras" />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      label="Hembras"
+                      name="fn_hembras"
+                      value={formData.fn_hembras}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, inputMode: "numeric" }}
+                      error={!!errors.fn_hembras}
+                      {...(errors.fn_hembras ? { helperText: errors.fn_hembras } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      label="Genética hembras"
+                      name="fc_genetica_hembras"
+                      value={formData.fc_genetica_hembras}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      inputProps={{ maxLength: MAX_TEXTO_CORTO }}
+                      error={!!errors.fc_genetica_hembras}
+                      {...(errors.fc_genetica_hembras ? { helperText: errors.fc_genetica_hembras } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      label="Familia hembras"
+                      name="fc_familia_hembras"
+                      value={formData.fc_familia_hembras}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      inputProps={{ maxLength: MAX_TEXTO_CORTO }}
+                      error={!!errors.fc_familia_hembras}
+                      {...(errors.fc_familia_hembras ? { helperText: errors.fc_familia_hembras } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      label="Procedencia hembras"
+                      name="fc_procedencia_hembras"
+                      value={formData.fc_procedencia_hembras}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      inputProps={{ maxLength: MAX_PROCEDENCIA }}
+                      error={!!errors.fc_procedencia_hembras}
+                      {...(errors.fc_procedencia_hembras ? { helperText: errors.fc_procedencia_hembras } : {})}
+                    />
+                  </Grid>
+                </Grid>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  label="Familia machos"
-                  name="fc_familia_machos"
-                  value={formData.fc_familia_machos}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ maxLength: MAX_TEXTO_CORTO }}
-                  error={!!errors.fc_familia_machos}
-                  {...(errors.fc_familia_machos ? { helperText: errors.fc_familia_machos } : {})}
-                />
+              <Grid size={12}>
+                <Box
+                  sx={{
+                    bgcolor: "#f0f2f4",
+                    borderRadius: 2,
+                    px: { xs: 2, sm: 2.5 },
+                    py: 2,
+                    mt: 1,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", mb: 2 }}
+                  >
+                    Datos técnicos
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <CampoConEtiquetaArriba label="Total reproductores">
+                        <TextField
+                          name="fn_cantidad"
+                          value={formData.fn_cantidad}
+                          fullWidth
+                          disabled
+                          placeholder="Total reproduct..."
+                          sx={campoFormSx}
+                          hiddenLabel
+                        />
+                      </CampoConEtiquetaArriba>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <CampoConEtiquetaArriba label="Relación (H/M)">
+                        <TextField
+                          name="fc_ratio"
+                          value={formData.fc_ratio}
+                          fullWidth
+                          disabled
+                          placeholder="Relación (H/M)"
+                          sx={campoFormSx}
+                          hiddenLabel
+                        />
+                      </CampoConEtiquetaArriba>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <CampoConEtiquetaArriba label="Talla (Gr)">
+                        <TextField
+                          name="fn_talla"
+                          value={formData.fn_talla}
+                          onChange={handleChange}
+                          fullWidth
+                          placeholder="Talla (Gr)"
+                          sx={campoFormSx}
+                          hiddenLabel
+                          inputProps={{ inputMode: "decimal" }}
+                          error={!!errors.fn_talla}
+                          {...(errors.fn_talla ? { helperText: errors.fn_talla } : {})}
+                        />
+                      </CampoConEtiquetaArriba>
+                    </Grid>
+                  </Grid>
+                </Box>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  label="Procedencia machos"
-                  name="fc_procedencia_machos"
-                  value={formData.fc_procedencia_machos}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ maxLength: MAX_PROCEDENCIA }}
-                  error={!!errors.fc_procedencia_machos}
-                  {...(errors.fc_procedencia_machos ? { helperText: errors.fc_procedencia_machos } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Hembras"
-                  name="fn_hembras"
-                  value={formData.fn_hembras}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ min: 0, inputMode: "numeric" }}
-                  error={!!errors.fn_hembras}
-                  {...(errors.fn_hembras ? { helperText: errors.fn_hembras } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  label="Genética hembras"
-                  name="fc_genetica_hembras"
-                  value={formData.fc_genetica_hembras}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ maxLength: MAX_TEXTO_CORTO }}
-                  error={!!errors.fc_genetica_hembras}
-                  {...(errors.fc_genetica_hembras ? { helperText: errors.fc_genetica_hembras } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  label="Familia hembras"
-                  name="fc_familia_hembras"
-                  value={formData.fc_familia_hembras}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ maxLength: MAX_TEXTO_CORTO }}
-                  error={!!errors.fc_familia_hembras}
-                  {...(errors.fc_familia_hembras ? { helperText: errors.fc_familia_hembras } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  label="Procedencia hembras"
-                  name="fc_procedencia_hembras"
-                  value={formData.fc_procedencia_hembras}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ maxLength: MAX_PROCEDENCIA }}
-                  error={!!errors.fc_procedencia_hembras}
-                  {...(errors.fc_procedencia_hembras ? { helperText: errors.fc_procedencia_hembras } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Total reproductores"
-                  name="fn_cantidad"
-                  value={formData.fn_cantidad}
-                  fullWidth
-                  disabled
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Relación (H/M)"
-                  name="fc_ratio"
-                  value={formData.fc_ratio}
-                  fullWidth
-                  disabled
-                  placeholder="1:X"
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Talla (Gr)"
-                  name="fn_talla"
-                  value={formData.fn_talla}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ inputMode: "decimal" }}
-                  error={!!errors.fn_talla}
-                  {...(errors.fn_talla ? { helperText: errors.fn_talla } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label="Observaciones"
-                  name="observacion"
-                  value={formData.observacion}
-                  onChange={handleChange}
-                  fullWidth
-                  multiline
-                  rows={2}
-                  inputProps={{ maxLength: MAX_OBSERVACION }}
-                  error={!!errors.observacion}
-                  {...(errors.observacion ? { helperText: errors.observacion } : {})}
-                />
+              <Grid size={12}>
+                <CampoConEtiquetaArriba label="Observaciones">
+                  <TextField
+                    name="observacion"
+                    value={formData.observacion}
+                    onChange={handleChange}
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    placeholder="Escriba aquí cualquier detalle adicional..."
+                    sx={campoFormSx}
+                    hiddenLabel
+                    inputProps={{ maxLength: MAX_OBSERVACION }}
+                    error={!!errors.observacion}
+                    {...(errors.observacion ? { helperText: errors.observacion } : {})}
+                  />
+                </CampoConEtiquetaArriba>
               </Grid>
 
               <Grid size={12}>
                 <Button
                   variant="contained"
+                  color="primary"
                   startIcon={<AddCircleIcon />}
-                  color="success"
                   onClick={modoEdicion ? actualizarRegistro : registrarReproductor}
-                  sx={{ mt: 1, fontWeight: "bold" }}
+                  sx={{
+                    mt: 1,
+                    py: 1.25,
+                    px: 3,
+                    fontWeight: 700,
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    borderRadius: 2,
+                    boxShadow: "0 4px 12px rgba(0, 109, 82, 0.35)",
+                  }}
                 >
                   {modoEdicion ? "Guardar cambios" : "Registrar reproductor"}
                 </Button>
