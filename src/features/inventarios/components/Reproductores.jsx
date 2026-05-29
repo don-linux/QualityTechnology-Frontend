@@ -44,6 +44,11 @@ const MAX_OBSERVACION = 500;
 const MAX_TEXTO_CORTO = 60;
 const MAX_PROCEDENCIA = 100;
 
+const TIPOS_PROCEDENCIA = [
+  { value: "interna", label: "Interna" },
+  { value: "externa", label: "Externa" },
+];
+
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 
@@ -53,11 +58,11 @@ const REPRODUCTOR_FORM_REQUIRED = [
   "fn_machos",
   "fc_genetica_machos",
   "fc_familia_machos",
-  "fc_procedencia_machos",
+  "fc_tipo_procedencia_machos",
   "fn_hembras",
   "fc_genetica_hembras",
   "fc_familia_hembras",
-  "fc_procedencia_hembras",
+  "fc_tipo_procedencia_hembras",
   "fn_talla",
   "observacion",
 ];
@@ -68,16 +73,180 @@ const FORM_INICIAL = {
   fn_machos: "",
   fc_genetica_machos: "",
   fc_familia_machos: "",
-  fc_procedencia_machos: "",
+  fc_tipo_procedencia_machos: "",
+  fc_procedencia_machos_pileta_id: "",
+  fc_procedencia_machos_externa: "",
   fn_hembras: "",
   fc_genetica_hembras: "",
   fc_familia_hembras: "",
-  fc_procedencia_hembras: "",
+  fc_tipo_procedencia_hembras: "",
+  fc_procedencia_hembras_pileta_id: "",
+  fc_procedencia_hembras_externa: "",
   fn_cantidad: "",
   fc_ratio: "",
   fn_talla: "",
   observacion: "",
 };
+
+function resolverProcedencia(tipo, piletaId, textoExterno, piletasEngorda) {
+  if (tipo === "interna") {
+    const pileta = piletasEngorda.find(
+      (p) => String(p.fi_pileta_id ?? p.pileta_id) === String(piletaId),
+    );
+    return pileta?.nombre?.trim() ?? "";
+  }
+  if (tipo === "externa") {
+    return String(textoExterno ?? "").trim();
+  }
+  return "";
+}
+
+function parseProcedenciaDesdeBackend(valor, piletasEngorda) {
+  const texto = String(valor ?? "").trim();
+  if (!texto) {
+    return { tipo: "", piletaId: "", externa: "" };
+  }
+  const pileta = piletasEngorda.find((p) => String(p.nombre ?? "").trim() === texto);
+  if (pileta) {
+    return {
+      tipo: "interna",
+      piletaId: String(pileta.fi_pileta_id ?? pileta.pileta_id ?? ""),
+      externa: "",
+    };
+  }
+  return { tipo: "externa", piletaId: "", externa: texto };
+}
+
+function CeldaTipoProcedencia({ valor, piletasEngorda }) {
+  const texto = String(valor ?? "").trim();
+  if (!texto) return "—";
+
+  const { tipo } = parseProcedenciaDesdeBackend(texto, piletasEngorda);
+  if (tipo !== "interna" && tipo !== "externa") return "—";
+
+  const esInterna = tipo === "interna";
+
+  return (
+    <Box
+      component="span"
+      sx={{
+        display: "inline-block",
+        px: 1,
+        py: 0.25,
+        borderRadius: 1,
+        fontSize: "0.75rem",
+        fontWeight: 600,
+        lineHeight: 1.4,
+        whiteSpace: "nowrap",
+        color: esInterna ? "#01579b" : "#5d4037",
+        bgcolor: esInterna ? "#e1f5fe" : "#efebe9",
+        border: "1px solid",
+        borderColor: esInterna ? "#81d4fa" : "#bcaaa4",
+      }}
+    >
+      {esInterna ? "Interna" : "Externa"}
+    </Box>
+  );
+}
+
+function valorProcedenciaTabla(valor, piletasEngorda) {
+  const texto = String(valor ?? "").trim();
+  if (!texto) return "—";
+  const { tipo } = parseProcedenciaDesdeBackend(texto, piletasEngorda);
+  if (tipo === "interna") {
+    const pileta = piletasEngorda.find((p) => String(p.nombre ?? "").trim() === texto);
+    const granja = pileta?.fc_granja ?? pileta?.granja ?? "";
+    return granja ? `${texto} (${granja})` : texto;
+  }
+  return texto;
+}
+
+function camposRequeridosProcedencia(formData) {
+  const campos = [...REPRODUCTOR_FORM_REQUIRED];
+  if (formData.fc_tipo_procedencia_machos === "interna") {
+    campos.push("fc_procedencia_machos_pileta_id");
+  } else if (formData.fc_tipo_procedencia_machos === "externa") {
+    campos.push("fc_procedencia_machos_externa");
+  }
+  if (formData.fc_tipo_procedencia_hembras === "interna") {
+    campos.push("fc_procedencia_hembras_pileta_id");
+  } else if (formData.fc_tipo_procedencia_hembras === "externa") {
+    campos.push("fc_procedencia_hembras_externa");
+  }
+  return campos;
+}
+
+function CamposProcedencia({ prefijo, etiquetaTipo, formData, handleChange, errors, piletasEngorda }) {
+  const tipoField = `fc_tipo_procedencia_${prefijo}`;
+  const piletaField = `fc_procedencia_${prefijo}_pileta_id`;
+  const externaField = `fc_procedencia_${prefijo}_externa`;
+  const tipo = formData[tipoField];
+
+  return (
+    <>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <TextField
+          select
+          label={etiquetaTipo}
+          name={tipoField}
+          value={formData[tipoField] || ""}
+          onChange={handleChange}
+          fullWidth
+          sx={campoFormSx}
+          error={!!errors[tipoField]}
+          {...(errors[tipoField] ? { helperText: errors[tipoField] } : {})}
+        >
+          {TIPOS_PROCEDENCIA.map((op) => (
+            <MenuItem key={op.value} value={op.value}>
+              {op.label}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Grid>
+      {tipo === "interna" && (
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <TextField
+            select
+            label="Pileta de engorda"
+            name={piletaField}
+            value={formData[piletaField] || ""}
+            onChange={handleChange}
+            fullWidth
+            sx={campoFormSx}
+            error={!!errors[piletaField]}
+            {...(errors[piletaField] ? { helperText: errors[piletaField] } : {})}
+          >
+            {piletasEngorda.map((p) => {
+              const pid = p.fi_pileta_id ?? p.pileta_id;
+              const granja = p.fc_granja ?? p.granja ?? p.nombre_ubicacion ?? "";
+              const etiqueta = granja ? `${p.nombre} (${granja})` : p.nombre;
+              return (
+                <MenuItem key={pid} value={String(pid)}>
+                  {etiqueta}
+                </MenuItem>
+              );
+            })}
+          </TextField>
+        </Grid>
+      )}
+      {tipo === "externa" && (
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <TextField
+            label="Ubicación externa"
+            name={externaField}
+            value={formData[externaField] || ""}
+            onChange={handleChange}
+            fullWidth
+            sx={campoFormSx}
+            inputProps={{ maxLength: MAX_PROCEDENCIA }}
+            error={!!errors[externaField]}
+            {...(errors[externaField] ? { helperText: errors[externaField] } : {})}
+          />
+        </Grid>
+      )}
+    </>
+  );
+}
 
 function aplicarMachosHembras(prev, machosRaw, hembrasRaw) {
   const m = Math.max(0, Number(machosRaw) || 0);
@@ -118,6 +287,7 @@ export default function Reproductores() {
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
   const [piletasDestino, setPiletasDestino] = useState([]);
+  const [piletasEngorda, setPiletasEngorda] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -142,10 +312,20 @@ export default function Reproductores() {
     hembras: Number(formData.fn_hembras || 0),
     genetica_machos: formData.fc_genetica_machos,
     familia_machos: formData.fc_familia_machos,
-    procedencia_machos: formData.fc_procedencia_machos,
+    procedencia_machos: resolverProcedencia(
+      formData.fc_tipo_procedencia_machos,
+      formData.fc_procedencia_machos_pileta_id,
+      formData.fc_procedencia_machos_externa,
+      piletasEngorda,
+    ),
     genetica_hembras: formData.fc_genetica_hembras,
     familia_hembras: formData.fc_familia_hembras,
-    procedencia_hembras: formData.fc_procedencia_hembras,
+    procedencia_hembras: resolverProcedencia(
+      formData.fc_tipo_procedencia_hembras,
+      formData.fc_procedencia_hembras_pileta_id,
+      formData.fc_procedencia_hembras_externa,
+      piletasEngorda,
+    ),
     talla: formData.fn_talla === "" ? null : Number(formData.fn_talla),
     observacion: formData.observacion,
   });
@@ -170,6 +350,22 @@ export default function Reproductores() {
       if (name === "fn_hembras") {
         return aplicarMachosHembras(prev, prev.fn_machos, value);
       }
+      if (name === "fc_tipo_procedencia_machos") {
+        return {
+          ...prev,
+          fc_tipo_procedencia_machos: value,
+          fc_procedencia_machos_pileta_id: "",
+          fc_procedencia_machos_externa: "",
+        };
+      }
+      if (name === "fc_tipo_procedencia_hembras") {
+        return {
+          ...prev,
+          fc_tipo_procedencia_hembras: value,
+          fc_procedencia_hembras_pileta_id: "",
+          fc_procedencia_hembras_externa: "",
+        };
+      }
       return { ...prev, [name]: value };
     });
     clearFieldError(name);
@@ -184,6 +380,15 @@ export default function Reproductores() {
     }
   }, []);
 
+  const cargarPiletasEngorda = useCallback(async () => {
+    try {
+      const res = await listPiletas(null, "engorda");
+      setPiletasEngorda(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error cargando piletas engorda:", err);
+    }
+  }, []);
+
   const cargarRegistros = useCallback(async () => {
     try {
       const res = await listReproductores();
@@ -195,8 +400,9 @@ export default function Reproductores() {
 
   useEffect(() => {
     cargarPiletasDestino();
+    cargarPiletasEngorda();
     cargarRegistros();
-  }, [cargarPiletasDestino, cargarRegistros]);
+  }, [cargarPiletasDestino, cargarPiletasEngorda, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
@@ -214,7 +420,7 @@ export default function Reproductores() {
   };
 
   const registrarReproductor = async () => {
-    if (!validate(formData, REPRODUCTOR_FORM_REQUIRED)) return;
+    if (!validate(formData, camposRequeridosProcedencia(formData))) return;
     if (!validarTotalPositivo()) return;
     try {
       await createReproductor(payloadComunBackend());
@@ -232,29 +438,44 @@ export default function Reproductores() {
     }
   };
 
-  const mapSeleccionadoAForm = (row) => ({
-    ubicacion: row.fc_granja || defaultUbicacion || "",
-    fi_pileta_destino_id: String(
-      row.fi_pileta_destino_id ?? row.pileta_destino_id ?? row.pileta_id ?? "",
-    ),
-    fn_machos: String(row.fn_machos ?? row.machos ?? ""),
-    fc_genetica_machos: row.fc_genetica_machos ?? row.genetica_machos ?? "",
-    fc_familia_machos: row.fc_familia_machos ?? row.familia_machos ?? "",
-    fc_procedencia_machos: row.fc_procedencia_machos ?? row.procedencia_machos ?? "",
-    fn_hembras: String(row.fn_hembras ?? row.hembras ?? ""),
-    fc_genetica_hembras: row.fc_genetica_hembras ?? row.genetica_hembras ?? "",
-    fc_familia_hembras: row.fc_familia_hembras ?? row.familia_hembras ?? "",
-    fc_procedencia_hembras: row.fc_procedencia_hembras ?? row.procedencia_hembras ?? "",
-    fn_cantidad: String(row.fn_cantidad ?? row.cantidad_total ?? row.cantidad ?? ""),
-    fc_ratio: row.fc_ratio ?? row.ratio ?? "",
-    fn_talla:
-      row.fn_talla != null
-        ? String(row.fn_talla)
-        : row.talla != null
-          ? String(row.talla)
-          : "",
-    observacion: row.observacion ?? row.fc_observacion ?? "",
-  });
+  const mapSeleccionadoAForm = (row) => {
+    const procedenciaMachos = parseProcedenciaDesdeBackend(
+      row.fc_procedencia_machos ?? row.procedencia_machos,
+      piletasEngorda,
+    );
+    const procedenciaHembras = parseProcedenciaDesdeBackend(
+      row.fc_procedencia_hembras ?? row.procedencia_hembras,
+      piletasEngorda,
+    );
+
+    return {
+      ubicacion: row.fc_granja || defaultUbicacion || "",
+      fi_pileta_destino_id: String(
+        row.fi_pileta_destino_id ?? row.pileta_destino_id ?? row.pileta_id ?? "",
+      ),
+      fn_machos: String(row.fn_machos ?? row.machos ?? ""),
+      fc_genetica_machos: row.fc_genetica_machos ?? row.genetica_machos ?? "",
+      fc_familia_machos: row.fc_familia_machos ?? row.familia_machos ?? "",
+      fc_tipo_procedencia_machos: procedenciaMachos.tipo,
+      fc_procedencia_machos_pileta_id: procedenciaMachos.piletaId,
+      fc_procedencia_machos_externa: procedenciaMachos.externa,
+      fn_hembras: String(row.fn_hembras ?? row.hembras ?? ""),
+      fc_genetica_hembras: row.fc_genetica_hembras ?? row.genetica_hembras ?? "",
+      fc_familia_hembras: row.fc_familia_hembras ?? row.familia_hembras ?? "",
+      fc_tipo_procedencia_hembras: procedenciaHembras.tipo,
+      fc_procedencia_hembras_pileta_id: procedenciaHembras.piletaId,
+      fc_procedencia_hembras_externa: procedenciaHembras.externa,
+      fn_cantidad: String(row.fn_cantidad ?? row.cantidad_total ?? row.cantidad ?? ""),
+      fc_ratio: row.fc_ratio ?? row.ratio ?? "",
+      fn_talla:
+        row.fn_talla != null
+          ? String(row.fn_talla)
+          : row.talla != null
+            ? String(row.talla)
+            : "",
+      observacion: row.observacion ?? row.fc_observacion ?? "",
+    };
+  };
 
   const activarEdicion = () => {
     if (!seleccionado) return;
@@ -265,7 +486,7 @@ export default function Reproductores() {
   };
 
   const actualizarRegistro = async () => {
-    if (!validate(formData, REPRODUCTOR_FORM_REQUIRED)) return;
+    if (!validate(formData, camposRequeridosProcedencia(formData))) return;
     if (!validarTotalPositivo()) return;
     try {
       await updateReproductor(
@@ -447,19 +668,14 @@ export default function Reproductores() {
                       {...(errors.fc_familia_machos ? { helperText: errors.fc_familia_machos } : {})}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
-                      label="Procedencia machos"
-                      name="fc_procedencia_machos"
-                      value={formData.fc_procedencia_machos}
-                      onChange={handleChange}
-                      fullWidth
-                      sx={campoFormSx}
-                      inputProps={{ maxLength: MAX_PROCEDENCIA }}
-                      error={!!errors.fc_procedencia_machos}
-                      {...(errors.fc_procedencia_machos ? { helperText: errors.fc_procedencia_machos } : {})}
-                    />
-                  </Grid>
+                  <CamposProcedencia
+                    prefijo="machos"
+                    etiquetaTipo="Procedencia machos"
+                    formData={formData}
+                    handleChange={handleChange}
+                    errors={errors}
+                    piletasEngorda={piletasEngorda}
+                  />
                 </Grid>
               </Grid>
 
@@ -506,19 +722,14 @@ export default function Reproductores() {
                       {...(errors.fc_familia_hembras ? { helperText: errors.fc_familia_hembras } : {})}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
-                      label="Procedencia hembras"
-                      name="fc_procedencia_hembras"
-                      value={formData.fc_procedencia_hembras}
-                      onChange={handleChange}
-                      fullWidth
-                      sx={campoFormSx}
-                      inputProps={{ maxLength: MAX_PROCEDENCIA }}
-                      error={!!errors.fc_procedencia_hembras}
-                      {...(errors.fc_procedencia_hembras ? { helperText: errors.fc_procedencia_hembras } : {})}
-                    />
-                  </Grid>
+                  <CamposProcedencia
+                    prefijo="hembras"
+                    etiquetaTipo="Procedencia hembras"
+                    formData={formData}
+                    handleChange={handleChange}
+                    errors={errors}
+                    piletasEngorda={piletasEngorda}
+                  />
                 </Grid>
               </Grid>
 
@@ -625,10 +836,12 @@ export default function Reproductores() {
                     <TableCell sx={headerCell}>Machos</TableCell>
                     <TableCell sx={headerCell}>Genética machos</TableCell>
                     <TableCell sx={headerCell}>Familia machos</TableCell>
+                    <TableCell sx={headerCell}>Tipo procedencia</TableCell>
                     <TableCell sx={headerCell}>Procedencia machos</TableCell>
                     <TableCell sx={headerCell}>Hembras</TableCell>
                     <TableCell sx={headerCell}>Genética hembras</TableCell>
                     <TableCell sx={headerCell}>Familia hembras</TableCell>
+                    <TableCell sx={headerCell}>Tipo procedencia</TableCell>
                     <TableCell sx={headerCell}>Procedencia hembras</TableCell>
                     <TableCell sx={headerCell}>Total</TableCell>
                     <TableCell sx={headerCell}>Relación</TableCell>
@@ -643,7 +856,7 @@ export default function Reproductores() {
                 <TableBody>
                   {rows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={17} align="center">
+                      <TableCell colSpan={19} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
@@ -669,11 +882,33 @@ export default function Reproductores() {
                           <TableCell>{formatNumber(l.fn_machos ?? l.machos)}</TableCell>
                           <TableCell>{l.fc_genetica_machos ?? l.genetica_machos ?? "—"}</TableCell>
                           <TableCell>{l.fc_familia_machos ?? l.familia_machos ?? "—"}</TableCell>
-                          <TableCell>{l.fc_procedencia_machos ?? l.procedencia_machos ?? "—"}</TableCell>
+                          <TableCell>
+                            <CeldaTipoProcedencia
+                              valor={l.fc_procedencia_machos ?? l.procedencia_machos}
+                              piletasEngorda={piletasEngorda}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {valorProcedenciaTabla(
+                              l.fc_procedencia_machos ?? l.procedencia_machos,
+                              piletasEngorda,
+                            )}
+                          </TableCell>
                           <TableCell>{formatNumber(l.fn_hembras ?? l.hembras)}</TableCell>
                           <TableCell>{l.fc_genetica_hembras ?? l.genetica_hembras ?? "—"}</TableCell>
                           <TableCell>{l.fc_familia_hembras ?? l.familia_hembras ?? "—"}</TableCell>
-                          <TableCell>{l.fc_procedencia_hembras ?? l.procedencia_hembras ?? "—"}</TableCell>
+                          <TableCell>
+                            <CeldaTipoProcedencia
+                              valor={l.fc_procedencia_hembras ?? l.procedencia_hembras}
+                              piletasEngorda={piletasEngorda}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {valorProcedenciaTabla(
+                              l.fc_procedencia_hembras ?? l.procedencia_hembras,
+                              piletasEngorda,
+                            )}
+                          </TableCell>
                           <TableCell>{formatNumber(l.fn_cantidad ?? l.cantidad_total)}</TableCell>
                           <TableCell>{l.fc_ratio ?? l.ratio ?? "—"}</TableCell>
                           <TableCell>{formatNumber(l.fn_talla ?? l.talla)}</TableCell>
