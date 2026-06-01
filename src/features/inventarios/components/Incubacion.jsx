@@ -38,18 +38,12 @@ import { listEventosCosechaPendientes } from "../services/eventoCosechaService";
 const MAX_OBSERVACION = 500;
 
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
-const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
-const soloLote = (valor) => valor === "" || /^[A-Za-z0-9-]*$/.test(valor);
 const hoyISO = () => new Date().toISOString().split("T")[0];
 
-function calcularDiasEnPileta(fechaIngreso, fechaEgreso) {
-  if (!fechaIngreso) return "";
-  const inicio = new Date(`${fechaIngreso}T00:00:00`);
-  const fin = fechaEgreso ? new Date(`${fechaEgreso}T00:00:00`) : new Date();
-  if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) return "";
-  const diff = Math.floor((fin.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-  return String(Math.max(0, diff));
-}
+const loteGeneticoDeEvento = (ev) => {
+  const g = ev?.lote_genetico ?? ev?.fc_lote_genetico;
+  return g != null && String(g).trim() !== "" ? String(g).trim() : "";
+};
 
 const Incubacion = () => {
   const showSnackbar = useSnackbar();
@@ -72,8 +66,6 @@ const Incubacion = () => {
     lote: "",
     huevos_ml: "",
     fecha_ingreso: hoyISO(),
-    dias_en_pileta: "",
-    fecha_egreso: "",
     observacion: "",
   });
 
@@ -100,24 +92,16 @@ const Incubacion = () => {
     evento_cosecha_id: formData.fi_evento_cosecha_id
       ? Number(formData.fi_evento_cosecha_id)
       : undefined,
-    lote: formData.lote.trim() ? formData.lote.trim().toUpperCase() : undefined,
+    lote: formData.lote.trim() ? formData.lote.trim() : undefined,
     huevos_ml: formData.huevos_ml === "" ? null : Number(formData.huevos_ml),
     fecha_ingreso: formData.fecha_ingreso || null,
-    dias_en_pileta: formData.dias_en_pileta === "" ? null : Number(formData.dias_en_pileta),
-    fecha_egreso: formData.fecha_egreso || null,
     observacion: formData.observacion,
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "lote") {
-      if (!soloLote(value)) return;
-    }
-    if (name === "huevos_ml" || name === "dias_en_pileta") {
-      if (name === "huevos_ml" && !soloDecimal(value)) return;
-      if (name === "dias_en_pileta" && !soloEntero(value)) return;
-    }
+    if (name === "huevos_ml" && !soloDecimal(value)) return;
 
     setFormData((prev) => {
       const next = { ...prev, [name]: value };
@@ -132,16 +116,9 @@ const Incubacion = () => {
           next.fecha_ingreso = ev.fecha_cosecha
             ? String(ev.fecha_cosecha).split("T")[0]
             : next.fecha_ingreso;
-          next.lote = ev.codigo
-            ? String(ev.codigo).replace(/^EV-/, "INC-")
-            : next.lote;
-          next.dias_en_pileta = calcularDiasEnPileta(next.fecha_ingreso, next.fecha_egreso);
+          const loteGen = loteGeneticoDeEvento(ev);
+          if (loteGen) next.lote = loteGen;
         }
-      }
-      if (name === "fecha_ingreso" || name === "fecha_egreso") {
-        const ingreso = name === "fecha_ingreso" ? value : prev.fecha_ingreso;
-        const egreso = name === "fecha_egreso" ? value : prev.fecha_egreso;
-        next.dias_en_pileta = calcularDiasEnPileta(ingreso, egreso);
       }
       return next;
     });
@@ -193,8 +170,20 @@ const Incubacion = () => {
   const registrarIncubacion = async () => {
     if (!validate(formData, requiredFields)) return;
     if (!formData.fi_evento_cosecha_id && !formData.lote.trim()) {
-      showSnackbar("Indique el lote o seleccione un evento de cosecha", "error");
+      showSnackbar("Indique el lote genético o seleccione un evento de cosecha", "error");
       return;
+    }
+    if (formData.fi_evento_cosecha_id && !formData.lote.trim()) {
+      const ev = eventosPendientes.find(
+        (e) => String(e.fi_id ?? e.id) === String(formData.fi_evento_cosecha_id),
+      );
+      if (!loteGeneticoDeEvento(ev)) {
+        showSnackbar(
+          "El evento no tiene lote genético en reproductores. Complételo en el módulo 1.",
+          "error",
+        );
+        return;
+      }
     }
     if (!formData.fi_evento_cosecha_id && !formData.fecha_ingreso) {
       showSnackbar("La fecha de ingreso es obligatoria sin evento de cosecha", "error");
@@ -223,22 +212,22 @@ const Incubacion = () => {
     const fechaIngreso = seleccionado.fecha_ingreso
       ? String(seleccionado.fecha_ingreso).split("T")[0]
       : "";
-    const fechaEgreso = seleccionado.fecha_egreso
-      ? String(seleccionado.fecha_egreso).split("T")[0]
-      : "";
     setFormData({
       ubicacion: seleccionado.fc_granja || formData.ubicacion || defaultUbicacion || "",
       fi_pileta_destino_id: String(
         seleccionado.fi_pileta_destino_id ?? seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
       ),
-      lote: seleccionado.lote ?? seleccionado.fc_lote ?? "",
+      fi_evento_cosecha_id: seleccionado.fi_evento_cosecha_id
+        ? String(seleccionado.fi_evento_cosecha_id)
+        : "",
+      lote:
+        seleccionado.lote_genetico ??
+        seleccionado.fc_lote_genetico ??
+        seleccionado.lote ??
+        seleccionado.fc_lote ??
+        "",
       huevos_ml: seleccionado.huevos_ml != null ? String(seleccionado.huevos_ml) : "",
       fecha_ingreso: fechaIngreso,
-      dias_en_pileta:
-        seleccionado.dias_en_pileta != null
-          ? String(seleccionado.dias_en_pileta)
-          : calcularDiasEnPileta(fechaIngreso, fechaEgreso),
-      fecha_egreso: fechaEgreso,
       observacion: seleccionado.observacion ?? seleccionado.fc_observacion ?? "",
     });
     setModoEdicion(true);
@@ -287,8 +276,6 @@ const Incubacion = () => {
       lote: "",
       huevos_ml: "",
       fecha_ingreso: hoyISO(),
-      dias_en_pileta: "0",
-      fecha_egreso: "",
       observacion: "",
     });
     clearErrors();
@@ -328,7 +315,7 @@ const Incubacion = () => {
         Lote de incubación
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Módulo 3: recibe un evento de cosecha pendiente y abre el lote en la pileta de incubación.
+        Módulo 3: recibe un evento de cosecha pendiente y mantiene el mismo lote genético del módulo 1 en la pileta de incubación.
       </Typography>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
@@ -367,12 +354,13 @@ const Incubacion = () => {
                 value={formData.fi_evento_cosecha_id || ""}
                 onChange={handleChange}
                 fullWidth
-                helperText="Seleccione el evento registrado en el módulo 2 para precargar datos"
+                helperText="Precarga lote genético, volumen y fecha desde el evento (módulo 2)"
               >
                 <MenuItem value="">— Sin evento / manual —</MenuItem>
                 {eventosPendientes.map((ev) => (
                   <MenuItem key={ev.fi_id ?? ev.id} value={String(ev.fi_id ?? ev.id)}>
-                    {ev.codigo} · {ev.nombre_pileta_origen} · {ev.tipo_cosecha_label ?? ev.tipo_cosecha}
+                    {ev.codigo} · {loteGeneticoDeEvento(ev) || "sin lote genético"} ·{" "}
+                    {ev.nombre_pileta_origen} · {ev.tipo_cosecha_label ?? ev.tipo_cosecha}
                   </MenuItem>
                 ))}
               </TextField>
@@ -402,14 +390,26 @@ const Incubacion = () => {
 
             <Grid size={{ xs: 12, sm: 2 }}>
               <TextField
-                label="Lote"
+                label="Lote genético"
                 name="lote"
                 value={formData.lote}
                 onChange={handleChange}
                 fullWidth
-                inputProps={{ style: { textTransform: "uppercase" } }}
+                inputProps={{
+                  maxLength: 60,
+                  readOnly: Boolean(
+                    formData.fi_evento_cosecha_id ||
+                      (modoEdicion && seleccionado?.evento_cosecha_id),
+                  ),
+                }}
                 error={!!errors.lote}
-                {...(errors.lote ? { helperText: errors.lote } : {})}
+                helperText={
+                  errors.lote ||
+                  (formData.fi_evento_cosecha_id ||
+                  (modoEdicion && seleccionado?.evento_cosecha_id)
+                    ? "Mismo lote del módulo reproductores"
+                    : "Identificador del lote (manual sin evento)")
+                }
               />
             </Grid>
 
@@ -435,29 +435,6 @@ const Incubacion = () => {
                 InputLabelProps={{ shrink: true }}
                 error={!!errors.fecha_ingreso}
                 {...(errors.fecha_ingreso ? { helperText: errors.fecha_ingreso } : {})}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 2 }}>
-              <TextField
-                label="Días en pileta"
-                name="dias_en_pileta"
-                value={formData.dias_en_pileta}
-                onChange={handleChange}
-                fullWidth
-                inputProps={{ min: 0, inputMode: "numeric" }}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 2 }}>
-              <TextField
-                label="Fecha de egreso"
-                type="date"
-                name="fecha_egreso"
-                value={formData.fecha_egreso}
-                onChange={handleChange}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
               />
             </Grid>
 
