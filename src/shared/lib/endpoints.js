@@ -72,8 +72,6 @@ export const ENDPOINTS = {
   controlReproductivo: {
     base: "/control-reproductivo",
     byId: (id) => `/control-reproductivo/${id}`,
-    reproductoresOcupadas: (granja) => `/control-reproductivo/reproductores/${path(granja)}`,
-    familiaPorPileta: (piletaId) => `/control-reproductivo/familia-por-pileta/${piletaId}`,
   },
 
   historialPeso: {
