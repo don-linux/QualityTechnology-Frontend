@@ -135,8 +135,9 @@ export default function AppRouter() {
             <Route path="inventarios/piletas-fisicas" element={<PiletasFisicas />} />
             <Route path="inventarios/reproductores" element={<Reproductores />} />
             <Route path="inventarios/engorda" element={<Engorda />} />
-            <Route path="inventarios/lotes" element={<Navigate to="/inventarios/control-reproductivo" replace />} />
-            <Route path="inventarios/control-reproductivo" element={<ControlReproductivo />} />
+            <Route path="inventarios/lotes" element={<Navigate to="/inventarios/eventos-cosecha" replace />} />
+            <Route path="inventarios/control-reproductivo" element={<Navigate to="/inventarios/eventos-cosecha" replace />} />
+            <Route path="inventarios/eventos-cosecha" element={<ControlReproductivo />} />
             <Route path="inventarios/alevinaje" element={<Alevinaje />} />
             <Route path="inventarios/incubacion" element={<Incubacion />} />
             <Route path="inventarios/trazabilidad" element={<Trazabilidad />} />

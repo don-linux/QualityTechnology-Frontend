@@ -40,7 +40,7 @@ const ETIQUETA_PROCESO = {
   venta: "Venta",
   biometria: "Biometría",
   reproductor: "Reproductores",
-  control_reproductivo: "Control reproductivo",
+  evento_cosecha: "Evento de cosecha",
   siembra: "Siembra",
   alimentacion: "Alimentación",
   recambio: "Recambio de agua",

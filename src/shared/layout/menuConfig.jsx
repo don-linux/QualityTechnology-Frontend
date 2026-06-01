@@ -70,8 +70,8 @@ export const MENU_SECTIONS = [
         sublabelColor: "#90cdffff",
         items: [
           { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
-          { to: "/inventarios/reproductores", icon: <Biotech />, label: "Reproductores" },
-          { to: "/inventarios/control-reproductivo", icon: <EggAltIcon />, label: "Control Reproductivo" },
+          { to: "/inventarios/reproductores", icon: <Biotech />, label: "Lote Reproductores" },
+          { to: "/inventarios/eventos-cosecha", icon: <EggAltIcon />, label: "Evento Cosecha" },
           { to: "/inventarios/incubacion", icon: <DeviceThermostatIcon />, label: "Incubación" },
           { to: "/inventarios/alevinaje", icon: <WaterDropIcon />, label: "Alevinaje" },
           { to: "/inventarios/engorda", icon: <Grass />, label: "Engorda" },

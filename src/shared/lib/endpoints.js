@@ -69,9 +69,9 @@ export const ENDPOINTS = {
     byId: (id) => `/incubacion/${id}`,
   },
 
-  controlReproductivo: {
-    base: "/control-reproductivo",
-    byId: (id) => `/control-reproductivo/${id}`,
+  eventosCosecha: {
+    base: "/eventos-cosecha",
+    byId: (id) => `/eventos-cosecha/${id}`,
   },
 
   historialPeso: {

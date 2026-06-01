@@ -1,1 +1,1 @@
-export { default } from "@features/inventarios/components/ControlReproductivo";
+export { default } from "@features/inventarios/components/EventoCosecha";

@@ -33,6 +33,7 @@ import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranj
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
 import { listPiletas } from "../services/piletasService";
+import { listEventosCosechaPendientes } from "../services/eventoCosechaService";
 
 const MAX_OBSERVACION = 500;
 
@@ -57,19 +58,16 @@ const Incubacion = () => {
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
-  const requiredFields = [
-    "ubicacion",
-    "fi_pileta_destino_id",
-    "lote",
-    "fecha_ingreso",
-  ];
+  const requiredFields = ["ubicacion", "fi_pileta_destino_id"];
 
   const [piletasDestinoIncubacion, setPiletasDestinoIncubacion] = useState([]);
+  const [eventosPendientes, setEventosPendientes] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState({
     ubicacion: "",
+    fi_evento_cosecha_id: "",
     fi_pileta_destino_id: "",
     lote: "",
     huevos_ml: "",
@@ -94,7 +92,10 @@ const Incubacion = () => {
   const payloadComunBackend = () => ({
     pileta_id: Number(formData.fi_pileta_destino_id),
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
-    lote: formData.lote.trim().toUpperCase(),
+    evento_cosecha_id: formData.fi_evento_cosecha_id
+      ? Number(formData.fi_evento_cosecha_id)
+      : undefined,
+    lote: formData.lote.trim() ? formData.lote.trim().toUpperCase() : undefined,
     huevos_ml: formData.huevos_ml === "" ? null : Number(formData.huevos_ml),
     fecha_ingreso: formData.fecha_ingreso || null,
     dias_en_pileta: formData.dias_en_pileta === "" ? null : Number(formData.dias_en_pileta),
@@ -116,7 +117,21 @@ const Incubacion = () => {
     setFormData((prev) => {
       const next = { ...prev, [name]: value };
       if (name === "ubicacion") {
-        return { ...next, fi_pileta_destino_id: "" };
+        return { ...next, fi_pileta_destino_id: "", fi_evento_cosecha_id: "" };
+      }
+      if (name === "fi_evento_cosecha_id" && value) {
+        const ev = eventosPendientes.find((e) => String(e.fi_id ?? e.id) === String(value));
+        if (ev) {
+          next.huevos_ml =
+            ev.volumen_ml != null ? String(ev.volumen_ml) : next.huevos_ml;
+          next.fecha_ingreso = ev.fecha_cosecha
+            ? String(ev.fecha_cosecha).split("T")[0]
+            : next.fecha_ingreso;
+          next.lote = ev.codigo
+            ? String(ev.codigo).replace(/^EV-/, "INC-")
+            : next.lote;
+          next.dias_en_pileta = calcularDiasEnPileta(next.fecha_ingreso, next.fecha_egreso);
+        }
       }
       if (name === "fecha_ingreso" || name === "fecha_egreso") {
         const ingreso = name === "fecha_ingreso" ? value : prev.fecha_ingreso;
@@ -146,10 +161,23 @@ const Incubacion = () => {
     }
   }, []);
 
+  const cargarEventosPendientes = useCallback(async () => {
+    try {
+      const res = await listEventosCosechaPendientes(formData.ubicacion || undefined);
+      setEventosPendientes(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error cargando eventos de cosecha pendientes:", err);
+    }
+  }, [formData.ubicacion]);
+
   useEffect(() => {
     cargarPiletasDestinoIncubacion();
     cargarRegistros();
   }, [cargarPiletasDestinoIncubacion, cargarRegistros]);
+
+  useEffect(() => {
+    cargarEventosPendientes();
+  }, [cargarEventosPendientes]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
@@ -159,6 +187,14 @@ const Incubacion = () => {
 
   const registrarIncubacion = async () => {
     if (!validate(formData, requiredFields)) return;
+    if (!formData.fi_evento_cosecha_id && !formData.lote.trim()) {
+      showSnackbar("Indique el lote o seleccione un evento de cosecha", "error");
+      return;
+    }
+    if (!formData.fi_evento_cosecha_id && !formData.fecha_ingreso) {
+      showSnackbar("La fecha de ingreso es obligatoria sin evento de cosecha", "error");
+      return;
+    }
     try {
       await createIncubacion(payloadComunBackend());
       showSnackbar("Registro periódico guardado (vista actual actualizada)", "success");
@@ -240,6 +276,7 @@ const Incubacion = () => {
   const resetFormulario = () => {
     setFormData({
       ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
+      fi_evento_cosecha_id: "",
       fi_pileta_destino_id: "",
       lote: "",
       huevos_ml: "",
@@ -281,8 +318,11 @@ const Incubacion = () => {
 
   return (
     <div style={{ padding: "25px" }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
-        Incubación
+      <Typography variant="h4" sx={{ mb: 1, fontWeight: "bold", color: "#004d73" }}>
+        Lote de incubación
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Módulo 3: recibe un evento de cosecha pendiente y abre el lote en la pileta de incubación.
       </Typography>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
@@ -308,6 +348,25 @@ const Incubacion = () => {
                 {ubicacionesGranja.map((op) => (
                   <MenuItem key={op.value} value={op.value}>
                     {op.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 8 }}>
+              <TextField
+                select
+                label="Evento de cosecha (pendiente)"
+                name="fi_evento_cosecha_id"
+                value={formData.fi_evento_cosecha_id || ""}
+                onChange={handleChange}
+                fullWidth
+                helperText="Seleccione el evento registrado en el módulo 2 para precargar datos"
+              >
+                <MenuItem value="">— Sin evento / manual —</MenuItem>
+                {eventosPendientes.map((ev) => (
+                  <MenuItem key={ev.fi_id ?? ev.id} value={String(ev.fi_id ?? ev.id)}>
+                    {ev.codigo} · {ev.nombre_pileta_origen} · {ev.tipo_cosecha_label ?? ev.tipo_cosecha}
                   </MenuItem>
                 ))}
               </TextField>

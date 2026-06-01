@@ -52,9 +52,13 @@ const TIPOS_PROCEDENCIA = [
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 
+const hoyISO = () => new Date().toISOString().split("T")[0];
+
 const REPRODUCTOR_FORM_REQUIRED = [
   "ubicacion",
   "fi_pileta_destino_id",
+  "fd_fecha_siembra",
+  "fc_lote_genetico",
   "fn_machos",
   "fc_genetica_machos",
   "fc_familia_machos",
@@ -70,6 +74,8 @@ const REPRODUCTOR_FORM_REQUIRED = [
 const FORM_INICIAL = {
   ubicacion: "",
   fi_pileta_destino_id: "",
+  fd_fecha_siembra: hoyISO(),
+  fc_lote_genetico: "",
   fn_machos: "",
   fc_genetica_machos: "",
   fc_familia_machos: "",
@@ -308,6 +314,8 @@ export default function Reproductores() {
   const payloadComunBackend = () => ({
     pileta_id: Number(formData.fi_pileta_destino_id),
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
+    fecha_siembra: formData.fd_fecha_siembra || null,
+    lote_genetico: formData.fc_lote_genetico?.trim() || null,
     machos: Number(formData.fn_machos || 0),
     hembras: Number(formData.fn_hembras || 0),
     fc_tipo_procedencia_machos: formData.fc_tipo_procedencia_machos || undefined,
@@ -461,6 +469,12 @@ export default function Reproductores() {
       fi_pileta_destino_id: String(
         row.fi_pileta_destino_id ?? row.pileta_destino_id ?? row.pileta_id ?? "",
       ),
+      fd_fecha_siembra: row.fecha_siembra
+        ? String(row.fecha_siembra).split("T")[0]
+        : row.fd_fecha_siembra
+          ? String(row.fd_fecha_siembra).split("T")[0]
+          : hoyISO(),
+      fc_lote_genetico: row.lote_genetico ?? row.fc_lote_genetico ?? "",
       fn_machos: String(row.fn_machos ?? row.machos ?? ""),
       fc_genetica_machos: row.fc_genetica_machos ?? row.genetica_machos ?? "",
       fc_familia_machos: row.fc_familia_machos ?? row.familia_machos ?? "",
@@ -571,8 +585,11 @@ export default function Reproductores() {
 
   return (
     <div style={{ padding: "25px" }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
-        Reproductores
+      <Typography variant="h4" sx={{ mb: 1, fontWeight: "bold", color: "#004d73" }}>
+        Lote de reproductores
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Módulo 1: registra el grupo activo en el estanque de reproducción (padres, proporción y lote genético).
       </Typography>
 
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
@@ -631,6 +648,34 @@ export default function Reproductores() {
                     );
                   })}
                 </TextField>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label="Fecha siembra reproductores"
+                  name="fd_fecha_siembra"
+                  type="date"
+                  value={formData.fd_fecha_siembra}
+                  onChange={handleChange}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  sx={campoFormSx}
+                  error={!!errors.fd_fecha_siembra}
+                  {...(errors.fd_fecha_siembra ? { helperText: errors.fd_fecha_siembra } : {})}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label="Lote genético (origen padres)"
+                  name="fc_lote_genetico"
+                  value={formData.fc_lote_genetico}
+                  onChange={handleChange}
+                  fullWidth
+                  sx={campoFormSx}
+                  inputProps={{ maxLength: 120 }}
+                  error={!!errors.fc_lote_genetico}
+                  {...(errors.fc_lote_genetico ? { helperText: errors.fc_lote_genetico } : {})}
+                />
               </Grid>
 
               <Grid size={12}>
