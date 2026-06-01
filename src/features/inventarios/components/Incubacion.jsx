@@ -61,7 +61,7 @@ const Incubacion = () => {
   const requiredFields = ["ubicacion", "fi_pileta_destino_id"];
 
   const [piletasDestinoIncubacion, setPiletasDestinoIncubacion] = useState([]);
-  const [eventosPendientes, setEventosPendientes] = useState([]);
+  const [eventosPendientesRaw, setEventosPendientesRaw] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -87,6 +87,11 @@ const Incubacion = () => {
   const gruposRegistros = useMemo(
     () => getGroups(registrosVista, "fc_granja"),
     [getGroups, registrosVista],
+  );
+
+  const eventosPendientes = useMemo(
+    () => filtrarPorUbicacion(eventosPendientesRaw, formData.ubicacion, ubicacionesGranja),
+    [eventosPendientesRaw, formData.ubicacion, ubicacionesGranja],
   );
 
   const payloadComunBackend = () => ({
@@ -163,12 +168,12 @@ const Incubacion = () => {
 
   const cargarEventosPendientes = useCallback(async () => {
     try {
-      const res = await listEventosCosechaPendientes(formData.ubicacion || undefined);
-      setEventosPendientes(Array.isArray(res.data) ? res.data : []);
+      const res = await listEventosCosechaPendientes();
+      setEventosPendientesRaw(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error cargando eventos de cosecha pendientes:", err);
     }
-  }, [formData.ubicacion]);
+  }, []);
 
   useEffect(() => {
     cargarPiletasDestinoIncubacion();
@@ -200,6 +205,7 @@ const Incubacion = () => {
       showSnackbar("Registro periódico guardado (vista actual actualizada)", "success");
       resetFormulario();
       cargarRegistros();
+      cargarEventosPendientes();
     } catch (err) {
       console.error("Error al registrar incubación:", err);
       showSnackbar(

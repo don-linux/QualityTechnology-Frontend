@@ -394,8 +394,9 @@ const EventoCosecha = () => {
         </Card>
       </FormularioRegistroPanel>
 
-      <TablasPorUbicacionGranja grupos={gruposRegistros}>
-        {(filas) => (
+      <TablasPorUbicacionGranja
+        grupos={gruposRegistros}
+        renderTabla={(filas) => (
           <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
             <Table size="small">
               <TableHead>
@@ -440,7 +441,7 @@ const EventoCosecha = () => {
                     </TableCell>
                     <TableCell>
                       <CeldaObservacionConHistorial
-                        comentario={row.observacion ?? row.fc_observacion}
+                        texto={row.observacion ?? row.fc_observacion}
                         piletaId={row.pileta_id ?? row.fi_pileta_origen_id}
                         cargarHistorial={cargarHistorialObservaciones}
                       />
@@ -464,9 +465,9 @@ const EventoCosecha = () => {
             </Table>
           </TableContainer>
         )}
-      </TablasPorUbicacionGranja>
+      />
 
-      <ConfirmModal />
+      {ConfirmModal}
     </div>
   );
 };
