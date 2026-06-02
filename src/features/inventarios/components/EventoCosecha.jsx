@@ -480,7 +480,7 @@ const EventoCosecha = () => {
                         <Chip label="Pendiente" size="small" color="warning" />
                       ) : (
                         <Chip
-                          label={row.incubacion_lote ?? "Recibido"}
+                          label={row.incubacion_pileta_nombre ?? "Recibido"}
                           size="small"
                           color="success"
                         />
