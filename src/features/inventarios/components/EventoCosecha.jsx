@@ -28,6 +28,8 @@ import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import Chip from "@mui/material/Chip";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -48,6 +50,7 @@ const TIPOS_COSECHA = [
 ];
 
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
+const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 
 const requiredFields = [
   "ubicacion",
@@ -55,6 +58,7 @@ const requiredFields = [
   "fd_fecha_cosecha",
   "fc_tipo_cosecha",
   "fn_volumen_ml",
+  "fn_hembras_ovadas",
 ];
 
 const EventoCosecha = () => {
@@ -80,6 +84,8 @@ const EventoCosecha = () => {
     fc_tipo_cosecha: "",
     fc_estadio_desarrollo: "",
     fn_volumen_ml: "",
+    fn_hembras_ovadas: "",
+    fb_marcar_agotado: false,
     observacion: "",
   });
 
@@ -100,15 +106,21 @@ const EventoCosecha = () => {
     tipo_cosecha: formData.fc_tipo_cosecha,
     estadio_desarrollo: formData.fc_estadio_desarrollo || null,
     volumen_ml: formData.fn_volumen_ml === "" ? null : Number(formData.fn_volumen_ml),
+    hembras_ovadas: Number(formData.fn_hembras_ovadas || 0),
+    marcar_agotado: Boolean(formData.fb_marcar_agotado),
     observacion: formData.observacion,
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     if (name === "fn_volumen_ml" && !soloDecimal(value)) return;
+    if (name === "fn_hembras_ovadas" && !soloEntero(value)) return;
     setFormData((prev) => {
       if (name === "ubicacion") {
         return { ...prev, ubicacion: value, fi_pileta_origen_id: "" };
+      }
+      if (type === "checkbox") {
+        return { ...prev, [name]: checked };
       }
       return { ...prev, [name]: value };
     });
@@ -176,6 +188,13 @@ const EventoCosecha = () => {
       fc_estadio_desarrollo: seleccionado.estadio_desarrollo ?? "",
       fn_volumen_ml:
         seleccionado.volumen_ml != null ? String(seleccionado.volumen_ml) : "",
+      fn_hembras_ovadas:
+        seleccionado.hembras_ovadas != null
+          ? String(seleccionado.hembras_ovadas)
+          : seleccionado.fn_hembras_ovadas != null
+            ? String(seleccionado.fn_hembras_ovadas)
+            : "",
+      fb_marcar_agotado: false,
       observacion: seleccionado.observacion ?? "",
     });
     setModoEdicion(true);
@@ -214,6 +233,8 @@ const EventoCosecha = () => {
       fc_tipo_cosecha: "",
       fc_estadio_desarrollo: "",
       fn_volumen_ml: "",
+      fn_hembras_ovadas: "",
+      fb_marcar_agotado: false,
       observacion: "",
     });
     clearErrors();
@@ -344,6 +365,18 @@ const EventoCosecha = () => {
                       {...(errors.fn_volumen_ml ? { helperText: errors.fn_volumen_ml } : {})}
                     />
                   </Grid>
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Hembras ovadas"
+                      name="fn_hembras_ovadas"
+                      value={formData.fn_hembras_ovadas}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      error={!!errors.fn_hembras_ovadas}
+                      {...(errors.fn_hembras_ovadas ? { helperText: errors.fn_hembras_ovadas } : {})}
+                    />
+                  </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       label="Estadio de desarrollo (opcional)"
@@ -353,6 +386,18 @@ const EventoCosecha = () => {
                       fullWidth
                       placeholder="Ej. Amarillo, Ojo"
                       sx={campoFormSx}
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="fb_marcar_agotado"
+                          checked={Boolean(formData.fb_marcar_agotado)}
+                          onChange={handleChange}
+                        />
+                      }
+                      label="Marcar lote como agotado (no admite más cosechas)"
                     />
                   </Grid>
                 </Grid>
@@ -406,6 +451,7 @@ const EventoCosecha = () => {
                   <TableCell>Lote genético</TableCell>
                   <TableCell>Fecha</TableCell>
                   <TableCell>Tipo</TableCell>
+                  <TableCell>Hembras ovadas</TableCell>
                   <TableCell>Estadio</TableCell>
                   <TableCell>Volumen</TableCell>
                   <TableCell>Incubación</TableCell>
@@ -426,6 +472,7 @@ const EventoCosecha = () => {
                     <TableCell>{row.lote_genetico ?? row.fc_lote_genetico}</TableCell>
                     <TableCell>{formatearFecha(row.fecha_cosecha)}</TableCell>
                     <TableCell>{row.tipo_cosecha_label ?? row.tipo_cosecha}</TableCell>
+                    <TableCell>{row.hembras_ovadas ?? row.fn_hembras_ovadas ?? "—"}</TableCell>
                     <TableCell>{row.estadio_desarrollo ?? "—"}</TableCell>
                     <TableCell>{row.volumen_ml ?? "—"}</TableCell>
                     <TableCell>

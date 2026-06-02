@@ -897,6 +897,8 @@ export default function Reproductores() {
                     <TableCell sx={headerCell}>Tipo procedencia</TableCell>
                     <TableCell sx={headerCell}>Procedencia hembras</TableCell>
                     <TableCell sx={headerCell}>Total</TableCell>
+                    <TableCell sx={headerCell}>Desovez</TableCell>
+                    <TableCell sx={headerCell}>Estado ciclo</TableCell>
                     <TableCell sx={headerCell}>Relación</TableCell>
                     <TableCell sx={headerCell}>Talla (Gr)</TableCell>
                     <TableCell sx={headerCell}>Observaciones</TableCell>
@@ -909,7 +911,7 @@ export default function Reproductores() {
                 <TableBody>
                   {rows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={19} align="center">
+                      <TableCell colSpan={21} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
@@ -963,6 +965,12 @@ export default function Reproductores() {
                             )}
                           </TableCell>
                           <TableCell>{formatNumber(l.fn_cantidad ?? l.cantidad_total)}</TableCell>
+                          <TableCell>{formatNumber(l.fn_desovez ?? l.desovez ?? 0)}</TableCell>
+                          <TableCell>
+                            {(l.estado_ciclo ?? l.fc_estado_ciclo) === "agotado"
+                              ? "Agotado"
+                              : l.estado_ciclo_label ?? "Activo"}
+                          </TableCell>
                           <TableCell>{l.fc_ratio ?? l.ratio ?? "—"}</TableCell>
                           <TableCell>{formatNumber(l.fn_talla ?? l.talla)}</TableCell>
                           <TableCell sx={{ maxWidth: 200, verticalAlign: "top" }}>
