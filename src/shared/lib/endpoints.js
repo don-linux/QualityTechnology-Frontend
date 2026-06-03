@@ -69,11 +69,6 @@ export const ENDPOINTS = {
     byId: (id) => `/incubacion/${id}`,
   },
 
-  eventosCosecha: {
-    base: "/eventos-cosecha",
-    byId: (id) => `/eventos-cosecha/${id}`,
-  },
-
   historialPeso: {
     base: "/historial-peso",
   },
