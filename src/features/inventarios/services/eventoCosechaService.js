@@ -2,7 +2,7 @@ import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
 import { filtrosUbicacionAParams } from "./piletasService";
 
-/** Cosecha, desove e ingreso a incubación (flujo unificado). */
+/** Cosecha, desove e ingreso a incubación (flujo unificado). Incluye datos de incubación anidados. */
 export function listEventosCosecha(params = {}) {
   return axios.get(ENDPOINTS.eventosCosecha.base, { params });
 }

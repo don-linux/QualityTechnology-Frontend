@@ -4,7 +4,6 @@ import {
   createEventoCosecha,
   updateEventoCosecha,
   removeEventoCosecha,
-  listIncubacion,
   createIncubacion,
   updateIncubacion,
 } from "../services/eventoCosechaService";
@@ -42,7 +41,6 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
-import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
 
 const MAX_OBSERVACION = 500;
 const hoyISO = () => new Date().toISOString().split("T")[0];
@@ -96,7 +94,6 @@ const EventoCosecha = () => {
   const [piletasReproductoras, setPiletasReproductoras] = useState([]);
   const [piletasDestinoIncubacion, setPiletasDestinoIncubacion] = useState([]);
   const [registros, setRegistros] = useState([]);
-  const [registrosIncubacion, setRegistrosIncubacion] = useState([]);
   const [seleccionadoEvento, setSeleccionadoEvento] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState(formularioVacio());
@@ -114,16 +111,6 @@ const EventoCosecha = () => {
   const gruposRegistros = useMemo(
     () => getGroups(registros, "fc_granja"),
     [getGroups, registros],
-  );
-
-  const registrosIncubacionVista = useMemo(
-    () => vistaActualPorPileta(registrosIncubacion),
-    [registrosIncubacion],
-  );
-
-  const gruposIncubacion = useMemo(
-    () => getGroups(registrosIncubacionVista, "fc_granja"),
-    [getGroups, registrosIncubacionVista],
   );
 
   const payloadCosechaBackend = () => ({
@@ -191,9 +178,8 @@ const EventoCosecha = () => {
 
   const cargarRegistros = useCallback(async () => {
     try {
-      const [ev, inc] = await Promise.all([listEventosCosecha(), listIncubacion()]);
+      const ev = await listEventosCosecha();
       setRegistros(Array.isArray(ev.data) ? ev.data : []);
-      setRegistrosIncubacion(Array.isArray(inc.data) ? inc.data : []);
     } catch (err) {
       console.error("Error cargando registros:", err);
     }
@@ -354,8 +340,8 @@ const EventoCosecha = () => {
         Cosecha e incubación
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Registre el desove y el ingreso a la pileta de incubación en un solo paso. Para
-        modificar un registro, selecciónelo en el historial y use Editar.
+        Registre el desove y el ingreso a la pileta de incubación en un solo paso. El historial
+        muestra ambos en la misma fila. Para modificar un registro, selecciónelo y use Editar.
       </Typography>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
@@ -603,7 +589,11 @@ const EventoCosecha = () => {
       </FormularioRegistroPanel>
 
       <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, color: "#023047" }}>
-        Historial de cosechas
+        Historial de cosechas e incubación
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Cada fila incluye el desove y su ingreso a incubación. Seleccione un registro para
+        editarlo.
       </Typography>
 
       <TablasPorUbicacionGranja
@@ -619,130 +609,90 @@ const EventoCosecha = () => {
                   <TableCell>Fecha cosecha</TableCell>
                   <TableCell>Tipo</TableCell>
                   <TableCell>Pileta incubación</TableCell>
+                  <TableCell>Huevos/ml</TableCell>
                   <TableCell>F. ingreso</TableCell>
+                  <TableCell>Días</TableCell>
                   <TableCell>F. egreso</TableCell>
                   <TableCell>Observación</TableCell>
                   <TableCell align="center">Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filas.map((row) => (
-                  <TableRow
-                    key={row.fi_id ?? row.id}
-                    hover
-                    selected={
-                      (seleccionadoEvento?.fi_id ?? seleccionadoEvento?.id) ===
-                      (row.fi_id ?? row.id)
-                    }
-                    onClick={() => setSeleccionadoEvento(row)}
-                  >
-                    <TableCell>{row.codigo ?? row.fc_codigo}</TableCell>
-                    <TableCell>{row.nombre_pileta_origen}</TableCell>
-                    <TableCell>{row.lote_genetico ?? row.fc_lote_genetico}</TableCell>
-                    <TableCell>{formatearFecha(row.fecha_cosecha)}</TableCell>
-                    <TableCell>{row.tipo_cosecha_label ?? row.tipo_cosecha}</TableCell>
-                    <TableCell>
-                      {row.pendiente_incubacion ? (
-                        <Chip label="Pendiente" size="small" color="warning" />
-                      ) : (
-                        row.incubacion_pileta_nombre ?? "—"
-                      )}
-                    </TableCell>
-                    <TableCell>{formatearFecha(row.fecha_ingreso)}</TableCell>
-                    <TableCell>{formatearFecha(row.fecha_egreso)}</TableCell>
-                    <TableCell>
-                      <CeldaObservacionConHistorial
-                        texto={row.observacion ?? row.fc_observacion}
-                        piletaId={row.pileta_id ?? row.fi_pileta_origen_id}
-                        cargarHistorial={cargarHistorialObservaciones}
-                      />
-                    </TableCell>
-                    <TableCell align="center" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        size="small"
-                        onClick={activarEdicionEvento}
-                        disabled={
-                          !seleccionadoEvento ||
-                          (seleccionadoEvento?.fi_id ?? seleccionadoEvento?.id) !==
-                            (row.fi_id ?? row.id)
-                        }
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size="small"
-                        color="error"
-                        disabled={!row.pendiente_incubacion}
-                        onClick={() => eliminarEvento(row.fi_id ?? row.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      />
-
-      <Typography variant="h6" sx={{ mb: 0.5, fontWeight: 700, color: "#023047" }}>
-        Estado actual por pileta (incubación)
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Último registro de cada pileta de incubación (solo consulta).
-      </Typography>
-
-      <TablasPorUbicacionGranja
-        grupos={gruposIncubacion}
-        renderTabla={(rows) => (
-          <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ bgcolor: "#006d77" }}>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Huevos/ml</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>F. ingreso</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Días</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>F. egreso</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.length === 0 ? (
+                {filas.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={12} align="center">
                       No hay registros.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  rows.map((l) => (
-                    <TableRow key={l.fi_id ?? l.id} hover>
+                  filas.map((row) => (
+                    <TableRow
+                      key={row.fi_id ?? row.id}
+                      hover
+                      selected={
+                        (seleccionadoEvento?.fi_id ?? seleccionadoEvento?.id) ===
+                        (row.fi_id ?? row.id)
+                      }
+                      onClick={() => setSeleccionadoEvento(row)}
+                    >
+                      <TableCell>{row.codigo ?? row.fc_codigo}</TableCell>
+                      <TableCell>{row.nombre_pileta_origen}</TableCell>
+                      <TableCell>{row.lote_genetico ?? row.fc_lote_genetico}</TableCell>
+                      <TableCell>{formatearFecha(row.fecha_cosecha)}</TableCell>
+                      <TableCell>{row.tipo_cosecha_label ?? row.tipo_cosecha}</TableCell>
                       <TableCell>
-                        {l.nombre_pileta_destino || l.nombre_pileta || "—"}
+                        {row.pendiente_incubacion ? (
+                          <Chip label="Pendiente" size="small" color="warning" />
+                        ) : (
+                          row.incubacion_pileta_nombre ?? row.nombre_pileta_destino ?? "—"
+                        )}
                       </TableCell>
-                      <TableCell>{l.lote ?? l.fc_lote ?? "—"}</TableCell>
-                      <TableCell>{formatNumber(l.huevos_ml ?? l.fn_huevos_ml)}</TableCell>
+                      <TableCell>{formatNumber(row.huevos_ml ?? row.fn_huevos_ml)}</TableCell>
+                      <TableCell>{formatearFecha(row.fecha_ingreso ?? row.fd_fecha_ingreso)}</TableCell>
+                      <TableCell>{formatNumber(row.dias_en_pileta ?? row.fn_dias_en_pileta)}</TableCell>
+                      <TableCell>{formatearFecha(row.fecha_egreso ?? row.fd_fecha_egreso)}</TableCell>
                       <TableCell>
-                        {formatearFecha(l.fecha_ingreso ?? l.fd_fecha_ingreso)}
-                      </TableCell>
-                      <TableCell>
-                        {formatNumber(l.dias_en_pileta ?? l.fn_dias_en_pileta)}
-                      </TableCell>
-                      <TableCell>
-                        {formatearFecha(l.fecha_egreso ?? l.fd_fecha_egreso)}
-                      </TableCell>
-                      <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                         <CeldaObservacionConHistorial
-                          texto={l.observacion ?? l.fc_observacion ?? ""}
-                          piletaId={
-                            l.fi_pileta_destino_id ?? l.pileta_destino_id ?? l.pileta_id
+                          texto={
+                            row.observacion ??
+                            row.fc_observacion ??
+                            row.observacion_incubacion ??
+                            row.fc_observacion_incubacion
                           }
-                          piletaNombre={l.nombre_pileta_destino || l.nombre_pileta}
-                          etapaLabel="Incubación"
+                          piletaId={
+                            row.fi_pileta_destino_id ??
+                            row.pileta_id ??
+                            row.fi_pileta_origen_id
+                          }
+                          piletaNombre={
+                            row.incubacion_pileta_nombre ??
+                            row.nombre_pileta_destino ??
+                            row.nombre_pileta_origen
+                          }
+                          etapaLabel="Cosecha e incubación"
                           cargarHistorial={cargarHistorialObservaciones}
                         />
+                      </TableCell>
+                      <TableCell align="center" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="small"
+                          onClick={activarEdicionEvento}
+                          disabled={
+                            !seleccionadoEvento ||
+                            (seleccionadoEvento?.fi_id ?? seleccionadoEvento?.id) !==
+                              (row.fi_id ?? row.id)
+                          }
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          size="small"
+                          color="error"
+                          disabled={!row.pendiente_incubacion}
+                          onClick={() => eliminarEvento(row.fi_id ?? row.id)}
+                        >
+                          Eliminar
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
