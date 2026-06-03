@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  listEventosCosecha,
-  createEventoCosecha,
-  updateEventoCosecha,
-  removeEventoCosecha,
+  listIncubacion,
   createIncubacion,
   updateIncubacion,
+  removeIncubacion,
 } from "../services/eventoCosechaService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
@@ -29,7 +27,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
-import Chip from "@mui/material/Chip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
@@ -113,26 +110,17 @@ const EventoCosecha = () => {
     [getGroups, registros],
   );
 
-  const payloadCosechaBackend = () => ({
-    pileta_id: Number(formData.fi_pileta_origen_id),
+  const payloadBackend = () => ({
+    pileta_id: Number(formData.fi_pileta_destino_id),
+    pileta_destino_id: Number(formData.fi_pileta_destino_id),
     pileta_origen_id: Number(formData.fi_pileta_origen_id),
     fecha_cosecha: formData.fd_fecha_cosecha || null,
     tipo_cosecha: formData.fc_tipo_cosecha,
     estadio_desarrollo: formData.fc_estadio_desarrollo || null,
-    volumen_ml: formData.fn_volumen_ml === "" ? null : Number(formData.fn_volumen_ml),
     hembras_ovadas: Number(formData.fn_hembras_ovadas || 0),
-    marcar_agotado: Boolean(formData.fb_marcar_agotado),
-    observacion: formData.observacion,
-    pileta_destino_incubacion_id: Number(formData.fi_pileta_destino_id),
-    fecha_ingreso: formData.fecha_ingreso || formData.fd_fecha_cosecha || null,
-    fecha_egreso: formData.fecha_egreso || null,
-  });
-
-  const payloadIncubacionBackend = (eventoCosechaId) => ({
-    pileta_id: Number(formData.fi_pileta_destino_id),
-    pileta_destino_id: Number(formData.fi_pileta_destino_id),
-    evento_cosecha_id: eventoCosechaId ?? undefined,
     huevos_ml: formData.fn_volumen_ml === "" ? null : Number(formData.fn_volumen_ml),
+    volumen_ml: formData.fn_volumen_ml === "" ? null : Number(formData.fn_volumen_ml),
+    marcar_agotado: Boolean(formData.fb_marcar_agotado),
     fecha_ingreso: formData.fecha_ingreso || formData.fd_fecha_cosecha || null,
     fecha_egreso: formData.fecha_egreso || null,
     observacion: formData.observacion,
@@ -178,8 +166,8 @@ const EventoCosecha = () => {
 
   const cargarRegistros = useCallback(async () => {
     try {
-      const ev = await listEventosCosecha();
-      setRegistros(Array.isArray(ev.data) ? ev.data : []);
+      const inc = await listIncubacion(null, null, { historial: true });
+      setRegistros(Array.isArray(inc.data) ? inc.data : []);
     } catch (err) {
       console.error("Error cargando registros:", err);
     }
@@ -199,7 +187,7 @@ const EventoCosecha = () => {
   const registrar = async () => {
     if (!validate(formData, requiredFieldsCosecha)) return;
     try {
-      await createEventoCosecha(payloadCosechaBackend());
+      await createIncubacion(payloadBackend());
       showSnackbar("Cosecha e ingreso a incubación registrados", "success");
       resetFormulario();
       cargarRegistros();
@@ -219,13 +207,18 @@ const EventoCosecha = () => {
     const ev = seleccionadoEvento;
     setFormData({
       ubicacion: ev.fc_granja || defaultUbicacion || "",
-      fi_pileta_origen_id: String(ev.fi_pileta_origen_id ?? ev.pileta_id ?? ""),
+      fi_pileta_origen_id: String(ev.fi_pileta_origen_id ?? ev.pileta_origen_id ?? ""),
       fd_fecha_cosecha: ev.fecha_cosecha
         ? String(ev.fecha_cosecha).split("T")[0]
         : hoyISO(),
       fc_tipo_cosecha: ev.tipo_cosecha ?? "",
       fc_estadio_desarrollo: ev.estadio_desarrollo ?? "",
-      fn_volumen_ml: ev.volumen_ml != null ? String(ev.volumen_ml) : "",
+      fn_volumen_ml:
+        ev.volumen_ml != null
+          ? String(ev.volumen_ml)
+          : ev.huevos_ml != null
+            ? String(ev.huevos_ml)
+            : "",
       fn_hembras_ovadas:
         ev.hembras_ovadas != null
           ? String(ev.hembras_ovadas)
@@ -233,9 +226,7 @@ const EventoCosecha = () => {
             ? String(ev.fn_hembras_ovadas)
             : "",
       fb_marcar_agotado: false,
-      fi_pileta_destino_id: ev.fi_pileta_destino_id
-        ? String(ev.fi_pileta_destino_id)
-        : "",
+      fi_pileta_destino_id: String(ev.fi_pileta_destino_id ?? ev.pileta_id ?? ""),
       fecha_ingreso: ev.fecha_ingreso
         ? String(ev.fecha_ingreso).split("T")[0]
         : ev.fecha_cosecha
@@ -250,31 +241,13 @@ const EventoCosecha = () => {
 
   const actualizar = async () => {
     if (!validate(formData, requiredFieldsCosecha)) return;
-    const eventoId = seleccionadoEvento.fi_id ?? seleccionadoEvento.id;
     const incubacionId =
-      seleccionadoEvento.incubacion_id ?? seleccionadoEvento.fi_incubacion_id;
-    const pendiente = seleccionadoEvento.pendiente_incubacion;
+      seleccionadoEvento.fi_id ??
+      seleccionadoEvento.id ??
+      seleccionadoEvento.incubacion_id;
 
     try {
-      await updateEventoCosecha(eventoId, {
-        pileta_id: Number(formData.fi_pileta_origen_id),
-        pileta_origen_id: Number(formData.fi_pileta_origen_id),
-        fecha_cosecha: formData.fd_fecha_cosecha || null,
-        tipo_cosecha: formData.fc_tipo_cosecha,
-        estadio_desarrollo: formData.fc_estadio_desarrollo || null,
-        volumen_ml: formData.fn_volumen_ml === "" ? null : Number(formData.fn_volumen_ml),
-        hembras_ovadas: Number(formData.fn_hembras_ovadas || 0),
-        observacion: formData.observacion,
-      });
-
-      if (pendiente && formData.fi_pileta_destino_id) {
-        await createIncubacion(
-          payloadIncubacionBackend(eventoId),
-        );
-      } else if (incubacionId) {
-        await updateIncubacion(incubacionId, payloadIncubacionBackend(eventoId));
-      }
-
+      await updateIncubacion(incubacionId, payloadBackend());
       showSnackbar("Registro actualizado", "success");
       resetEdicion();
       cargarRegistros();
@@ -284,10 +257,10 @@ const EventoCosecha = () => {
   };
 
   const eliminarEvento = async (id) => {
-    if (!await confirm("¿Eliminar este evento de cosecha?")) return;
+    if (!await confirm("¿Eliminar este registro de cosecha e incubación?")) return;
     try {
-      await removeEventoCosecha(id);
-      showSnackbar("Evento eliminado", "success");
+      await removeIncubacion(id);
+      showSnackbar("Registro eliminado", "success");
       cargarRegistros();
       resetEdicion();
     } catch (err) {
@@ -641,11 +614,7 @@ const EventoCosecha = () => {
                       <TableCell>{formatearFecha(row.fecha_cosecha)}</TableCell>
                       <TableCell>{row.tipo_cosecha_label ?? row.tipo_cosecha}</TableCell>
                       <TableCell>
-                        {row.pendiente_incubacion ? (
-                          <Chip label="Pendiente" size="small" color="warning" />
-                        ) : (
-                          row.incubacion_pileta_nombre ?? row.nombre_pileta_destino ?? "—"
-                        )}
+                        {row.incubacion_pileta_nombre ?? row.nombre_pileta_destino ?? "—"}
                       </TableCell>
                       <TableCell>{formatNumber(row.huevos_ml ?? row.fn_huevos_ml)}</TableCell>
                       <TableCell>{formatearFecha(row.fecha_ingreso ?? row.fd_fecha_ingreso)}</TableCell>
@@ -688,7 +657,6 @@ const EventoCosecha = () => {
                         <Button
                           size="small"
                           color="error"
-                          disabled={!row.pendiente_incubacion}
                           onClick={() => eliminarEvento(row.fi_id ?? row.id)}
                         >
                           Eliminar
