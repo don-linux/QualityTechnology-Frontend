@@ -7,14 +7,8 @@
   "remoteUser": "bun",
   "overrideCommand": false,
   "forwardPorts": [3000],
-  "portsAttributes": {
-    "3000": {
-      "label": "Vite",
-      "onAutoForward": "notify"
-    }
-  },
   "postCreateCommand": "bun install",
-  "postStartCommand": "nohup bun run dev > /tmp/vite.log 2>&1 &",
+  "postStartCommand": "bun run dev",
   "remoteEnv": {
     "SHELL": "/bin/bash"
   },
