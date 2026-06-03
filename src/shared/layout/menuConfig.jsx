@@ -71,8 +71,7 @@ export const MENU_SECTIONS = [
         items: [
           { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
           { to: "/inventarios/reproductores", icon: <Biotech />, label: "Lote Reproductores" },
-          { to: "/inventarios/eventos-cosecha", icon: <EggAltIcon />, label: "Evento Cosecha" },
-          { to: "/inventarios/incubacion", icon: <DeviceThermostatIcon />, label: "Incubación" },
+          { to: "/inventarios/eventos-cosecha", icon: <EggAltIcon />, label: "Cosecha e incubación" },
           { to: "/inventarios/alevinaje", icon: <WaterDropIcon />, label: "Alevinaje" },
           { to: "/inventarios/engorda", icon: <Grass />, label: "Engorda" },
           { to: "/inventarios/trazabilidad", icon: <Timeline />, label: "Trazabilidad" },

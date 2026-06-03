@@ -2,7 +2,7 @@ import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
 import { filtrosUbicacionAParams } from "./piletasService";
 
-/** Eventos de cosecha / desove (módulo 2 del flujo reproductivo). */
+/** Cosecha, desove e ingreso a incubación (flujo unificado). */
 export function listEventosCosecha(params = {}) {
   return axios.get(ENDPOINTS.eventosCosecha.base, { params });
 }
@@ -24,4 +24,29 @@ export function updateEventoCosecha(id, data) {
 
 export function removeEventoCosecha(id) {
   return axios.delete(ENDPOINTS.eventosCosecha.byId(id));
+}
+
+/** Vista actual por pileta; use `opciones.historial` para el historial completo. */
+export function listIncubacion(filtroUbicacion, piletaId, opciones = {}) {
+  const params = {};
+  filtrosUbicacionAParams(params, filtroUbicacion);
+  if (piletaId) params.pileta_id = piletaId;
+  if (opciones.historial) params.historial = true;
+  return axios.get(ENDPOINTS.incubacion.base, { params });
+}
+
+export function listIncubacionHistorialPileta(piletaId, filtroUbicacion) {
+  return listIncubacion(filtroUbicacion, piletaId, { historial: true });
+}
+
+export function createIncubacion(data) {
+  return axios.post(ENDPOINTS.incubacion.base, data);
+}
+
+export function updateIncubacion(id, data) {
+  return axios.put(ENDPOINTS.incubacion.byId(id), data);
+}
+
+export function removeIncubacion(id) {
+  return axios.delete(ENDPOINTS.incubacion.byId(id));
 }
