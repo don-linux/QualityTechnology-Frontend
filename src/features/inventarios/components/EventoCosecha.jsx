@@ -7,7 +7,6 @@ import {
   listIncubacion,
   createIncubacion,
   updateIncubacion,
-  removeIncubacion,
 } from "../services/eventoCosechaService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
@@ -67,8 +66,6 @@ const requiredFieldsCosecha = [
   "fi_pileta_destino_id",
 ];
 
-const requiredFieldsSoloIncubacion = ["ubicacion", "fi_pileta_destino_id"];
-
 const formularioVacio = (ubicacionDefault = "") => ({
   ubicacion: ubicacionDefault,
   fi_pileta_origen_id: "",
@@ -81,7 +78,6 @@ const formularioVacio = (ubicacionDefault = "") => ({
   fi_pileta_destino_id: "",
   fecha_ingreso: hoyISO(),
   fecha_egreso: "",
-  lote: "",
   observacion: "",
 });
 
@@ -102,10 +98,7 @@ const EventoCosecha = () => {
   const [registros, setRegistros] = useState([]);
   const [registrosIncubacion, setRegistrosIncubacion] = useState([]);
   const [seleccionadoEvento, setSeleccionadoEvento] = useState(null);
-  const [seleccionadoIncubacion, setSeleccionadoIncubacion] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
-  /** 'cosecha' = evento completo; 'incubacion' = actualización periódica en pileta */
-  const [tipoFormulario, setTipoFormulario] = useState("cosecha");
   const [formData, setFormData] = useState(formularioVacio());
 
   const piletasOrigenFiltradas = useMemo(
@@ -133,8 +126,6 @@ const EventoCosecha = () => {
     [getGroups, registrosIncubacionVista],
   );
 
-  const esFormularioCosecha = tipoFormulario === "cosecha";
-
   const payloadCosechaBackend = () => ({
     pileta_id: Number(formData.fi_pileta_origen_id),
     pileta_origen_id: Number(formData.fi_pileta_origen_id),
@@ -154,7 +145,6 @@ const EventoCosecha = () => {
     pileta_id: Number(formData.fi_pileta_destino_id),
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
     evento_cosecha_id: eventoCosechaId ?? undefined,
-    lote: formData.lote.trim() ? formData.lote.trim() : undefined,
     huevos_ml: formData.fn_volumen_ml === "" ? null : Number(formData.fn_volumen_ml),
     fecha_ingreso: formData.fecha_ingreso || formData.fd_fecha_cosecha || null,
     fecha_egreso: formData.fecha_egreso || null,
@@ -178,7 +168,7 @@ const EventoCosecha = () => {
         return { ...prev, [name]: checked };
       }
       const next = { ...prev, [name]: value };
-      if (name === "fd_fecha_cosecha" && esFormularioCosecha && !modoEdicion) {
+      if (name === "fd_fecha_cosecha" && !modoEdicion) {
         next.fecha_ingreso = value;
       }
       return next;
@@ -237,36 +227,10 @@ const EventoCosecha = () => {
     }
   };
 
-  const registrarActualizacionIncubacion = async () => {
-    if (!validate(formData, requiredFieldsSoloIncubacion)) return;
-    if (!formData.lote.trim()) {
-      showSnackbar("Indique el lote genético", "error");
-      return;
-    }
-    if (!formData.fecha_ingreso) {
-      showSnackbar("La fecha de ingreso es obligatoria", "error");
-      return;
-    }
-    try {
-      await createIncubacion(payloadIncubacionBackend(null));
-      showSnackbar("Registro en incubación guardado", "success");
-      resetFormulario();
-      cargarRegistros();
-    } catch (err) {
-      showSnackbar(
-        err?.response?.data?.error ||
-          err?.response?.data?.detalle ||
-          "Error al registrar incubación",
-        "error",
-      );
-    }
-  };
-
   const activarEdicionEvento = () => {
     if (!seleccionadoEvento) return;
     clearErrors();
     const ev = seleccionadoEvento;
-    setTipoFormulario("cosecha");
     setFormData({
       ubicacion: ev.fc_granja || defaultUbicacion || "",
       fi_pileta_origen_id: String(ev.fi_pileta_origen_id ?? ev.pileta_id ?? ""),
@@ -298,56 +262,7 @@ const EventoCosecha = () => {
     abrirFormulario();
   };
 
-  const activarEdicionIncubacion = () => {
-    if (!seleccionadoIncubacion) return;
-    clearErrors();
-    const row = seleccionadoIncubacion;
-    setTipoFormulario("incubacion");
-    setFormData({
-      ubicacion: row.fc_granja || formData.ubicacion || defaultUbicacion || "",
-      fi_pileta_origen_id: "",
-      fd_fecha_cosecha: hoyISO(),
-      fc_tipo_cosecha: "",
-      fc_estadio_desarrollo: "",
-      fn_volumen_ml: row.huevos_ml != null ? String(row.huevos_ml) : "",
-      fn_hembras_ovadas: "",
-      fb_marcar_agotado: false,
-      fi_pileta_destino_id: String(
-        row.fi_pileta_destino_id ?? row.pileta_destino_id ?? row.pileta_id ?? "",
-      ),
-      fecha_ingreso: row.fecha_ingreso
-        ? String(row.fecha_ingreso).split("T")[0]
-        : hoyISO(),
-      fecha_egreso: row.fecha_egreso ? String(row.fecha_egreso).split("T")[0] : "",
-      lote:
-        row.lote_genetico ??
-        row.fc_lote_genetico ??
-        row.lote ??
-        row.fc_lote ??
-        "",
-      observacion: row.observacion ?? row.fc_observacion ?? "",
-    });
-    setModoEdicion(true);
-    abrirFormulario();
-  };
-
   const actualizar = async () => {
-    if (tipoFormulario === "incubacion") {
-      if (!validate(formData, requiredFieldsSoloIncubacion)) return;
-      try {
-        await updateIncubacion(
-          seleccionadoIncubacion.fi_id ?? seleccionadoIncubacion.id,
-          payloadIncubacionBackend(seleccionadoIncubacion.evento_cosecha_id),
-        );
-        showSnackbar("Registro de incubación actualizado", "success");
-        resetEdicion();
-        cargarRegistros();
-      } catch (err) {
-        showSnackbar(err?.response?.data?.error || "No se pudo actualizar", "error");
-      }
-      return;
-    }
-
     if (!validate(formData, requiredFieldsCosecha)) return;
     const eventoId = seleccionadoEvento.fi_id ?? seleccionadoEvento.id;
     const incubacionId =
@@ -394,23 +309,10 @@ const EventoCosecha = () => {
     }
   };
 
-  const eliminarIncubacion = async (id) => {
-    if (!await confirm("¿Eliminar este registro de incubación?")) return;
-    try {
-      await removeIncubacion(id);
-      showSnackbar("Registro eliminado", "success");
-      cargarRegistros();
-      resetEdicion();
-    } catch (err) {
-      showSnackbar(err?.response?.data?.error || "No se pudo eliminar", "error");
-    }
-  };
-
   const resetFormulario = (cerrarPanel = true) => {
     setFormData(
       formularioVacio(defaultUbicacion || ubicacionesGranja[0]?.value || ""),
     );
-    setTipoFormulario("cosecha");
     clearErrors();
     if (cerrarPanel) cerrarFormulario();
   };
@@ -418,29 +320,7 @@ const EventoCosecha = () => {
   const resetEdicion = () => {
     setModoEdicion(false);
     setSeleccionadoEvento(null);
-    setSeleccionadoIncubacion(null);
     resetFormulario();
-  };
-
-  const abrirNuevoRegistroCosecha = () => {
-    setTipoFormulario("cosecha");
-    setSeleccionadoEvento(null);
-    setSeleccionadoIncubacion(null);
-    setModoEdicion(false);
-    resetFormulario(false);
-    abrirFormulario();
-  };
-
-  const abrirActualizacionIncubacion = () => {
-    setTipoFormulario("incubacion");
-    setSeleccionadoEvento(null);
-    setSeleccionadoIncubacion(null);
-    setModoEdicion(false);
-    setFormData(
-      formularioVacio(defaultUbicacion || ubicacionesGranja[0]?.value || ""),
-    );
-    clearErrors();
-    abrirFormulario();
   };
 
   const formatearFecha = (fechaISO) => {
@@ -463,18 +343,10 @@ const EventoCosecha = () => {
     [],
   );
 
-  const tituloFormulario = () => {
-    if (modoEdicion && tipoFormulario === "incubacion") return "Editar registro en incubación";
-    if (modoEdicion) return "Editar cosecha e incubación";
-    if (tipoFormulario === "incubacion") return "Actualización periódica en incubación";
-    return "Registrar cosecha e ingreso a incubación";
-  };
+  const tituloFormulario = () =>
+    modoEdicion ? "Editar cosecha e incubación" : "Registrar cosecha e ingreso a incubación";
 
-  const onSubmitFormulario = () => {
-    if (modoEdicion) return actualizar();
-    if (tipoFormulario === "incubacion") return registrarActualizacionIncubacion();
-    return registrar();
-  };
+  const onSubmitFormulario = () => (modoEdicion ? actualizar() : registrar());
 
   return (
     <div style={{ padding: "25px" }}>
@@ -482,8 +354,8 @@ const EventoCosecha = () => {
         Cosecha e incubación
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Registre el desove y el ingreso a la pileta de incubación en un solo paso. Use la tabla
-        inferior para actualizar fechas de egreso u otros datos periódicos.
+        Registre el desove y el ingreso a la pileta de incubación en un solo paso. Para
+        modificar un registro, selecciónelo en el historial y use Editar.
       </Typography>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
@@ -514,35 +386,32 @@ const EventoCosecha = () => {
                 </TextField>
               </Grid>
 
-              {esFormularioCosecha && (
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    select
-                    label="Estanque origen (TR)"
-                    name="fi_pileta_origen_id"
-                    value={formData.fi_pileta_origen_id || ""}
-                    onChange={handleChange}
-                    fullWidth
-                    sx={campoFormSx}
-                    error={!!errors.fi_pileta_origen_id}
-                    {...(errors.fi_pileta_origen_id
-                      ? { helperText: errors.fi_pileta_origen_id }
-                      : {})}
-                  >
-                    {piletasOrigenFiltradas.map((p) => {
-                      const pid = p.fi_pileta_id ?? p.pileta_id;
-                      return (
-                        <MenuItem key={pid} value={String(pid)}>
-                          {p.nombre}
-                        </MenuItem>
-                      );
-                    })}
-                  </TextField>
-                </Grid>
-              )}
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  select
+                  label="Estanque origen (TR)"
+                  name="fi_pileta_origen_id"
+                  value={formData.fi_pileta_origen_id || ""}
+                  onChange={handleChange}
+                  fullWidth
+                  sx={campoFormSx}
+                  error={!!errors.fi_pileta_origen_id}
+                  {...(errors.fi_pileta_origen_id
+                    ? { helperText: errors.fi_pileta_origen_id }
+                    : {})}
+                >
+                  {piletasOrigenFiltradas.map((p) => {
+                    const pid = p.fi_pileta_id ?? p.pileta_id;
+                    return (
+                      <MenuItem key={pid} value={String(pid)}>
+                        {p.nombre}
+                      </MenuItem>
+                    );
+                  })}
+                </TextField>
+              </Grid>
 
-              {esFormularioCosecha && (
-                <Grid size={12}>
+              <Grid size={12}>
                   <TituloSeccionFormulario titulo="Datos del desove" mt={0} />
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: 4 }}>
@@ -634,38 +503,11 @@ const EventoCosecha = () => {
                       />
                     </Grid>
                   </Grid>
-                </Grid>
-              )}
+              </Grid>
 
               <Grid size={12}>
-                <TituloSeccionFormulario
-                  titulo={esFormularioCosecha ? "Incubación (destino)" : "Pileta de incubación"}
-                  mt={esFormularioCosecha ? 1 : 0}
-                />
+                <TituloSeccionFormulario titulo="Incubación (destino)" mt={1} />
                 <Grid container spacing={2}>
-                  {!esFormularioCosecha && (
-                    <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField
-                        label="Lote genético"
-                        name="lote"
-                        value={formData.lote}
-                        onChange={handleChange}
-                        fullWidth
-                        sx={campoFormSx}
-                        inputProps={{
-                          maxLength: 60,
-                          readOnly: Boolean(
-                            modoEdicion && seleccionadoIncubacion?.evento_cosecha_id,
-                          ),
-                        }}
-                        helperText={
-                          modoEdicion && seleccionadoIncubacion?.evento_cosecha_id
-                            ? "Vinculado a evento de cosecha"
-                            : "Requerido sin evento de cosecha"
-                        }
-                      />
-                    </Grid>
-                  )}
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
                       select
@@ -701,13 +543,13 @@ const EventoCosecha = () => {
                       InputLabelProps={{ shrink: true }}
                       sx={campoFormSx}
                       helperText={
-                        esFormularioCosecha
-                          ? "Por defecto coincide con la fecha de cosecha"
-                          : undefined
+                        modoEdicion
+                          ? undefined
+                          : "Por defecto coincide con la fecha de cosecha"
                       }
                     />
                   </Grid>
-                  {(modoEdicion || !esFormularioCosecha) && (
+                  {modoEdicion && (
                     <Grid size={{ xs: 12, md: 4 }}>
                       <TextField
                         label="Fecha de egreso (opcional)"
@@ -760,15 +602,6 @@ const EventoCosecha = () => {
         </Card>
       </FormularioRegistroPanel>
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
-        <Button variant="outlined" onClick={abrirNuevoRegistroCosecha}>
-          Nueva cosecha + incubación
-        </Button>
-        <Button variant="outlined" color="secondary" onClick={abrirActualizacionIncubacion}>
-          Actualización en pileta (sin cosecha)
-        </Button>
-      </div>
-
       <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, color: "#023047" }}>
         Historial de cosechas
       </Typography>
@@ -801,10 +634,7 @@ const EventoCosecha = () => {
                       (seleccionadoEvento?.fi_id ?? seleccionadoEvento?.id) ===
                       (row.fi_id ?? row.id)
                     }
-                    onClick={() => {
-                      setSeleccionadoEvento(row);
-                      setSeleccionadoIncubacion(null);
-                    }}
+                    onClick={() => setSeleccionadoEvento(row)}
                   >
                     <TableCell>{row.codigo ?? row.fc_codigo}</TableCell>
                     <TableCell>{row.nombre_pileta_origen}</TableCell>
@@ -860,8 +690,7 @@ const EventoCosecha = () => {
         Estado actual por pileta (incubación)
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Último registro de cada pileta. Seleccione una fila para editar fechas de egreso u otros
-        datos.
+        Último registro de cada pileta de incubación (solo consulta).
       </Typography>
 
       <TablasPorUbicacionGranja
@@ -889,19 +718,7 @@ const EventoCosecha = () => {
                   </TableRow>
                 ) : (
                   rows.map((l) => (
-                    <TableRow
-                      key={l.fi_id ?? l.id}
-                      hover
-                      selected={
-                        (seleccionadoIncubacion?.fi_id ?? seleccionadoIncubacion?.id) ===
-                        (l.fi_id ?? l.id)
-                      }
-                      onClick={() => {
-                        setSeleccionadoIncubacion(l);
-                        setSeleccionadoEvento(null);
-                      }}
-                      sx={{ cursor: "pointer" }}
-                    >
+                    <TableRow key={l.fi_id ?? l.id} hover>
                       <TableCell>
                         {l.nombre_pileta_destino || l.nombre_pileta || "—"}
                       </TableCell>
@@ -935,26 +752,6 @@ const EventoCosecha = () => {
           </TableContainer>
         )}
       />
-
-      {seleccionadoIncubacion && (
-        <div style={{ marginTop: 20, display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <Button variant="contained" color="warning" onClick={activarEdicionIncubacion}>
-            Editar registro en pileta
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() =>
-              eliminarIncubacion(seleccionadoIncubacion.fi_id ?? seleccionadoIncubacion.id)
-            }
-          >
-            Eliminar registro
-          </Button>
-          <Button variant="outlined" onClick={() => setSeleccionadoIncubacion(null)}>
-            Cerrar
-          </Button>
-        </div>
-      )}
 
       {ConfirmModal}
     </div>
