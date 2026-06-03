@@ -707,18 +707,20 @@ const EventoCosecha = () => {
                       }
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Fecha de egreso (opcional)"
-                      name="fecha_egreso"
-                      type="date"
-                      value={formData.fecha_egreso}
-                      onChange={handleChange}
-                      fullWidth
-                      InputLabelProps={{ shrink: true }}
-                      sx={campoFormSx}
-                    />
-                  </Grid>
+                  {(modoEdicion || !esFormularioCosecha) && (
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        label="Fecha de egreso (opcional)"
+                        name="fecha_egreso"
+                        type="date"
+                        value={formData.fecha_egreso}
+                        onChange={handleChange}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        sx={campoFormSx}
+                      />
+                    </Grid>
+                  )}
                 </Grid>
               </Grid>
 
