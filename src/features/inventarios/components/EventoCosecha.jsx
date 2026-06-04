@@ -56,12 +56,33 @@ const TIPOS_COSECHA = [
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 
+// Reconstruye el mapa { tipo: "valor" } para edición a partir del registro serializado,
+// con compatibilidad para registros antiguos de un solo tipo (sin desglose).
+const mapaVolumenDesdeEvento = (ev) => {
+  const fuente = ev.volumen_por_tipo ?? ev.fc_volumen_por_tipo;
+  const mapa = {};
+  if (fuente && typeof fuente === "object" && !Array.isArray(fuente)) {
+    for (const [tipo, valor] of Object.entries(fuente)) {
+      if (valor != null && valor !== "") mapa[tipo] = String(valor);
+    }
+  }
+  const tipos = Array.isArray(ev.tipo_cosecha)
+    ? ev.tipo_cosecha
+    : ev.tipo_cosecha
+      ? [ev.tipo_cosecha]
+      : [];
+  if (Object.keys(mapa).length === 0 && tipos.length === 1) {
+    const total = ev.volumen_ml ?? ev.huevos_ml;
+    if (total != null) mapa[tipos[0]] = String(total);
+  }
+  return mapa;
+};
+
 const requiredFieldsCosecha = [
   "ubicacion",
   "fi_pileta_origen_id",
   "fd_fecha_cosecha",
   "fc_tipo_cosecha",
-  "fn_volumen_ml",
   "fn_hembras_ovadas",
   "fi_pileta_destino_id",
 ];
@@ -71,8 +92,8 @@ const formularioVacio = (ubicacionDefault = "") => ({
   fi_pileta_origen_id: "",
   fd_fecha_cosecha: hoyISO(),
   fc_tipo_cosecha: [],
+  fc_volumen_por_tipo: {},
   fc_estadio_desarrollo: "",
-  fn_volumen_ml: "",
   fn_hembras_ovadas: "",
   fb_marcar_agotado: false,
   fi_pileta_destino_id: "",
@@ -115,16 +136,29 @@ const EventoCosecha = () => {
     [getGroups, registros],
   );
 
+  const tiposSeleccionados = useMemo(
+    () => TIPOS_COSECHA.filter((t) => (formData.fc_tipo_cosecha || []).includes(t.value)),
+    [formData.fc_tipo_cosecha],
+  );
+
+  const construirVolumenPorTipo = () => {
+    const mapa = {};
+    (formData.fc_tipo_cosecha || []).forEach((tipo) => {
+      const valor = formData.fc_volumen_por_tipo?.[tipo];
+      if (valor !== "" && valor != null) mapa[tipo] = Number(valor);
+    });
+    return mapa;
+  };
+
   const payloadBackend = () => ({
     pileta_id: Number(formData.fi_pileta_destino_id),
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
     pileta_origen_id: Number(formData.fi_pileta_origen_id),
     fecha_cosecha: formData.fd_fecha_cosecha || null,
     tipo_cosecha: formData.fc_tipo_cosecha,
+    volumen_por_tipo: construirVolumenPorTipo(),
     estadio_desarrollo: formData.fc_estadio_desarrollo || null,
     hembras_ovadas: Number(formData.fn_hembras_ovadas || 0),
-    huevos_ml: formData.fn_volumen_ml === "" ? null : Number(formData.fn_volumen_ml),
-    volumen_ml: formData.fn_volumen_ml === "" ? null : Number(formData.fn_volumen_ml),
     marcar_agotado: Boolean(formData.fb_marcar_agotado),
     fecha_ingreso: formData.fecha_ingreso || formData.fd_fecha_cosecha || null,
     fecha_egreso: formData.fecha_egreso || null,
@@ -133,7 +167,6 @@ const EventoCosecha = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (name === "fn_volumen_ml" && !soloDecimal(value)) return;
     if (name === "fn_hembras_ovadas" && !soloEntero(value)) return;
     setFormData((prev) => {
       if (name === "ubicacion") {
@@ -159,12 +192,40 @@ const EventoCosecha = () => {
   const toggleTipoCosecha = (value) => {
     setFormData((prev) => {
       const actuales = Array.isArray(prev.fc_tipo_cosecha) ? prev.fc_tipo_cosecha : [];
-      const next = actuales.includes(value)
+      const yaSeleccionado = actuales.includes(value);
+      const next = yaSeleccionado
         ? actuales.filter((v) => v !== value)
         : [...actuales, value];
-      return { ...prev, fc_tipo_cosecha: next };
+      const volumenes = { ...(prev.fc_volumen_por_tipo || {}) };
+      if (yaSeleccionado) {
+        delete volumenes[value];
+      } else if (volumenes[value] === undefined) {
+        volumenes[value] = "";
+      }
+      return { ...prev, fc_tipo_cosecha: next, fc_volumen_por_tipo: volumenes };
     });
     clearFieldError("fc_tipo_cosecha");
+    clearFieldError(`volumen_${value}`);
+  };
+
+  const handleVolumenTipo = (tipo, value) => {
+    if (!soloDecimal(value)) return;
+    setFormData((prev) => ({
+      ...prev,
+      fc_volumen_por_tipo: { ...(prev.fc_volumen_por_tipo || {}), [tipo]: value },
+    }));
+    clearFieldError(`volumen_${tipo}`);
+  };
+
+  // Valida los campos requeridos más un volumen por cada tipo de cosecha marcado.
+  const validarCosecha = () => {
+    const tipos = formData.fc_tipo_cosecha || [];
+    const volKeys = tipos.map((t) => `volumen_${t}`);
+    const formParaValidar = { ...formData };
+    tipos.forEach((t) => {
+      formParaValidar[`volumen_${t}`] = formData.fc_volumen_por_tipo?.[t] ?? "";
+    });
+    return validate(formParaValidar, [...requiredFieldsCosecha, ...volKeys]);
   };
 
   const cargarPiletas = useCallback(async () => {
@@ -201,7 +262,7 @@ const EventoCosecha = () => {
   }, [defaultUbicacion, formData.ubicacion]);
 
   const registrar = async () => {
-    if (!validate(formData, requiredFieldsCosecha)) return;
+    if (!validarCosecha()) return;
     try {
       await createIncubacion(payloadBackend());
       showSnackbar("Cosecha e ingreso a incubación registrados", "success");
@@ -233,12 +294,7 @@ const EventoCosecha = () => {
           ? [ev.tipo_cosecha]
           : [],
       fc_estadio_desarrollo: ev.estadio_desarrollo ?? "",
-      fn_volumen_ml:
-        ev.volumen_ml != null
-          ? String(ev.volumen_ml)
-          : ev.huevos_ml != null
-            ? String(ev.huevos_ml)
-            : "",
+      fc_volumen_por_tipo: mapaVolumenDesdeEvento(ev),
       fn_hembras_ovadas:
         ev.hembras_ovadas != null
           ? String(ev.hembras_ovadas)
@@ -260,7 +316,7 @@ const EventoCosecha = () => {
   };
 
   const actualizar = async () => {
-    if (!validate(formData, requiredFieldsCosecha)) return;
+    if (!validarCosecha()) return;
     const incubacionId =
       seleccionadoEvento.fi_id ??
       seleccionadoEvento.id ??
@@ -456,20 +512,21 @@ const EventoCosecha = () => {
                         )}
                       </FormControl>
                     </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField
-                        label="Volumen / contrapeso (ml o g)"
-                        name="fn_volumen_ml"
-                        value={formData.fn_volumen_ml}
-                        onChange={handleChange}
-                        fullWidth
-                        sx={campoFormSx}
-                        error={!!errors.fn_volumen_ml}
-                        {...(errors.fn_volumen_ml
-                          ? { helperText: errors.fn_volumen_ml }
-                          : {})}
-                      />
-                    </Grid>
+                    {tiposSeleccionados.map((t) => (
+                      <Grid size={{ xs: 12, md: 4 }} key={t.value}>
+                        <TextField
+                          label={`Volumen / contrapeso · ${t.label} (ml o g)`}
+                          value={formData.fc_volumen_por_tipo?.[t.value] ?? ""}
+                          onChange={(e) => handleVolumenTipo(t.value, e.target.value)}
+                          fullWidth
+                          sx={campoFormSx}
+                          error={!!errors[`volumen_${t.value}`]}
+                          {...(errors[`volumen_${t.value}`]
+                            ? { helperText: errors[`volumen_${t.value}`] }
+                            : {})}
+                        />
+                      </Grid>
+                    ))}
                     <Grid size={{ xs: 12, md: 4 }}>
                       <TextField
                         label="Hembras ovadas"
