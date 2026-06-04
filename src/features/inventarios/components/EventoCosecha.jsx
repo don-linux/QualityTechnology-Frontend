@@ -702,7 +702,7 @@ const EventoCosecha = () => {
                   <TableCell>Pileta incubación</TableCell>
                   <TableCell>Huevos/ml</TableCell>
                   <TableCell>F. ingreso</TableCell>
-                  <TableCell>Días</TableCell>
+                  <TableCell>Días en incubación</TableCell>
                   <TableCell>F. egreso</TableCell>
                   <TableCell>Observación</TableCell>
                   <TableCell align="center">Acciones</TableCell>
