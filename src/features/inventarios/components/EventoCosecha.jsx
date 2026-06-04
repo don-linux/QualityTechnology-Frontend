@@ -17,6 +17,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
 import MenuItem from "@mui/material/MenuItem";
+import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -28,6 +29,10 @@ import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import FormControl from "@mui/material/FormControl";
+import FormGroup from "@mui/material/FormGroup";
+import FormLabel from "@mui/material/FormLabel";
+import FormHelperText from "@mui/material/FormHelperText";
 import Checkbox from "@mui/material/Checkbox";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
@@ -65,7 +70,7 @@ const formularioVacio = (ubicacionDefault = "") => ({
   ubicacion: ubicacionDefault,
   fi_pileta_origen_id: "",
   fd_fecha_cosecha: hoyISO(),
-  fc_tipo_cosecha: "",
+  fc_tipo_cosecha: [],
   fc_estadio_desarrollo: "",
   fn_volumen_ml: "",
   fn_hembras_ovadas: "",
@@ -151,6 +156,17 @@ const EventoCosecha = () => {
     clearFieldError(name);
   };
 
+  const toggleTipoCosecha = (value) => {
+    setFormData((prev) => {
+      const actuales = Array.isArray(prev.fc_tipo_cosecha) ? prev.fc_tipo_cosecha : [];
+      const next = actuales.includes(value)
+        ? actuales.filter((v) => v !== value)
+        : [...actuales, value];
+      return { ...prev, fc_tipo_cosecha: next };
+    });
+    clearFieldError("fc_tipo_cosecha");
+  };
+
   const cargarPiletas = useCallback(async () => {
     try {
       const [rep, inc] = await Promise.all([
@@ -211,7 +227,11 @@ const EventoCosecha = () => {
       fd_fecha_cosecha: ev.fecha_cosecha
         ? String(ev.fecha_cosecha).split("T")[0]
         : hoyISO(),
-      fc_tipo_cosecha: ev.tipo_cosecha ?? "",
+      fc_tipo_cosecha: Array.isArray(ev.tipo_cosecha)
+        ? ev.tipo_cosecha
+        : ev.tipo_cosecha
+          ? [ev.tipo_cosecha]
+          : [],
       fc_estadio_desarrollo: ev.estadio_desarrollo ?? "",
       fn_volumen_ml:
         ev.volumen_ml != null
@@ -390,25 +410,51 @@ const EventoCosecha = () => {
                       />
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField
-                        select
-                        label="Tipo de cosecha"
-                        name="fc_tipo_cosecha"
-                        value={formData.fc_tipo_cosecha}
-                        onChange={handleChange}
+                      <FormControl
+                        component="fieldset"
                         fullWidth
-                        sx={campoFormSx}
                         error={!!errors.fc_tipo_cosecha}
-                        {...(errors.fc_tipo_cosecha
-                          ? { helperText: errors.fc_tipo_cosecha }
-                          : {})}
                       >
-                        {TIPOS_COSECHA.map((t) => (
-                          <MenuItem key={t.value} value={t.value}>
-                            {t.label}
-                          </MenuItem>
-                        ))}
-                      </TextField>
+                        <FormLabel
+                          component="legend"
+                          sx={{ fontSize: 13, fontWeight: 500, mb: 0.5 }}
+                        >
+                          Tipo de cosecha (una o varias)
+                        </FormLabel>
+                        <Box
+                          sx={{
+                            border: "1px solid",
+                            borderColor: errors.fc_tipo_cosecha
+                              ? "error.main"
+                              : "rgba(0, 0, 0, 0.23)",
+                            borderRadius: 2,
+                            px: 1.5,
+                            py: 0.25,
+                            bgcolor: "#fff",
+                          }}
+                        >
+                          <FormGroup>
+                            {TIPOS_COSECHA.map((t) => (
+                              <FormControlLabel
+                                key={t.value}
+                                control={
+                                  <Checkbox
+                                    size="small"
+                                    checked={(formData.fc_tipo_cosecha || []).includes(
+                                      t.value,
+                                    )}
+                                    onChange={() => toggleTipoCosecha(t.value)}
+                                  />
+                                }
+                                label={t.label}
+                              />
+                            ))}
+                          </FormGroup>
+                        </Box>
+                        {errors.fc_tipo_cosecha && (
+                          <FormHelperText>{errors.fc_tipo_cosecha}</FormHelperText>
+                        )}
+                      </FormControl>
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
                       <TextField
@@ -612,7 +658,12 @@ const EventoCosecha = () => {
                       <TableCell>{row.nombre_pileta_origen}</TableCell>
                       <TableCell>{row.lote_genetico ?? row.fc_lote_genetico}</TableCell>
                       <TableCell>{formatearFecha(row.fecha_cosecha)}</TableCell>
-                      <TableCell>{row.tipo_cosecha_label ?? row.tipo_cosecha}</TableCell>
+                      <TableCell>
+                        {row.tipo_cosecha_label ??
+                          (Array.isArray(row.tipo_cosecha)
+                            ? row.tipo_cosecha.join(", ")
+                            : row.tipo_cosecha)}
+                      </TableCell>
                       <TableCell>
                         {row.incubacion_pileta_nombre ?? row.nombre_pileta_destino ?? "—"}
                       </TableCell>
