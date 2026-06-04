@@ -29,9 +29,6 @@ import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import FormControl from "@mui/material/FormControl";
-import FormGroup from "@mui/material/FormGroup";
-import FormLabel from "@mui/material/FormLabel";
 import FormHelperText from "@mui/material/FormHelperText";
 import Checkbox from "@mui/material/Checkbox";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
@@ -134,11 +131,6 @@ const EventoCosecha = () => {
   const gruposRegistros = useMemo(
     () => getGroups(registros, "fc_granja"),
     [getGroups, registros],
-  );
-
-  const tiposSeleccionados = useMemo(
-    () => TIPOS_COSECHA.filter((t) => (formData.fc_tipo_cosecha || []).includes(t.value)),
-    [formData.fc_tipo_cosecha],
   );
 
   const construirVolumenPorTipo = () => {
@@ -465,68 +457,91 @@ const EventoCosecha = () => {
                           : {})}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                      <FormControl
+                    <Grid size={{ xs: 12, md: 8 }}>
+                      <Box
                         component="fieldset"
-                        fullWidth
-                        error={!!errors.fc_tipo_cosecha}
+                        sx={{
+                          border: "1px solid",
+                          borderColor: errors.fc_tipo_cosecha
+                            ? "error.main"
+                            : "rgba(0, 0, 0, 0.23)",
+                          borderRadius: 2,
+                          m: 0,
+                          px: 1.5,
+                          pt: 0.5,
+                          pb: 1.25,
+                          bgcolor: "#fff",
+                        }}
                       >
-                        <FormLabel
-                          component="legend"
-                          sx={{ fontSize: 13, fontWeight: 500, mb: 0.5 }}
-                        >
-                          Tipo de cosecha (una o varias)
-                        </FormLabel>
                         <Box
+                          component="legend"
                           sx={{
-                            border: "1px solid",
-                            borderColor: errors.fc_tipo_cosecha
-                              ? "error.main"
-                              : "rgba(0, 0, 0, 0.23)",
-                            borderRadius: 2,
-                            px: 1.5,
-                            py: 0.25,
-                            bgcolor: "#fff",
+                            px: 0.75,
+                            fontSize: 12,
+                            lineHeight: 1.2,
+                            color: errors.fc_tipo_cosecha ? "error.main" : "text.secondary",
                           }}
                         >
-                          <FormGroup>
-                            {TIPOS_COSECHA.map((t) => (
-                              <FormControlLabel
-                                key={t.value}
-                                control={
-                                  <Checkbox
-                                    size="small"
-                                    checked={(formData.fc_tipo_cosecha || []).includes(
-                                      t.value,
-                                    )}
-                                    onChange={() => toggleTipoCosecha(t.value)}
-                                  />
-                                }
-                                label={t.label}
-                              />
-                            ))}
-                          </FormGroup>
+                          Tipo de cosecha (una o varias)
                         </Box>
-                        {errors.fc_tipo_cosecha && (
-                          <FormHelperText>{errors.fc_tipo_cosecha}</FormHelperText>
-                        )}
-                      </FormControl>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            alignItems: "flex-start",
+                            gap: 3,
+                            minHeight: 34,
+                          }}
+                        >
+                          {TIPOS_COSECHA.map((t) => {
+                            const marcado = (formData.fc_tipo_cosecha || []).includes(t.value);
+                            return (
+                              <Box
+                                key={t.value}
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  minWidth: 130,
+                                }}
+                              >
+                                <FormControlLabel
+                                  sx={{ mr: 0 }}
+                                  control={
+                                    <Checkbox
+                                      size="small"
+                                      checked={marcado}
+                                      onChange={() => toggleTipoCosecha(t.value)}
+                                    />
+                                  }
+                                  label={t.label}
+                                />
+                                {marcado && (
+                                  <TextField
+                                    size="small"
+                                    value={formData.fc_volumen_por_tipo?.[t.value] ?? ""}
+                                    onChange={(e) =>
+                                      handleVolumenTipo(t.value, e.target.value)
+                                    }
+                                    placeholder="0"
+                                    inputProps={{ inputMode: "decimal" }}
+                                    sx={{ ...campoFormSx, ml: 3.5, mt: 0.5, maxWidth: 96 }}
+                                    error={!!errors[`volumen_${t.value}`]}
+                                    {...(errors[`volumen_${t.value}`]
+                                      ? { helperText: errors[`volumen_${t.value}`] }
+                                      : {})}
+                                  />
+                                )}
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      </Box>
+                      {errors.fc_tipo_cosecha && (
+                        <FormHelperText error sx={{ mx: 1.75 }}>
+                          {errors.fc_tipo_cosecha}
+                        </FormHelperText>
+                      )}
                     </Grid>
-                    {tiposSeleccionados.map((t) => (
-                      <Grid size={{ xs: 12, md: 4 }} key={t.value}>
-                        <TextField
-                          label={`Volumen / contrapeso · ${t.label} (ml o g)`}
-                          value={formData.fc_volumen_por_tipo?.[t.value] ?? ""}
-                          onChange={(e) => handleVolumenTipo(t.value, e.target.value)}
-                          fullWidth
-                          sx={campoFormSx}
-                          error={!!errors[`volumen_${t.value}`]}
-                          {...(errors[`volumen_${t.value}`]
-                            ? { helperText: errors[`volumen_${t.value}`] }
-                            : {})}
-                        />
-                      </Grid>
-                    ))}
                     <Grid size={{ xs: 12, md: 4 }}>
                       <TextField
                         label="Hembras ovadas"
