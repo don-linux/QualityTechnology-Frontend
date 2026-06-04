@@ -37,6 +37,13 @@ import { listLista } from "@features/ventas/services/listaEsperaService";
 
 const TIPOS_MOVIMIENTO = [
   {
+    value: "INCUBACION_A_ALEVINAJE",
+    label: "De incubación a alevinaje",
+    etapaOrigen: "incubacion",
+    etapaDestino: "alevinaje",
+    modo: "TRASLADO",
+  },
+  {
     value: "ALEVINAJE_A_ALEVINAJE",
     label: "De alevinaje a alevinaje",
     etapaOrigen: "alevinaje",
@@ -155,6 +162,8 @@ const EMPTY_FORM = {
   pileta_destino_id: "",
   cantidad: "",
   mortalidad: "",
+  peso_kg: "",
+  fecha_peso: "",
   fecha_movimiento: "",
   observacion: "",
 };
@@ -209,6 +218,7 @@ export default function Trazabilidad() {
   const esVenta = tipoConfig.modo === "VENTA";
   const esMortalidad = tipoConfig.modo === "MORTALIDAD";
   const esTraslado = tipoConfig.modo === "TRASLADO";
+  const esIncubacionOrigen = tipoConfig.etapaOrigen === "incubacion";
 
   const cantidadMortalidad = Number(form.cantidad);
   const cantidadExcedeStockMortalidad =
@@ -278,13 +288,15 @@ export default function Trazabilidad() {
   const cargarPiletas = useCallback(async () => {
     if (!granja) return;
     try {
-      const [alevRes, engRes] = await Promise.all([
+      const [alevRes, engRes, incRes] = await Promise.all([
         listPiletas(null, "alevinaje"),
         listPiletas(null, "engorda"),
+        listPiletas(null, "incubacion"),
       ]);
       const rows = [
         ...(Array.isArray(alevRes.data) ? alevRes.data : []),
         ...(Array.isArray(engRes.data) ? engRes.data : []),
+        ...(Array.isArray(incRes.data) ? incRes.data : []),
       ];
       setPiletas(filtrarPorUbicacion(rows, granja, ubicacionesGranja));
     } catch (err) {
@@ -387,6 +399,11 @@ export default function Trazabilidad() {
       return false;
     }
 
+    if (esIncubacionOrigen && (form.peso_kg === "" || Number(form.peso_kg) <= 0)) {
+      showSnackbar("Ingrese el peso (kg) de los alevines", "warning");
+      return false;
+    }
+
     return true;
   };
 
@@ -411,7 +428,12 @@ export default function Trazabilidad() {
       payload.pileta_origen_id = Number(form.pileta_origen_id);
       payload.pileta_destino_id = Number(form.pileta_destino_id);
       payload.cantidad = Number(form.cantidad);
-      if (form.mortalidad) payload.mortalidad = Number(form.mortalidad);
+      if (esIncubacionOrigen) {
+        if (form.peso_kg !== "") payload.peso_kg = Number(form.peso_kg);
+        if (form.fecha_peso) payload.fecha_peso = form.fecha_peso;
+      } else if (form.mortalidad) {
+        payload.mortalidad = Number(form.mortalidad);
+      }
     }
 
     setCargando(true);
@@ -466,7 +488,11 @@ export default function Trazabilidad() {
     return `#${p.fi_lista_id} · ${cliente} · ${cant} org. · ${fecha}`;
   };
 
-  const etiquetaPileta = (p) => `${p.nombre} — ${formatStock(stockPileta(p))} org.`;
+  const etiquetaPileta = (p) => {
+    const tipo = String(p.tipo ?? p.fc_tipo ?? "").toLowerCase();
+    if (tipo === "incubacion") return `${p.nombre} (lote en incubación)`;
+    return `${p.nombre} — ${formatStock(stockPileta(p))} org.`;
+  };
 
   const gruposMovimientos = useMemo(
     () => getGroups(movimientos, "fc_granja"),
@@ -734,24 +760,56 @@ export default function Trazabilidad() {
                     <TextField
                       fullWidth
                       type="number"
-                      label="Cantidad"
+                      label={esIncubacionOrigen ? "Cantidad de alevines" : "Cantidad"}
                       name="cantidad"
                       value={form.cantidad}
                       onChange={handleChange}
                       inputProps={{ min: 1 }}
+                      helperText={
+                        esIncubacionOrigen ? "Alevines obtenidos del lote de incubación" : undefined
+                      }
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Mortalidad en traslado (opcional)"
-                      name="mortalidad"
-                      value={form.mortalidad}
-                      onChange={handleChange}
-                      inputProps={{ min: 0 }}
-                    />
-                  </Grid>
+                  {esIncubacionOrigen ? (
+                    <>
+                      <Grid size={{ xs: 12, md: 4 }}>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          label="Peso (kg)"
+                          name="peso_kg"
+                          value={form.peso_kg}
+                          onChange={handleChange}
+                          inputProps={{ min: 0, step: "any" }}
+                          helperText="Peso biométrico inicial del lote"
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, md: 4 }}>
+                        <TextField
+                          fullWidth
+                          type="date"
+                          label="Fecha peso"
+                          name="fecha_peso"
+                          value={form.fecha_peso}
+                          onChange={handleChange}
+                          InputLabelProps={{ shrink: true }}
+                          helperText="Por defecto, la fecha del movimiento"
+                        />
+                      </Grid>
+                    </>
+                  ) : (
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <TextField
+                        fullWidth
+                        type="number"
+                        label="Mortalidad en traslado (opcional)"
+                        name="mortalidad"
+                        value={form.mortalidad}
+                        onChange={handleChange}
+                        inputProps={{ min: 0 }}
+                      />
+                    </Grid>
+                  )}
                 </>
               )}
 
