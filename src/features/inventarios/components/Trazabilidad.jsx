@@ -30,6 +30,7 @@ import {
   fetchMergedPorUbicaciones,
   filtrarPorUbicacion,
 } from "@shared/utils/fetchMergedPorUbicaciones";
+import { rowPerteneceAUbicacionGranja } from "@shared/utils/unidadesNegocio";
 import ProximaVentaModal from "@features/ventas/components/ProximaVentaModal";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
 import { listPiletas } from "../services/piletasService";
@@ -309,18 +310,24 @@ export default function Trazabilidad() {
     try {
       const res = await listLista();
       const rows = Array.isArray(res.data) ? res.data : [];
+      const granjaOp = ubicacionesGranja.find((op) => op.value === granja) ?? null;
       setPedidos(
         rows.filter((p) => {
           const tipo = String(p.fc_uap_asignada ?? p.tipo_venta ?? "").trim().toUpperCase();
-          const granjaPedido = p.fc_granja_asignada ?? p.granja ?? "";
-          return TIPOS_VENTA_TRAZABLES.has(tipo) && !p.venta_id && !p.fi_venta_id && granjaPedido === granja;
+          if (!TIPOS_VENTA_TRAZABLES.has(tipo) || p.venta_id || p.fi_venta_id) return false;
+          if (!granja) return true;
+          if (!granjaOp) {
+            const granjaPedido = p.fc_granja_asignada ?? p.granja ?? "";
+            return granjaPedido === granja;
+          }
+          return rowPerteneceAUbicacionGranja(p, granjaOp, "fc_granja_asignada");
         }),
       );
     } catch (err) {
       console.error("Error al cargar pedidos:", err);
       setPedidos([]);
     }
-  }, [granja]);
+  }, [granja, ubicacionesGranja]);
 
   useEffect(() => {
     cargarMovimientos();
