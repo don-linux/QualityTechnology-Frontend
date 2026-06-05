@@ -614,7 +614,7 @@ export default function Trazabilidad() {
                         helperText={
                           pedidosVenta.length === 0
                             ? `No hay pedidos pendientes de ${tipoConfig.etapaOrigen} en esta granja`
-                            : "Al registrar se creará la venta y se descontará inventario"
+                            : undefined
                         }
                         sx={{ flex: 1 }}
                       >
@@ -714,7 +714,6 @@ export default function Trazabilidad() {
                       value={form.cantidad}
                       onChange={handleChange}
                       inputProps={{ min: 1 }}
-                      helperText="Organismos que murieron en la pileta"
                     />
                   </Grid>
                 </>
@@ -765,9 +764,6 @@ export default function Trazabilidad() {
                       value={form.cantidad}
                       onChange={handleChange}
                       inputProps={{ min: 1 }}
-                      helperText={
-                        esIncubacionOrigen ? "Alevines obtenidos del lote de incubación" : undefined
-                      }
                     />
                   </Grid>
                   {esIncubacionOrigen ? (
@@ -781,7 +777,6 @@ export default function Trazabilidad() {
                           value={form.peso_kg}
                           onChange={handleChange}
                           inputProps={{ min: 0, step: "any" }}
-                          helperText="Peso biométrico inicial del lote"
                         />
                       </Grid>
                       <Grid size={{ xs: 12, md: 4 }}>
@@ -793,7 +788,6 @@ export default function Trazabilidad() {
                           value={form.fecha_peso}
                           onChange={handleChange}
                           InputLabelProps={{ shrink: true }}
-                          helperText="Por defecto, la fecha del movimiento"
                         />
                       </Grid>
                     </>
