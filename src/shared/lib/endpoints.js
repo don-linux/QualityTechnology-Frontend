@@ -100,9 +100,6 @@ export const ENDPOINTS = {
 
   ventas: {
     base: "/ventas",
-    byId: (id) => `/ventas/${id}`,
-    clientes: "/ventas/clientes",
-    encargados: (empresa) => `/ventas/encargados/${path(empresa)}`,
   },
 
   listaEspera: {
