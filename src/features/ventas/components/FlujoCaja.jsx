@@ -19,6 +19,7 @@ import {
   updateMovimiento,
   removeMovimiento,
 } from "../services/flujoCajaService";
+import { registrarPagoVenta } from "../services/ventasService";
 import FormDialog from "./FormDialog";
 import { getUploadUrl } from "@shared/lib/uploadUrl";
 import useFormValidation from "@shared/hooks/useFormValidation";
@@ -134,10 +135,18 @@ export default function FlujoCaja() {
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
-  const requiredFields = [
-    "fd_fecha", "fc_cuenta", "tipo_transaccion", "fn_monto", "fc_descripcion",
-    "fc_categoria", "fc_subcategoria", "fc_noproyecto", "fc_factura_opcion", "fc_estatus",
-  ];
+  // Cuando un ingreso se liga a una venta, se registra como pago (abono): los
+  // campos genericos del flujo se asignan automaticamente, asi que solo se
+  // exige lo minimo para el cobro.
+  const ventaLigada =
+    formData.tipo_transaccion === "INGRESO" && !!formData.fi_venta_id;
+
+  const requiredFields = ventaLigada
+    ? ["fd_fecha", "fc_cuenta", "tipo_transaccion", "fn_monto"]
+    : [
+        "fd_fecha", "fc_cuenta", "tipo_transaccion", "fn_monto", "fc_descripcion",
+        "fc_categoria", "fc_subcategoria", "fc_noproyecto", "fc_factura_opcion", "fc_estatus",
+      ];
 
   // =====================================================
   //  Cargar datos
@@ -186,6 +195,7 @@ export default function FlujoCaja() {
         fd_fecha: data.fd_fecha || "",
         tipo_transaccion: tipoTransaccion,
         fn_monto: monto || "",
+        fi_venta_id: data.fi_venta_id || "",
         fc_descripcion: data.fc_descripcion || "",
         fc_cuenta: data.fc_cuenta || "",
         fc_categoria: data.fc_categoria || "",
@@ -201,6 +211,7 @@ export default function FlujoCaja() {
         fd_fecha: "",
         tipo_transaccion: "",
         fn_monto: "",
+        fi_venta_id: "",
         fc_descripcion: "",
         fc_cuenta: "",
         fc_categoria: "",
@@ -224,8 +235,23 @@ export default function FlujoCaja() {
     if (!validate(data, requiredFields)) return;
 
     try {
+      // Ingreso ligado a una venta -> se registra como pago (abono) de la venta:
+      // actualiza monto_abonado, estado y saldo de la cuenta en el backend.
+      if (!editId && data.tipo_transaccion === "INGRESO" && data.fi_venta_id) {
+        await registrarPagoVenta(data.fi_venta_id, {
+          fd_fecha: data.fd_fecha,
+          fc_cuenta: data.fc_cuenta,
+          fn_monto: data.fn_monto,
+          fc_descripcion: data.fc_descripcion,
+        });
+        showSnackbar("Pago de venta registrado correctamente", "success");
+        setOpen(false);
+        obtenerMovimientos();
+        return;
+      }
+
       const monto = Math.max(Number(data.fn_monto) || 0, 0);
-      const { tipo_transaccion, fn_monto, ...rest } = data;
+      const { tipo_transaccion, fn_monto, fi_venta_id, ...rest } = data;
       const payload = {
         ...rest,
         fn_ingreso: tipo_transaccion === "INGRESO" ? monto : 0,
@@ -242,7 +268,8 @@ export default function FlujoCaja() {
       obtenerMovimientos();
     } catch (err) {
       console.error(" Error al guardar:", err);
-      showSnackbar("Error al guardar el movimiento ", "error");
+      const msg = err.response?.data?.error ?? "Error al guardar el movimiento ";
+      showSnackbar(msg, "error");
     }
   };
 

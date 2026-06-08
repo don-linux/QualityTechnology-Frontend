@@ -7,10 +7,12 @@ import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
+import Alert from "@mui/material/Alert";
 import {
   listClientesFlujo,
   listProveedoresFlujo,
 } from "../services/flujoCajaService";
+import { listVentas } from "../services/ventasService";
 import { listCuentasActivas } from "@features/catalogos/services/cuentasService";
 
 const FormDialog = React.memo(
@@ -18,17 +20,24 @@ const FormDialog = React.memo(
     const [clientes, setClientes] = useState([]);
     const [proveedores, setProveedores] = useState([]);
     const [cuentas, setCuentas] = useState([]);
+    const [ventasPendientes, setVentasPendientes] = useState([]);
 
     const fetchDatos = useCallback(async () => {
       try {
-        const [resClientes, resProveedores, resCuentas] = await Promise.all([
+        const [resClientes, resProveedores, resCuentas, resVentas] = await Promise.all([
           listClientesFlujo(),
           listProveedoresFlujo(),
           listCuentasActivas(),
+          listVentas(),
         ]);
         setClientes(resClientes.data);
         setProveedores(resProveedores.data);
         setCuentas(resCuentas.data);
+        setVentasPendientes(
+          (resVentas.data ?? []).filter(
+            (v) => v.fc_estado_pago === "ADEUDO" || v.fc_estado_pago === "PARCIAL"
+          )
+        );
       } catch (err) {
         console.error("Error al obtener datos:", err);
       }
@@ -42,6 +51,32 @@ const FormDialog = React.memo(
     const handleSave = () => {
       if (validate && !validate(formData, requiredFields)) return;
       onSubmit(formData);
+    };
+
+    const formatMoneda = (valor) =>
+      new Intl.NumberFormat("es-MX", {
+        style: "currency",
+        currency: "MXN",
+        minimumFractionDigits: 2,
+      }).format(Number(valor) || 0);
+
+    const ventaLigada =
+      formData.tipo_transaccion === "INGRESO" && !!formData.fi_venta_id;
+    const ventaSel = ventasPendientes.find(
+      (v) => String(v.fi_venta_id) === String(formData.fi_venta_id)
+    );
+
+    const handleVentaChange = (e) => {
+      const ventaId = e.target.value;
+      const venta = ventasPendientes.find(
+        (v) => String(v.fi_venta_id) === String(ventaId)
+      );
+      setFormData((prev) => ({
+        ...prev,
+        fi_venta_id: ventaId,
+        ...(venta ? { fn_monto: String(venta.fn_adeudo) } : {}),
+      }));
+      if (clearFieldError) clearFieldError("fi_venta_id");
     };
 
     return (
@@ -95,6 +130,7 @@ const FormDialog = React.memo(
                     ...prev,
                     tipo_transaccion: tipo,
                     fc_beneficiario: "",
+                    fi_venta_id: tipo === "INGRESO" ? prev.fi_venta_id : "",
                   }));
                   if (clearFieldError) clearFieldError("tipo_transaccion");
                 }}
@@ -118,10 +154,45 @@ const FormDialog = React.memo(
                 disabled={!formData.tipo_transaccion}
                 fullWidth
                 margin="dense"
+                inputProps={{
+                  min: 0,
+                  step: "0.01",
+                  ...(ventaSel ? { max: Number(ventaSel.fn_adeudo) } : {}),
+                }}
                 error={!!errors.fn_monto}
-                helperText={errors.fn_monto}
+                helperText={
+                  errors.fn_monto ||
+                  (ventaSel ? `Adeudo de la venta: ${formatMoneda(ventaSel.fn_adeudo)}` : "")
+                }
               />
             </Grid>
+
+            {formData.tipo_transaccion === "INGRESO" && (
+              <Grid size={12}>
+                <TextField
+                  select
+                  label="Venta a liquidar (opcional)"
+                  name="fi_venta_id"
+                  value={formData.fi_venta_id || ""}
+                  onChange={handleVentaChange}
+                  fullWidth
+                  margin="dense"
+                  disabled={!!editId}
+                  helperText={
+                    ventaSel
+                      ? "Se registrará como pago de esta venta: actualiza su abono y estado."
+                      : "Selecciona una venta pendiente para aplicar este ingreso como su pago."
+                  }
+                >
+                  <MenuItem value="">— Ninguna —</MenuItem>
+                  {ventasPendientes.map((v) => (
+                    <MenuItem key={v.fi_venta_id} value={v.fi_venta_id}>
+                      {v.fc_folio || `Venta #${v.fi_venta_id}`} — {v.fc_cliente} — Adeudo {formatMoneda(v.fn_adeudo)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            )}
 
             <Grid size={12}>
               <TextField
@@ -136,6 +207,17 @@ const FormDialog = React.memo(
               />
             </Grid>
 
+            {ventaLigada && (
+              <Grid size={12}>
+                <Alert severity="info">
+                  Este ingreso se registrará como pago de la venta seleccionada; la
+                  categoría, el beneficiario y el estatus se asignan automáticamente.
+                </Alert>
+              </Grid>
+            )}
+
+            {!ventaLigada && (
+            <>
             <Grid size={6}>
               <TextField
                 label="Categoría"
@@ -289,6 +371,8 @@ const FormDialog = React.memo(
                 <MenuItem value="PARCIAL">Parcial</MenuItem>
               </TextField>
             </Grid>
+            </>
+            )}
           </Grid>
         </DialogContent>
 
