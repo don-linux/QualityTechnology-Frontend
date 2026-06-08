@@ -3,7 +3,6 @@ import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,26 +10,15 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  listMovimientos,
-  createMovimiento,
-  updateMovimiento,
-  removeMovimiento,
-} from "../services/flujoCajaService";
-import { registrarPagoVenta } from "../services/ventasService";
-import FormDialog from "./FormDialog";
+import { listMovimientos } from "../services/flujoCajaService";
 import { getUploadUrl } from "@shared/lib/uploadUrl";
-import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-function TablaMovimientos({ movimientos, onEdit, onDelete }) {
+function TablaMovimientos({ movimientos }) {
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -47,7 +35,6 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
             <TableCell><b>Proyecto</b></TableCell>
             <TableCell><b>Factura</b></TableCell>
             <TableCell><b>Estatus</b></TableCell>
-            <TableCell align="center"><b>Acciones</b></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -103,24 +90,11 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
                 )}
               </TableCell>
               <TableCell>{row.fc_estatus}</TableCell>
-              <TableCell align="center">
-                <IconButton size="small" aria-label="Editar" onClick={() => onEdit(row)}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  color="error"
-                  aria-label="Eliminar"
-                  onClick={() => onDelete(row.fi_movimiento_id)}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </TableCell>
             </TableRow>
           ))}
           {movimientos.length === 0 && (
             <TableRow>
-              <TableCell colSpan={12} align="center">
+              <TableCell colSpan={11} align="center">
                 No hay movimientos registrados.
               </TableCell>
             </TableRow>
@@ -133,26 +107,7 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
 
 export default function FlujoCaja() {
   const [movimientos, setMovimientos] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({});
-  const [editId, setEditId] = useState(null);
   const showSnackbar = useSnackbar();
-
-  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
-
-  // Cuando un ingreso se liga a una venta, se registra como pago (abono): los
-  // campos genericos del flujo se asignan automaticamente, asi que solo se
-  // exige lo minimo para el cobro.
-  const ventaLigada =
-    formData.tipo_transaccion === "INGRESO" && !!formData.fi_venta_id;
-
-  const requiredFields = ventaLigada
-    ? ["fd_fecha", "fc_cuenta", "tipo_transaccion", "fn_monto"]
-    : [
-        "fd_fecha", "fc_cuenta", "tipo_transaccion", "fn_monto", "fc_observaciones",
-        "fc_categoria", "fc_subcategoria", "fc_noproyecto", "fc_factura_opcion", "fc_estatus",
-      ];
 
   // =====================================================
   //  Cargar datos
@@ -188,110 +143,6 @@ export default function FlujoCaja() {
   };
 
   // =====================================================
-  //  CRUD
-  // =====================================================
-  const handleOpen = (data = null) => {
-    clearErrors();
-    if (data) {
-      const ingreso = Number(data.fn_ingreso) || 0;
-      const egreso = Number(data.fn_egreso) || 0;
-      const tipoTransaccion = ingreso > 0 ? "INGRESO" : egreso > 0 ? "EGRESO" : "";
-      const monto = tipoTransaccion === "INGRESO" ? ingreso : tipoTransaccion === "EGRESO" ? egreso : "";
-      setFormData({
-        fd_fecha: data.fd_fecha || "",
-        tipo_transaccion: tipoTransaccion,
-        fn_monto: monto || "",
-        fi_venta_id: data.fi_venta_id || "",
-        fc_observaciones: data.fc_observaciones || "",
-        fc_cuenta: data.fc_cuenta || "",
-        fc_categoria: data.fc_categoria || "",
-        fc_subcategoria: data.fc_subcategoria || "",
-        fc_beneficiario: data.fc_beneficiario || "",
-        fc_noproyecto: data.fc_noproyecto || "",
-        fc_factura: data.fc_factura || "",
-        fc_estatus: data.fc_estatus || "",
-      });
-      setEditId(data.fi_movimiento_id);
-    } else {
-      setFormData({
-        fd_fecha: "",
-        tipo_transaccion: "",
-        fn_monto: "",
-        fi_venta_id: "",
-        fc_observaciones: "",
-        fc_cuenta: "",
-        fc_categoria: "",
-        fc_subcategoria: "",
-        fc_beneficiario: "",
-        fc_noproyecto: "",
-        fc_factura: "",
-        fc_estatus: "",
-      });
-      setEditId(null);
-    }
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    clearErrors();
-    setOpen(false);
-  };
-
-  const handleSubmit = async (data) => {
-    if (!validate(data, requiredFields)) return;
-
-    try {
-      // Ingreso ligado a una venta -> se registra como pago (abono) de la venta:
-      // actualiza monto_abonado, estado y saldo de la cuenta en el backend.
-      if (!editId && data.tipo_transaccion === "INGRESO" && data.fi_venta_id) {
-        await registrarPagoVenta(data.fi_venta_id, {
-          fd_fecha: data.fd_fecha,
-          fc_cuenta: data.fc_cuenta,
-          fn_monto: data.fn_monto,
-          fc_observaciones: data.fc_observaciones,
-        });
-        showSnackbar("Pago de venta registrado correctamente", "success");
-        setOpen(false);
-        obtenerMovimientos();
-        return;
-      }
-
-      const monto = Math.max(Number(data.fn_monto) || 0, 0);
-      const { tipo_transaccion, fn_monto, fi_venta_id, ...rest } = data;
-      const payload = {
-        ...rest,
-        fn_ingreso: tipo_transaccion === "INGRESO" ? monto : 0,
-        fn_egreso: tipo_transaccion === "EGRESO" ? monto : 0,
-      };
-      if (editId) {
-        await updateMovimiento(editId, payload);
-        showSnackbar("Movimiento actualizado correctamente ", "success");
-      } else {
-        await createMovimiento(payload);
-        showSnackbar("Movimiento agregado correctamente ", "success");
-      }
-      setOpen(false);
-      obtenerMovimientos();
-    } catch (err) {
-      console.error(" Error al guardar:", err);
-      const msg = err.response?.data?.error ?? "Error al guardar el movimiento ";
-      showSnackbar(msg, "error");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!await confirm("¿Eliminar este registro?")) return;
-    try {
-      await removeMovimiento(id);
-      obtenerMovimientos();
-      showSnackbar("Movimiento eliminado correctamente ", "success");
-    } catch (err) {
-      console.error(" Error al eliminar:", err);
-      showSnackbar("Error al eliminar el movimiento ", "error");
-    }
-  };
-
-  // =====================================================
   //  Render Principal
   // =====================================================
   return (
@@ -303,34 +154,14 @@ export default function FlujoCaja() {
       </Box>
 
       <Box sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, gap: 2 }}>
-          <Button variant="contained" color="success" onClick={() => handleOpen()}>
-            + Nuevo Movimiento
-          </Button>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <Button variant="contained" sx={{ background: "#1D5C42" }} onClick={exportarExcel}>
             Exportar Excel
           </Button>
         </Box>
 
-        <TablaMovimientos movimientos={movimientos} onEdit={handleOpen} onDelete={handleDelete} />
+        <TablaMovimientos movimientos={movimientos} />
       </Box>
-
-      {/* Formularios y Modales */}
-      <FormDialog
-        open={open}
-        formData={formData}
-        setFormData={setFormData}
-        onClose={handleClose}
-        onSubmit={handleSubmit}
-        editId={editId}
-        errors={errors}
-        clearFieldError={clearFieldError}
-        clearErrors={clearErrors}
-        validate={validate}
-        requiredFields={requiredFields}
-      />
-
-      {ConfirmModal}
     </Container>
   );
 }
