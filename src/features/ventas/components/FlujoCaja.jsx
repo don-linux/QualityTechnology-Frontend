@@ -135,8 +135,8 @@ export default function FlujoCaja() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
-    "fd_fecha", "fc_cuenta", "fc_descripcion", "fc_categoria",
-    "fc_subcategoria", "fc_noproyecto", "fc_factura_opcion", "fc_estatus",
+    "fd_fecha", "fc_cuenta", "tipo_transaccion", "fn_monto", "fc_descripcion",
+    "fc_categoria", "fc_subcategoria", "fc_noproyecto", "fc_factura_opcion", "fc_estatus",
   ];
 
   // =====================================================
@@ -178,10 +178,14 @@ export default function FlujoCaja() {
   const handleOpen = (data = null) => {
     clearErrors();
     if (data) {
+      const ingreso = Number(data.fn_ingreso) || 0;
+      const egreso = Number(data.fn_egreso) || 0;
+      const tipoTransaccion = ingreso > 0 ? "INGRESO" : egreso > 0 ? "EGRESO" : "";
+      const monto = tipoTransaccion === "INGRESO" ? ingreso : tipoTransaccion === "EGRESO" ? egreso : "";
       setFormData({
         fd_fecha: data.fd_fecha || "",
-        fn_ingreso: data.fn_ingreso || "",
-        fn_egreso: data.fn_egreso || "",
+        tipo_transaccion: tipoTransaccion,
+        fn_monto: monto || "",
         fc_descripcion: data.fc_descripcion || "",
         fc_cuenta: data.fc_cuenta || "",
         fc_categoria: data.fc_categoria || "",
@@ -195,8 +199,8 @@ export default function FlujoCaja() {
     } else {
       setFormData({
         fd_fecha: "",
-        fn_ingreso: "",
-        fn_egreso: "",
+        tipo_transaccion: "",
+        fn_monto: "",
         fc_descripcion: "",
         fc_cuenta: "",
         fc_categoria: "",
@@ -220,7 +224,13 @@ export default function FlujoCaja() {
     if (!validate(data, requiredFields)) return;
 
     try {
-      const payload = { ...data };
+      const monto = Math.max(Number(data.fn_monto) || 0, 0);
+      const { tipo_transaccion, fn_monto, ...rest } = data;
+      const payload = {
+        ...rest,
+        fn_ingreso: tipo_transaccion === "INGRESO" ? monto : 0,
+        fn_egreso: tipo_transaccion === "EGRESO" ? monto : 0,
+      };
       if (editId) {
         await updateMovimiento(editId, payload);
         showSnackbar("Movimiento actualizado correctamente ", "success");

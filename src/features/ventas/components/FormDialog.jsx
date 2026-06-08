@@ -85,49 +85,41 @@ const FormDialog = React.memo(
 
             <Grid size={6}>
               <TextField
-                label="Ingreso"
-                type="number"
-                name="fn_ingreso"
-                value={formData.fn_ingreso || ""}
+                select
+                label="Tipo de transacción"
+                name="tipo_transaccion"
+                value={formData.tipo_transaccion || ""}
                 onChange={(e) => {
-                  const val = e.target.value;
+                  const tipo = e.target.value;
                   setFormData((prev) => ({
                     ...prev,
-                    fn_ingreso: val,
-                    fn_egreso: val > 0 ? "" : prev.fn_egreso,
+                    tipo_transaccion: tipo,
                     fc_beneficiario: "",
                   }));
-                  if (clearFieldError) clearFieldError("fn_ingreso");
+                  if (clearFieldError) clearFieldError("tipo_transaccion");
                 }}
-                disabled={Number(formData.fn_egreso) > 0}
                 fullWidth
                 margin="dense"
-                error={!!errors.fn_ingreso}
-                helperText={errors.fn_ingreso}
-              />
+                error={!!errors.tipo_transaccion}
+                helperText={errors.tipo_transaccion}
+              >
+                <MenuItem value="INGRESO">Ingreso</MenuItem>
+                <MenuItem value="EGRESO">Egreso</MenuItem>
+              </TextField>
             </Grid>
 
             <Grid size={6}>
               <TextField
-                label="Egreso"
+                label="Monto"
                 type="number"
-                name="fn_egreso"
-                value={formData.fn_egreso || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setFormData((prev) => ({
-                    ...prev,
-                    fn_egreso: val,
-                    fn_ingreso: val > 0 ? "" : prev.fn_ingreso,
-                    fc_beneficiario: "",
-                  }));
-                  if (clearFieldError) clearFieldError("fn_egreso");
-                }}
-                disabled={Number(formData.fn_ingreso) > 0}
+                name="fn_monto"
+                value={formData.fn_monto || ""}
+                onChange={handleChange}
+                disabled={!formData.tipo_transaccion}
                 fullWidth
                 margin="dense"
-                error={!!errors.fn_egreso}
-                helperText={errors.fn_egreso}
+                error={!!errors.fn_monto}
+                helperText={errors.fn_monto}
               />
             </Grid>
 
@@ -177,7 +169,7 @@ const FormDialog = React.memo(
                 value={formData.fc_beneficiario || ""}
                 onChange={handleChange}
                 fullWidth
-                disabled={!formData.fn_ingreso && !formData.fn_egreso}
+                disabled={!formData.tipo_transaccion}
                 error={!!errors.fc_beneficiario}
                 helperText={errors.fc_beneficiario}
                 SelectProps={{
@@ -197,14 +189,14 @@ const FormDialog = React.memo(
                   },
                 }}
               >
-                {Number(formData.fn_ingreso) > 0 &&
+                {formData.tipo_transaccion === "INGRESO" &&
                   clientes.map((cli) => (
                     <MenuItem key={cli.nombre} value={cli.nombre}>
                       {cli.nombre}
                     </MenuItem>
                   ))}
 
-                {Number(formData.fn_egreso) > 0 &&
+                {formData.tipo_transaccion === "EGRESO" &&
                   proveedores.map((prov) => (
                     <MenuItem key={prov.nombre} value={prov.nombre}>
                       {prov.nombre}
