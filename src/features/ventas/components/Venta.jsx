@@ -7,7 +7,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
+import Button from "@mui/material/Button";
 import { listVentas } from "../services/ventasService";
+import PagoVentaDialog from "./PagoVentaDialog";
 import useSnackbar from "@shared/hooks/useSnackbar";
 
 const colorEstado = {
@@ -28,6 +30,8 @@ function formatNumero(valor) {
 export default function Venta() {
   const showSnackbar = useSnackbar();
   const [ventas, setVentas] = useState([]);
+  const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
+  const [dialogoPagoAbierto, setDialogoPagoAbierto] = useState(false);
 
   const obtenerVentas = useCallback(async () => {
     try {
@@ -43,6 +47,16 @@ export default function Venta() {
     obtenerVentas();
   }, [obtenerVentas]);
 
+  const abrirDialogoPago = (venta) => {
+    setVentaSeleccionada(venta);
+    setDialogoPagoAbierto(true);
+  };
+
+  const cerrarDialogoPago = () => {
+    setDialogoPagoAbierto(false);
+    setVentaSeleccionada(null);
+  };
+
   return (
     <Box p={3}>
       <Card sx={{ p: 2 }}>
@@ -51,7 +65,7 @@ export default function Venta() {
         </Typography>
 
         <Box sx={{ overflowX: "auto" }}>
-          <Table sx={{ minWidth: 1200 }}>
+          <Table sx={{ minWidth: 1300 }}>
             <TableHead>
               <TableRow>
                 <TableCell>Locación</TableCell>
@@ -63,16 +77,18 @@ export default function Venta() {
                 <TableCell>Precio</TableCell>
                 <TableCell>Total</TableCell>
                 <TableCell>Abonado</TableCell>
+                <TableCell>Adeudo</TableCell>
                 <TableCell>Estado</TableCell>
                 <TableCell>Encargado</TableCell>
                 <TableCell>Observaciones</TableCell>
+                <TableCell align="center">Acciones</TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
               {ventas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12} align="center">
+                  <TableCell colSpan={14} align="center">
                     No hay ventas registradas.
                   </TableCell>
                 </TableRow>
@@ -88,6 +104,7 @@ export default function Venta() {
                     <TableCell>${formatNumero(v.fn_precio_venta)}</TableCell>
                     <TableCell>${formatNumero(v.fn_monto_total)}</TableCell>
                     <TableCell>${formatNumero(v.fn_abonado)}</TableCell>
+                    <TableCell>${formatNumero(v.fn_adeudo)}</TableCell>
                     <TableCell>
                       <b style={{ color: colorEstado[v.fc_estado_pago] }}>
                         {v.fc_estado_pago}
@@ -95,6 +112,16 @@ export default function Venta() {
                     </TableCell>
                     <TableCell>{v.fc_encargado_venta}</TableCell>
                     <TableCell>{v.fc_observaciones || "-"}</TableCell>
+                    <TableCell align="center">
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                        onClick={() => abrirDialogoPago(v)}
+                      >
+                        {v.fc_estado_pago === "LIQUIDADO" ? "Ver pagos" : "Registrar pago"}
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -102,6 +129,13 @@ export default function Venta() {
           </Table>
         </Box>
       </Card>
+
+      <PagoVentaDialog
+        open={dialogoPagoAbierto}
+        venta={ventaSeleccionada}
+        onClose={cerrarDialogoPago}
+        onPagoRegistrado={obtenerVentas}
+      />
     </Box>
   );
 }

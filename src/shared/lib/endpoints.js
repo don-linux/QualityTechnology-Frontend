@@ -100,6 +100,8 @@ export const ENDPOINTS = {
 
   ventas: {
     base: "/ventas",
+    pagos: (id) => `/ventas/${id}/pagos`,
+    anularPago: (id, movId) => `/ventas/${id}/pagos/${movId}`,
   },
 
   listaEspera: {
