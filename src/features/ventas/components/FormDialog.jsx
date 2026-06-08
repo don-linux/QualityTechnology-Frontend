@@ -207,6 +207,21 @@ const FormDialog = React.memo(
               />
             </Grid>
 
+            <Grid size={12}>
+              <TextField
+                label="Observaciones"
+                name="fc_observaciones"
+                value={formData.fc_observaciones || ""}
+                onChange={handleChange}
+                fullWidth
+                multiline
+                minRows={2}
+                inputProps={{ maxLength: 500 }}
+                error={!!errors.fc_observaciones}
+                helperText={errors.fc_observaciones || `${(formData.fc_observaciones || "").length}/500`}
+              />
+            </Grid>
+
             {ventaLigada && (
               <Grid size={12}>
                 <Alert severity="info">

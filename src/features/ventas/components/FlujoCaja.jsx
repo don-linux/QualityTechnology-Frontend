@@ -26,6 +26,10 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
 function TablaMovimientos({ movimientos, onEdit, onDelete }) {
   return (
     <TableContainer component={Paper}>
@@ -36,6 +40,7 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
             <TableCell align="right"><b>Ingreso</b></TableCell>
             <TableCell align="right"><b>Egreso</b></TableCell>
             <TableCell><b>Descripcion</b></TableCell>
+            <TableCell><b>Observaciones</b></TableCell>
             <TableCell><b>Cuenta</b></TableCell>
             <TableCell><b>Categoria</b></TableCell>
             <TableCell><b>Subcategoria</b></TableCell>
@@ -71,6 +76,9 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
                 }).format(row.fn_egreso || 0)}
               </TableCell>
               <TableCell>{row.fc_descripcion}</TableCell>
+              <TableCell sx={{ maxWidth: 200 }}>
+                <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
+              </TableCell>
               <TableCell>{row.fc_cuenta}</TableCell>
               <TableCell>{row.fc_categoria}</TableCell>
               <TableCell>{row.fc_subcategoria}</TableCell>
@@ -114,7 +122,7 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
           ))}
           {movimientos.length === 0 && (
             <TableRow>
-              <TableCell colSpan={12} align="center">
+              <TableCell colSpan={13} align="center">
                 No hay movimientos registrados.
               </TableCell>
             </TableRow>
@@ -197,6 +205,7 @@ export default function FlujoCaja() {
         fn_monto: monto || "",
         fi_venta_id: data.fi_venta_id || "",
         fc_descripcion: data.fc_descripcion || "",
+        fc_observaciones: data.fc_observaciones || "",
         fc_cuenta: data.fc_cuenta || "",
         fc_categoria: data.fc_categoria || "",
         fc_subcategoria: data.fc_subcategoria || "",
@@ -213,6 +222,7 @@ export default function FlujoCaja() {
         fn_monto: "",
         fi_venta_id: "",
         fc_descripcion: "",
+        fc_observaciones: "",
         fc_cuenta: "",
         fc_categoria: "",
         fc_subcategoria: "",
@@ -243,6 +253,7 @@ export default function FlujoCaja() {
           fc_cuenta: data.fc_cuenta,
           fn_monto: data.fn_monto,
           fc_descripcion: data.fc_descripcion,
+          fc_observaciones: data.fc_observaciones,
         });
         showSnackbar("Pago de venta registrado correctamente", "success");
         setOpen(false);

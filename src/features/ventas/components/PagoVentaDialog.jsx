@@ -37,6 +37,10 @@ function hoyISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+
 export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado }) {
   const showSnackbar = useSnackbar();
   const { confirm, ConfirmModal } = useConfirm();
@@ -49,6 +53,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
     fc_cuenta: "",
     fn_monto: "",
     fc_descripcion: "",
+    fc_observaciones: "",
   });
 
   const requiredFields = ["fd_fecha", "fc_cuenta", "fn_monto"];
@@ -78,6 +83,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
       fc_cuenta: "",
       fn_monto: adeudo > 0 ? String(adeudo) : "",
       fc_descripcion: "",
+      fc_observaciones: "",
     });
     cargarDatos();
   }, [open, venta, adeudo, cargarDatos, clearErrors]);
@@ -195,6 +201,19 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                   fullWidth
                 />
               </Grid>
+              <Grid size={12}>
+                <TextField
+                  label="Observaciones"
+                  name="fc_observaciones"
+                  value={formData.fc_observaciones}
+                  onChange={handleChange}
+                  fullWidth
+                  multiline
+                  minRows={2}
+                  inputProps={{ maxLength: 500 }}
+                  helperText={`${(formData.fc_observaciones || "").length}/500`}
+                />
+              </Grid>
             </Grid>
           )}
 
@@ -208,13 +227,14 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 <TableCell align="right">Monto</TableCell>
                 <TableCell>Cuenta</TableCell>
                 <TableCell>Descripción</TableCell>
+                <TableCell>Observaciones</TableCell>
                 <TableCell align="center">Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {pagos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">
+                  <TableCell colSpan={6} align="center">
                     Sin pagos registrados.
                   </TableCell>
                 </TableRow>
@@ -225,6 +245,9 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                     <TableCell align="right">{formatMoneda(p.fn_ingreso)}</TableCell>
                     <TableCell>{p.fc_cuenta}</TableCell>
                     <TableCell>{p.fc_descripcion}</TableCell>
+                    <TableCell sx={{ maxWidth: 200 }}>
+                      <span title={p.fc_observaciones}>{truncar(p.fc_observaciones)}</span>
+                    </TableCell>
                     <TableCell align="center">
                       <IconButton
                         size="small"
