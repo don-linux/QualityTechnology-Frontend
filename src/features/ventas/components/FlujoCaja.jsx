@@ -39,7 +39,6 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
             <TableCell><b>Fecha</b></TableCell>
             <TableCell align="right"><b>Ingreso</b></TableCell>
             <TableCell align="right"><b>Egreso</b></TableCell>
-            <TableCell><b>Descripcion</b></TableCell>
             <TableCell><b>Observaciones</b></TableCell>
             <TableCell><b>Cuenta</b></TableCell>
             <TableCell><b>Categoria</b></TableCell>
@@ -75,7 +74,6 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
                   minimumFractionDigits: 2,
                 }).format(row.fn_egreso || 0)}
               </TableCell>
-              <TableCell>{row.fc_descripcion}</TableCell>
               <TableCell sx={{ maxWidth: 200 }}>
                 <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
               </TableCell>
@@ -122,7 +120,7 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
           ))}
           {movimientos.length === 0 && (
             <TableRow>
-              <TableCell colSpan={13} align="center">
+              <TableCell colSpan={12} align="center">
                 No hay movimientos registrados.
               </TableCell>
             </TableRow>
@@ -152,7 +150,7 @@ export default function FlujoCaja() {
   const requiredFields = ventaLigada
     ? ["fd_fecha", "fc_cuenta", "tipo_transaccion", "fn_monto"]
     : [
-        "fd_fecha", "fc_cuenta", "tipo_transaccion", "fn_monto", "fc_descripcion",
+        "fd_fecha", "fc_cuenta", "tipo_transaccion", "fn_monto", "fc_observaciones",
         "fc_categoria", "fc_subcategoria", "fc_noproyecto", "fc_factura_opcion", "fc_estatus",
       ];
 
@@ -204,7 +202,6 @@ export default function FlujoCaja() {
         tipo_transaccion: tipoTransaccion,
         fn_monto: monto || "",
         fi_venta_id: data.fi_venta_id || "",
-        fc_descripcion: data.fc_descripcion || "",
         fc_observaciones: data.fc_observaciones || "",
         fc_cuenta: data.fc_cuenta || "",
         fc_categoria: data.fc_categoria || "",
@@ -221,7 +218,6 @@ export default function FlujoCaja() {
         tipo_transaccion: "",
         fn_monto: "",
         fi_venta_id: "",
-        fc_descripcion: "",
         fc_observaciones: "",
         fc_cuenta: "",
         fc_categoria: "",
@@ -252,7 +248,6 @@ export default function FlujoCaja() {
           fd_fecha: data.fd_fecha,
           fc_cuenta: data.fc_cuenta,
           fn_monto: data.fn_monto,
-          fc_descripcion: data.fc_descripcion,
           fc_observaciones: data.fc_observaciones,
         });
         showSnackbar("Pago de venta registrado correctamente", "success");

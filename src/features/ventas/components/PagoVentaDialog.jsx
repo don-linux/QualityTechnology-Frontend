@@ -52,7 +52,6 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
     fd_fecha: hoyISO(),
     fc_cuenta: "",
     fn_monto: "",
-    fc_descripcion: "",
     fc_observaciones: "",
   });
 
@@ -82,7 +81,6 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
       fd_fecha: hoyISO(),
       fc_cuenta: "",
       fn_monto: adeudo > 0 ? String(adeudo) : "",
-      fc_descripcion: "",
       fc_observaciones: "",
     });
     cargarDatos();
@@ -192,15 +190,6 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                   helperText={errors.fn_monto || `Máximo: ${formatMoneda(adeudo)}`}
                 />
               </Grid>
-              <Grid size={6}>
-                <TextField
-                  label="Nota (opcional)"
-                  name="fc_descripcion"
-                  value={formData.fc_descripcion}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </Grid>
               <Grid size={12}>
                 <TextField
                   label="Observaciones"
@@ -226,7 +215,6 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 <TableCell>Fecha</TableCell>
                 <TableCell align="right">Monto</TableCell>
                 <TableCell>Cuenta</TableCell>
-                <TableCell>Descripción</TableCell>
                 <TableCell>Observaciones</TableCell>
                 <TableCell align="center">Acciones</TableCell>
               </TableRow>
@@ -234,7 +222,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
             <TableBody>
               {pagos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={5} align="center">
                     Sin pagos registrados.
                   </TableCell>
                 </TableRow>
@@ -244,7 +232,6 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                     <TableCell>{String(p.fd_fecha).slice(0, 10)}</TableCell>
                     <TableCell align="right">{formatMoneda(p.fn_ingreso)}</TableCell>
                     <TableCell>{p.fc_cuenta}</TableCell>
-                    <TableCell>{p.fc_descripcion}</TableCell>
                     <TableCell sx={{ maxWidth: 200 }}>
                       <span title={p.fc_observaciones}>{truncar(p.fc_observaciones)}</span>
                     </TableCell>

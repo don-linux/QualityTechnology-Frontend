@@ -196,19 +196,6 @@ const FormDialog = React.memo(
 
             <Grid size={12}>
               <TextField
-                label="Descripción"
-                name="fc_descripcion"
-                value={formData.fc_descripcion || ""}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                error={!!errors.fc_descripcion}
-                helperText={errors.fc_descripcion}
-              />
-            </Grid>
-
-            <Grid size={12}>
-              <TextField
                 label="Observaciones"
                 name="fc_observaciones"
                 value={formData.fc_observaciones || ""}
