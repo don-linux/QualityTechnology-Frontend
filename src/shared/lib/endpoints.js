@@ -119,7 +119,6 @@ export const ENDPOINTS = {
     byId: (id) => `/flujo-caja/${id}`,
     clientes: "/flujo-caja/clientes",
     proveedores: "/flujo-caja/proveedores",
-    tesoreriaByGranja: (granja) => `/flujo-caja/tesoreria/${path(granja)}`,
   },
 
   tesoreria: {
