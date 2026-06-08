@@ -2,8 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Table from "@mui/material/Table";
@@ -26,8 +24,6 @@ import { getUploadUrl } from "@shared/lib/uploadUrl";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
-
-const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
 
 function TablaMovimientos({ movimientos, onEdit, onDelete }) {
   return (
@@ -118,7 +114,7 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
           {movimientos.length === 0 && (
             <TableRow>
               <TableCell colSpan={12} align="center">
-                No hay movimientos registrados para esta granja.
+                No hay movimientos registrados.
               </TableCell>
             </TableRow>
           )}
@@ -129,7 +125,6 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
 }
 
 export default function FlujoCaja() {
-  const [subTab, setSubTab] = useState(0);
   const [movimientos, setMovimientos] = useState([]);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({});
@@ -149,13 +144,13 @@ export default function FlujoCaja() {
   // =====================================================
   const obtenerMovimientos = useCallback(async () => {
     try {
-      const res = await listMovimientos(GRANJAS[subTab]);
+      const res = await listMovimientos();
       setMovimientos(res.data || []);
     } catch (err) {
       console.error(" Error al obtener movimientos:", err);
       showSnackbar("Error al obtener los movimientos", "error");
     }
-  }, [subTab]);
+  }, []);
 
   useEffect(() => {
     obtenerMovimientos();
@@ -174,7 +169,7 @@ export default function FlujoCaja() {
       ws.addRows(movimientos);
     }
     const buffer = await wb.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `FlujoCaja_${GRANJAS[subTab]}.xlsx`);
+    saveAs(new Blob([buffer]), `FlujoCaja.xlsx`);
   };
 
   // =====================================================
@@ -225,7 +220,7 @@ export default function FlujoCaja() {
     if (!validate(data, requiredFields)) return;
 
     try {
-      const payload = { ...data, fc_granja: GRANJAS[subTab] };
+      const payload = { ...data };
       if (editId) {
         await updateMovimiento(editId, payload);
         showSnackbar("Movimiento actualizado correctamente ", "success");
@@ -263,12 +258,6 @@ export default function FlujoCaja() {
            Módulo de Flujo de Caja — Sistema Quality
         </Typography>
       </Box>
-
-      <Tabs value={subTab} onChange={(e, v) => setSubTab(v)} variant="scrollable" scrollButtons="auto">
-        <Tab label=" Medellín" />
-        <Tab label=" La Ceiba" />
-        <Tab label=" Quality" />
-      </Tabs>
 
       <Box sx={{ p: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, gap: 2 }}>
