@@ -33,6 +33,7 @@ import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 function BitacoraInventarioContent() {
   const { usuarioId } = useAuth();
@@ -204,11 +205,14 @@ function BitacoraInventarioContent() {
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaInventario = (rows) => (
+  const renderTablaInventario = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper>
       <Table>
         <TableHead sx={{ background: "#E3F2FD" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Instalación</TableCell>
             <TableCell>Cantidad</TableCell>
             <TableCell>Talla</TableCell>
@@ -220,8 +224,9 @@ function BitacoraInventarioContent() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r) => (
+          {filas.map((r) => (
             <TableRow key={r.fi_id}>
+              <TableCell>{r._num}</TableCell>
               <TableCell>{r.fn_num_instalacion}</TableCell>
               <TableCell>{r.fn_cantidad}</TableCell>
               <TableCell>{r.fn_talla}</TableCell>
@@ -253,7 +258,8 @@ function BitacoraInventarioContent() {
         </TableBody>
       </Table>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>

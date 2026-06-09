@@ -38,6 +38,7 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -239,12 +240,15 @@ function BitacoraVisitasContent() {
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaVisitas = (rows) => (
+  const renderTablaVisitas = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table sx={{ minWidth: 1180 }}>
         <TableHead sx={{ background: "#FFF9C4" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Nombre</TableCell>
             <TableCell>Origen</TableCell>
@@ -257,8 +261,9 @@ function BitacoraVisitasContent() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r) => (
+          {filas.map((r) => (
             <TableRow key={r.fi_id}>
+              <TableCell>{r._num}</TableCell>
               <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
               <TableCell>{r.fc_nombre_completo}</TableCell>
               <TableCell>{r.fc_origen}</TableCell>
@@ -319,7 +324,8 @@ function BitacoraVisitasContent() {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>

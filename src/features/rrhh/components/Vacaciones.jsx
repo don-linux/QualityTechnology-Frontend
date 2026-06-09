@@ -32,6 +32,7 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 export default function Vacaciones() {
   const showSnackbar = useSnackbar();
@@ -303,9 +304,19 @@ export default function Vacaciones() {
         <Table size="small">
           <TableHead>
             <TableRow sx={{ backgroundColor: "#1565c0" }}>
+              <TableCell
+                sx={{
+                  color: "white",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  borderRight: "1px solid #ffffff33",
+                }}
+              >
+                ID
+              </TableCell>
               {[
                 "Nombre empleado",
-                "ID",
+                "ID Empleado",
                 "Inicio",
                 "Fin",
                 "Departamento",
@@ -338,7 +349,7 @@ export default function Vacaciones() {
           </TableHead>
 
           <TableBody>
-            {vacaciones.map((v, i) => {
+            {ordenarYNumerar(vacaciones, ["fi_vacacion_id", "vacacion_id"]).map((v, i) => {
               const isEditing = editandoId === v.fi_vacacion_id;
               const data = isEditing ? tempData : v;
 
@@ -360,6 +371,7 @@ export default function Vacaciones() {
                   }}
                 >
                   {/* DATOS DEL EMPLEADO */}
+                  <TableCell align="center">{v._num}</TableCell>
                   <TableCell sx={{ maxWidth: 180, whiteSpace: "normal" }}>
                     {v.fc_nombre_empleado}
                   </TableCell>

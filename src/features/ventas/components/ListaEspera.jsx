@@ -42,6 +42,7 @@ import useAuth from "@app/providers/AuthProvider";
 import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const EMPTY_CLIENTE_RAPIDO = {
   fc_razon_social: "",
@@ -642,6 +643,7 @@ function ListaEsperaContent() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Fecha</TableCell>
                 <TableCell>Tipo</TableCell>
                 <TableCell>Cliente</TableCell>
@@ -655,8 +657,9 @@ function ListaEsperaContent() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {lista.map((item) => (
+              {ordenarYNumerar(lista, ["fi_lista_id"]).map((item) => (
                 <TableRow key={item.fi_lista_id}>
+                  <TableCell>{item._num}</TableCell>
                   <TableCell>{formatFecha(item.fd_fecha_entrega)}</TableCell>
                   <TableCell>{item.fc_uap_asignada ?? item.tipo_venta ?? "—"}</TableCell>
                   <TableCell>{item.fc_cliente}</TableCell>

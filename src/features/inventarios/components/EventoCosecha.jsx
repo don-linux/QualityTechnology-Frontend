@@ -41,6 +41,7 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const MAX_OBSERVACION = 500;
 const hoyISO = () => new Date().toISOString().split("T")[0];
@@ -687,11 +688,14 @@ const EventoCosecha = () => {
 
       <TablasPorUbicacionGranja
         grupos={gruposRegistros}
-        renderTabla={(filas) => (
+        renderTabla={(rows) => {
+          const filas = ordenarYNumerar(rows, ["fi_id", "id"]);
+          return (
           <TableContainer component={Paper} sx={{ borderRadius: 2, mb: 4 }}>
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ bgcolor: "#e8f4f8" }}>
+                  <TableCell>ID</TableCell>
                   <TableCell>ID evento</TableCell>
                   <TableCell>Estanque TR</TableCell>
                   <TableCell>Lote genético</TableCell>
@@ -709,7 +713,7 @@ const EventoCosecha = () => {
               <TableBody>
                 {filas.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={12} align="center">
+                    <TableCell colSpan={13} align="center">
                       No hay registros.
                     </TableCell>
                   </TableRow>
@@ -724,6 +728,7 @@ const EventoCosecha = () => {
                       }
                       onClick={() => setSeleccionadoEvento(row)}
                     >
+                      <TableCell>{row._num}</TableCell>
                       <TableCell>{row.codigo ?? row.fc_codigo}</TableCell>
                       <TableCell>{row.nombre_pileta_origen}</TableCell>
                       <TableCell>{row.lote_genetico ?? row.fc_lote_genetico}</TableCell>
@@ -789,7 +794,8 @@ const EventoCosecha = () => {
               </TableBody>
             </Table>
           </TableContainer>
-        )}
+          );
+        }}
       />
 
       {ConfirmModal}

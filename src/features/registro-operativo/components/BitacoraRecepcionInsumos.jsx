@@ -38,6 +38,7 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -247,12 +248,15 @@ function RecepcionInsumosContent() {
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaRecepcion = (rows) => (
+  const renderTablaRecepcion = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table sx={{ minWidth: 1320 }}>
         <TableHead>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Proveedor</TableCell>
             <TableCell>Producto</TableCell>
@@ -267,8 +271,9 @@ function RecepcionInsumosContent() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r) => (
+          {filas.map((r) => (
             <TableRow key={r.fi_id}>
+              <TableCell>{r._num}</TableCell>
               <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
               <TableCell>{r.fc_proveedor}</TableCell>
               <TableCell sx={{ maxWidth: 160 }}>
@@ -304,7 +309,8 @@ function RecepcionInsumosContent() {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>

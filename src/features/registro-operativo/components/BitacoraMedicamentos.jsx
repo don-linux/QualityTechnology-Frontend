@@ -35,6 +35,7 @@ import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -375,6 +376,7 @@ function BitacoraMedicamentosContent() {
                 <Table sx={{ minWidth: 1240 }}>
                 <TableHead sx={{ background: "#FFF3E0" }}>
                   <TableRow>
+                    <TableCell>ID</TableCell>
                     <TableCell>Fecha</TableCell>
                     <TableCell>Estanque</TableCell>
                     <TableCell>Diagnóstico</TableCell>
@@ -387,8 +389,9 @@ function BitacoraMedicamentosContent() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((r) => (
+                  {ordenarYNumerar(rows, ["fi_id"]).map((r) => (
                     <TableRow key={r.fi_id}>
+                      <TableCell>{r._num}</TableCell>
                       <TableCell>{formatFecha(r.fd_fecha_hora)}</TableCell>
                       <TableCell>{r.fn_num_estanque}</TableCell>
                       <TableCell sx={{ maxWidth: 160 }}>

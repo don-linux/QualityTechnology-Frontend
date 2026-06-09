@@ -38,6 +38,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import CampoNumerico from "@shared/components/CampoNumerico";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import useUnidadesNegocioOptions from "@features/catalogos/hooks/useUnidadesNegocioOptions";
 
 function EquiposContent() {
@@ -503,6 +504,7 @@ function EquiposContent() {
         <Table>
           <TableHead sx={{ background: "#E3F2FD" }}>
             <TableRow>
+              <TableCell>ID</TableCell>
               <TableCell>Nombre</TableCell>
               <TableCell>Tipo</TableCell>
               <TableCell>Estado</TableCell>
@@ -513,8 +515,9 @@ function EquiposContent() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((row) => (
+            {ordenarYNumerar(data, ["fi_equipo_id"]).map((row) => (
               <TableRow key={row.fi_equipo_id}>
+                <TableCell>{row._num}</TableCell>
                 <TableCell>{row.fc_nombre}</TableCell>
                 <TableCell>{row.fc_tipo}</TableCell>
                 <TableCell>{row.fc_estado}</TableCell>
@@ -721,6 +724,7 @@ function EquiposContent() {
           <Table size="small" sx={{ mt: 3 }}>
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Fecha</TableCell>
                 <TableCell>Tipo</TableCell>
                 <TableCell>Responsable</TableCell>
@@ -730,8 +734,9 @@ function EquiposContent() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {mantenimientos.map((m) => (
+              {ordenarYNumerar(mantenimientos, ["fi_mantenimiento_id"]).map((m) => (
                 <TableRow key={m.fi_mantenimiento_id}>
+                  <TableCell>{m._num}</TableCell>
                   <TableCell>{formatFecha(m.fd_fecha)}</TableCell>
                   <TableCell>{m.fc_tipo}</TableCell>
                   <TableCell>{m.fc_responsable}</TableCell>

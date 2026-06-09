@@ -34,6 +34,7 @@ import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranj
 import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import {
   BloqueSeccionGris,
   CampoConEtiquetaArriba,
@@ -877,12 +878,15 @@ export default function Reproductores() {
 
       <TablasPorUbicacionGranja
         grupos={gruposRegistros}
-        renderTabla={(rows) => (
+        renderTabla={(rows) => {
+          const filas = ordenarYNumerar(rows, ["fi_reproductor_id", "fi_id", "id"]);
+          return (
           <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
               <Table sx={{ minWidth: 2200 }}>
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
+                    <TableCell sx={headerCell}>ID</TableCell>
                     <TableCell sx={headerCell}>Pileta</TableCell>
                     <TableCell sx={headerCell}>Machos</TableCell>
                     <TableCell sx={headerCell}>Genética machos</TableCell>
@@ -907,14 +911,14 @@ export default function Reproductores() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.length === 0 ? (
+                  {filas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={21} align="center">
+                      <TableCell colSpan={22} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    rows.map((l) => {
+                    filas.map((l) => {
                       const diasPila = l.fn_dias_en_pila ?? l.dias_en_pila;
                       const diasBio =
                         l.fn_dias_biometria ?? l.dias_transcurridos_biometria;
@@ -931,6 +935,7 @@ export default function Reproductores() {
                                 : "transparent",
                           }}
                         >
+                          <TableCell>{l._num}</TableCell>
                           <TableCell>{l.nombre_pileta_destino || l.nombre_pileta || "—"}</TableCell>
                           <TableCell>{formatNumber(l.fn_machos ?? l.machos)}</TableCell>
                           <TableCell>{l.fc_genetica_machos ?? l.genetica_machos ?? "—"}</TableCell>
@@ -1002,7 +1007,8 @@ export default function Reproductores() {
               </Table>
             </TableContainer>
           </Paper>
-        )}
+          );
+        }}
       />
 
       {seleccionado && (

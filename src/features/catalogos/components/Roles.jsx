@@ -6,6 +6,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import { getRolId, getRolNombre, rolEsRoot } from "@features/catalogos/utils/catalogEntityGetters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -195,9 +196,9 @@ export default function Roles() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {roles.map((rol) => (
+                {ordenarYNumerar(roles, ["fi_rol_id", "rol_id"]).map((rol) => (
                   <TableRow key={getRolId(rol) ?? ""} hover>
-                    <TableCell>{getRolId(rol)}</TableCell>
+                    <TableCell>{rol._num}</TableCell>
                     <TableCell>{getRolNombre(rol)}</TableCell>
                     <TableCell>
                       <Chip

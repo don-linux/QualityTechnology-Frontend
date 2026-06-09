@@ -39,6 +39,7 @@ import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranj
 import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import { listPiletas } from "../services/piletasService";
 
 const MAX_OBSERVACION = 500;
@@ -434,12 +435,15 @@ const Alevinaje = () => {
 
       <TablasPorUbicacionGranja
         grupos={gruposRegistros}
-        renderTabla={(rows) => (
+        renderTabla={(rows) => {
+          const filas = ordenarYNumerar(rows, ["fi_id", "id"]);
+          return (
           <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
               <Table sx={{ minWidth: 900 }}>
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
@@ -449,14 +453,14 @@ const Alevinaje = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.length === 0 ? (
+                  {filas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    rows.map((l) => (
+                    filas.map((l) => (
                       <TableRow
                         key={l.fi_id ?? l.id}
                         onClick={() => setSeleccionado(l)}
@@ -468,6 +472,7 @@ const Alevinaje = () => {
                               : "transparent",
                         }}
                       >
+                        <TableCell>{l._num}</TableCell>
                         <TableCell>
                           {l.nombre_pileta_destino || l.nombre_pileta || "—"}
                         </TableCell>
@@ -493,7 +498,8 @@ const Alevinaje = () => {
               </Table>
             </TableContainer>
           </Paper>
-        )}
+          );
+        }}
       />
 
       {seleccionado && (

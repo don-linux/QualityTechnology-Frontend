@@ -38,6 +38,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 export default function CajaAhorro() {
   const showSnackbar = useSnackbar();
@@ -300,6 +301,9 @@ export default function CajaAhorro() {
           >
             <TableRow>
               <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
+                ID
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
                 Categoría
               </TableCell>
               {meses.map((mes) => (
@@ -324,7 +328,7 @@ export default function CajaAhorro() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {registros.map((r, i) => (
+            {ordenarYNumerar(registros, ["id"]).map((r, i) => (
               <TableRow
                 key={r.id}
                 sx={{
@@ -332,6 +336,7 @@ export default function CajaAhorro() {
                   "&:hover": { backgroundColor: "#e3f2fd" },
                 }}
               >
+                <TableCell align="center">{r._num}</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>{r.categoria}</TableCell>
 
                 {meses.map((mes) => (
@@ -395,6 +400,7 @@ export default function CajaAhorro() {
                 zIndex: 2,
               }}
             >
+              <TableCell sx={{ backgroundColor: "#0d47a1" }} />
               <TableCell
                 sx={{
                   fontWeight: "bold",

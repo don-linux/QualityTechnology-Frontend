@@ -29,6 +29,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
 
 const EMPTY_FORM = {
@@ -317,6 +318,7 @@ export default function Cliente() {
           <Table stickyHeader>
             <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Razón Social</TableCell>
                 <TableCell>RFC</TableCell>
                 <TableCell>UdN</TableCell>
@@ -330,8 +332,9 @@ export default function Cliente() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {clientes.map((cli) => (
+              {ordenarYNumerar(clientes, ["fi_cliente_id", "cliente_id"]).map((cli) => (
                 <TableRow key={cli.fi_cliente_id} hover>
+                  <TableCell>{cli._num}</TableCell>
                   <TableCell>{cli.fc_razon_social}</TableCell>
                   <TableCell>{cli.fc_rfc}</TableCell>
                   <TableCell>{cli.unidad_negocio_nombre}</TableCell>

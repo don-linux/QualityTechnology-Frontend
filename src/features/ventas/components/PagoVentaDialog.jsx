@@ -26,6 +26,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import { formatPrecio } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 function hoyISO() {
   return new Date().toISOString().slice(0, 10);
@@ -126,6 +127,8 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
 
   if (!venta) return null;
 
+  const pagosOrdenados = ordenarYNumerar(pagos, ["fi_movimiento_id"]);
+
   return (
     <>
       <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
@@ -206,6 +209,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
           <Table size="small">
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Fecha</TableCell>
                 <TableCell align="right">Monto</TableCell>
                 <TableCell>Cuenta</TableCell>
@@ -214,15 +218,16 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
               </TableRow>
             </TableHead>
             <TableBody>
-              {pagos.length === 0 ? (
+              {pagosOrdenados.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">
+                  <TableCell colSpan={6} align="center">
                     Sin pagos registrados.
                   </TableCell>
                 </TableRow>
               ) : (
-                pagos.map((p) => (
+                pagosOrdenados.map((p) => (
                   <TableRow key={p.fi_movimiento_id}>
+                    <TableCell>{p._num}</TableCell>
                     <TableCell>{String(p.fd_fecha).slice(0, 10)}</TableCell>
                     <TableCell align="right">{formatPrecio(p.fn_ingreso)}</TableCell>
                     <TableCell>{p.fc_cuenta}</TableCell>

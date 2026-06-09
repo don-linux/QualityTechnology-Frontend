@@ -26,6 +26,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import { formatFecha, formatPrecio } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import CampoNumerico from "@shared/components/CampoNumerico";
 
 export default function Nomina() {
@@ -233,6 +234,7 @@ export default function Nomina() {
         <Table size="small">
           <TableHead sx={{ background: "#97dcfcff" }}>
             <TableRow>
+              <TableCell>ID</TableCell>
               <TableCell>Nombre</TableCell>
               <TableCell>Total</TableCell>
               <TableCell>Bono</TableCell>
@@ -244,8 +246,9 @@ export default function Nomina() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((r) => (
+            {ordenarYNumerar(data, ["fi_nomina_id", "nomina_id"]).map((r) => (
               <TableRow key={r.fi_nomina_id}>
+                <TableCell>{r._num}</TableCell>
                 <TableCell>{r.fc_nombre_empleado}</TableCell>
                 <TableCell>{formatPrecio(r.fn_total)}</TableCell>
                 <TableCell>{formatPrecio(r.fn_bono)}</TableCell>

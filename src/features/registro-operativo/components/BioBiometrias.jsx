@@ -38,6 +38,7 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -528,6 +529,7 @@ export default function BioBiometrias() {
                 <Table sx={{ minWidth: 1120 }}>
                   <TableHead sx={{ background: "#E8F5E9" }}>
                     <TableRow>
+                      <TableCell>ID</TableCell>
                       <TableCell>Fecha</TableCell>
                       <TableCell>Pileta</TableCell>
                       <TableCell>Proceso (obs.)</TableCell>
@@ -542,8 +544,9 @@ export default function BioBiometrias() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {rows.map((row) => (
+                    {ordenarYNumerar(rows, ["fi_id"]).map((row) => (
                       <TableRow key={row.fi_id}>
+                        <TableCell>{row._num}</TableCell>
                         <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
                         <TableCell>{row.nombre_pileta || "—"}</TableCell>
                         <TableCell>{row.fc_observacion_proceso || "—"}</TableCell>

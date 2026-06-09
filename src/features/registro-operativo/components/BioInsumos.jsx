@@ -34,6 +34,7 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -221,12 +222,15 @@ export default function BioInsumos() {
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaInsumos = (rows) => (
+  const renderTablaInsumos = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table sx={{ minWidth: 1040 }}>
         <TableHead sx={{ background: "#E8F5E9" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Cantidad UdM</TableCell>
             <TableCell>Lote</TableCell>
@@ -239,8 +243,9 @@ export default function BioInsumos() {
         </TableHead>
 
         <TableBody>
-          {rows.map((row) => (
+          {filas.map((row) => (
             <TableRow key={row.fi_id}>
+              <TableCell>{row._num}</TableCell>
               <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
               <TableCell>{row.fc_cantidad_udm}</TableCell>
               <TableCell>{row.fc_num_lote}</TableCell>
@@ -285,7 +290,8 @@ export default function BioInsumos() {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>

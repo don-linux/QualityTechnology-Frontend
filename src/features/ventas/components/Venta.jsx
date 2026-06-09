@@ -12,6 +12,7 @@ import { listVentas } from "../services/ventasService";
 import PagoVentaDialog from "./PagoVentaDialog";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import { formatFecha, formatPrecio } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const colorEstado = {
   ADEUDO: "red",
@@ -61,6 +62,7 @@ export default function Venta() {
           <Table sx={{ minWidth: 1300 }}>
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Locación</TableCell>
                 <TableCell>Fecha</TableCell>
                 <TableCell>Folio</TableCell>
@@ -81,13 +83,14 @@ export default function Venta() {
             <TableBody>
               {ventas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={14} align="center">
+                  <TableCell colSpan={15} align="center">
                     No hay ventas registradas.
                   </TableCell>
                 </TableRow>
               ) : (
-                ventas.map((v) => (
+                ordenarYNumerar(ventas, ["fi_venta_id"]).map((v) => (
                   <TableRow key={v.fi_venta_id}>
+                    <TableCell>{v._num}</TableCell>
                     <TableCell>{v.fc_locacion ?? v.fc_empresa}</TableCell>
                     <TableCell>{formatFecha(v.fd_fecha_venta)}</TableCell>
                     <TableCell>{v.fc_folio}</TableCell>

@@ -15,6 +15,7 @@ import { listMovimientos } from "../services/flujoCajaService";
 import { openUpload } from "@shared/lib/uploadUrl";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import { formatFecha, formatPrecio } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -29,11 +30,13 @@ function TablaMovimientos({ movimientos }) {
       showSnackbar("No se pudo abrir la factura", "error");
     }
   };
+  const filas = ordenarYNumerar(movimientos, ["fi_movimiento_id"]);
   return (
     <TableContainer component={Paper}>
       <Table>
         <TableHead sx={{ background: "#f0f0f0" }}>
           <TableRow>
+            <TableCell><b>ID</b></TableCell>
             <TableCell><b>Fecha</b></TableCell>
             <TableCell align="right"><b>Ingreso</b></TableCell>
             <TableCell align="right"><b>Egreso</b></TableCell>
@@ -48,8 +51,9 @@ function TablaMovimientos({ movimientos }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {movimientos.map((row) => (
+          {filas.map((row) => (
             <TableRow key={row.fi_movimiento_id}>
+              <TableCell>{row._num}</TableCell>
               <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
               <TableCell align="right">{formatPrecio(row.fn_ingreso)}</TableCell>
               <TableCell align="right">{formatPrecio(row.fn_egreso)}</TableCell>
@@ -84,9 +88,9 @@ function TablaMovimientos({ movimientos }) {
               <TableCell>{row.fc_estatus}</TableCell>
             </TableRow>
           ))}
-          {movimientos.length === 0 && (
+          {filas.length === 0 && (
             <TableRow>
-              <TableCell colSpan={11} align="center">
+              <TableCell colSpan={12} align="center">
                 No hay movimientos registrados.
               </TableCell>
             </TableRow>

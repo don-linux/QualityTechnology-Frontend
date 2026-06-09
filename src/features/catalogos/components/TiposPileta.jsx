@@ -33,6 +33,7 @@ import {
   getTipoPiletaNombre,
   tipoPiletaActivo,
 } from "@features/catalogos/utils/catalogEntityGetters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 export default function TiposPileta() {
   const showSnackbar = useSnackbar();
@@ -210,9 +211,9 @@ export default function TiposPileta() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {items.map((item) => (
+                {ordenarYNumerar(items, ["tipo_pileta_id", "id"]).map((item) => (
                   <TableRow key={getTipoPiletaId(item) ?? ""} hover>
-                    <TableCell>{getTipoPiletaId(item)}</TableCell>
+                    <TableCell>{item._num}</TableCell>
                     <TableCell>{getTipoPiletaNombre(item)}</TableCell>
                     <TableCell>
                       <Chip

@@ -8,6 +8,7 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -185,9 +186,9 @@ export default function Ubicaciones({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {ubicaciones.map((u) => (
+                {ordenarYNumerar(ubicaciones, ["ubicacion_id", "fi_ubicacion_id"]).map((u) => (
                   <TableRow key={u.ubicacion_id} hover>
-                    <TableCell>{u.ubicacion_id}</TableCell>
+                    <TableCell>{u._num}</TableCell>
                     <TableCell>{u.nombre}</TableCell>
                     <TableCell>{u.direccion ?? "—"}</TableCell>
                     <TableCell align="center">

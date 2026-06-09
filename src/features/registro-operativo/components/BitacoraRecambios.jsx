@@ -35,6 +35,7 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 function BitacoraRecambiosContent() {
   const { usuarioId } = useAuth();
@@ -296,12 +297,15 @@ const exportarPDF = async () => {
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaRecambios = (rows) => (
+  const renderTablaRecambios = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table sx={{ minWidth: 920 }}>
         <TableHead sx={{ background: "#E3F2FD" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Mes</TableCell>
             <TableCell>Instalación</TableCell>
             <TableCell>Fechas y Tipos</TableCell>
@@ -310,8 +314,9 @@ const exportarPDF = async () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r) => (
+          {filas.map((r) => (
             <TableRow key={r.fi_id}>
+              <TableCell>{r._num}</TableCell>
               <TableCell>{r.fc_mes}</TableCell>
               <TableCell>{r.fn_num_instalacion}</TableCell>
               <TableCell>
@@ -354,7 +359,8 @@ const exportarPDF = async () => {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>

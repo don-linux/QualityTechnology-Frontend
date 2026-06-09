@@ -34,6 +34,7 @@ import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -288,11 +289,14 @@ export default function BioAlimentacion() {
 
   const gruposUbicacion = getGroups(data);
 
-  const tablaAlimentacion = (rows) => (
+  const tablaAlimentacion = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
       <Table sx={{ minWidth: 1350 }}>
         <TableHead sx={{ background: "#E8F5E9" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Mes</TableCell>
             <TableCell>Instalación</TableCell>
             <TableCell>Peso Entrada</TableCell>
@@ -310,8 +314,9 @@ export default function BioAlimentacion() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
+          {filas.map((row) => (
             <TableRow key={row.fi_id}>
+              <TableCell>{row._num}</TableCell>
               <TableCell>{row.fc_mes}</TableCell>
               <TableCell>{row.fn_num_instalacion}</TableCell>
               <TableCell>{row.fn_peso_promedio_entrada}</TableCell>
@@ -355,7 +360,8 @@ export default function BioAlimentacion() {
         </TableBody>
       </Table>
     </TableContainer>
-  );
+    );
+  };
 
   return (
     <Box>

@@ -32,6 +32,7 @@ import {
   filtrarPorUbicacion,
 } from "@shared/utils/fetchMergedPorUbicaciones";
 import { rowPerteneceAUbicacionGranja } from "@shared/utils/unidadesNegocio";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import ProximaVentaModal from "@features/ventas/components/ProximaVentaModal";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
@@ -502,12 +503,15 @@ export default function Trazabilidad() {
     [getGroups, movimientos],
   );
 
-  const renderTablaMovimientos = (rows) => (
+  const renderTablaMovimientos = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_movimiento_id"]);
+    return (
     <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table size="small" sx={{ minWidth: 900 }}>
           <TableHead sx={{ backgroundColor: "#006d77" }}>
             <TableRow>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tipo</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Origen</TableCell>
@@ -520,15 +524,16 @@ export default function Trazabilidad() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.length === 0 ? (
+            {filas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={8} align="center">
                   No hay movimientos registrados.
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => (
+              filas.map((row) => (
                 <TableRow key={row.fi_movimiento_id}>
+                  <TableCell>{row._num}</TableCell>
                   <TableCell>{formatFecha(row.fecha_movimiento)}</TableCell>
                   <TableCell>{row.fc_etapa ?? "—"}</TableCell>
                   <TableCell>{row.origen ?? "—"}</TableCell>
@@ -543,7 +548,8 @@ export default function Trazabilidad() {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box sx={{ p: 3 }}>

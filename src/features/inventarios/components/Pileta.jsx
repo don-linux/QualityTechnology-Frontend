@@ -44,6 +44,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import CampoNumerico from "@shared/components/CampoNumerico";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 60;
 const truncar = (texto) =>
@@ -536,12 +537,15 @@ function PiletasTab({
 
       <TablasPorUbicacionGranja
         grupos={gruposPiletas}
-        renderTabla={(rows) => (
+        renderTabla={(rows) => {
+          const filas = ordenarYNumerar(rows, ["fi_pileta_id"]);
+          return (
           <Paper>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
               <Table stickyHeader sx={{ minWidth: 1200 }}>
                 <TableHead sx={{ background: "#E3F2FD" }}>
                   <TableRow>
+                    <TableCell>ID</TableCell>
                     <TableCell>Nombre</TableCell>
                     <TableCell>Etapa</TableCell>
                     <TableCell>Tipo de pileta</TableCell>
@@ -557,15 +561,16 @@ function PiletasTab({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.length === 0 && (
+                  {filas.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={10} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                      <TableCell colSpan={11} align="center" sx={{ py: 4, color: "text.secondary" }}>
                         Sin piletas en esta ubicación.
                       </TableCell>
                     </TableRow>
                   )}
-                  {rows.map((p) => (
+                  {filas.map((p) => (
                     <TableRow key={p.fi_pileta_id} hover>
+                      <TableCell>{p._num}</TableCell>
                       <TableCell>{p.nombre}</TableCell>
                       <TableCell>
                         <Chip size="small" variant="outlined" label={tipoLabel(p.tipo)} />
@@ -633,7 +638,8 @@ function PiletasTab({
               </Table>
             </TableContainer>
           </Paper>
-        )}
+          );
+        }}
       />
     </>
   );

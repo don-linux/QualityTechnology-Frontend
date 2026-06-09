@@ -14,6 +14,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import { formatPrecio } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -297,9 +298,9 @@ export default function Cuentas() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {cuentas.map((cuenta) => (
+                {ordenarYNumerar(cuentas, ["fi_cuenta_id", "cuenta_id"]).map((cuenta) => (
                   <TableRow key={cuenta.fi_cuenta_id} hover>
-                    <TableCell>{cuenta.fi_cuenta_id}</TableCell>
+                    <TableCell>{cuenta._num}</TableCell>
                     <TableCell>{cuenta.fc_udn}</TableCell>
                     <TableCell>{cuenta.fc_nombre}</TableCell>
                     <TableCell>{cuenta.fc_numero_cuenta || "—"}</TableCell>

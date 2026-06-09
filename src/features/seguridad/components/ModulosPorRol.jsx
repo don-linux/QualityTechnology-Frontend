@@ -27,6 +27,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import EditIcon from "@mui/icons-material/Edit";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import CloseIcon from "@mui/icons-material/Close";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const MENUS_PRINCIPALES = new Set([
   "Operaciones",
@@ -199,6 +200,7 @@ export default function RolesModulos() {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Rol</TableCell>
               <TableCell sx={{ fontWeight: "bold" }} align="center">
                 Módulos Activos
@@ -210,8 +212,9 @@ export default function RolesModulos() {
           </TableHead>
 
           <TableBody>
-            {roles.map((rol) => (
+            {ordenarYNumerar(roles, ["rol_id", "fi_rol_id", "id"]).map((rol) => (
               <TableRow key={getRolId(rol) ?? String(getRolNombre(rol))} hover>
+                <TableCell>{rol._num}</TableCell>
                 <TableCell sx={{ fontWeight: 500 }}>
                   {getRolNombre(rol)}
                 </TableCell>

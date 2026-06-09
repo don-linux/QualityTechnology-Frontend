@@ -33,6 +33,7 @@ import ActasAdministrativas from "./ActasAdministrativas";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
 import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const todayString = () => new Date().toISOString().slice(0, 10);
 const formatDate = (value) => formatFecha(value, "-");
@@ -260,6 +261,7 @@ export default function Empleados() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Nombre</TableCell>
                 <TableCell>Puesto</TableCell>
                 <TableCell>Departamento</TableCell>
@@ -271,8 +273,9 @@ export default function Empleados() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {empleados.map((e) => (
+              {ordenarYNumerar(empleados, ["fi_empleado_id"]).map((e) => (
                 <TableRow key={e.fi_empleado_id} hover sx={{ opacity: e.fb_activo ? 1 : 0.5 }}>
+                  <TableCell>{e._num}</TableCell>
                   <TableCell>{e.fc_nombre} {e.fc_apellido_paterno} {e.fc_apellido_materno}</TableCell>
                   <TableCell>{e.puesto_nombre || "-"}</TableCell>
                   <TableCell>{e.departamento_nombre || "-"}</TableCell>

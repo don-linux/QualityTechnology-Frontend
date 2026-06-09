@@ -27,6 +27,7 @@ import {
   getDepartamentoNombre,
   departamentoActivo,
 } from "@features/catalogos/utils/catalogEntityGetters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 export default function Departamentos() {
   const showSnackbar = useSnackbar();
@@ -153,9 +154,9 @@ export default function Departamentos() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {departamentos.map((d) => (
+              {ordenarYNumerar(departamentos, ["departamento_id", "fi_departamento_id"]).map((d) => (
                 <TableRow key={getDepartamentoId(d) ?? ""} hover>
-                  <TableCell>{getDepartamentoId(d)}</TableCell>
+                  <TableCell>{d._num}</TableCell>
                   <TableCell>{getDepartamentoNombre(d)}</TableCell>
                   <TableCell>
                     <Chip

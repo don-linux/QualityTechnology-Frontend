@@ -39,6 +39,7 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -259,12 +260,15 @@ function BitacoraPlagasContent() {
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaPlagas = (rows) => (
+  const renderTablaPlagas = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table sx={{ minWidth: 1200 }}>
         <TableHead sx={{ background: "#E3F2FD" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Trampa</TableCell>
             <TableCell>Tipo</TableCell>
@@ -278,8 +282,9 @@ function BitacoraPlagasContent() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r) => (
+          {filas.map((r) => (
             <TableRow key={r.fi_id}>
+              <TableCell>{r._num}</TableCell>
               <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
               <TableCell>{r.fc_num_trampa}</TableCell>
               <TableCell>{r.tipo_trampa}</TableCell>
@@ -330,7 +335,8 @@ function BitacoraPlagasContent() {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>
