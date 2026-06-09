@@ -20,6 +20,7 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { formatFecha } from "@shared/utils/formatters";
 import Alert from "@mui/material/Alert";
 import {
   listBiometrias,
@@ -398,7 +399,7 @@ export default function BioBiometrias() {
                               ? `proceso: ${piletaSeleccionada.fc_ultima_observacion_proceso}`
                               : null,
                             piletaSeleccionada.fd_ultima_observacion
-                              ? `fecha: ${String(piletaSeleccionada.fd_ultima_observacion).split("T")[0]}`
+                              ? `fecha: ${formatFecha(piletaSeleccionada.fd_ultima_observacion)}`
                               : null,
                           ]
                             .filter(Boolean)
@@ -544,7 +545,7 @@ export default function BioBiometrias() {
                   <TableBody>
                     {rows.map((row) => (
                       <TableRow key={row.fi_id}>
-                        <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
+                        <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
                         <TableCell>{row.nombre_pileta || "—"}</TableCell>
                         <TableCell>{row.fc_observacion_proceso || "—"}</TableCell>
                         <TableCell>{formatNum(row.fn_peso_total_gramos)}</TableCell>

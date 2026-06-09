@@ -33,6 +33,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { formatFecha } from "@shared/utils/formatters";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -192,7 +193,7 @@ export default function BioInsumos() {
     ];
 
     const filas = data.map((r) => [
-      r.fd_fecha?.split("T")[0],
+      formatFecha(r.fd_fecha),
       r.fc_cantidad_udm,
       r.fc_num_lote,
       r.fc_descripcion,
@@ -213,7 +214,7 @@ export default function BioInsumos() {
       },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Recepcion_Insumos_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
@@ -240,7 +241,7 @@ export default function BioInsumos() {
         <TableBody>
           {rows.map((row) => (
             <TableRow key={row.fi_id}>
-              <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
               <TableCell>{row.fc_cantidad_udm}</TableCell>
               <TableCell>{row.fc_num_lote}</TableCell>
               <TableCell sx={{ maxWidth: 160 }}>

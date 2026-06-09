@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
@@ -122,12 +123,6 @@ function stockPileta(p) {
 
 function formatStock(num) {
   return Number(num ?? 0).toLocaleString("en-US");
-}
-
-function formatFecha(value) {
-  if (!value) return "—";
-  const s = String(value);
-  return s.includes("T") ? s.split("T")[0] : s.slice(0, 10);
 }
 
 function tipoVentaParaEtapa(etapa) {

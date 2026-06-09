@@ -24,14 +24,7 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
-
-function formatMoneda(valor) {
-  return new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-    minimumFractionDigits: 2,
-  }).format(Number(valor) || 0);
-}
+import { formatPrecio } from "@shared/utils/formatters";
 
 function hoyISO() {
   return new Date().toISOString().slice(0, 10);
@@ -100,7 +93,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
       return;
     }
     if (monto > adeudo) {
-      showSnackbar(`El monto no puede exceder el adeudo (${formatMoneda(adeudo)})`, "error");
+      showSnackbar(`El monto no puede exceder el adeudo (${formatPrecio(adeudo)})`, "error");
       return;
     }
 
@@ -140,8 +133,8 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Cliente: {venta.fc_cliente} · Total: {formatMoneda(venta.fn_monto_total)} ·
-            Abonado: {formatMoneda(venta.fn_abonado)} · Adeudo: {formatMoneda(adeudo)}
+            Cliente: {venta.fc_cliente} · Total: {formatPrecio(venta.fn_monto_total)} ·
+            Abonado: {formatPrecio(venta.fn_abonado)} · Adeudo: {formatPrecio(adeudo)}
           </Typography>
 
           {!liquidada && (
@@ -172,7 +165,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 >
                   {cuentas.map((cuenta) => (
                     <MenuItem key={cuenta.fi_cuenta_id} value={cuenta.fc_nombre}>
-                      {cuenta.fc_nombre} — {formatMoneda(cuenta.fn_saldo_actual)}
+                      {cuenta.fc_nombre} — {formatPrecio(cuenta.fn_saldo_actual)}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -187,7 +180,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                   fullWidth
                   inputProps={{ min: 0.01, max: adeudo, step: 0.01 }}
                   error={!!errors.fn_monto}
-                  helperText={errors.fn_monto || `Máximo: ${formatMoneda(adeudo)}`}
+                  helperText={errors.fn_monto || `Máximo: ${formatPrecio(adeudo)}`}
                 />
               </Grid>
               <Grid size={12}>
@@ -230,7 +223,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 pagos.map((p) => (
                   <TableRow key={p.fi_movimiento_id}>
                     <TableCell>{String(p.fd_fecha).slice(0, 10)}</TableCell>
-                    <TableCell align="right">{formatMoneda(p.fn_ingreso)}</TableCell>
+                    <TableCell align="right">{formatPrecio(p.fn_ingreso)}</TableCell>
                     <TableCell>{p.fc_cuenta}</TableCell>
                     <TableCell sx={{ maxWidth: 200 }}>
                       <span title={p.fc_observaciones}>{truncar(p.fc_observaciones)}</span>

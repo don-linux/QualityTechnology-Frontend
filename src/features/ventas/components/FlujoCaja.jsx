@@ -13,6 +13,7 @@ import Paper from "@mui/material/Paper";
 import { listMovimientos } from "../services/flujoCajaService";
 import { getUploadUrl } from "@shared/lib/uploadUrl";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -40,27 +41,9 @@ function TablaMovimientos({ movimientos }) {
         <TableBody>
           {movimientos.map((row) => (
             <TableRow key={row.fi_movimiento_id}>
-              <TableCell>
-                {new Date(row.fd_fecha).toLocaleDateString("es-MX", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
-              </TableCell>
-              <TableCell align="right">
-                {new Intl.NumberFormat("es-MX", {
-                  style: "currency",
-                  currency: "MXN",
-                  minimumFractionDigits: 2,
-                }).format(row.fn_ingreso || 0)}
-              </TableCell>
-              <TableCell align="right">
-                {new Intl.NumberFormat("es-MX", {
-                  style: "currency",
-                  currency: "MXN",
-                  minimumFractionDigits: 2,
-                }).format(row.fn_egreso || 0)}
-              </TableCell>
+              <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
+              <TableCell align="right">{formatPrecio(row.fn_ingreso)}</TableCell>
+              <TableCell align="right">{formatPrecio(row.fn_egreso)}</TableCell>
               <TableCell sx={{ maxWidth: 200 }}>
                 <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
               </TableCell>

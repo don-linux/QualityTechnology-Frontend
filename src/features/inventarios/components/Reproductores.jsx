@@ -7,6 +7,7 @@ import {
 } from "../services/reproductoresService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
+import { formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -557,11 +558,7 @@ export default function Reproductores() {
     resetFormulario();
   };
 
-  const formatearFecha = (fechaISO) => {
-    if (!fechaISO) return "—";
-    const d = new Date(fechaISO);
-    return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("es-MX");
-  };
+  const formatearFecha = (fechaISO) => formatFecha(fechaISO);
 
   const formatNumber = (num) => {
     if (num === null || num === undefined || num === "") return "—";

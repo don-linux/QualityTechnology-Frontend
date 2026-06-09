@@ -24,6 +24,7 @@ import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import DeleteForever from "@mui/icons-material/DeleteForever";
 import EventAvailable from "@mui/icons-material/EventAvailable";
+import { formatPrecio } from "@shared/utils/formatters";
 import {
   listByGranja,
   createCategoria,
@@ -365,7 +366,7 @@ export default function CajaAhorro() {
                     color: "#0d47a1",
                   }}
                 >
-                  {r.total ?? 0}
+                  {formatPrecio(r.total)}
                 </TableCell>
 
                 <TableCell align="center">
@@ -412,7 +413,7 @@ export default function CajaAhorro() {
                     fontWeight: "bold",
                   }}
                 >
-                  {totales[mes].toFixed(2)}
+                  {formatPrecio(totales[mes])}
                 </TableCell>
               ))}
 
@@ -424,7 +425,7 @@ export default function CajaAhorro() {
                   backgroundColor: "#1565c0",
                 }}
               >
-                {totalGeneral.toFixed(2)}
+                {formatPrecio(totalGeneral)}
               </TableCell>
 
               <TableCell sx={{ backgroundColor: "#0d47a1" }} />

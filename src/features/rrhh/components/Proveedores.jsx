@@ -32,6 +32,7 @@ import {
   removeProveedor,
 } from "../services/proveedoresService";
 import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
+import { formatFecha } from "@shared/utils/formatters";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
@@ -264,7 +265,7 @@ export default function Proveedores() {
       alternateRowStyles: { fillColor: [245, 245, 245] },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Proveedores_${fecha}.pdf`);
   };

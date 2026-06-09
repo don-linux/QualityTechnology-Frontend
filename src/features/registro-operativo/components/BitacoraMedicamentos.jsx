@@ -33,6 +33,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { formatFecha } from "@shared/utils/formatters";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -198,13 +199,13 @@ function BitacoraMedicamentosContent() {
     ];
 
     const filas = data.map((r) => [
-      r.fd_fecha_hora?.split("T")[0],
+      formatFecha(r.fd_fecha_hora),
       r.fn_num_estanque,
       r.fc_diagnosis,
       r.fc_tratamiento,
       r.fc_dosis,
       r.fc_forma_aplicacion,
-      r.fd_fecha_ultima_dosis?.split("T")[0],
+      formatFecha(r.fd_fecha_ultima_dosis),
       r.fc_responsable,
     ]);
 
@@ -220,7 +221,7 @@ function BitacoraMedicamentosContent() {
       },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Medicamentos_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
@@ -387,7 +388,7 @@ function BitacoraMedicamentosContent() {
                 <TableBody>
                   {rows.map((r) => (
                     <TableRow key={r.fi_id}>
-                      <TableCell>{r.fd_fecha_hora?.split("T")[0]}</TableCell>
+                      <TableCell>{formatFecha(r.fd_fecha_hora)}</TableCell>
                       <TableCell>{r.fn_num_estanque}</TableCell>
                       <TableCell sx={{ maxWidth: 160 }}>
                         <span title={r.fc_diagnosis}>{truncar(r.fc_diagnosis)}</span>
@@ -399,7 +400,7 @@ function BitacoraMedicamentosContent() {
                         <span title={r.fc_dosis}>{truncar(r.fc_dosis)}</span>
                       </TableCell>
                       <TableCell>{r.fc_forma_aplicacion}</TableCell>
-                      <TableCell>{r.fd_fecha_ultima_dosis?.split("T")[0]}</TableCell>
+                      <TableCell>{formatFecha(r.fd_fecha_ultima_dosis)}</TableCell>
                       <TableCell sx={{ maxWidth: 160 }}>
                         <span title={r.fc_responsable}>{truncar(r.fc_responsable)}</span>
                       </TableCell>

@@ -32,9 +32,10 @@ import DocumentosEmpleado from "./DocumentosEmpleado";
 import ActasAdministrativas from "./ActasAdministrativas";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
+import { formatFecha } from "@shared/utils/formatters";
 
 const todayString = () => new Date().toISOString().slice(0, 10);
-const formatDate = (value) => value ? value.substring(0, 10) : "-";
+const formatDate = (value) => formatFecha(value, "-");
 
 export default function Empleados() {
   const showSnackbar = useSnackbar();

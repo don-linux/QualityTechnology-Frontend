@@ -7,6 +7,7 @@ import {
 } from "../services/alevinajeService";
 import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
+import { formatFecha } from "@shared/utils/formatters";
 import {
   CampoConEtiquetaArriba,
   TituloSeccionFormulario,
@@ -248,11 +249,7 @@ const Alevinaje = () => {
     resetFormulario();
   };
 
-  const formatearFecha = (fechaISO) => {
-    if (!fechaISO) return "";
-    const d = new Date(fechaISO);
-    return d.toLocaleDateString("es-MX");
-  };
+  const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
 
   const formatNumber = (num) => {
     if (num === null || num === undefined) return "";

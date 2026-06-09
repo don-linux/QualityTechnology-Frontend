@@ -30,6 +30,7 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import { formatFecha } from "@shared/utils/formatters";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -193,7 +194,7 @@ function BitacoraBanosContent() {
     ];
 
     const filas = data.map((r) => [
-      r.fd_fecha?.split("T")[0] || "",
+      formatFecha(r.fd_fecha),
       getTipoBanio(r),
       r.fc_regadera,
       r.fc_realizo,
@@ -213,7 +214,7 @@ function BitacoraBanosContent() {
       bodyStyles: { valign: "middle" },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Banos_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
@@ -238,7 +239,7 @@ function BitacoraBanosContent() {
           {rows.map((r) => (
             <TableRow key={r.fi_id}>
               <TableCell sx={{ maxWidth: 160 }}>
-                {r.fd_fecha?.split("T")[0]}
+                {formatFecha(r.fd_fecha)}
               </TableCell>
               <TableCell sx={{ maxWidth: 160 }}>
                 <span title={getTipoBanio(r)}>{truncar(getTipoBanio(r))}</span>

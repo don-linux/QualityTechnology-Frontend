@@ -38,6 +38,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import FormHelperText from "@mui/material/FormHelperText";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -655,14 +656,14 @@ function ListaEsperaContent() {
             <TableBody>
               {lista.map((item) => (
                 <TableRow key={item.fi_lista_id}>
-                  <TableCell>{item.fd_fecha_entrega}</TableCell>
+                  <TableCell>{formatFecha(item.fd_fecha_entrega)}</TableCell>
                   <TableCell>{item.fc_uap_asignada ?? item.tipo_venta ?? "—"}</TableCell>
                   <TableCell>{item.fc_cliente}</TableCell>
                   <TableCell>{item.fn_cantidad}</TableCell>
                   <TableCell>{item.nombre_pileta_origen ?? "—"}</TableCell>
                   <TableCell>{item.fc_lugar_entrega}</TableCell>
                 <TableCell>{item.fc_granja_asignada ?? item.granja ?? "—"}</TableCell>
-                <TableCell>${item.fn_precio_venta}</TableCell>
+                <TableCell>{formatPrecio(item.fn_precio_venta)}</TableCell>
                 <TableCell>{etiquetaEstatus(item)}</TableCell>
                 <TableCell>
                   <Button

@@ -8,6 +8,7 @@ import {
   listMantenimientos,
   createMantenimiento,
 } from "../services/equiposService";
+import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -274,8 +275,8 @@ function EquiposContent() {
       r.fc_estado,
       r.fc_responsable,
       r.fc_ubicacion,
-      `$${r.fn_costo}`,
-      r.fd_proximo_mantenimiento?.split("T")[0] || "—",
+      formatPrecio(r.fn_costo),
+      formatFecha(r.fd_proximo_mantenimiento),
     ]);
 
     autoTable(doc, {
@@ -286,7 +287,7 @@ function EquiposContent() {
       headStyles: { fillColor: [25, 118, 210], textColor: 255 },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Equipos_y_Herramientas_${fecha}.pdf`);
   };
@@ -519,7 +520,7 @@ function EquiposContent() {
                 <TableCell>{row.fc_responsable}</TableCell>
                 <TableCell>{row.fc_ubicacion}</TableCell>
                 <TableCell>
-                  {row.fd_proximo_mantenimiento?.split("T")[0]}
+                  {formatFecha(row.fd_proximo_mantenimiento)}
                 </TableCell>
                 <TableCell>
                   <Button
@@ -730,11 +731,11 @@ function EquiposContent() {
             <TableBody>
               {mantenimientos.map((m) => (
                 <TableRow key={m.fi_mantenimiento_id}>
-                  <TableCell>{m.fd_fecha?.split("T")[0]}</TableCell>
+                  <TableCell>{formatFecha(m.fd_fecha)}</TableCell>
                   <TableCell>{m.fc_tipo}</TableCell>
                   <TableCell>{m.fc_responsable}</TableCell>
                   <TableCell>{m.fc_descripcion}</TableCell>
-                  <TableCell>${m.fn_costo}</TableCell>
+                  <TableCell>{formatPrecio(m.fn_costo)}</TableCell>
                   <TableCell>{m.fc_estado_post}</TableCell>
                 </TableRow>
               ))}

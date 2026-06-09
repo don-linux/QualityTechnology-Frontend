@@ -36,6 +36,7 @@ import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
+import { formatFecha } from "@shared/utils/formatters";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -212,7 +213,7 @@ function BitacoraVisitasContent() {
 
     const columnas = ["Fecha", "Nombre", "Origen", "Motivo", "Foto ID", "Entrada", "Salida", "Observaciones"];
     const filas = data.map((r) => [
-      r.fd_fecha?.split("T")[0],
+      formatFecha(r.fd_fecha),
       r.fc_nombre_completo,
       r.fc_origen,
       r.fc_motivo,
@@ -230,7 +231,7 @@ function BitacoraVisitasContent() {
       headStyles: { fillColor: color, textColor: 255, halign: "center" },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Visitas_${fecha}.pdf`);
   };
@@ -257,7 +258,7 @@ function BitacoraVisitasContent() {
         <TableBody>
           {rows.map((r) => (
             <TableRow key={r.fi_id}>
-              <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
               <TableCell>{r.fc_nombre_completo}</TableCell>
               <TableCell>{r.fc_origen}</TableCell>
               <TableCell sx={{ maxWidth: 160 }}>

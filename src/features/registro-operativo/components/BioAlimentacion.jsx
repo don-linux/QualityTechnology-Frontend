@@ -32,6 +32,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { formatFecha } from "@shared/utils/formatters";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -248,9 +249,9 @@ export default function BioAlimentacion() {
       r.fc_mes,
       r.fn_num_instalacion,
       r.fn_peso_promedio_entrada,
-      r.fd_fecha_siembra?.split("T")[0],
+      formatFecha(r.fd_fecha_siembra),
       r.fc_origen_alevines,
-      r.fd_fecha?.split("T")[0],
+      formatFecha(r.fd_fecha),
       r.fn_total_alimento_kg,
       r.fn_mortalidad,
       r.fc_recambio_agua,
@@ -272,7 +273,7 @@ export default function BioAlimentacion() {
       },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Alimentacion_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
@@ -313,9 +314,9 @@ export default function BioAlimentacion() {
               <TableCell>{row.fc_mes}</TableCell>
               <TableCell>{row.fn_num_instalacion}</TableCell>
               <TableCell>{row.fn_peso_promedio_entrada}</TableCell>
-              <TableCell>{row.fd_fecha_siembra?.split("T")[0]}</TableCell>
+              <TableCell>{formatFecha(row.fd_fecha_siembra)}</TableCell>
               <TableCell>{row.fc_origen_alevines}</TableCell>
-              <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
               <TableCell>{row.fn_total_alimento_kg}</TableCell>
               <TableCell>{row.fn_mortalidad}</TableCell>
               <TableCell>{row.fc_recambio_agua}</TableCell>

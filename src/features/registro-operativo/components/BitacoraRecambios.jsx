@@ -18,6 +18,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import MenuItem from "@mui/material/MenuItem";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { formatFecha } from "@shared/utils/formatters";
 import {
   listRecambios,
   listEmpleadosRecambios,
@@ -235,17 +236,17 @@ const exportarPDF = async () => {
 
   const filas = data.map((r) => [
     r.fn_num_instalacion || "",
-    r.fd_fecha1?.split("T")[0] || "",
+    formatFecha(r.fd_fecha1, ""),
     r.fc_tipo1 || "",
-    r.fd_fecha2?.split("T")[0] || "",
+    formatFecha(r.fd_fecha2, ""),
     r.fc_tipo2 || "",
-    r.fd_fecha3?.split("T")[0] || "",
+    formatFecha(r.fd_fecha3, ""),
     r.fc_tipo3 || "",
-    r.fd_fecha4?.split("T")[0] || "",
+    formatFecha(r.fd_fecha4, ""),
     r.fc_tipo4 || "",
-    r.fd_fecha5?.split("T")[0] || "",
+    formatFecha(r.fd_fecha5, ""),
     r.fc_tipo5 || "",
-    r.fd_fecha6?.split("T")[0] || "",
+    formatFecha(r.fd_fecha6, ""),
     r.fc_tipo6 || "",
     r.fc_responsable || "",
   ]);
@@ -288,7 +289,7 @@ const exportarPDF = async () => {
   doc.text("Page 1 of 1", 270, y, { align: "right" });
 
   // Guardar
-  const fecha = new Date().toLocaleDateString("es-MX");
+  const fecha = formatFecha(new Date());
   doc.save(`Registro_Recambios_${getLabel(form.ubicacion)}_${fecha}.pdf`);
 };
 
@@ -316,7 +317,7 @@ const exportarPDF = async () => {
                 {[1, 2, 3, 4, 5, 6]
                   .map((n) =>
                     r[`fd_fecha${n}`]
-                      ? `${r[`fd_fecha${n}`]?.split("T")[0]} (${r[`fc_tipo${n}`]})`
+                      ? `${formatFecha(r[`fd_fecha${n}`])} (${r[`fc_tipo${n}`]})`
                       : null
                   )
                   .filter(Boolean)

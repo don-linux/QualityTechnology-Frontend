@@ -25,6 +25,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
+import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 
 export default function Nomina() {
   const showSnackbar = useSnackbar();
@@ -156,11 +157,11 @@ export default function Nomina() {
       head: [["Empleado", "Total", "Bono", "Deuda", "Descuento", "Anticipo"]],
       body: data.map((r) => [
         r.fc_nombre_empleado,
-        `$${r.fn_total}`,
-        `$${r.fn_bono}`,
-        `$${r.fn_deuda}`,
-        `$${r.fn_descuento}`,
-        `$${r.fn_anticipo}`,
+        formatPrecio(r.fn_total),
+        formatPrecio(r.fn_bono),
+        formatPrecio(r.fn_deuda),
+        formatPrecio(r.fn_descuento),
+        formatPrecio(r.fn_anticipo),
       ]),
     });
     doc.save("Nomina.pdf");
@@ -245,12 +246,12 @@ export default function Nomina() {
             {data.map((r) => (
               <TableRow key={r.fi_nomina_id}>
                 <TableCell>{r.fc_nombre_empleado}</TableCell>
-                <TableCell>${r.fn_total}</TableCell>
-                <TableCell>${r.fn_bono}</TableCell>
-                <TableCell>${r.fn_deuda}</TableCell>
-                <TableCell>${r.fn_descuento}</TableCell>
-                <TableCell>${r.fn_anticipo}</TableCell>
-                <TableCell>{r.fd_fecha_pago?.split("T")[0]}</TableCell>
+                <TableCell>{formatPrecio(r.fn_total)}</TableCell>
+                <TableCell>{formatPrecio(r.fn_bono)}</TableCell>
+                <TableCell>{formatPrecio(r.fn_deuda)}</TableCell>
+                <TableCell>{formatPrecio(r.fn_descuento)}</TableCell>
+                <TableCell>{formatPrecio(r.fn_anticipo)}</TableCell>
+                <TableCell>{formatFecha(r.fd_fecha_pago)}</TableCell>
                 <TableCell>
                   <Button size="small" color="warning" variant="contained" onClick={() => editarNomina(r)}>
                     <Edit fontSize="small" />

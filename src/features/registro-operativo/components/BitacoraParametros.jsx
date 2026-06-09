@@ -33,6 +33,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { formatFecha } from "@shared/utils/formatters";
 
 function BitacoraParametrosContent() {
   const { usuarioId } = useAuth();
@@ -189,7 +190,7 @@ function BitacoraParametrosContent() {
     ];
 
     const filas = data.map((r) => [
-      r.fd_fecha?.split("T")[0],
+      formatFecha(r.fd_fecha),
       r.fn_num_estanque,
       r.fn_oxigeno,
       r.fn_temperatura,
@@ -212,7 +213,7 @@ function BitacoraParametrosContent() {
       },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Parametros_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
@@ -428,7 +429,7 @@ function BitacoraParametrosContent() {
                 <TableBody>
                   {rows.map((r) => (
                     <TableRow key={r.fi_id}>
-                      <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+                      <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
                       <TableCell>{r.fn_num_estanque}</TableCell>
                       <TableCell>{r.fn_oxigeno}</TableCell>
                       <TableCell>{r.fn_temperatura}</TableCell>

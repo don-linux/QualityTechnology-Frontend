@@ -38,6 +38,7 @@ import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
+import { formatFecha } from "@shared/utils/formatters";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -232,7 +233,7 @@ function BitacoraPlagasContent() {
       "Observaciones",
     ];
     const filas = data.map((r) => [
-      r.fd_fecha?.split("T")[0],
+      formatFecha(r.fd_fecha),
       r.fc_num_trampa,
       r.tipo_trampa,
       r.unidad_produccion,
@@ -251,7 +252,7 @@ function BitacoraPlagasContent() {
       headStyles: { fillColor: color, textColor: 255, halign: "center" },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Plagas_${fecha}.pdf`);
   };
@@ -279,7 +280,7 @@ function BitacoraPlagasContent() {
         <TableBody>
           {rows.map((r) => (
             <TableRow key={r.fi_id}>
-              <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
               <TableCell>{r.fc_num_trampa}</TableCell>
               <TableCell>{r.tipo_trampa}</TableCell>
               <TableCell>{r.unidad_produccion}</TableCell>
@@ -560,7 +561,7 @@ function BitacoraPlagasContent() {
           {registroDetalle && (
             <Grid container spacing={1.5}>
               {[
-                { label: "Fecha", value: registroDetalle.fd_fecha?.split("T")[0] },
+                { label: "Fecha", value: formatFecha(registroDetalle.fd_fecha) },
                 { label: "No. Trampa", value: registroDetalle.fc_num_trampa },
                 { label: "Tipo de Trampa", value: registroDetalle.tipo_trampa },
                 { label: "Unidad de Producción", value: registroDetalle.unidad_produccion },

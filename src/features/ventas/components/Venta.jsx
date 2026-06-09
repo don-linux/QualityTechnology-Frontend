@@ -11,6 +11,7 @@ import Button from "@mui/material/Button";
 import { listVentas } from "../services/ventasService";
 import PagoVentaDialog from "./PagoVentaDialog";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 
 const colorEstado = {
   ADEUDO: "red",
@@ -18,14 +19,6 @@ const colorEstado = {
   LIQUIDADO: "green",
   PAGADO: "green",
 };
-
-function formatNumero(valor) {
-  if (valor === null || valor === undefined) return "0";
-  return Number(valor).toLocaleString("es-MX", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-}
 
 export default function Venta() {
   const showSnackbar = useSnackbar();
@@ -96,15 +89,15 @@ export default function Venta() {
                 ventas.map((v) => (
                   <TableRow key={v.fi_venta_id}>
                     <TableCell>{v.fc_locacion ?? v.fc_empresa}</TableCell>
-                    <TableCell>{v.fd_fecha_venta?.split("T")[0]}</TableCell>
+                    <TableCell>{formatFecha(v.fd_fecha_venta)}</TableCell>
                     <TableCell>{v.fc_folio}</TableCell>
                     <TableCell>{v.fc_cliente}</TableCell>
                     <TableCell>{v.fc_tipo_venta}</TableCell>
                     <TableCell>{v.fn_cantidad_vendida}</TableCell>
-                    <TableCell>${formatNumero(v.fn_precio_venta)}</TableCell>
-                    <TableCell>${formatNumero(v.fn_monto_total)}</TableCell>
-                    <TableCell>${formatNumero(v.fn_abonado)}</TableCell>
-                    <TableCell>${formatNumero(v.fn_adeudo)}</TableCell>
+                    <TableCell>{formatPrecio(v.fn_precio_venta)}</TableCell>
+                    <TableCell>{formatPrecio(v.fn_monto_total)}</TableCell>
+                    <TableCell>{formatPrecio(v.fn_abonado)}</TableCell>
+                    <TableCell>{formatPrecio(v.fn_adeudo)}</TableCell>
                     <TableCell>
                       <b style={{ color: colorEstado[v.fc_estado_pago] }}>
                         {v.fc_estado_pago}

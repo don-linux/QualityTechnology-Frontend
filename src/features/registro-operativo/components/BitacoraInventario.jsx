@@ -31,6 +31,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { formatFecha } from "@shared/utils/formatters";
 
 function BitacoraInventarioContent() {
   const { usuarioId } = useAuth();
@@ -178,8 +179,8 @@ function BitacoraInventarioContent() {
       r.fn_cantidad,
       r.fn_talla,
       r.fc_lote,
-      r.fd_fecha_siembra?.split("T")[0],
-      r.fd_fecha_salida_hormonado?.split("T")[0],
+      formatFecha(r.fd_fecha_siembra),
+      formatFecha(r.fd_fecha_salida_hormonado),
       r.fc_observacion,
     ]);
 
@@ -195,7 +196,7 @@ function BitacoraInventarioContent() {
       },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Inventario_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
@@ -224,8 +225,8 @@ function BitacoraInventarioContent() {
               <TableCell>{r.fn_cantidad}</TableCell>
               <TableCell>{r.fn_talla}</TableCell>
               <TableCell>{r.fc_lote}</TableCell>
-              <TableCell>{r.fd_fecha_siembra?.split("T")[0]}</TableCell>
-              <TableCell>{r.fd_fecha_salida_hormonado?.split("T")[0]}</TableCell>
+              <TableCell>{formatFecha(r.fd_fecha_siembra)}</TableCell>
+              <TableCell>{formatFecha(r.fd_fecha_salida_hormonado)}</TableCell>
               <TableCell>{r.fc_observacion}</TableCell>
               <TableCell>
                 <Button

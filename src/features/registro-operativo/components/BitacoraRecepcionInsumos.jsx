@@ -36,6 +36,7 @@ import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
+import { formatFecha } from "@shared/utils/formatters";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -218,7 +219,7 @@ function RecepcionInsumosContent() {
       "Observaciones",
     ];
     const filas = data.map((r) => [
-      r.fd_fecha?.split("T")[0],
+      formatFecha(r.fd_fecha),
       r.fc_proveedor,
       r.fc_producto,
       r.fc_lote,
@@ -238,7 +239,7 @@ function RecepcionInsumosContent() {
       headStyles: { fillColor: color, textColor: 255, halign: "center" },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Recepcion_Insumos_${fecha}.pdf`);
   };
@@ -267,7 +268,7 @@ function RecepcionInsumosContent() {
         <TableBody>
           {rows.map((r) => (
             <TableRow key={r.fi_id}>
-              <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
               <TableCell>{r.fc_proveedor}</TableCell>
               <TableCell sx={{ maxWidth: 160 }}>
                 <span title={r.fc_producto}>{truncar(r.fc_producto)}</span>

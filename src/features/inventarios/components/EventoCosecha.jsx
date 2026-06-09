@@ -7,6 +7,7 @@ import {
 } from "../services/eventoCosechaService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
+import { formatFecha } from "@shared/utils/formatters";
 import {
   CampoConEtiquetaArriba,
   TituloSeccionFormulario,
@@ -350,10 +351,7 @@ const EventoCosecha = () => {
     resetFormulario();
   };
 
-  const formatearFecha = (fechaISO) => {
-    if (!fechaISO) return "";
-    return new Date(fechaISO).toLocaleDateString("es-MX");
-  };
+  const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
 
   const formatNumber = (num) => {
     if (num === null || num === undefined) return "";

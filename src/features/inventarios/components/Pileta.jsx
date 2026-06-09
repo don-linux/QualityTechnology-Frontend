@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -61,12 +62,6 @@ const formatNumber = (num, opts = {}) =>
   num != null && num !== ""
     ? Number(num).toLocaleString("en-US", opts)
     : "—";
-
-const formatFecha = (fecha) => {
-  if (!fecha) return "—";
-  const d = new Date(fecha);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("es-MX");
-};
 
 /* ============================================================================
  *  PANTALLA PRINCIPAL — solo piletas físicas (CRUD)

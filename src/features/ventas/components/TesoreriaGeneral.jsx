@@ -11,6 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import { getDatos } from "../services/tesoreriaService";
+import { formatPrecio } from "@shared/utils/formatters";
 
 export default function TesoreriaGeneral() {
   const [datos, setDatos] = useState([]);
@@ -108,13 +109,13 @@ export default function TesoreriaGeneral() {
                         <TableCell>{r.subgrupo || "—"}</TableCell>
                         <TableCell>{r.categoria || "—"}</TableCell>
                         <TableCell align="right">
-                          {Number(r.total_ingreso || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                          {formatPrecio(r.total_ingreso)}
                         </TableCell>
                         <TableCell align="right">
-                          {Number(r.total_egreso || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                          {formatPrecio(r.total_egreso)}
                         </TableCell>
                         <TableCell align="right" sx={{ color: r.saldo_neto >= 0 ? "green" : "red", fontWeight: "bold" }}>
-                          {Number(r.saldo_neto || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                          {formatPrecio(r.saldo_neto)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -123,13 +124,13 @@ export default function TesoreriaGeneral() {
                         Subtotal {subgrupo}
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                        {totalIngreso.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                        {formatPrecio(totalIngreso)}
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                        {totalEgreso.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                        {formatPrecio(totalEgreso)}
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: "bold", color: saldo >= 0 ? "green" : "red" }}>
-                        {saldo.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                        {formatPrecio(saldo)}
                       </TableCell>
                     </TableRow>
                   </React.Fragment>
@@ -142,13 +143,13 @@ export default function TesoreriaGeneral() {
                     TOTAL GENERAL {anioSeleccionado}
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: "bold", color: "#33691e" }}>
-                    {totalGeneral.ingreso.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                    {formatPrecio(totalGeneral.ingreso)}
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: "bold", color: "#33691e" }}>
-                    {totalGeneral.egreso.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                    {formatPrecio(totalGeneral.egreso)}
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: "bold", color: totalGeneral.saldo >= 0 ? "green" : "red" }}>
-                    {totalGeneral.saldo.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                    {formatPrecio(totalGeneral.saldo)}
                   </TableCell>
                 </TableRow>
               )}
