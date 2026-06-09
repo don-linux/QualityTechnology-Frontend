@@ -159,7 +159,7 @@ const EMPTY_FORM = {
   pileta_destino_id: "",
   cantidad: "",
   mortalidad: "",
-  peso_kg: "",
+  peso_gramos: "",
   fecha_peso: "",
   fecha_movimiento: "",
   observacion: "",
@@ -402,8 +402,8 @@ export default function Trazabilidad() {
       return false;
     }
 
-    if (esIncubacionOrigen && (form.peso_kg === "" || Number(form.peso_kg) <= 0)) {
-      showSnackbar("Ingrese el peso (kg) de los alevines", "warning");
+    if (esIncubacionOrigen && (form.peso_gramos === "" || Number(form.peso_gramos) <= 0)) {
+      showSnackbar("Ingrese el peso (g) de los alevines", "warning");
       return false;
     }
 
@@ -432,7 +432,7 @@ export default function Trazabilidad() {
       payload.pileta_destino_id = Number(form.pileta_destino_id);
       payload.cantidad = Number(form.cantidad);
       if (esIncubacionOrigen) {
-        if (form.peso_kg !== "") payload.peso_kg = Number(form.peso_kg);
+        if (form.peso_gramos !== "") payload.peso_gramos = Number(form.peso_gramos);
         if (form.fecha_peso) payload.fecha_peso = form.fecha_peso;
       } else if (form.mortalidad) {
         payload.mortalidad = Number(form.mortalidad);
@@ -774,9 +774,9 @@ export default function Trazabilidad() {
                       <Grid size={{ xs: 12, md: 4 }}>
                         <CampoNumerico
                           fullWidth
-                          label="Peso (kg)"
-                          name="peso_kg"
-                          value={form.peso_kg}
+                          label="Peso (g)"
+                          name="peso_gramos"
+                          value={form.peso_gramos}
                           onChange={handleChange}
                           inputProps={{ min: 0, step: "any" }}
                         />

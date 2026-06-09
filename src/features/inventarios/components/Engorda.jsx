@@ -58,7 +58,7 @@ export default function Engorda() {
     "fi_pileta_destino_id",
     "cantidad_total",
     "fecha_peso",
-    "peso_kg",
+    "peso_gramos",
   ];
 
   const [piletasDestinoEngorda, setPiletasDestinoEngorda] = useState([]);
@@ -70,7 +70,7 @@ export default function Engorda() {
     fi_pileta_destino_id: "",
     cantidad_total: "",
     cantidad_alimento: "",
-    peso_kg: "",
+    peso_gramos: "",
     fecha_peso: "",
     observacion: "",
   });
@@ -92,7 +92,7 @@ export default function Engorda() {
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
     cantidad_total: Number(formData.cantidad_total || 0),
     cantidad_alimento: Number(formData.cantidad_alimento || 0),
-    peso_kg: formData.peso_kg === "" ? null : Number(formData.peso_kg),
+    peso_gramos: formData.peso_gramos === "" ? null : Number(formData.peso_gramos),
     fecha_peso: formData.fecha_peso || null,
     observacion: formData.observacion,
   });
@@ -103,7 +103,7 @@ export default function Engorda() {
     if (name === "cantidad_total" || name === "cantidad_alimento") {
       if (!soloEntero(value)) return;
     }
-    if (name === "peso_kg") {
+    if (name === "peso_gramos") {
       if (!soloDecimal(value)) return;
     }
 
@@ -177,9 +177,9 @@ export default function Engorda() {
       ),
       cantidad_total: String(seleccionado.cantidad_total ?? seleccionado.cantidad ?? ""),
       cantidad_alimento: String(seleccionado.cantidad_alimento ?? ""),
-      peso_kg:
-        seleccionado.peso_kg != null
-          ? String(seleccionado.peso_kg)
+      peso_gramos:
+        seleccionado.peso_gramos != null
+          ? String(seleccionado.peso_gramos)
           : seleccionado.peso != null
             ? String(seleccionado.peso)
             : "",
@@ -236,7 +236,7 @@ export default function Engorda() {
       fi_pileta_destino_id: "",
       cantidad_total: "",
       cantidad_alimento: "",
-      peso_kg: "",
+      peso_gramos: "",
       fecha_peso: "",
       observacion: "",
     });
@@ -373,16 +373,16 @@ export default function Engorda() {
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <CampoNumerico
-                      label="Peso (kg)"
-                      name="peso_kg"
-                      value={formData.peso_kg}
+                      label="Peso (g)"
+                      name="peso_gramos"
+                      value={formData.peso_gramos}
                       onChange={handleChange}
                       fullWidth
-                      placeholder="Peso (kg)"
+                      placeholder="Peso (g)"
                       sx={campoFormSx}
                       inputProps={{ min: 0, step: "any" }}
-                      error={!!errors.peso_kg}
-                      {...(errors.peso_kg ? { helperText: errors.peso_kg } : {})}
+                      error={!!errors.peso_gramos}
+                      {...(errors.peso_gramos ? { helperText: errors.peso_gramos } : {})}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
@@ -453,7 +453,7 @@ export default function Engorda() {
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Peso (kg)</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Peso (g)</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                   </TableRow>
@@ -484,7 +484,7 @@ export default function Engorda() {
                         </TableCell>
                         <TableCell>{formatNumber(l.cantidad_total ?? l.cantidad)}</TableCell>
                         <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
-                        <TableCell>{formatNumber(l.peso_kg ?? l.peso)}</TableCell>
+                        <TableCell>{formatNumber(l.peso_gramos ?? l.peso)}</TableCell>
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                           <CeldaObservacionConHistorial

@@ -63,7 +63,7 @@ export default function BioAlimentacion() {
     fd_fecha_siembra: "",
     fc_origen_alevines: "",
     fd_fecha: "",
-    fn_total_alimento_kg: "",
+    fn_total_alimento_gramos: "",
     fn_mortalidad: "",
     fc_recambio_agua: "",
     fn_temp_agua: "",
@@ -84,7 +84,7 @@ export default function BioAlimentacion() {
     "ubicacion",
     "fn_num_instalacion", "fn_peso_promedio_entrada",
     "fd_fecha_siembra", "fc_origen_alevines", "fd_fecha",
-    "fn_total_alimento_kg", "fn_mortalidad", "fc_recambio_agua",
+    "fn_total_alimento_gramos", "fn_mortalidad", "fc_recambio_agua",
     "fn_temp_agua", "fn_amonio", "fn_ph", "fc_observaciones",
   ];
 
@@ -164,7 +164,7 @@ export default function BioAlimentacion() {
         fd_fecha_siembra: "",
         fc_origen_alevines: "",
         fd_fecha: "",
-        fn_total_alimento_kg: "",
+        fn_total_alimento_gramos: "",
         fn_mortalidad: "",
         fc_recambio_agua: "",
         fn_temp_agua: "",
@@ -193,7 +193,7 @@ export default function BioAlimentacion() {
       fd_fecha_siembra: row.fd_fecha_siembra?.split("T")[0],
       fc_origen_alevines: row.fc_origen_alevines,
       fd_fecha: row.fd_fecha?.split("T")[0],
-      fn_total_alimento_kg: row.fn_total_alimento_kg,
+      fn_total_alimento_gramos: row.fn_total_alimento_gramos,
       fn_mortalidad: row.fn_mortalidad,
       fc_recambio_agua: row.fc_recambio_agua,
       fn_temp_agua: row.fn_temp_agua,
@@ -237,7 +237,7 @@ export default function BioAlimentacion() {
       "Siembra",
       "Origen",
       "Fecha",
-      "Alimento (Kg)",
+      "Alimento (g)",
       "Mortalidad",
       "Recambio",
       "Temp",
@@ -253,7 +253,7 @@ export default function BioAlimentacion() {
       formatFecha(r.fd_fecha_siembra),
       r.fc_origen_alevines,
       formatFecha(r.fd_fecha),
-      r.fn_total_alimento_kg,
+      r.fn_total_alimento_gramos,
       r.fn_mortalidad,
       r.fc_recambio_agua,
       r.fn_temp_agua,
@@ -299,7 +299,7 @@ export default function BioAlimentacion() {
             <TableCell>Siembra</TableCell>
             <TableCell>Origen</TableCell>
             <TableCell>Fecha</TableCell>
-            <TableCell>Alimento (Kg)</TableCell>
+            <TableCell>Alimento (g)</TableCell>
             <TableCell>Mortalidad</TableCell>
             <TableCell>Recambio</TableCell>
             <TableCell>Temp</TableCell>
@@ -318,7 +318,7 @@ export default function BioAlimentacion() {
               <TableCell>{formatFecha(row.fd_fecha_siembra)}</TableCell>
               <TableCell>{row.fc_origen_alevines}</TableCell>
               <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
-              <TableCell>{row.fn_total_alimento_kg}</TableCell>
+              <TableCell>{row.fn_total_alimento_gramos}</TableCell>
               <TableCell>{row.fn_mortalidad}</TableCell>
               <TableCell>{row.fc_recambio_agua}</TableCell>
               <TableCell>{row.fn_temp_agua}</TableCell>
@@ -469,13 +469,13 @@ export default function BioAlimentacion() {
 
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
-                label="Total Alimento (Kg)"
-                name="fn_total_alimento_kg"
-                value={form.fn_total_alimento_kg}
+                label="Total Alimento (g)"
+                name="fn_total_alimento_gramos"
+                value={form.fn_total_alimento_gramos}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_total_alimento_kg}
-                helperText={errors.fn_total_alimento_kg}
+                error={!!errors.fn_total_alimento_gramos}
+                helperText={errors.fn_total_alimento_gramos}
               />
             </Grid>
 
