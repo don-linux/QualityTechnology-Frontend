@@ -26,6 +26,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useAuth from "@app/providers/AuthProvider";
 import { formatFecha, formatPrecio } from "@shared/utils/formatters";
+import CampoNumerico from "@shared/components/CampoNumerico";
 
 export default function Nomina() {
   const showSnackbar = useSnackbar();
@@ -179,25 +180,25 @@ export default function Nomina() {
               <TextField label="Nombre del empleado" name="fc_nombre_empleado" value={form.fc_nombre_empleado} onChange={handleChange} fullWidth error={!!errors.fc_nombre_empleado} helperText={errors.fc_nombre_empleado} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="ID" type="number" name="fi_empleado_id" value={form.fi_empleado_id} onChange={handleChange} fullWidth error={!!errors.fi_empleado_id} helperText={errors.fi_empleado_id} />
+              <CampoNumerico label="ID" decimalScale={0} name="fi_empleado_id" value={form.fi_empleado_id} onChange={handleChange} fullWidth error={!!errors.fi_empleado_id} helperText={errors.fi_empleado_id} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField label="Fecha de Pago" type="date" name="fd_fecha_pago" InputLabelProps={{ shrink: true }} value={form.fd_fecha_pago} onChange={handleChange} fullWidth error={!!errors.fd_fecha_pago} helperText={errors.fd_fecha_pago} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Total" type="number" name="fn_total" value={form.fn_total} onChange={handleChange} fullWidth error={!!errors.fn_total} helperText={errors.fn_total} />
+              <CampoNumerico label="Total" prefix="$" decimalScale={2} name="fn_total" value={form.fn_total} onChange={handleChange} fullWidth error={!!errors.fn_total} helperText={errors.fn_total} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="Bono" type="number" name="fn_bono" value={form.fn_bono} onChange={handleChange} fullWidth error={!!errors.fn_bono} helperText={errors.fn_bono} />
+              <CampoNumerico label="Bono" prefix="$" decimalScale={2} name="fn_bono" value={form.fn_bono} onChange={handleChange} fullWidth error={!!errors.fn_bono} helperText={errors.fn_bono} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="Deuda" type="number" name="fn_deuda" value={form.fn_deuda} onChange={handleChange} fullWidth error={!!errors.fn_deuda} helperText={errors.fn_deuda} />
+              <CampoNumerico label="Deuda" prefix="$" decimalScale={2} name="fn_deuda" value={form.fn_deuda} onChange={handleChange} fullWidth error={!!errors.fn_deuda} helperText={errors.fn_deuda} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="Descuento" type="number" name="fn_descuento" value={form.fn_descuento} onChange={handleChange} fullWidth error={!!errors.fn_descuento} helperText={errors.fn_descuento} />
+              <CampoNumerico label="Descuento" prefix="$" decimalScale={2} name="fn_descuento" value={form.fn_descuento} onChange={handleChange} fullWidth error={!!errors.fn_descuento} helperText={errors.fn_descuento} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <TextField label="Anticipo" type="number" name="fn_anticipo" value={form.fn_anticipo} onChange={handleChange} fullWidth error={!!errors.fn_anticipo} helperText={errors.fn_anticipo} />
+              <CampoNumerico label="Anticipo" prefix="$" decimalScale={2} name="fn_anticipo" value={form.fn_anticipo} onChange={handleChange} fullWidth error={!!errors.fn_anticipo} helperText={errors.fn_anticipo} />
             </Grid>
           </Grid>
 

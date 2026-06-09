@@ -25,6 +25,7 @@ import Delete from "@mui/icons-material/Delete";
 import DeleteForever from "@mui/icons-material/DeleteForever";
 import EventAvailable from "@mui/icons-material/EventAvailable";
 import { formatPrecio } from "@shared/utils/formatters";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import {
   listByGranja,
   createCategoria,
@@ -335,8 +336,8 @@ export default function CajaAhorro() {
 
                 {meses.map((mes) => (
                   <TableCell key={mes} align="center">
-                    <TextField
-                      type="number"
+                    <CampoNumerico
+                      prefix="$" decimalScale={2}
                       variant="standard"
                       value={r[mes] ?? 0}
                       onChange={(e) => {
@@ -347,12 +348,12 @@ export default function CajaAhorro() {
                           )
                         );
                       }}
-                      onBlur={(e) =>
-                        actualizarCampo(r.id, mes, parseFloat(e.target.value) || 0)
+                      onBlur={() =>
+                        actualizarCampo(r.id, mes, parseFloat(r[mes]) || 0)
                       }
                       inputProps={{
                         min: 0,
-                        style: { textAlign: "center", width: 70 },
+                        style: { textAlign: "center", width: 90 },
                       }}
                     />
                   </TableCell>

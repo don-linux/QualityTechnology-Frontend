@@ -30,6 +30,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { formatFecha } from "@shared/utils/formatters";
@@ -401,10 +402,9 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Peso Promedio Entrada"
                 name="fn_peso_promedio_entrada"
-                type="number"
                 value={form.fn_peso_promedio_entrada}
                 onChange={handleChange}
                 fullWidth
@@ -468,9 +468,8 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Total Alimento (Kg)"
-                type="number"
                 name="fn_total_alimento_kg"
                 value={form.fn_total_alimento_kg}
                 onChange={handleChange}
@@ -481,10 +480,10 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Mortalidad"
                 name="fn_mortalidad"
-                type="number"
+                decimalScale={0}
                 value={form.fn_mortalidad}
                 onChange={handleChange}
                 fullWidth
@@ -506,9 +505,8 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Temp. Agua"
-                type="number"
                 name="fn_temp_agua"
                 value={form.fn_temp_agua}
                 onChange={handleChange}
@@ -519,9 +517,8 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Amonio"
-                type="number"
                 name="fn_amonio"
                 value={form.fn_amonio}
                 onChange={handleChange}
@@ -532,9 +529,8 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="pH"
-                type="number"
                 name="fn_ph"
                 value={form.fn_ph}
                 onChange={handleChange}

@@ -31,6 +31,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { formatFecha } from "@shared/utils/formatters";
@@ -262,10 +263,10 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Estanque"
                 name="fn_num_estanque"
-                type="number"
+                decimalScale={0}
                 inputProps={{ min: 0, step: 1 }}
                 value={form.fn_num_estanque}
                 onChange={handleChange}
@@ -275,10 +276,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Oxígeno"
                 name="fn_oxigeno"
-                type="number"
                 inputProps={{ min: 0, step: "any" }}
                 value={form.fn_oxigeno}
                 onChange={handleChange}
@@ -288,10 +288,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Temperatura"
                 name="fn_temperatura"
-                type="number"
                 inputProps={{ step: "any" }}
                 value={form.fn_temperatura}
                 onChange={handleChange}
@@ -301,10 +300,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="pH"
                 name="fn_ph"
-                type="number"
                 inputProps={{ min: 0, max: 14, step: "any" }}
                 value={form.fn_ph}
                 onChange={handleChange}
@@ -314,10 +312,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Amonio"
                 name="fn_amonio"
-                type="number"
                 inputProps={{ min: 0, step: "any" }}
                 value={form.fn_amonio}
                 onChange={handleChange}
@@ -327,10 +324,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Nitritos"
                 name="fn_nitritos"
-                type="number"
                 inputProps={{ min: 0, step: "any" }}
                 value={form.fn_nitritos}
                 onChange={handleChange}
@@ -340,10 +336,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Nitratos"
                 name="fn_nitratos"
-                type="number"
                 inputProps={{ min: 0, step: "any" }}
                 value={form.fn_nitratos}
                 onChange={handleChange}

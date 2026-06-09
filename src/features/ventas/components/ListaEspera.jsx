@@ -3,6 +3,7 @@ import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
@@ -495,9 +496,9 @@ function ListaEsperaContent() {
           )}
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField
+            <CampoNumerico
               fullWidth
-              type="number"
+              decimalScale={0}
               label="Cantidad"
               name="fn_cantidad"
               value={form.fn_cantidad}
@@ -607,7 +608,7 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth type="number" label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} error={!!errors.fn_precio_venta} helperText={errors.fn_precio_venta} inputProps={{ min: 0, step: "0.01" }} />
+            <CampoNumerico fullWidth prefix="$" decimalScale={2} label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} error={!!errors.fn_precio_venta} helperText={errors.fn_precio_venta} inputProps={{ min: 0, step: "0.01" }} />
           </Grid>
         </Grid>
 

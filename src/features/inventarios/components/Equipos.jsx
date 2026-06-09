@@ -37,6 +37,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useUnidadesNegocioOptions from "@features/catalogos/hooks/useUnidadesNegocioOptions";
 
 function EquiposContent() {
@@ -361,9 +362,9 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Costo"
-                type="number"
+                prefix="$" decimalScale={2}
                 name="fn_costo"
                 value={form.fn_costo}
                 onChange={handleChange}
@@ -654,9 +655,9 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Costo"
-                type="number"
+                prefix="$" decimalScale={2}
                 name="fn_costo"
                 value={nuevoMantenimiento.fn_costo}
                 onChange={(e) => {

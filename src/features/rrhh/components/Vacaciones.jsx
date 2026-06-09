@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -230,9 +231,9 @@ export default function Vacaciones() {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <CampoNumerico
                 label="ID del empleado"
-                type="number"
+                decimalScale={0}
                 value={nuevoForm.idEmpleado}
                 onChange={(e) => {
                   clearFieldError("idEmpleado");
@@ -400,8 +401,8 @@ export default function Vacaciones() {
                       }
                     >
                       {isEditing ? (
-                        <TextField
-                          type="number"
+                        <CampoNumerico
+                          decimalScale={0}
                           value={data[campo] ?? 0}
                           onChange={(e) =>
                             handleChange(campo, e.target.value)

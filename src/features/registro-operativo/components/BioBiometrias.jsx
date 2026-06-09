@@ -35,6 +35,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 
@@ -418,10 +419,9 @@ export default function BioBiometrias() {
 
             {/* PESO TOTAL */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Peso Total (g)"
                 name="fn_peso_total_gramos"
-                type="number"
                 value={form.fn_peso_total_gramos}
                 onChange={handleChange}
                 fullWidth
@@ -432,10 +432,10 @@ export default function BioBiometrias() {
 
             {/* ORGANISMOS */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Organismos Muestreados"
                 name="fn_organismos_muestreados"
-                type="number"
+                decimalScale={0}
                 value={form.fn_organismos_muestreados}
                 onChange={handleChange}
                 fullWidth
@@ -446,10 +446,9 @@ export default function BioBiometrias() {
 
             {/* PESO PROMEDIO */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Peso Promedio (g)"
                 name="fn_peso_promedio"
-                type="number"
                 value={form.fn_peso_promedio}
                 slotProps={{ input: { readOnly: true } }}
                 fullWidth

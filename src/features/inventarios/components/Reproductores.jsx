@@ -31,6 +31,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
 import {
@@ -679,10 +680,10 @@ export default function Reproductores() {
                 <TituloSeccionFormulario titulo="Información machos" />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <CampoNumerico
                       label="Machos"
                       name="fn_machos"
-                      type="number"
+                      decimalScale={0}
                       value={formData.fn_machos}
                       onChange={handleChange}
                       fullWidth
@@ -733,10 +734,10 @@ export default function Reproductores() {
                 <TituloSeccionFormulario titulo="Información hembras" />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <CampoNumerico
                       label="Hembras"
                       name="fn_hembras"
-                      type="number"
+                      decimalScale={0}
                       value={formData.fn_hembras}
                       onChange={handleChange}
                       fullWidth

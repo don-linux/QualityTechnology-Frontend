@@ -36,6 +36,7 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
 import { listPiletas } from "../services/piletasService";
@@ -337,10 +338,10 @@ export default function Engorda() {
                 <TituloSeccionFormulario titulo="Información de cantidades" mt={0} />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
+                    <CampoNumerico
                       label="Cantidad inicial"
                       name="cantidad_total"
-                      type="number"
+                      decimalScale={0}
                       value={formData.cantidad_total}
                       onChange={handleChange}
                       fullWidth
@@ -352,10 +353,10 @@ export default function Engorda() {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
+                    <CampoNumerico
                       label="Cantidad actual"
                       name="cantidad_alimento"
-                      type="number"
+                      decimalScale={0}
                       value={formData.cantidad_alimento}
                       onChange={handleChange}
                       fullWidth
@@ -371,10 +372,9 @@ export default function Engorda() {
                 <TituloSeccionFormulario titulo="Datos biométricos" />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
+                    <CampoNumerico
                       label="Peso (kg)"
                       name="peso_kg"
-                      type="number"
                       value={formData.peso_kg}
                       onChange={handleChange}
                       fullWidth

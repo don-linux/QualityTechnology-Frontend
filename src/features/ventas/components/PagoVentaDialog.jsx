@@ -5,6 +5,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
@@ -171,9 +172,9 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 </TextField>
               </Grid>
               <Grid size={6}>
-                <TextField
+                <CampoNumerico
                   label="Monto"
-                  type="number"
+                  prefix="$" decimalScale={2}
                   name="fn_monto"
                   value={formData.fn_monto}
                   onChange={handleChange}

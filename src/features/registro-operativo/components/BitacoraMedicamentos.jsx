@@ -31,6 +31,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { formatFecha } from "@shared/utils/formatters";
@@ -259,8 +260,8 @@ function BitacoraMedicamentosContent() {
                 value={form.fd_fecha_hora} onChange={handleChange} fullWidth error={!!errors.fd_fecha_hora} helperText={errors.fd_fecha_hora} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Estanque" name="fn_num_estanque"
-                type="number" inputProps={{ min: 0, step: 1 }}
+              <CampoNumerico label="Estanque" name="fn_num_estanque"
+                decimalScale={0} inputProps={{ min: 0, step: 1 }}
                 value={form.fn_num_estanque} onChange={handleChange} fullWidth error={!!errors.fn_num_estanque} helperText={errors.fn_num_estanque} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>

@@ -33,6 +33,7 @@ import {
 } from "@shared/utils/fetchMergedPorUbicaciones";
 import { rowPerteneceAUbicacionGranja } from "@shared/utils/unidadesNegocio";
 import ProximaVentaModal from "@features/ventas/components/ProximaVentaModal";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
 import { listPiletas } from "../services/piletasService";
 import { listLista } from "@features/ventas/services/listaEsperaService";
@@ -708,9 +709,9 @@ export default function Trazabilidad() {
                     </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoNumerico
                       fullWidth
-                      type="number"
+                      decimalScale={0}
                       label="Cantidad de bajas"
                       name="cantidad"
                       value={form.cantidad}
@@ -758,9 +759,9 @@ export default function Trazabilidad() {
                     </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoNumerico
                       fullWidth
-                      type="number"
+                      decimalScale={0}
                       label={esIncubacionOrigen ? "Cantidad de alevines" : "Cantidad"}
                       name="cantidad"
                       value={form.cantidad}
@@ -771,9 +772,8 @@ export default function Trazabilidad() {
                   {esIncubacionOrigen ? (
                     <>
                       <Grid size={{ xs: 12, md: 4 }}>
-                        <TextField
+                        <CampoNumerico
                           fullWidth
-                          type="number"
                           label="Peso (kg)"
                           name="peso_kg"
                           value={form.peso_kg}
@@ -795,9 +795,9 @@ export default function Trazabilidad() {
                     </>
                   ) : (
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField
+                      <CampoNumerico
                         fullWidth
-                        type="number"
+                        decimalScale={0}
                         label="Mortalidad en traslado (opcional)"
                         name="mortalidad"
                         value={form.mortalidad}

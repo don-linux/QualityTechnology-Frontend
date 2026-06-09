@@ -29,6 +29,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { formatFecha } from "@shared/utils/formatters";
@@ -294,10 +295,10 @@ function BitacoraInventarioContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Cantidad"
                 name="fn_cantidad"
-                type="number"
+                decimalScale={0}
                 value={form.fn_cantidad}
                 onChange={handleChange}
                 fullWidth
@@ -306,10 +307,9 @@ function BitacoraInventarioContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Talla"
                 name="fn_talla"
-                type="number"
                 value={form.fn_talla}
                 onChange={handleChange}
                 fullWidth

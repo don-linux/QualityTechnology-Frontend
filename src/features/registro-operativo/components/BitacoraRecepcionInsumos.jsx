@@ -32,6 +32,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
@@ -405,10 +406,9 @@ function RecepcionInsumosContent() {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Cantidad"
                 name="fc_cantidad"
-                type="number"
                 value={form.fc_cantidad}
                 onChange={handleChange}
                 fullWidth

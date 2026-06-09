@@ -43,6 +43,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import CampoNumerico from "@shared/components/CampoNumerico";
 
 const TRUNCAR_MAX = 60;
 const truncar = (texto) =>
@@ -405,10 +406,9 @@ function PiletasTab({
               </Grid>
 
               <Grid size={{ xs: 6, md: 3 }}>
-                <TextField
+                <CampoNumerico
                   label="Largo (m)"
                   name="largo"
-                  type="number"
                   value={form.largo}
                   onChange={handleChange}
                   fullWidth
@@ -417,10 +417,9 @@ function PiletasTab({
                 />
               </Grid>
               <Grid size={{ xs: 6, md: 3 }}>
-                <TextField
+                <CampoNumerico
                   label="Ancho (m)"
                   name="ancho"
-                  type="number"
                   value={form.ancho}
                   onChange={handleChange}
                   fullWidth
@@ -429,10 +428,9 @@ function PiletasTab({
                 />
               </Grid>
               <Grid size={{ xs: 6, md: 3 }}>
-                <TextField
+                <CampoNumerico
                   label="Alto (m)"
                   name="alto"
-                  type="number"
                   value={form.alto}
                   onChange={handleChange}
                   fullWidth
