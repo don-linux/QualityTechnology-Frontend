@@ -515,13 +515,14 @@ export default function Trazabilidad() {
               <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>
                 Cantidad
               </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Usuario</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={7} align="center">
                   No hay movimientos registrados.
                 </TableCell>
               </TableRow>
@@ -533,6 +534,7 @@ export default function Trazabilidad() {
                   <TableCell>{row.origen ?? "—"}</TableCell>
                   <TableCell>{row.destino ?? "—"}</TableCell>
                   <TableCell align="right">{formatStock(row.cantidad_trasladada)}</TableCell>
+                  <TableCell>{row.fc_usuario ?? row.usuario_nombre ?? "—"}</TableCell>
                   <TableCell>{row.observacion ?? "—"}</TableCell>
                 </TableRow>
               ))
