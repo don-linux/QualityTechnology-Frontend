@@ -10,8 +10,9 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import Link from "@mui/material/Link";
 import { listMovimientos } from "../services/flujoCajaService";
-import { getUploadUrl } from "@shared/lib/uploadUrl";
+import { openUpload } from "@shared/lib/uploadUrl";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 
@@ -20,6 +21,14 @@ const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 function TablaMovimientos({ movimientos }) {
+  const showSnackbar = useSnackbar();
+  const verFactura = async (ruta) => {
+    try {
+      await openUpload(ruta);
+    } catch {
+      showSnackbar("No se pudo abrir la factura", "error");
+    }
+  };
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -54,18 +63,18 @@ function TablaMovimientos({ movimientos }) {
               <TableCell>{row.fc_noproyecto}</TableCell>
               <TableCell>
                 {row.fc_factura && row.fc_factura !== "NO" ? (
-                  <a
-                    href={getUploadUrl(row.fc_factura)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
+                  <Link
+                    component="button"
+                    type="button"
+                    onClick={() => verFactura(row.fc_factura)}
+                    sx={{
                       color: "#1D5C42",
                       fontWeight: "bold",
                       textDecoration: "none",
                     }}
                   >
                      Ver factura
-                  </a>
+                  </Link>
                 ) : row.fc_factura === "NO" ? (
                   "No aplica"
                 ) : (

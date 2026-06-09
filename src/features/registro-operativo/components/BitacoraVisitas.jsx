@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { getUploadUrl } from "@shared/lib/uploadUrl";
+import { openUpload } from "@shared/lib/uploadUrl";
 import Box from "@mui/material/Box";
+import Link from "@mui/material/Link";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
@@ -266,14 +267,20 @@ function BitacoraVisitasContent() {
               </TableCell>
               <TableCell>
                 {r.fc_foto_identificacion ? (
-                  <a
-                    href={getUploadUrl(r.fc_foto_identificacion)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
+                  <Link
+                    component="button"
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await openUpload(r.fc_foto_identificacion);
+                      } catch {
+                        showSnackbar("No se pudo abrir la foto", "error");
+                      }
+                    }}
+                    sx={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
                   >
                     Ver foto
-                  </a>
+                  </Link>
                 ) : (
                   "—"
                 )}
