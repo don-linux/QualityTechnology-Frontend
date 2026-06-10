@@ -305,7 +305,7 @@ const Alevinaje = () => {
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
-                  label="Pileta (alevinaje)"
+                  label="Instalación (alevinaje)"
                   name="fi_pileta_destino_id"
                   value={formData.fi_pileta_destino_id || ""}
                   onChange={handleChange}
@@ -444,7 +444,7 @@ const Alevinaje = () => {
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Instalación</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Peso (g)</TableCell>
