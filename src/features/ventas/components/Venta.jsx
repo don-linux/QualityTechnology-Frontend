@@ -64,7 +64,9 @@ export default function Venta() {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
         {granja === "ALL"
           ? "Se muestran las ventas de todas las unidades de negocio."
-          : `Solo se muestran las ventas de tu unidad de negocio (${granja}).`}
+          : granja === "SIN_UNIDAD"
+            ? "Tu usuario no tiene una unidad de negocio asignada; no hay ventas visibles."
+            : `Solo se muestran las ventas de tu unidad de negocio (${granja}).`}
       </Typography>
 
       <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>

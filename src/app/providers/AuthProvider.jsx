@@ -48,11 +48,22 @@ export function AuthProvider({ children }) {
     localStorage.setItem("usuario_id", String(usuarioId));
     localStorage.setItem("modulos", JSON.stringify(data.modulos || []));
 
-    let granja = "ALL";
-    const rolLower = rolTexto.toLowerCase();
-    if (rolLower.includes("gam")) granja = "Medellin";
-    if (rolLower.includes("gac")) granja = "La Ceiba";
+    // Unidad de negocio del empleado vinculado al usuario (login la resuelve en BD).
+    // "ALL" = sin restricción (root); "SIN_UNIDAD" = usuario sin unidad asignada.
+    let granja;
+    if (usuario.es_root === true) {
+      granja = "ALL";
+    } else if (usuario.unidad_negocio_nombre) {
+      granja = usuario.unidad_negocio_nombre;
+    } else {
+      granja = "SIN_UNIDAD";
+    }
     localStorage.setItem("granja", granja);
+    if (usuario.unidad_negocio_id != null) {
+      localStorage.setItem("unidad_negocio_id", String(usuario.unidad_negocio_id));
+    } else {
+      localStorage.removeItem("unidad_negocio_id");
+    }
 
     setSession(readSession());
   }, []);

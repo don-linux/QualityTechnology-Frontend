@@ -104,14 +104,17 @@ export default function ListaEspera() {
 function ListaEsperaContent() {
   const showSnackbar = useSnackbar();
   const auth = useAuth();
-  const rol = auth.rol;
   const nombreUsuario = auth.nombre;
   const {
     ubicacionesGranja,
     defaultUbicacion,
-    resolveUnidadByRol,
   } = useUbicacionesGranja();
-  const granjaDefault = resolveUnidadByRol(rol)?.fc_nombre || defaultUbicacion;
+  const puedeElegirGranja = auth.granja === "ALL";
+  const granjaDefault = puedeElegirGranja
+    ? defaultUbicacion
+    : auth.granja !== "SIN_UNIDAD"
+      ? auth.granja
+      : "";
 
   const [editId, setEditId] = useState(null);
   const [clientes, setClientes] = useState([]);
@@ -454,7 +457,7 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            {rol === "Administrador" ? (
+            {puedeElegirGranja ? (
               <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange} error={!!errors.fc_granja_asignada} helperText={errors.fc_granja_asignada}>
                 {ubicacionesGranja.map((op) => (
                   <MenuItem key={op.value} value={op.value}>
@@ -642,7 +645,9 @@ function ListaEsperaContent() {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
         {auth.granja === "ALL"
           ? "Se muestran los pedidos de todas las unidades de negocio."
-          : `Solo se muestran los pedidos de tu unidad de negocio (${auth.granja}).`}
+          : auth.granja === "SIN_UNIDAD"
+            ? "Tu usuario no tiene una unidad de negocio asignada; no hay pedidos visibles."
+            : `Solo se muestran los pedidos de tu unidad de negocio (${auth.granja}).`}
       </Typography>
 
       <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
