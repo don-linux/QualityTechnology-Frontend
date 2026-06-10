@@ -40,11 +40,12 @@ function TablaMovimientos({ movimientos }) {
             <TableCell><b>Fecha</b></TableCell>
             <TableCell align="right"><b>Ingreso</b></TableCell>
             <TableCell align="right"><b>Egreso</b></TableCell>
+            <TableCell><b>Razón Social</b></TableCell>
+            <TableCell><b>Concepto</b></TableCell>
             <TableCell><b>Observaciones</b></TableCell>
             <TableCell><b>Cuenta</b></TableCell>
             <TableCell><b>Categoria</b></TableCell>
-            <TableCell><b>Subcategoria</b></TableCell>
-            <TableCell><b>Beneficiario</b></TableCell>
+            <TableCell><b>Sub categoria</b></TableCell>
             <TableCell><b>Proyecto</b></TableCell>
             <TableCell><b>Factura</b></TableCell>
             <TableCell><b>Estatus</b></TableCell>
@@ -57,13 +58,16 @@ function TablaMovimientos({ movimientos }) {
               <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
               <TableCell align="right">{formatPrecio(row.fn_ingreso)}</TableCell>
               <TableCell align="right">{formatPrecio(row.fn_egreso)}</TableCell>
+              <TableCell>{row.fc_beneficiario}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={row.fc_concepto}>{truncar(row.fc_concepto)}</span>
+              </TableCell>
               <TableCell sx={{ maxWidth: 200 }}>
                 <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
               </TableCell>
               <TableCell>{row.fc_cuenta}</TableCell>
               <TableCell>{row.fc_categoria}</TableCell>
               <TableCell>{row.fc_subcategoria}</TableCell>
-              <TableCell>{row.fc_beneficiario}</TableCell>
               <TableCell>{row.fc_noproyecto}</TableCell>
               <TableCell>
                 {row.fc_factura && row.fc_factura !== "NO" ? (
@@ -90,7 +94,7 @@ function TablaMovimientos({ movimientos }) {
           ))}
           {filas.length === 0 && (
             <TableRow>
-              <TableCell colSpan={12} align="center">
+              <TableCell colSpan={13} align="center">
                 No hay movimientos registrados.
               </TableCell>
             </TableRow>
