@@ -42,7 +42,6 @@ import useAuth from "@app/providers/AuthProvider";
 import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
-import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const EMPTY_CLIENTE_RAPIDO = {
@@ -111,7 +110,6 @@ function ListaEsperaContent() {
     ubicacionesGranja,
     defaultUbicacion,
     resolveUnidadByRol,
-    getGroups,
   } = useUbicacionesGranja();
   const granjaDefault = resolveUnidadByRol(rol)?.fc_nombre || defaultUbicacion;
 
@@ -142,10 +140,7 @@ function ListaEsperaContent() {
   const [form, setForm] = useState(emptyForm);
   const [lista, setLista] = useState([]);
 
-  const gruposPedidos = useMemo(
-    () => getGroups(lista, "fc_granja_asignada"),
-    [getGroups, lista],
-  );
+  const filasPedidos = useMemo(() => ordenarYNumerar(lista, ["fi_lista_id"]), [lista]);
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -645,79 +640,73 @@ function ListaEsperaContent() {
         Lista de Pedidos
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Pedidos agrupados por sede, igual que en alevinaje, engorda, incubación y trazabilidad.
+        {auth.granja === "ALL"
+          ? "Se muestran los pedidos de todas las unidades de negocio."
+          : `Solo se muestran los pedidos de tu unidad de negocio (${auth.granja}).`}
       </Typography>
 
-      <TablasPorUbicacionGranja
-        grupos={gruposPedidos}
-        renderTabla={(rows) => {
-          const filas = ordenarYNumerar(rows, ["fi_lista_id"]);
-          return (
-            <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
-              <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-                <Table size="small" sx={{ minWidth: 900 }}>
-                  <TableHead sx={{ backgroundColor: "#006d77" }}>
-                    <TableRow>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tipo</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cliente</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lugar</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Granja</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Precio</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Estatus</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Acciones</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filas.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={11} align="center">
-                          No hay pedidos en esta sede.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filas.map((item) => (
-                        <TableRow key={item.fi_lista_id}>
-                          <TableCell>{item._num}</TableCell>
-                          <TableCell>{formatFecha(item.fd_fecha_entrega)}</TableCell>
-                          <TableCell>{item.fc_uap_asignada ?? item.tipo_venta ?? "—"}</TableCell>
-                          <TableCell>{item.fc_cliente}</TableCell>
-                          <TableCell>{item.fn_cantidad}</TableCell>
-                          <TableCell>{item.nombre_pileta_origen ?? "—"}</TableCell>
-                          <TableCell>{item.fc_lugar_entrega}</TableCell>
-                          <TableCell>{item.fc_granja_asignada ?? item.granja ?? "—"}</TableCell>
-                          <TableCell>{formatPrecio(item.fn_precio_venta)}</TableCell>
-                          <TableCell>{etiquetaEstatus(item)}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outlined"
-                              color="warning"
-                              sx={{ mr: 1 }}
-                              onClick={() => editar(item)}
-                              disabled={Boolean(item.venta_id ?? item.fi_venta_id)}
-                            >
-                              Editar
-                            </Button>
-                            <Button variant="outlined" color="error" sx={{ mr: 1 }} onClick={() => cancelar(item)}>
-                              Cancelar
-                            </Button>
-                            <Button variant="contained" color="success" onClick={() => convertir(item)}>
-                              Convertir
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
-          );
-        }}
-      />
+      <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table size="small" sx={{ minWidth: 900 }}>
+            <TableHead sx={{ backgroundColor: "#006d77" }}>
+              <TableRow>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tipo</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cliente</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lugar</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Granja</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Precio</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Estatus</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filasPedidos.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={11} align="center">
+                    No hay pedidos registrados.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filasPedidos.map((item) => (
+                  <TableRow key={item.fi_lista_id}>
+                    <TableCell>{item._num}</TableCell>
+                    <TableCell>{formatFecha(item.fd_fecha_entrega)}</TableCell>
+                    <TableCell>{item.fc_uap_asignada ?? item.tipo_venta ?? "—"}</TableCell>
+                    <TableCell>{item.fc_cliente}</TableCell>
+                    <TableCell>{item.fn_cantidad}</TableCell>
+                    <TableCell>{item.nombre_pileta_origen ?? "—"}</TableCell>
+                    <TableCell>{item.fc_lugar_entrega}</TableCell>
+                    <TableCell>{item.fc_granja_asignada ?? item.granja ?? "—"}</TableCell>
+                    <TableCell>{formatPrecio(item.fn_precio_venta)}</TableCell>
+                    <TableCell>{etiquetaEstatus(item)}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        sx={{ mr: 1 }}
+                        onClick={() => editar(item)}
+                        disabled={Boolean(item.venta_id ?? item.fi_venta_id)}
+                      >
+                        Editar
+                      </Button>
+                      <Button variant="outlined" color="error" sx={{ mr: 1 }} onClick={() => cancelar(item)}>
+                        Cancelar
+                      </Button>
+                      <Button variant="contained" color="success" onClick={() => convertir(item)}>
+                        Convertir
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
 
       {/* Modal para cliente rápido */}
       <Dialog open={openCliente} onClose={() => setOpenCliente(false)} fullWidth maxWidth="sm">
