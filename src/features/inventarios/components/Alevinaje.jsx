@@ -444,18 +444,17 @@ const Alevinaje = () => {
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Instalación</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Talla (g)</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha talla</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
+                      <TableCell colSpan={6} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
@@ -473,13 +472,10 @@ const Alevinaje = () => {
                         }}
                       >
                         <TableCell>{l._num}</TableCell>
-                        <TableCell>
-                          {l.nombre_pileta_destino || l.nombre_pileta || "—"}
-                        </TableCell>
                         <TableCell>{formatNumber(l.cantidad_total)}</TableCell>
-                        <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
                         <TableCell>{formatNumber(l.peso_gramos ?? l.peso)}</TableCell>
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
+                        <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                           <CeldaObservacionConHistorial
                             texto={l.observacion ?? l.fc_observacion ?? ""}
