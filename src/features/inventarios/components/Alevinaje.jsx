@@ -445,7 +445,7 @@ const Alevinaje = () => {
                   <TableRow>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Instalación</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Talla (g)</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
