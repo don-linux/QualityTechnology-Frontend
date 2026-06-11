@@ -69,6 +69,7 @@ const Alevinaje = () => {
   const [formData, setFormData] = useState({
     ubicacion: "",
     fi_pileta_destino_id: "",
+    fc_lote: "",
     cantidad_total: "",
     cantidad_alimento: "",
     peso_gramos: "",
@@ -91,6 +92,8 @@ const Alevinaje = () => {
   const payloadComunBackend = () => ({
     pileta_id: Number(formData.fi_pileta_destino_id),
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
+    lote: formData.fc_lote?.trim() || null,
+    fc_lote: formData.fc_lote?.trim() || null,
     cantidad_total: Number(formData.cantidad_total || 0),
     cantidad_alimento: Number(formData.cantidad_alimento || 0),
     peso_gramos: formData.peso_gramos === "" ? null : Number(formData.peso_gramos),
@@ -176,6 +179,12 @@ const Alevinaje = () => {
       fi_pileta_destino_id: String(
         seleccionado.fi_pileta_destino_id ?? seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
       ),
+      fc_lote:
+        seleccionado.lote ??
+        seleccionado.fc_lote ??
+        seleccionado.lote_genetico ??
+        seleccionado.fc_lote_genetico ??
+        "",
       cantidad_total: String(seleccionado.cantidad_total ?? ""),
       cantidad_alimento: String(seleccionado.cantidad_alimento ?? ""),
       peso_gramos:
@@ -235,6 +244,7 @@ const Alevinaje = () => {
     setFormData({
       ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
       fi_pileta_destino_id: "",
+      fc_lote: "",
       cantidad_total: "",
       cantidad_alimento: "",
       peso_gramos: "",
@@ -323,6 +333,19 @@ const Alevinaje = () => {
                     );
                   })}
                 </TextField>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label="Lote genético"
+                  name="fc_lote"
+                  value={formData.fc_lote}
+                  onChange={handleChange}
+                  fullWidth
+                  placeholder="Lote heredado de incubación o captura manual"
+                  sx={campoFormSx}
+                  inputProps={{ maxLength: 60 }}
+                />
               </Grid>
 
               <Grid size={12}>
@@ -446,6 +469,7 @@ const Alevinaje = () => {
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Talla (g)</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha talla</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
@@ -454,7 +478,7 @@ const Alevinaje = () => {
                 <TableBody>
                   {filas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
@@ -474,6 +498,9 @@ const Alevinaje = () => {
                         <TableCell>{l._num}</TableCell>
                         <TableCell>{formatNumber(l.cantidad_total)}</TableCell>
                         <TableCell>{formatNumber(l.peso_gramos ?? l.peso)}</TableCell>
+                        <TableCell>
+                          {l.lote ?? l.fc_lote ?? l.lote_genetico ?? l.fc_lote_genetico ?? ""}
+                        </TableCell>
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
                         <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
