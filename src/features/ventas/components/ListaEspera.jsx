@@ -110,6 +110,8 @@ function ListaEsperaContent() {
     defaultUbicacion,
   } = useUbicacionesGranja();
   const puedeElegirGranja = auth.granja === "ALL";
+  const puedeElegirUdN = auth.granja === "ALL";
+  const unidadNegocioIdUsuario = localStorage.getItem("unidad_negocio_id") || "";
   const granjaDefault = puedeElegirGranja
     ? defaultUbicacion
     : auth.granja !== "SIN_UNIDAD"
@@ -144,6 +146,22 @@ function ListaEsperaContent() {
   const [lista, setLista] = useState([]);
 
   const filasPedidos = useMemo(() => ordenarYNumerar(lista, ["fi_lista_id"]), [lista]);
+
+  const unidadesDisponibles = useMemo(() => {
+    if (puedeElegirUdN) return unidadesNegocio;
+    if (auth.granja === "SIN_UNIDAD") return [];
+    if (unidadNegocioIdUsuario) {
+      return unidadesNegocio.filter(
+        (unidad) => String(unidad.fi_unidad_negocio_id) === unidadNegocioIdUsuario,
+      );
+    }
+    return unidadesNegocio.filter((unidad) => unidad.fc_nombre === auth.granja);
+  }, [auth.granja, puedeElegirUdN, unidadNegocioIdUsuario, unidadesNegocio]);
+
+  const udnDefaultClienteRapido = useMemo(() => {
+    if (puedeElegirUdN || auth.granja === "SIN_UNIDAD") return "";
+    return unidadNegocioIdUsuario || String(unidadesDisponibles[0]?.fi_unidad_negocio_id || "");
+  }, [auth.granja, puedeElegirUdN, unidadNegocioIdUsuario, unidadesDisponibles]);
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -280,6 +298,16 @@ function ListaEsperaContent() {
     });
   };
 
+  const abrirModalCliente = () => {
+    setNuevoCliente({ ...EMPTY_CLIENTE_RAPIDO, fi_unidad_negocio_id: udnDefaultClienteRapido });
+    setOpenCliente(true);
+  };
+
+  const cerrarModalCliente = () => {
+    setOpenCliente(false);
+    setNuevoCliente({ ...EMPTY_CLIENTE_RAPIDO, fi_unidad_negocio_id: udnDefaultClienteRapido });
+  };
+
   const editar = (item) => {
     clearErrors();
     setEditId(item.fi_lista_id);
@@ -404,8 +432,7 @@ function ListaEsperaContent() {
         fi_ejecutivo_empleado_id: Number(nuevoCliente.fi_ejecutivo_empleado_id),
       });
       await cargarClientes();
-      setOpenCliente(false);
-      setNuevoCliente(EMPTY_CLIENTE_RAPIDO);
+      cerrarModalCliente();
     } catch (err) {
       showSnackbar(err?.response?.data?.error || "Error al registrar cliente", "error");
     }
@@ -569,7 +596,7 @@ function ListaEsperaContent() {
                   fullWidth
                   variant="contained"
                   color="success"
-                  onClick={() => setOpenCliente(true)}
+                  onClick={abrirModalCliente}
                 >
                   <AddIcon />
                 </Button>
@@ -714,7 +741,7 @@ function ListaEsperaContent() {
       </Paper>
 
       {/* Modal para cliente rápido */}
-      <Dialog open={openCliente} onClose={() => setOpenCliente(false)} fullWidth maxWidth="sm">
+      <Dialog open={openCliente} onClose={cerrarModalCliente} fullWidth maxWidth="sm">
         <DialogTitle>Registrar nuevo cliente</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -725,12 +752,21 @@ function ListaEsperaContent() {
               <TextField name="fc_rfc" label="RFC" fullWidth value={nuevoCliente.fc_rfc} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 20 }} />
             </Grid>
             <Grid size={6}>
-              <TextField select name="fi_unidad_negocio_id" label="UdN" fullWidth value={nuevoCliente.fi_unidad_negocio_id} onChange={handleNuevoClienteChange}>
-                <MenuItem value="">Selecciona UdN</MenuItem>
-                {unidadesNegocio.map((unidad) => (
-                  <MenuItem key={unidad.fi_unidad_negocio_id} value={unidad.fi_unidad_negocio_id}>{unidad.fc_nombre}</MenuItem>
-                ))}
-              </TextField>
+              {puedeElegirUdN ? (
+                <TextField select name="fi_unidad_negocio_id" label="UdN" fullWidth value={nuevoCliente.fi_unidad_negocio_id} onChange={handleNuevoClienteChange}>
+                  <MenuItem value="">Selecciona UdN</MenuItem>
+                  {unidadesDisponibles.map((unidad) => (
+                    <MenuItem key={unidad.fi_unidad_negocio_id} value={unidad.fi_unidad_negocio_id}>{unidad.fc_nombre}</MenuItem>
+                  ))}
+                </TextField>
+              ) : (
+                <TextField
+                  label="UdN"
+                  fullWidth
+                  value={unidadesDisponibles[0]?.fc_nombre || auth.granja || ""}
+                  slotProps={{ input: { readOnly: true } }}
+                />
+              )}
             </Grid>
             <Grid size={6}>
               <TextField name="fc_nombre_contacto" label="Nombre del contacto" fullWidth value={nuevoCliente.fc_nombre_contacto} onChange={handleNuevoClienteChange} />
@@ -763,7 +799,7 @@ function ListaEsperaContent() {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenCliente(false)}>Cancelar</Button>
+          <Button onClick={cerrarModalCliente}>Cancelar</Button>
           <Button variant="contained" color="success" onClick={registrarClienteRapido}>
             Guardar
           </Button>
