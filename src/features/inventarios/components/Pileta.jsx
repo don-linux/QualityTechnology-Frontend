@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { formatFecha } from "@shared/utils/formatters";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -59,11 +59,6 @@ const tipoLabel = (t) => {
   const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda", incubacion: "Incubación" };
   return map[String(t).toLowerCase()] || t;
 };
-
-const formatNumber = (num, opts = {}) =>
-  num != null && num !== ""
-    ? Number(num).toLocaleString("en-US", opts)
-    : "—";
 
 /* ============================================================================
  *  PANTALLA PRINCIPAL — solo piletas físicas (CRUD)
@@ -585,12 +580,9 @@ function PiletasTab({
                         />
                       </TableCell>
                       <TableCell>{p.fc_estado_conservacion || "—"}</TableCell>
-                      <TableCell align="right">{formatNumber(p.cantidad ?? p.fn_cantidad)}</TableCell>
+                      <TableCell align="right">{formatCantidad(p.cantidad ?? p.fn_cantidad)}</TableCell>
                       <TableCell align="right">
-                        {formatNumber(p.metros_cubicos, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 3,
-                        })}
+                        {formatCantidad(p.metros_cubicos)}
                       </TableCell>
                       <TableCell>{p.material}</TableCell>
                       <TableCell sx={{ maxWidth: 260 }}>

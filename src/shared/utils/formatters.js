@@ -3,6 +3,7 @@
 // Convenciones de presentación:
 //   - Fechas:  DD-MM-AAAA   (ej. 09-06-2026)
 //   - Precios: $000,000.00  (es-MX, 2 decimales, separador de miles)
+//   - Cantidades inventario: 000,000  (es-MX, enteros; hasta 3 decimales si aplica)
 //
 // Importante: los <input type="date"> requieren el valor en formato
 // "AAAA-MM-DD"; para ello usa `toInputDate`, NO `formatFecha`.
@@ -87,4 +88,20 @@ export function formatNumero(value, decimales = 0) {
     minimumFractionDigits: decimales,
     maximumFractionDigits: decimales,
   });
+}
+
+/**
+ * Formatea cantidades de inventario (organismos, pesos, stock)
+ * con separador de miles es-MX. Enteros sin decimales;
+ * valores decimales con hasta 3 cifras.
+ * @param {number|string|null|undefined} value
+ * @param {string} [fallback="—"]
+ * @returns {string}
+ */
+export function formatCantidad(value, fallback = "—") {
+  if (value === null || value === undefined || value === "") return fallback;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  if (Number.isInteger(n)) return n.toLocaleString("es-MX");
+  return n.toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 3 });
 }

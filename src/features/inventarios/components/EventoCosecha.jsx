@@ -7,7 +7,7 @@ import {
 } from "../services/eventoCosechaService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
-import { formatFecha } from "@shared/utils/formatters";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import {
   CampoConEtiquetaArriba,
   TituloSeccionFormulario,
@@ -353,16 +353,6 @@ const EventoCosecha = () => {
   };
 
   const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
-
-  const formatNumber = (num) => {
-    if (num === null || num === undefined) return "";
-    const n = Number(num);
-    if (Number.isInteger(n)) return n.toString();
-    return n.toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    });
-  };
 
   const cargarHistorialObservaciones = useCallback(
     (piletaId) => listObservacionesPileta(piletaId),
@@ -742,9 +732,9 @@ const EventoCosecha = () => {
                       <TableCell>
                         {row.incubacion_pileta_nombre ?? row.nombre_pileta_destino ?? "—"}
                       </TableCell>
-                      <TableCell>{formatNumber(row.huevos_ml ?? row.fn_huevos_ml)}</TableCell>
+                      <TableCell align="right">{formatCantidad(row.huevos_ml ?? row.fn_huevos_ml)}</TableCell>
                       <TableCell>{formatearFecha(row.fecha_ingreso ?? row.fd_fecha_ingreso)}</TableCell>
-                      <TableCell>{formatNumber(row.dias_en_pileta ?? row.fn_dias_en_pileta)}</TableCell>
+                      <TableCell align="right">{formatCantidad(row.dias_en_pileta ?? row.fn_dias_en_pileta)}</TableCell>
                       <TableCell>{formatearFecha(row.fecha_egreso ?? row.fd_fecha_egreso)}</TableCell>
                       <TableCell>
                         <CeldaObservacionConHistorial

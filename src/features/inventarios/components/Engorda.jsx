@@ -7,7 +7,7 @@ import {
 } from "../services/engordaService";
 import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
-import { formatFecha } from "@shared/utils/formatters";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import {
   CampoConEtiquetaArriba,
   TituloSeccionFormulario,
@@ -253,16 +253,6 @@ export default function Engorda() {
 
   const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
 
-  const formatNumber = (num) => {
-    if (num === null || num === undefined) return "";
-    const n = Number(num);
-    if (Number.isInteger(n)) return n.toString();
-    return n.toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    });
-  };
-
   const totalCantidad = registros.reduce(
     (acc, e) => acc + Number(e.cantidad_total ?? e.cantidad ?? 0),
     0,
@@ -281,7 +271,7 @@ export default function Engorda() {
 
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
         <Typography><b>Registros:</b> {registros.length}</Typography>
-        <Typography><b>Total organismos en engorda:</b> {totalCantidad.toLocaleString("es-MX")}</Typography>
+        <Typography><b>Total organismos en engorda:</b> {formatCantidad(totalCantidad, "0")}</Typography>
       </Paper>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
@@ -455,9 +445,9 @@ export default function Engorda() {
                   <TableRow>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Peso (g)</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Peso (g)</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                   </TableRow>
@@ -487,9 +477,9 @@ export default function Engorda() {
                         <TableCell>
                           {l.nombre_pileta_destino || l.nombre_pileta || "—"}
                         </TableCell>
-                        <TableCell>{formatNumber(l.cantidad_total ?? l.cantidad)}</TableCell>
-                        <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
-                        <TableCell>{formatNumber(l.peso_gramos ?? l.peso)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.cantidad_total ?? l.cantidad)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.cantidad_alimento)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.peso_gramos ?? l.peso)}</TableCell>
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                           <CeldaObservacionConHistorial

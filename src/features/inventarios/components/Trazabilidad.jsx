@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { formatFecha } from "@shared/utils/formatters";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
@@ -121,10 +121,6 @@ function etapaPiletaParaTipo(tipo) {
 
 function stockPileta(p) {
   return Number(p?.cantidad ?? p?.fn_cantidad ?? 0);
-}
-
-function formatStock(num) {
-  return Number(num ?? 0).toLocaleString("en-US");
 }
 
 function tipoVentaParaEtapa(etapa) {
@@ -369,7 +365,7 @@ export default function Trazabilidad() {
       }
       if (cantidadExcedeStock) {
         showSnackbar(
-          `Stock insuficiente: disponible ${formatStock(stockOrigen)}, pedido ${formatStock(cantidadVenta)}`,
+          `Stock insuficiente: disponible ${formatCantidad(stockOrigen)}, pedido ${formatCantidad(cantidadVenta)}`,
           "error",
         );
         return false;
@@ -390,7 +386,7 @@ export default function Trazabilidad() {
       }
       if (cantidadExcedeStockMortalidad) {
         showSnackbar(
-          `Stock insuficiente: disponible ${formatStock(stockOrigen)}, mortalidad ${formatStock(cantidadMortalidad)}`,
+          `Stock insuficiente: disponible ${formatCantidad(stockOrigen)}, mortalidad ${formatCantidad(cantidadMortalidad)}`,
           "error",
         );
         return false;
@@ -487,7 +483,7 @@ export default function Trazabilidad() {
 
   const etiquetaPedido = (p) => {
     const cliente = p.fc_cliente ?? p.cliente_nombre ?? "Cliente";
-    const cant = formatStock(p.fn_cantidad ?? p.cantidad_peces);
+    const cant = formatCantidad(p.fn_cantidad ?? p.cantidad_peces);
     const fecha = formatFecha(p.fd_fecha_entrega ?? p.fecha_entrega);
     return `#${p.fi_lista_id} · ${cliente} · ${cant} org. · ${fecha}`;
   };
@@ -495,7 +491,7 @@ export default function Trazabilidad() {
   const etiquetaPileta = (p) => {
     const tipo = String(p.tipo ?? p.fc_tipo ?? "").toLowerCase();
     if (tipo === "incubacion") return `${p.nombre} (lote en incubación)`;
-    return `${p.nombre} — ${formatStock(stockPileta(p))} org.`;
+    return `${p.nombre} — ${formatCantidad(stockPileta(p))} org.`;
   };
 
   const gruposMovimientos = useMemo(
@@ -538,7 +534,7 @@ export default function Trazabilidad() {
                   <TableCell>{row.fc_etapa ?? "—"}</TableCell>
                   <TableCell>{row.origen ?? "—"}</TableCell>
                   <TableCell>{row.destino ?? "—"}</TableCell>
-                  <TableCell align="right">{formatStock(row.cantidad_trasladada)}</TableCell>
+                  <TableCell align="right">{formatCantidad(row.cantidad_trasladada)}</TableCell>
                   <TableCell>{row.fc_usuario ?? row.usuario_nombre ?? "—"}</TableCell>
                   <TableCell>{row.observacion ?? "—"}</TableCell>
                 </TableRow>
@@ -654,7 +650,7 @@ export default function Trazabilidad() {
                       <Alert severity="info">
                         Cliente: <strong>{pedidoSeleccionado.fc_cliente}</strong>
                         {" · "}
-                        Cantidad: {formatStock(cantidadVenta)} org.
+                        Cantidad: {formatCantidad(cantidadVenta)} org.
                         {" · "}
                         Tipo: {pedidoSeleccionado.fc_uap_asignada ?? pedidoSeleccionado.tipo_venta}
                       </Alert>
@@ -672,9 +668,9 @@ export default function Trazabilidad() {
                       error={cantidadExcedeStock}
                       helperText={
                         cantidadExcedeStock
-                          ? `Stock insuficiente: ${formatStock(stockOrigen)} disponibles`
+                          ? `Stock insuficiente: ${formatCantidad(stockOrigen)} disponibles`
                           : stockOrigen != null
-                            ? `Disponible: ${formatStock(stockOrigen)} organismos`
+                            ? `Disponible: ${formatCantidad(stockOrigen)} organismos`
                             : `Solo piletas de ${tipoConfig.etapaOrigen} con stock`
                       }
                     >
@@ -702,9 +698,9 @@ export default function Trazabilidad() {
                       error={cantidadExcedeStockMortalidad}
                       helperText={
                         cantidadExcedeStockMortalidad
-                          ? `Stock insuficiente: ${formatStock(stockOrigen)} disponibles`
+                          ? `Stock insuficiente: ${formatCantidad(stockOrigen)} disponibles`
                           : stockOrigen != null
-                            ? `Disponible: ${formatStock(stockOrigen)} organismos`
+                            ? `Disponible: ${formatCantidad(stockOrigen)} organismos`
                             : `Piletas de ${tipoConfig.etapaOrigen} con stock`
                       }
                     >

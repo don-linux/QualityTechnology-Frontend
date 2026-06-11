@@ -7,7 +7,7 @@ import {
 } from "../services/alevinajeService";
 import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
-import { formatFecha } from "@shared/utils/formatters";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import {
   CampoConEtiquetaArriba,
   TituloSeccionFormulario,
@@ -263,16 +263,6 @@ const Alevinaje = () => {
 
   const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
 
-  const formatNumber = (num) => {
-    if (num === null || num === undefined) return "";
-    const n = Number(num);
-    if (Number.isInteger(n)) return n.toString();
-    return n.toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    });
-  };
-
   const cargarHistorialObservaciones = useCallback(
     (piletaId) => listObservacionesPileta(piletaId),
     [],
@@ -467,11 +457,11 @@ const Alevinaje = () => {
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Talla (g)</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Talla (g)</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha talla</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                   </TableRow>
                 </TableHead>
@@ -496,13 +486,13 @@ const Alevinaje = () => {
                         }}
                       >
                         <TableCell>{l._num}</TableCell>
-                        <TableCell>{formatNumber(l.cantidad_total)}</TableCell>
-                        <TableCell>{formatNumber(l.peso_gramos ?? l.peso)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.cantidad_total)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.peso_gramos ?? l.peso)}</TableCell>
                         <TableCell>
                           {l.lote ?? l.fc_lote ?? l.lote_genetico ?? l.fc_lote_genetico ?? ""}
                         </TableCell>
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
-                        <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.cantidad_alimento)}</TableCell>
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                           <CeldaObservacionConHistorial
                             texto={l.observacion ?? l.fc_observacion ?? ""}

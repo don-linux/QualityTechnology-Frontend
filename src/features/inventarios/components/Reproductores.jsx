@@ -7,7 +7,7 @@ import {
 } from "../services/reproductoresService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
-import { formatFecha } from "@shared/utils/formatters";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -562,14 +562,6 @@ export default function Reproductores() {
 
   const formatearFecha = (fechaISO) => formatFecha(fechaISO);
 
-  const formatNumber = (num) => {
-    if (num === null || num === undefined || num === "") return "—";
-    const n = Number(num);
-    if (Number.isNaN(n)) return "—";
-    if (Number.isInteger(n)) return n.toLocaleString("es-MX");
-    return n.toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 3 });
-  };
-
   const totalOrganismos = registros.reduce(
     (acc, r) => acc + Number(r.fn_cantidad ?? r.cantidad_total ?? 0),
     0,
@@ -594,7 +586,7 @@ export default function Reproductores() {
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
         <Typography><b>Registros:</b> {registros.length}</Typography>
         <Typography>
-          <b>Total reproductores (vista):</b> {totalOrganismos.toLocaleString("es-MX")}
+          <b>Total reproductores (vista):</b> {formatCantidad(totalOrganismos, "0")}
         </Typography>
       </Paper>
 
@@ -937,7 +929,7 @@ export default function Reproductores() {
                         >
                           <TableCell>{l._num}</TableCell>
                           <TableCell>{l.nombre_pileta_destino || l.nombre_pileta || "—"}</TableCell>
-                          <TableCell>{formatNumber(l.fn_machos ?? l.machos)}</TableCell>
+                          <TableCell align="right">{formatCantidad(l.fn_machos ?? l.machos)}</TableCell>
                           <TableCell>{l.fc_genetica_machos ?? l.genetica_machos ?? "—"}</TableCell>
                           <TableCell>{l.fc_familia_machos ?? l.familia_machos ?? "—"}</TableCell>
                           <TableCell>
@@ -952,7 +944,7 @@ export default function Reproductores() {
                               piletasEngorda,
                             )}
                           </TableCell>
-                          <TableCell>{formatNumber(l.fn_hembras ?? l.hembras)}</TableCell>
+                          <TableCell align="right">{formatCantidad(l.fn_hembras ?? l.hembras)}</TableCell>
                           <TableCell>{l.fc_genetica_hembras ?? l.genetica_hembras ?? "—"}</TableCell>
                           <TableCell>{l.fc_familia_hembras ?? l.familia_hembras ?? "—"}</TableCell>
                           <TableCell>
@@ -967,15 +959,15 @@ export default function Reproductores() {
                               piletasEngorda,
                             )}
                           </TableCell>
-                          <TableCell>{formatNumber(l.fn_cantidad ?? l.cantidad_total)}</TableCell>
-                          <TableCell>{formatNumber(l.fn_desovez ?? l.desovez ?? 0)}</TableCell>
+                          <TableCell align="right">{formatCantidad(l.fn_cantidad ?? l.cantidad_total)}</TableCell>
+                          <TableCell align="right">{formatCantidad(l.fn_desovez ?? l.desovez ?? 0)}</TableCell>
                           <TableCell>
                             {(l.estado_ciclo ?? l.fc_estado_ciclo) === "agotado"
                               ? "Agotado"
                               : l.estado_ciclo_label ?? "Activo"}
                           </TableCell>
                           <TableCell>{l.fc_ratio ?? l.ratio ?? "—"}</TableCell>
-                          <TableCell>{formatNumber(l.fn_talla ?? l.talla)}</TableCell>
+                          <TableCell align="right">{formatCantidad(l.fn_talla ?? l.talla)}</TableCell>
                           <TableCell sx={{ maxWidth: 200, verticalAlign: "top" }}>
                             <CeldaObservacionConHistorial
                               texto={l.observacion ?? l.fc_observacion ?? ""}
