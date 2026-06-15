@@ -2,10 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -13,86 +10,79 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  listMovimientos,
-  createMovimiento,
-  updateMovimiento,
-  removeMovimiento,
-} from "../services/flujoCajaService";
-import FormDialog from "./FormDialog";
-import { getUploadUrl } from "@shared/lib/uploadUrl";
-import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
+import Link from "@mui/material/Link";
+import { listMovimientos } from "../services/flujoCajaService";
+import { openUpload } from "@shared/lib/uploadUrl";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import { formatFecha, formatPrecio } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
-const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
+const TRUNCAR_MAX = 40;
+const truncar = (texto) =>
+  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-function TablaMovimientos({ movimientos, onEdit, onDelete }) {
+function TablaMovimientos({ movimientos }) {
+  const showSnackbar = useSnackbar();
+  const verFactura = async (ruta) => {
+    try {
+      await openUpload(ruta);
+    } catch {
+      showSnackbar("No se pudo abrir la factura", "error");
+    }
+  };
+  const filas = ordenarYNumerar(movimientos, ["fi_movimiento_id"]);
   return (
     <TableContainer component={Paper}>
       <Table>
         <TableHead sx={{ background: "#f0f0f0" }}>
           <TableRow>
+            <TableCell><b>ID</b></TableCell>
             <TableCell><b>Fecha</b></TableCell>
             <TableCell align="right"><b>Ingreso</b></TableCell>
             <TableCell align="right"><b>Egreso</b></TableCell>
-            <TableCell><b>Descripcion</b></TableCell>
+            <TableCell><b>Razón Social</b></TableCell>
+            <TableCell><b>Concepto</b></TableCell>
+            <TableCell><b>Observaciones</b></TableCell>
             <TableCell><b>Cuenta</b></TableCell>
             <TableCell><b>Categoria</b></TableCell>
-            <TableCell><b>Subcategoria</b></TableCell>
-            <TableCell><b>Beneficiario</b></TableCell>
+            <TableCell><b>Sub categoria</b></TableCell>
             <TableCell><b>Proyecto</b></TableCell>
             <TableCell><b>Factura</b></TableCell>
             <TableCell><b>Estatus</b></TableCell>
-            <TableCell align="center"><b>Acciones</b></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {movimientos.map((row) => (
+          {filas.map((row) => (
             <TableRow key={row.fi_movimiento_id}>
-              <TableCell>
-                {new Date(row.fd_fecha).toLocaleDateString("es-MX", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
+              <TableCell>{row._num}</TableCell>
+              <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
+              <TableCell align="right">{formatPrecio(row.fn_ingreso)}</TableCell>
+              <TableCell align="right">{formatPrecio(row.fn_egreso)}</TableCell>
+              <TableCell>{row.fc_beneficiario}</TableCell>
+              <TableCell sx={{ maxWidth: 160 }}>
+                <span title={row.fc_concepto}>{truncar(row.fc_concepto)}</span>
               </TableCell>
-              <TableCell align="right">
-                {new Intl.NumberFormat("es-MX", {
-                  style: "currency",
-                  currency: "MXN",
-                  minimumFractionDigits: 2,
-                }).format(row.fn_ingreso || 0)}
+              <TableCell sx={{ maxWidth: 200 }}>
+                <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
               </TableCell>
-              <TableCell align="right">
-                {new Intl.NumberFormat("es-MX", {
-                  style: "currency",
-                  currency: "MXN",
-                  minimumFractionDigits: 2,
-                }).format(row.fn_egreso || 0)}
-              </TableCell>
-              <TableCell>{row.fc_descripcion}</TableCell>
               <TableCell>{row.fc_cuenta}</TableCell>
               <TableCell>{row.fc_categoria}</TableCell>
               <TableCell>{row.fc_subcategoria}</TableCell>
-              <TableCell>{row.fc_beneficiario}</TableCell>
               <TableCell>{row.fc_noproyecto}</TableCell>
               <TableCell>
                 {row.fc_factura && row.fc_factura !== "NO" ? (
-                  <a
-                    href={getUploadUrl(row.fc_factura)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
+                  <Link
+                    component="button"
+                    type="button"
+                    onClick={() => verFactura(row.fc_factura)}
+                    sx={{
                       color: "#1D5C42",
                       fontWeight: "bold",
                       textDecoration: "none",
                     }}
                   >
                      Ver factura
-                  </a>
+                  </Link>
                 ) : row.fc_factura === "NO" ? (
                   "No aplica"
                 ) : (
@@ -100,25 +90,12 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
                 )}
               </TableCell>
               <TableCell>{row.fc_estatus}</TableCell>
-              <TableCell align="center">
-                <IconButton size="small" aria-label="Editar" onClick={() => onEdit(row)}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  color="error"
-                  aria-label="Eliminar"
-                  onClick={() => onDelete(row.fi_movimiento_id)}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </TableCell>
             </TableRow>
           ))}
-          {movimientos.length === 0 && (
+          {filas.length === 0 && (
             <TableRow>
-              <TableCell colSpan={12} align="center">
-                No hay movimientos registrados para esta granja.
+              <TableCell colSpan={13} align="center">
+                No hay movimientos registrados.
               </TableCell>
             </TableRow>
           )}
@@ -129,33 +106,21 @@ function TablaMovimientos({ movimientos, onEdit, onDelete }) {
 }
 
 export default function FlujoCaja() {
-  const [subTab, setSubTab] = useState(0);
   const [movimientos, setMovimientos] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({});
-  const [editId, setEditId] = useState(null);
   const showSnackbar = useSnackbar();
-
-  const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
-
-  const requiredFields = [
-    "fd_fecha", "fc_cuenta", "fc_descripcion", "fc_categoria",
-    "fc_subcategoria", "fc_noproyecto", "fc_factura_opcion", "fc_estatus",
-  ];
 
   // =====================================================
   //  Cargar datos
   // =====================================================
   const obtenerMovimientos = useCallback(async () => {
     try {
-      const res = await listMovimientos(GRANJAS[subTab]);
+      const res = await listMovimientos();
       setMovimientos(res.data || []);
     } catch (err) {
       console.error(" Error al obtener movimientos:", err);
       showSnackbar("Error al obtener los movimientos", "error");
     }
-  }, [subTab]);
+  }, []);
 
   useEffect(() => {
     obtenerMovimientos();
@@ -174,83 +139,7 @@ export default function FlujoCaja() {
       ws.addRows(movimientos);
     }
     const buffer = await wb.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `FlujoCaja_${GRANJAS[subTab]}.xlsx`);
-  };
-
-  // =====================================================
-  //  CRUD
-  // =====================================================
-  const handleOpen = (data = null) => {
-    clearErrors();
-    if (data) {
-      setFormData({
-        fd_fecha: data.fd_fecha || "",
-        fn_ingreso: data.fn_ingreso || "",
-        fn_egreso: data.fn_egreso || "",
-        fc_descripcion: data.fc_descripcion || "",
-        fc_cuenta: data.fc_cuenta || "",
-        fc_categoria: data.fc_categoria || "",
-        fc_subcategoria: data.fc_subcategoria || "",
-        fc_beneficiario: data.fc_beneficiario || "",
-        fc_noproyecto: data.fc_noproyecto || "",
-        fc_factura: data.fc_factura || "",
-        fc_estatus: data.fc_estatus || "",
-      });
-      setEditId(data.fi_movimiento_id);
-    } else {
-      setFormData({
-        fd_fecha: "",
-        fn_ingreso: "",
-        fn_egreso: "",
-        fc_descripcion: "",
-        fc_cuenta: "",
-        fc_categoria: "",
-        fc_subcategoria: "",
-        fc_beneficiario: "",
-        fc_noproyecto: "",
-        fc_factura: "",
-        fc_estatus: "",
-      });
-      setEditId(null);
-    }
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    clearErrors();
-    setOpen(false);
-  };
-
-  const handleSubmit = async (data) => {
-    if (!validate(data, requiredFields)) return;
-
-    try {
-      const payload = { ...data, fc_granja: GRANJAS[subTab] };
-      if (editId) {
-        await updateMovimiento(editId, payload);
-        showSnackbar("Movimiento actualizado correctamente ", "success");
-      } else {
-        await createMovimiento(payload);
-        showSnackbar("Movimiento agregado correctamente ", "success");
-      }
-      setOpen(false);
-      obtenerMovimientos();
-    } catch (err) {
-      console.error(" Error al guardar:", err);
-      showSnackbar("Error al guardar el movimiento ", "error");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!await confirm("¿Eliminar este registro?")) return;
-    try {
-      await removeMovimiento(id);
-      obtenerMovimientos();
-      showSnackbar("Movimiento eliminado correctamente ", "success");
-    } catch (err) {
-      console.error(" Error al eliminar:", err);
-      showSnackbar("Error al eliminar el movimiento ", "error");
-    }
+    saveAs(new Blob([buffer]), `FlujoCaja.xlsx`);
   };
 
   // =====================================================
@@ -264,41 +153,15 @@ export default function FlujoCaja() {
         </Typography>
       </Box>
 
-      <Tabs value={subTab} onChange={(e, v) => setSubTab(v)} variant="scrollable" scrollButtons="auto">
-        <Tab label=" Medellín" />
-        <Tab label=" La Ceiba" />
-        <Tab label=" Quality" />
-      </Tabs>
-
       <Box sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, gap: 2 }}>
-          <Button variant="contained" color="success" onClick={() => handleOpen()}>
-            + Nuevo Movimiento
-          </Button>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <Button variant="contained" sx={{ background: "#1D5C42" }} onClick={exportarExcel}>
             Exportar Excel
           </Button>
         </Box>
 
-        <TablaMovimientos movimientos={movimientos} onEdit={handleOpen} onDelete={handleDelete} />
+        <TablaMovimientos movimientos={movimientos} />
       </Box>
-
-      {/* Formularios y Modales */}
-      <FormDialog
-        open={open}
-        formData={formData}
-        setFormData={setFormData}
-        onClose={handleClose}
-        onSubmit={handleSubmit}
-        editId={editId}
-        errors={errors}
-        clearFieldError={clearFieldError}
-        clearErrors={clearErrors}
-        validate={validate}
-        requiredFields={requiredFields}
-      />
-
-      {ConfirmModal}
     </Container>
   );
 }

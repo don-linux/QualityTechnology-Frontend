@@ -13,6 +13,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
@@ -269,9 +270,9 @@ export default function ProximaVentaModal({
           )}
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
+            <CampoNumerico
               fullWidth
-              type="number"
+              decimalScale={0}
               label="Cantidad"
               name="fn_cantidad"
               value={form.fn_cantidad}
@@ -369,9 +370,9 @@ export default function ProximaVentaModal({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
+            <CampoNumerico
               fullWidth
-              type="number"
+              prefix="$" decimalScale={2}
               label="Precio unitario"
               name="fn_precio_venta"
               value={form.fn_precio_venta}

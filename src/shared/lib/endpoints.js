@@ -64,11 +64,9 @@ export const ENDPOINTS = {
     byId: (id) => `/alevinaje/${id}`,
   },
 
-  controlReproductivo: {
-    base: "/control-reproductivo",
-    byId: (id) => `/control-reproductivo/${id}`,
-    reproductoresOcupadas: (granja) => `/control-reproductivo/reproductores/${path(granja)}`,
-    familiaPorPileta: (piletaId) => `/control-reproductivo/familia-por-pileta/${piletaId}`,
+  incubacion: {
+    base: "/incubacion",
+    byId: (id) => `/incubacion/${id}`,
   },
 
   historialPeso: {
@@ -102,9 +100,8 @@ export const ENDPOINTS = {
 
   ventas: {
     base: "/ventas",
-    byId: (id) => `/ventas/${id}`,
-    clientes: "/ventas/clientes",
-    encargados: (empresa) => `/ventas/encargados/${path(empresa)}`,
+    pagos: (id) => `/ventas/${id}/pagos`,
+    anularPago: (id, movId) => `/ventas/${id}/pagos/${movId}`,
   },
 
   listaEspera: {
@@ -119,12 +116,7 @@ export const ENDPOINTS = {
   },
 
   flujoCaja: {
-    byGranja: (granja) => `/flujo-caja/${path(granja)}`,
     base: "/flujo-caja",
-    byId: (id) => `/flujo-caja/${id}`,
-    clientes: "/flujo-caja/clientes",
-    proveedores: "/flujo-caja/proveedores",
-    tesoreriaByGranja: (granja) => `/flujo-caja/tesoreria/${path(granja)}`,
   },
 
   tesoreria: {

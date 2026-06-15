@@ -13,6 +13,8 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import { formatPrecio } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -39,12 +41,6 @@ const EMPTY_FORM = {
   fc_numero_cuenta: "",
   fc_banco: "",
   fc_tipo: "",
-};
-
-const formatoMoneda = (valor) => {
-  const numero = Number(valor);
-  if (Number.isNaN(numero)) return "$0.00";
-  return numero.toLocaleString("es-MX", { style: "currency", currency: "MXN" });
 };
 
 export default function Cuentas() {
@@ -302,15 +298,15 @@ export default function Cuentas() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {cuentas.map((cuenta) => (
+                {ordenarYNumerar(cuentas, ["fi_cuenta_id", "cuenta_id"]).map((cuenta) => (
                   <TableRow key={cuenta.fi_cuenta_id} hover>
-                    <TableCell>{cuenta.fi_cuenta_id}</TableCell>
+                    <TableCell>{cuenta._num}</TableCell>
                     <TableCell>{cuenta.fc_udn}</TableCell>
                     <TableCell>{cuenta.fc_nombre}</TableCell>
                     <TableCell>{cuenta.fc_numero_cuenta || "—"}</TableCell>
                     <TableCell>{cuenta.fc_banco || "—"}</TableCell>
                     <TableCell>{cuenta.fc_tipo}</TableCell>
-                    <TableCell align="right">{formatoMoneda(cuenta.fn_saldo_actual)}</TableCell>
+                    <TableCell align="right">{formatPrecio(cuenta.fn_saldo_actual)}</TableCell>
                     <TableCell>
                       <Chip
                         label={cuenta.fb_activo ? "Activa" : "Inactiva"}

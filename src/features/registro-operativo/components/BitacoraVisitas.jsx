@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { getUploadUrl } from "@shared/lib/uploadUrl";
+import { openUpload } from "@shared/lib/uploadUrl";
 import Box from "@mui/material/Box";
+import Link from "@mui/material/Link";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
@@ -36,6 +37,8 @@ import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
+import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -212,7 +215,7 @@ function BitacoraVisitasContent() {
 
     const columnas = ["Fecha", "Nombre", "Origen", "Motivo", "Foto ID", "Entrada", "Salida", "Observaciones"];
     const filas = data.map((r) => [
-      r.fd_fecha?.split("T")[0],
+      formatFecha(r.fd_fecha),
       r.fc_nombre_completo,
       r.fc_origen,
       r.fc_motivo,
@@ -230,19 +233,22 @@ function BitacoraVisitasContent() {
       headStyles: { fillColor: color, textColor: 255, halign: "center" },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Visitas_${fecha}.pdf`);
   };
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaVisitas = (rows) => (
+  const renderTablaVisitas = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table sx={{ minWidth: 1180 }}>
         <TableHead sx={{ background: "#FFF9C4" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Nombre</TableCell>
             <TableCell>Origen</TableCell>
@@ -255,9 +261,10 @@ function BitacoraVisitasContent() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r) => (
+          {filas.map((r) => (
             <TableRow key={r.fi_id}>
-              <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+              <TableCell>{r._num}</TableCell>
+              <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
               <TableCell>{r.fc_nombre_completo}</TableCell>
               <TableCell>{r.fc_origen}</TableCell>
               <TableCell sx={{ maxWidth: 160 }}>
@@ -265,14 +272,20 @@ function BitacoraVisitasContent() {
               </TableCell>
               <TableCell>
                 {r.fc_foto_identificacion ? (
-                  <a
-                    href={getUploadUrl(r.fc_foto_identificacion)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
+                  <Link
+                    component="button"
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await openUpload(r.fc_foto_identificacion);
+                      } catch {
+                        showSnackbar("No se pudo abrir la foto", "error");
+                      }
+                    }}
+                    sx={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
                   >
                     Ver foto
-                  </a>
+                  </Link>
                 ) : (
                   "—"
                 )}
@@ -311,7 +324,8 @@ function BitacoraVisitasContent() {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>

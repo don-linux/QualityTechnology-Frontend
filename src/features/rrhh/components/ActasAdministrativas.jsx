@@ -19,6 +19,7 @@ import {
 } from "../services/actasAdministrativasService";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const PREVIEWABLE_EXTENSIONS = /\.(pdf|png|jpe?g|gif|webp)$/i;
 
@@ -158,6 +159,7 @@ export default function ActasAdministrativas({ empleadoId }) {
         <Table size="small">
           <TableHead>
             <TableRow>
+              <TableCell>ID</TableCell>
               <TableCell>Fecha</TableCell>
               <TableCell>Motivo</TableCell>
               <TableCell>Archivo</TableCell>
@@ -165,8 +167,9 @@ export default function ActasAdministrativas({ empleadoId }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {actas.map((acta) => (
+            {ordenarYNumerar(actas, ["fi_acta_id", "acta_id"]).map((acta) => (
               <TableRow key={acta.fi_acta_id}>
+                <TableCell>{acta._num}</TableCell>
                 <TableCell>{acta.fd_fecha ? acta.fd_fecha.substring(0, 10) : "-"}</TableCell>
                 <TableCell>{acta.fc_motivo}</TableCell>
                 <TableCell>{acta.fc_nombre_original}</TableCell>
@@ -187,7 +190,7 @@ export default function ActasAdministrativas({ empleadoId }) {
             ))}
             {!actas.length && (
               <TableRow>
-                <TableCell colSpan={4} align="center">Sin actas administrativas</TableCell>
+                <TableCell colSpan={5} align="center">Sin actas administrativas</TableCell>
               </TableRow>
             )}
           </TableBody>

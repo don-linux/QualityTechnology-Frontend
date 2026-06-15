@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   listClientes,
   listEmpleadosActivosClientes,
@@ -28,7 +28,9 @@ import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import useAuth from "@app/providers/AuthProvider";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
 
 const EMPTY_FORM = {
@@ -81,6 +83,9 @@ function nombreEmpleado(empleado) {
 
 export default function Cliente() {
   const showSnackbar = useSnackbar();
+  const auth = useAuth();
+  const puedeElegirUdN = auth.granja === "ALL";
+  const unidadNegocioIdUsuario = localStorage.getItem("unidad_negocio_id") || "";
   const [form, setForm] = useState(EMPTY_FORM);
   const [clientes, setClientes] = useState([]);
   const [unidadesNegocio, setUnidadesNegocio] = useState([]);
@@ -90,9 +95,35 @@ export default function Cliente() {
   const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
+  const unidadesDisponibles = useMemo(() => {
+    if (puedeElegirUdN) return unidadesNegocio;
+    if (auth.granja === "SIN_UNIDAD") return [];
+    if (unidadNegocioIdUsuario) {
+      return unidadesNegocio.filter(
+        (unidad) => String(unidad.fi_unidad_negocio_id) === unidadNegocioIdUsuario,
+      );
+    }
+    return unidadesNegocio.filter((unidad) => unidad.fc_nombre === auth.granja);
+  }, [auth.granja, puedeElegirUdN, unidadNegocioIdUsuario, unidadesNegocio]);
+
   useEffect(() => {
     obtenerDatos();
   }, []);
+
+  useEffect(() => {
+    if (puedeElegirUdN || auth.granja === "SIN_UNIDAD" || form.fi_cliente_id) return;
+    const udnId = unidadNegocioIdUsuario || String(unidadesDisponibles[0]?.fi_unidad_negocio_id || "");
+    if (udnId && form.fi_unidad_negocio_id !== udnId) {
+      setForm((prev) => ({ ...prev, fi_unidad_negocio_id: udnId }));
+    }
+  }, [
+    auth.granja,
+    form.fi_cliente_id,
+    form.fi_unidad_negocio_id,
+    puedeElegirUdN,
+    unidadNegocioIdUsuario,
+    unidadesDisponibles,
+  ]);
 
   const obtenerDatos = async () => {
     const [clientesRes, unidadesRes, empleadosRes] = await Promise.allSettled([
@@ -135,7 +166,10 @@ export default function Cliente() {
 
   const limpiarFormulario = () => {
     clearErrors();
-    setForm(EMPTY_FORM);
+    const udnDefault = !puedeElegirUdN && auth.granja !== "SIN_UNIDAD"
+      ? (unidadNegocioIdUsuario || String(unidadesDisponibles[0]?.fi_unidad_negocio_id || ""))
+      : "";
+    setForm({ ...EMPTY_FORM, fi_unidad_negocio_id: udnDefault });
     cerrarFormulario();
   };
 
@@ -239,7 +273,7 @@ export default function Cliente() {
     }
 
     if (campo.select === "udn") {
-      return unidadesNegocio.map((unidad) => (
+      return unidadesDisponibles.map((unidad) => (
         <MenuItem key={unidad.fi_unidad_negocio_id} value={unidad.fi_unidad_negocio_id}>
           {unidad.fc_nombre}
         </MenuItem>
@@ -262,6 +296,13 @@ export default function Cliente() {
       <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }} align="center">
          Registro de Clientes
       </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} align="center">
+        {auth.granja === "ALL"
+          ? "Se muestran los clientes de todas las unidades de negocio."
+          : auth.granja === "SIN_UNIDAD"
+            ? "Tu usuario no tiene una unidad de negocio asignada; no hay clientes visibles."
+            : `Solo se muestran los clientes de tu unidad de negocio (${auth.granja}).`}
+      </Typography>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 3 }}>
@@ -269,6 +310,15 @@ export default function Cliente() {
           <Grid container spacing={2}>
             {CAMPOS_FORM.map((campo) => (
               <Grid key={campo.name} size={campo.size || { xs: 12, md: 6 }}>
+                {campo.select === "udn" && !puedeElegirUdN ? (
+                  <TextField
+                    name={campo.name}
+                    label={campo.label}
+                    fullWidth
+                    value={unidadesDisponibles[0]?.fc_nombre || auth.granja || ""}
+                    slotProps={{ input: { readOnly: true } }}
+                  />
+                ) : (
                 <TextField
                   name={campo.name}
                   label={campo.label}
@@ -287,6 +337,7 @@ export default function Cliente() {
                   {campo.select && <MenuItem value="">Selecciona {campo.label}</MenuItem>}
                   {renderOpciones(campo)}
                 </TextField>
+                )}
               </Grid>
             ))}
           </Grid>
@@ -317,6 +368,7 @@ export default function Cliente() {
           <Table stickyHeader>
             <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Razón Social</TableCell>
                 <TableCell>RFC</TableCell>
                 <TableCell>UdN</TableCell>
@@ -330,8 +382,9 @@ export default function Cliente() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {clientes.map((cli) => (
+              {ordenarYNumerar(clientes, ["fi_cliente_id", "cliente_id"]).map((cli) => (
                 <TableRow key={cli.fi_cliente_id} hover>
+                  <TableCell>{cli._num}</TableCell>
                   <TableCell>{cli.fc_razon_social}</TableCell>
                   <TableCell>{cli.fc_rfc}</TableCell>
                   <TableCell>{cli.unidad_negocio_nombre}</TableCell>

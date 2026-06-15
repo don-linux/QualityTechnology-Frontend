@@ -8,6 +8,7 @@ import {
   listMantenimientos,
   createMantenimiento,
 } from "../services/equiposService";
+import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -36,6 +37,8 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import useUnidadesNegocioOptions from "@features/catalogos/hooks/useUnidadesNegocioOptions";
 
 function EquiposContent() {
@@ -274,8 +277,8 @@ function EquiposContent() {
       r.fc_estado,
       r.fc_responsable,
       r.fc_ubicacion,
-      `$${r.fn_costo}`,
-      r.fd_proximo_mantenimiento?.split("T")[0] || "—",
+      formatPrecio(r.fn_costo),
+      formatFecha(r.fd_proximo_mantenimiento),
     ]);
 
     autoTable(doc, {
@@ -286,7 +289,7 @@ function EquiposContent() {
       headStyles: { fillColor: [25, 118, 210], textColor: 255 },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Equipos_y_Herramientas_${fecha}.pdf`);
   };
@@ -360,9 +363,9 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Costo"
-                type="number"
+                prefix="$" decimalScale={2}
                 name="fn_costo"
                 value={form.fn_costo}
                 onChange={handleChange}
@@ -501,6 +504,7 @@ function EquiposContent() {
         <Table>
           <TableHead sx={{ background: "#E3F2FD" }}>
             <TableRow>
+              <TableCell>ID</TableCell>
               <TableCell>Nombre</TableCell>
               <TableCell>Tipo</TableCell>
               <TableCell>Estado</TableCell>
@@ -511,15 +515,16 @@ function EquiposContent() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((row) => (
+            {ordenarYNumerar(data, ["fi_equipo_id"]).map((row) => (
               <TableRow key={row.fi_equipo_id}>
+                <TableCell>{row._num}</TableCell>
                 <TableCell>{row.fc_nombre}</TableCell>
                 <TableCell>{row.fc_tipo}</TableCell>
                 <TableCell>{row.fc_estado}</TableCell>
                 <TableCell>{row.fc_responsable}</TableCell>
                 <TableCell>{row.fc_ubicacion}</TableCell>
                 <TableCell>
-                  {row.fd_proximo_mantenimiento?.split("T")[0]}
+                  {formatFecha(row.fd_proximo_mantenimiento)}
                 </TableCell>
                 <TableCell>
                   <Button
@@ -653,9 +658,9 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Costo"
-                type="number"
+                prefix="$" decimalScale={2}
                 name="fn_costo"
                 value={nuevoMantenimiento.fn_costo}
                 onChange={(e) => {
@@ -719,6 +724,7 @@ function EquiposContent() {
           <Table size="small" sx={{ mt: 3 }}>
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Fecha</TableCell>
                 <TableCell>Tipo</TableCell>
                 <TableCell>Responsable</TableCell>
@@ -728,13 +734,14 @@ function EquiposContent() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {mantenimientos.map((m) => (
+              {ordenarYNumerar(mantenimientos, ["fi_mantenimiento_id"]).map((m) => (
                 <TableRow key={m.fi_mantenimiento_id}>
-                  <TableCell>{m.fd_fecha?.split("T")[0]}</TableCell>
+                  <TableCell>{m._num}</TableCell>
+                  <TableCell>{formatFecha(m.fd_fecha)}</TableCell>
                   <TableCell>{m.fc_tipo}</TableCell>
                   <TableCell>{m.fc_responsable}</TableCell>
                   <TableCell>{m.fc_descripcion}</TableCell>
-                  <TableCell>${m.fn_costo}</TableCell>
+                  <TableCell>{formatPrecio(m.fn_costo)}</TableCell>
                   <TableCell>{m.fc_estado_post}</TableCell>
                 </TableRow>
               ))}

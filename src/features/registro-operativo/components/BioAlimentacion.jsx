@@ -30,8 +30,11 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -61,7 +64,7 @@ export default function BioAlimentacion() {
     fd_fecha_siembra: "",
     fc_origen_alevines: "",
     fd_fecha: "",
-    fn_total_alimento_kg: "",
+    fn_total_alimento_gramos: "",
     fn_mortalidad: "",
     fc_recambio_agua: "",
     fn_temp_agua: "",
@@ -82,7 +85,7 @@ export default function BioAlimentacion() {
     "ubicacion",
     "fn_num_instalacion", "fn_peso_promedio_entrada",
     "fd_fecha_siembra", "fc_origen_alevines", "fd_fecha",
-    "fn_total_alimento_kg", "fn_mortalidad", "fc_recambio_agua",
+    "fn_total_alimento_gramos", "fn_mortalidad", "fc_recambio_agua",
     "fn_temp_agua", "fn_amonio", "fn_ph", "fc_observaciones",
   ];
 
@@ -162,7 +165,7 @@ export default function BioAlimentacion() {
         fd_fecha_siembra: "",
         fc_origen_alevines: "",
         fd_fecha: "",
-        fn_total_alimento_kg: "",
+        fn_total_alimento_gramos: "",
         fn_mortalidad: "",
         fc_recambio_agua: "",
         fn_temp_agua: "",
@@ -191,7 +194,7 @@ export default function BioAlimentacion() {
       fd_fecha_siembra: row.fd_fecha_siembra?.split("T")[0],
       fc_origen_alevines: row.fc_origen_alevines,
       fd_fecha: row.fd_fecha?.split("T")[0],
-      fn_total_alimento_kg: row.fn_total_alimento_kg,
+      fn_total_alimento_gramos: row.fn_total_alimento_gramos,
       fn_mortalidad: row.fn_mortalidad,
       fc_recambio_agua: row.fc_recambio_agua,
       fn_temp_agua: row.fn_temp_agua,
@@ -235,7 +238,7 @@ export default function BioAlimentacion() {
       "Siembra",
       "Origen",
       "Fecha",
-      "Alimento (Kg)",
+      "Alimento (g)",
       "Mortalidad",
       "Recambio",
       "Temp",
@@ -248,10 +251,10 @@ export default function BioAlimentacion() {
       r.fc_mes,
       r.fn_num_instalacion,
       r.fn_peso_promedio_entrada,
-      r.fd_fecha_siembra?.split("T")[0],
+      formatFecha(r.fd_fecha_siembra),
       r.fc_origen_alevines,
-      r.fd_fecha?.split("T")[0],
-      r.fn_total_alimento_kg,
+      formatFecha(r.fd_fecha),
+      r.fn_total_alimento_gramos,
       r.fn_mortalidad,
       r.fc_recambio_agua,
       r.fn_temp_agua,
@@ -272,7 +275,7 @@ export default function BioAlimentacion() {
       },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Alimentacion_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
@@ -286,18 +289,21 @@ export default function BioAlimentacion() {
 
   const gruposUbicacion = getGroups(data);
 
-  const tablaAlimentacion = (rows) => (
+  const tablaAlimentacion = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
       <Table sx={{ minWidth: 1350 }}>
         <TableHead sx={{ background: "#E8F5E9" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Mes</TableCell>
             <TableCell>Instalación</TableCell>
             <TableCell>Peso Entrada</TableCell>
             <TableCell>Siembra</TableCell>
             <TableCell>Origen</TableCell>
             <TableCell>Fecha</TableCell>
-            <TableCell>Alimento (Kg)</TableCell>
+            <TableCell>Alimento (g)</TableCell>
             <TableCell>Mortalidad</TableCell>
             <TableCell>Recambio</TableCell>
             <TableCell>Temp</TableCell>
@@ -308,15 +314,16 @@ export default function BioAlimentacion() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
+          {filas.map((row) => (
             <TableRow key={row.fi_id}>
+              <TableCell>{row._num}</TableCell>
               <TableCell>{row.fc_mes}</TableCell>
               <TableCell>{row.fn_num_instalacion}</TableCell>
               <TableCell>{row.fn_peso_promedio_entrada}</TableCell>
-              <TableCell>{row.fd_fecha_siembra?.split("T")[0]}</TableCell>
+              <TableCell>{formatFecha(row.fd_fecha_siembra)}</TableCell>
               <TableCell>{row.fc_origen_alevines}</TableCell>
-              <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
-              <TableCell>{row.fn_total_alimento_kg}</TableCell>
+              <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
+              <TableCell>{row.fn_total_alimento_gramos}</TableCell>
               <TableCell>{row.fn_mortalidad}</TableCell>
               <TableCell>{row.fc_recambio_agua}</TableCell>
               <TableCell>{row.fn_temp_agua}</TableCell>
@@ -353,7 +360,8 @@ export default function BioAlimentacion() {
         </TableBody>
       </Table>
     </TableContainer>
-  );
+    );
+  };
 
   return (
     <Box>
@@ -400,10 +408,9 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Peso Promedio Entrada"
                 name="fn_peso_promedio_entrada"
-                type="number"
                 value={form.fn_peso_promedio_entrada}
                 onChange={handleChange}
                 fullWidth
@@ -467,23 +474,22 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                label="Total Alimento (Kg)"
-                type="number"
-                name="fn_total_alimento_kg"
-                value={form.fn_total_alimento_kg}
+              <CampoNumerico
+                label="Total Alimento (g)"
+                name="fn_total_alimento_gramos"
+                value={form.fn_total_alimento_gramos}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_total_alimento_kg}
-                helperText={errors.fn_total_alimento_kg}
+                error={!!errors.fn_total_alimento_gramos}
+                helperText={errors.fn_total_alimento_gramos}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Mortalidad"
                 name="fn_mortalidad"
-                type="number"
+                decimalScale={0}
                 value={form.fn_mortalidad}
                 onChange={handleChange}
                 fullWidth
@@ -505,9 +511,8 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Temp. Agua"
-                type="number"
                 name="fn_temp_agua"
                 value={form.fn_temp_agua}
                 onChange={handleChange}
@@ -518,9 +523,8 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Amonio"
-                type="number"
                 name="fn_amonio"
                 value={form.fn_amonio}
                 onChange={handleChange}
@@ -531,9 +535,8 @@ export default function BioAlimentacion() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="pH"
-                type="number"
                 name="fn_ph"
                 value={form.fn_ph}
                 onChange={handleChange}

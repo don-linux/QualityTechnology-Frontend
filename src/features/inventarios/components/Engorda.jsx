@@ -7,6 +7,13 @@ import {
 } from "../services/engordaService";
 import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
+import {
+  CampoConEtiquetaArriba,
+  TituloSeccionFormulario,
+  botonRegistroInventarioSx,
+  campoFormSx,
+} from "@shared/components/FormularioInventarioSecciones";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
@@ -21,7 +28,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
-import Divider from "@mui/material/Divider";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -30,8 +36,10 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import { listPiletas } from "../services/piletasService";
 
 const MAX_OBSERVACION = 500;
@@ -51,7 +59,7 @@ export default function Engorda() {
     "fi_pileta_destino_id",
     "cantidad_total",
     "fecha_peso",
-    "peso_kg",
+    "peso_gramos",
   ];
 
   const [piletasDestinoEngorda, setPiletasDestinoEngorda] = useState([]);
@@ -63,7 +71,7 @@ export default function Engorda() {
     fi_pileta_destino_id: "",
     cantidad_total: "",
     cantidad_alimento: "",
-    peso_kg: "",
+    peso_gramos: "",
     fecha_peso: "",
     observacion: "",
   });
@@ -85,7 +93,7 @@ export default function Engorda() {
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
     cantidad_total: Number(formData.cantidad_total || 0),
     cantidad_alimento: Number(formData.cantidad_alimento || 0),
-    peso_kg: formData.peso_kg === "" ? null : Number(formData.peso_kg),
+    peso_gramos: formData.peso_gramos === "" ? null : Number(formData.peso_gramos),
     fecha_peso: formData.fecha_peso || null,
     observacion: formData.observacion,
   });
@@ -96,7 +104,7 @@ export default function Engorda() {
     if (name === "cantidad_total" || name === "cantidad_alimento") {
       if (!soloEntero(value)) return;
     }
-    if (name === "peso_kg") {
+    if (name === "peso_gramos") {
       if (!soloDecimal(value)) return;
     }
 
@@ -170,9 +178,9 @@ export default function Engorda() {
       ),
       cantidad_total: String(seleccionado.cantidad_total ?? seleccionado.cantidad ?? ""),
       cantidad_alimento: String(seleccionado.cantidad_alimento ?? ""),
-      peso_kg:
-        seleccionado.peso_kg != null
-          ? String(seleccionado.peso_kg)
+      peso_gramos:
+        seleccionado.peso_gramos != null
+          ? String(seleccionado.peso_gramos)
           : seleccionado.peso != null
             ? String(seleccionado.peso)
             : "",
@@ -229,7 +237,7 @@ export default function Engorda() {
       fi_pileta_destino_id: "",
       cantidad_total: "",
       cantidad_alimento: "",
-      peso_kg: "",
+      peso_gramos: "",
       fecha_peso: "",
       observacion: "",
     });
@@ -243,21 +251,7 @@ export default function Engorda() {
     resetFormulario();
   };
 
-  const formatearFecha = (fechaISO) => {
-    if (!fechaISO) return "";
-    const d = new Date(fechaISO);
-    return d.toLocaleDateString("es-MX");
-  };
-
-  const formatNumber = (num) => {
-    if (num === null || num === undefined) return "";
-    const n = Number(num);
-    if (Number.isInteger(n)) return n.toString();
-    return n.toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    });
-  };
+  const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
 
   const totalCantidad = registros.reduce(
     (acc, e) => acc + Number(e.cantidad_total ?? e.cantidad ?? 0),
@@ -277,19 +271,18 @@ export default function Engorda() {
 
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
         <Typography><b>Registros:</b> {registros.length}</Typography>
-        <Typography><b>Total organismos en engorda:</b> {totalCantidad.toLocaleString("es-MX")}</Typography>
+        <Typography><b>Total organismos en engorda:</b> {formatCantidad(totalCantidad, "0")}</Typography>
       </Paper>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
-        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#005f73" }}>
+        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+            <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
               {modoEdicion ? "Editar registro" : "Registrar nueva engorda"}
             </Typography>
-            <Divider sx={{ mb: 3 }} />
 
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
                   label="Ubicación"
@@ -297,6 +290,7 @@ export default function Engorda() {
                   value={formData.ubicacion || ""}
                   onChange={handleChange}
                   fullWidth
+                  sx={campoFormSx}
                   error={!!errors.ubicacion}
                   {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
                 >
@@ -308,7 +302,7 @@ export default function Engorda() {
                 </TextField>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
                   label="Pileta (engorda)"
@@ -316,6 +310,7 @@ export default function Engorda() {
                   value={formData.fi_pileta_destino_id || ""}
                   onChange={handleChange}
                   fullWidth
+                  sx={campoFormSx}
                   error={!!errors.fi_pileta_destino_id}
                   {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
                 >
@@ -330,79 +325,98 @@ export default function Engorda() {
                 </TextField>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Cantidad total"
-                  name="cantidad_total"
-                  type="number"
-                  value={formData.cantidad_total}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ min: 0, inputMode: "numeric" }}
-                  error={!!errors.cantidad_total}
-                  {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
-                />
+              <Grid size={12}>
+                <TituloSeccionFormulario titulo="Información de cantidades" mt={0} />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <CampoNumerico
+                      label="Cantidad inicial"
+                      name="cantidad_total"
+                      decimalScale={0}
+                      value={formData.cantidad_total}
+                      onChange={handleChange}
+                      fullWidth
+                      placeholder="Cantidad inicial"
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, step: 1 }}
+                      error={!!errors.cantidad_total}
+                      {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <CampoNumerico
+                      label="Cantidad actual"
+                      name="cantidad_alimento"
+                      decimalScale={0}
+                      value={formData.cantidad_alimento}
+                      onChange={handleChange}
+                      fullWidth
+                      placeholder="Cantidad actual"
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, step: 1 }}
+                    />
+                  </Grid>
+                </Grid>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Cantidad alimento"
-                  name="cantidad_alimento"
-                  type="number"
-                  value={formData.cantidad_alimento}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ min: 0, inputMode: "numeric" }}
-                />
+              <Grid size={12}>
+                <TituloSeccionFormulario titulo="Datos biométricos" />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <CampoNumerico
+                      label="Peso (g)"
+                      name="peso_gramos"
+                      value={formData.peso_gramos}
+                      onChange={handleChange}
+                      fullWidth
+                      placeholder="Peso (g)"
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, step: "any" }}
+                      error={!!errors.peso_gramos}
+                      {...(errors.peso_gramos ? { helperText: errors.peso_gramos } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Fecha peso"
+                      type="date"
+                      name="fecha_peso"
+                      value={formData.fecha_peso}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.fecha_peso}
+                      {...(errors.fecha_peso ? { helperText: errors.fecha_peso } : {})}
+                    />
+                  </Grid>
+                </Grid>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Peso (kg)"
-                  name="peso_kg"
-                  value={formData.peso_kg}
-                  onChange={handleChange}
-                  fullWidth
-                  inputProps={{ inputMode: "decimal" }}
-                  error={!!errors.peso_kg}
-                  {...(errors.peso_kg ? { helperText: errors.peso_kg } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 2 }}>
-                <TextField
-                  label="Fecha peso"
-                  type="date"
-                  name="fecha_peso"
-                  value={formData.fecha_peso}
-                  onChange={handleChange}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  error={!!errors.fecha_peso}
-                  {...(errors.fecha_peso ? { helperText: errors.fecha_peso } : {})}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  label="Observación"
-                  name="observacion"
-                  value={formData.observacion}
-                  onChange={handleChange}
-                  fullWidth
-                  multiline
-                  rows={2}
-                  inputProps={{ maxLength: MAX_OBSERVACION }}
-                />
+              <Grid size={12}>
+                <CampoConEtiquetaArriba label="Observaciones">
+                  <TextField
+                    name="observacion"
+                    value={formData.observacion}
+                    onChange={handleChange}
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    placeholder="Escriba aquí cualquier detalle adicional..."
+                    sx={campoFormSx}
+                    hiddenLabel
+                    inputProps={{ maxLength: MAX_OBSERVACION }}
+                  />
+                </CampoConEtiquetaArriba>
               </Grid>
 
               <Grid size={12}>
                 <Button
                   variant="contained"
+                  color="primary"
                   startIcon={<AddCircleIcon />}
-                  color="success"
                   onClick={modoEdicion ? actualizarEngordaRegistro : registrarEngorda}
-                  sx={{ mt: 1, fontWeight: "bold" }}
+                  sx={botonRegistroInventarioSx}
                 >
                   {modoEdicion ? "Guardar cambios" : "Registrar engorda"}
                 </Button>
@@ -421,29 +435,32 @@ export default function Engorda() {
 
       <TablasPorUbicacionGranja
         grupos={gruposRegistros}
-        renderTabla={(rows) => (
+        renderTabla={(rows) => {
+          const filas = ordenarYNumerar(rows, ["fi_engorda_id", "fi_id", "id"]);
+          return (
           <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
               <Table sx={{ minWidth: 900 }}>
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Peso (kg)</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Peso (g)</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.length === 0 ? (
+                  {filas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    rows.map((l) => (
+                    filas.map((l) => (
                       <TableRow
                         key={l.fi_engorda_id ?? l.fi_id ?? l.id}
                         onClick={() => setSeleccionado(l)}
@@ -456,12 +473,13 @@ export default function Engorda() {
                               : "transparent",
                         }}
                       >
+                        <TableCell>{l._num}</TableCell>
                         <TableCell>
                           {l.nombre_pileta_destino || l.nombre_pileta || "—"}
                         </TableCell>
-                        <TableCell>{formatNumber(l.cantidad_total ?? l.cantidad)}</TableCell>
-                        <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
-                        <TableCell>{formatNumber(l.peso_kg ?? l.peso)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.cantidad_total ?? l.cantidad)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.cantidad_alimento)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.peso_gramos ?? l.peso)}</TableCell>
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                           <CeldaObservacionConHistorial
@@ -481,7 +499,8 @@ export default function Engorda() {
               </Table>
             </TableContainer>
           </Paper>
-        )}
+          );
+        }}
       />
 
       {seleccionado && (

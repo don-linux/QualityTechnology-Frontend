@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -42,30 +43,21 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import CampoNumerico from "@shared/components/CampoNumerico";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 60;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-const TIPOS_PILETA = ["alevinaje", "reproductores", "engorda"];
+const TIPOS_PILETA = ["alevinaje", "reproductores", "engorda", "incubacion"];
 const ESTADOS_PILETA = ["vacia", "ocupada"];
 const MATERIALES = ["concreto", "geomembrana", "fibra", "tierra", "otro"];
 
 const tipoLabel = (t) => {
   if (!t) return "—";
-  const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda" };
+  const map = { alevinaje: "Alevinaje", reproductores: "Reproductores", engorda: "Engorda", incubacion: "Incubación" };
   return map[String(t).toLowerCase()] || t;
-};
-
-const formatNumber = (num, opts = {}) =>
-  num != null && num !== ""
-    ? Number(num).toLocaleString("en-US", opts)
-    : "—";
-
-const formatFecha = (fecha) => {
-  if (!fecha) return "—";
-  const d = new Date(fecha);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("es-MX");
 };
 
 /* ============================================================================
@@ -410,10 +402,9 @@ function PiletasTab({
               </Grid>
 
               <Grid size={{ xs: 6, md: 3 }}>
-                <TextField
+                <CampoNumerico
                   label="Largo (m)"
                   name="largo"
-                  type="number"
                   value={form.largo}
                   onChange={handleChange}
                   fullWidth
@@ -422,10 +413,9 @@ function PiletasTab({
                 />
               </Grid>
               <Grid size={{ xs: 6, md: 3 }}>
-                <TextField
+                <CampoNumerico
                   label="Ancho (m)"
                   name="ancho"
-                  type="number"
                   value={form.ancho}
                   onChange={handleChange}
                   fullWidth
@@ -434,10 +424,9 @@ function PiletasTab({
                 />
               </Grid>
               <Grid size={{ xs: 6, md: 3 }}>
-                <TextField
+                <CampoNumerico
                   label="Alto (m)"
                   name="alto"
-                  type="number"
                   value={form.alto}
                   onChange={handleChange}
                   fullWidth
@@ -543,12 +532,15 @@ function PiletasTab({
 
       <TablasPorUbicacionGranja
         grupos={gruposPiletas}
-        renderTabla={(rows) => (
+        renderTabla={(rows) => {
+          const filas = ordenarYNumerar(rows, ["fi_pileta_id"]);
+          return (
           <Paper>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
               <Table stickyHeader sx={{ minWidth: 1200 }}>
                 <TableHead sx={{ background: "#E3F2FD" }}>
                   <TableRow>
+                    <TableCell>ID</TableCell>
                     <TableCell>Nombre</TableCell>
                     <TableCell>Etapa</TableCell>
                     <TableCell>Tipo de pileta</TableCell>
@@ -564,15 +556,16 @@ function PiletasTab({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.length === 0 && (
+                  {filas.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={10} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                      <TableCell colSpan={11} align="center" sx={{ py: 4, color: "text.secondary" }}>
                         Sin piletas en esta ubicación.
                       </TableCell>
                     </TableRow>
                   )}
-                  {rows.map((p) => (
+                  {filas.map((p) => (
                     <TableRow key={p.fi_pileta_id} hover>
+                      <TableCell>{p._num}</TableCell>
                       <TableCell>{p.nombre}</TableCell>
                       <TableCell>
                         <Chip size="small" variant="outlined" label={tipoLabel(p.tipo)} />
@@ -587,12 +580,9 @@ function PiletasTab({
                         />
                       </TableCell>
                       <TableCell>{p.fc_estado_conservacion || "—"}</TableCell>
-                      <TableCell align="right">{formatNumber(p.cantidad ?? p.fn_cantidad)}</TableCell>
+                      <TableCell align="right">{formatCantidad(p.cantidad ?? p.fn_cantidad)}</TableCell>
                       <TableCell align="right">
-                        {formatNumber(p.metros_cubicos, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 3,
-                        })}
+                        {formatCantidad(p.metros_cubicos)}
                       </TableCell>
                       <TableCell>{p.material}</TableCell>
                       <TableCell sx={{ maxWidth: 260 }}>
@@ -640,7 +630,8 @@ function PiletasTab({
               </Table>
             </TableContainer>
           </Paper>
-        )}
+          );
+        }}
       />
     </>
   );

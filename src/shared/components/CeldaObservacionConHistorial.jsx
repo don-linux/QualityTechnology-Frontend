@@ -13,18 +13,14 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import { formatFecha } from "@shared/utils/formatters";
 
 const TRUNCAR_MAX = 40;
 
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-const formatearFecha = (fechaISO) => {
-  if (!fechaISO) return "—";
-  const d = new Date(fechaISO);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("es-MX");
-};
+const formatearFecha = (fechaISO) => formatFecha(fechaISO);
 
 const formatearHora = (fechaISO) => {
   if (!fechaISO) return null;
@@ -40,7 +36,7 @@ const ETIQUETA_PROCESO = {
   venta: "Venta",
   biometria: "Biometría",
   reproductor: "Reproductores",
-  control_reproductivo: "Control reproductivo",
+  evento_cosecha: "Evento de cosecha",
   siembra: "Siembra",
   alimentacion: "Alimentación",
   recambio: "Recambio de agua",

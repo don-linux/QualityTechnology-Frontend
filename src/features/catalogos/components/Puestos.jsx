@@ -23,6 +23,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import { getPuestoId, getPuestoNombre, puestoActivo } from "@features/catalogos/utils/catalogEntityGetters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 export default function Puestos() {
   const showSnackbar = useSnackbar();
@@ -146,9 +147,9 @@ export default function Puestos() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {puestos.map((p) => (
+              {ordenarYNumerar(puestos, ["puesto_id", "fi_puesto_id"]).map((p) => (
                 <TableRow key={getPuestoId(p) ?? ""} hover>
-                  <TableCell>{getPuestoId(p)}</TableCell>
+                  <TableCell>{p._num}</TableCell>
                   <TableCell>{getPuestoNombre(p)}</TableCell>
                   <TableCell>
                     <Chip

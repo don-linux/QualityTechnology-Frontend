@@ -21,6 +21,7 @@ import PasswordField from "@shared/components/PasswordField";
 import useConfirm from "@shared/hooks/useConfirm";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import useUsuarios from "../hooks/useUsuarios";
 
 function uid(u) {
@@ -254,9 +255,9 @@ export default function UsuariosRegistro() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {usuarios.map((usuario) => (
+            {ordenarYNumerar(usuarios, ["usuario_id", "fi_usuario_id"]).map((usuario) => (
               <TableRow key={uid(usuario)} hover sx={{ opacity: uactivo(usuario) ? 1 : 0.5 }}>
-                <TableCell>{uid(usuario)}</TableCell>
+                <TableCell>{usuario._num}</TableCell>
                 <TableCell>{unombre(usuario)}</TableCell>
                 <TableCell>{obtenerNombreRol(usuarioRolId(usuario))}</TableCell>
                 <TableCell>

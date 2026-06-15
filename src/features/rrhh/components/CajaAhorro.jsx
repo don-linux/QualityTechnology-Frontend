@@ -24,6 +24,8 @@ import Add from "@mui/icons-material/Add";
 import Delete from "@mui/icons-material/Delete";
 import DeleteForever from "@mui/icons-material/DeleteForever";
 import EventAvailable from "@mui/icons-material/EventAvailable";
+import { formatPrecio } from "@shared/utils/formatters";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import {
   listByGranja,
   createCategoria,
@@ -36,6 +38,7 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 export default function CajaAhorro() {
   const showSnackbar = useSnackbar();
@@ -298,6 +301,9 @@ export default function CajaAhorro() {
           >
             <TableRow>
               <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
+                ID
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
                 Categoría
               </TableCell>
               {meses.map((mes) => (
@@ -322,7 +328,7 @@ export default function CajaAhorro() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {registros.map((r, i) => (
+            {ordenarYNumerar(registros, ["id"]).map((r, i) => (
               <TableRow
                 key={r.id}
                 sx={{
@@ -330,12 +336,13 @@ export default function CajaAhorro() {
                   "&:hover": { backgroundColor: "#e3f2fd" },
                 }}
               >
+                <TableCell align="center">{r._num}</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>{r.categoria}</TableCell>
 
                 {meses.map((mes) => (
                   <TableCell key={mes} align="center">
-                    <TextField
-                      type="number"
+                    <CampoNumerico
+                      prefix="$" decimalScale={2}
                       variant="standard"
                       value={r[mes] ?? 0}
                       onChange={(e) => {
@@ -346,12 +353,12 @@ export default function CajaAhorro() {
                           )
                         );
                       }}
-                      onBlur={(e) =>
-                        actualizarCampo(r.id, mes, parseFloat(e.target.value) || 0)
+                      onBlur={() =>
+                        actualizarCampo(r.id, mes, parseFloat(r[mes]) || 0)
                       }
                       inputProps={{
                         min: 0,
-                        style: { textAlign: "center", width: 70 },
+                        style: { textAlign: "center", width: 90 },
                       }}
                     />
                   </TableCell>
@@ -365,7 +372,7 @@ export default function CajaAhorro() {
                     color: "#0d47a1",
                   }}
                 >
-                  {r.total ?? 0}
+                  {formatPrecio(r.total)}
                 </TableCell>
 
                 <TableCell align="center">
@@ -393,6 +400,7 @@ export default function CajaAhorro() {
                 zIndex: 2,
               }}
             >
+              <TableCell sx={{ backgroundColor: "#0d47a1" }} />
               <TableCell
                 sx={{
                   fontWeight: "bold",
@@ -412,7 +420,7 @@ export default function CajaAhorro() {
                     fontWeight: "bold",
                   }}
                 >
-                  {totales[mes].toFixed(2)}
+                  {formatPrecio(totales[mes])}
                 </TableCell>
               ))}
 
@@ -424,7 +432,7 @@ export default function CajaAhorro() {
                   backgroundColor: "#1565c0",
                 }}
               >
-                {totalGeneral.toFixed(2)}
+                {formatPrecio(totalGeneral)}
               </TableCell>
 
               <TableCell sx={{ backgroundColor: "#0d47a1" }} />

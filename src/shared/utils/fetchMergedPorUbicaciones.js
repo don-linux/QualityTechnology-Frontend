@@ -24,7 +24,15 @@ export async function fetchMergedPorUbicaciones(filtros, fetchFn) {
         .catch(() => []);
     }),
   );
-  return results.flat();
+  const merged = results.flat();
+  const vistos = new Set();
+  return merged.filter((row) => {
+    const id = row?.fi_movimiento_id ?? row?.id;
+    if (id == null) return true;
+    if (vistos.has(id)) return false;
+    vistos.add(id);
+    return true;
+  });
 }
 
 /** Resuelve el slug/nombre de sede a partir de una pileta del listado. */

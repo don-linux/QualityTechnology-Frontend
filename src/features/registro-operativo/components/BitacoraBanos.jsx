@@ -30,6 +30,8 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -193,7 +195,7 @@ function BitacoraBanosContent() {
     ];
 
     const filas = data.map((r) => [
-      r.fd_fecha?.split("T")[0] || "",
+      formatFecha(r.fd_fecha),
       getTipoBanio(r),
       r.fc_regadera,
       r.fc_realizo,
@@ -213,19 +215,22 @@ function BitacoraBanosContent() {
       bodyStyles: { valign: "middle" },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Banos_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaBanos = (rows) => (
+  const renderTablaBanos = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table sx={{ minWidth: 960 }}>
         <TableHead sx={{ background: "#E3F2FD" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Tipo de Baño</TableCell>
             <TableCell>Regadera</TableCell>
@@ -235,10 +240,11 @@ function BitacoraBanosContent() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r) => (
+          {filas.map((r) => (
             <TableRow key={r.fi_id}>
+              <TableCell>{r._num}</TableCell>
               <TableCell sx={{ maxWidth: 160 }}>
-                {r.fd_fecha?.split("T")[0]}
+                {formatFecha(r.fd_fecha)}
               </TableCell>
               <TableCell sx={{ maxWidth: 160 }}>
                 <span title={getTipoBanio(r)}>{truncar(getTipoBanio(r))}</span>
@@ -281,7 +287,8 @@ function BitacoraBanosContent() {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>

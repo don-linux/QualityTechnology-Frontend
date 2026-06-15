@@ -3,6 +3,7 @@ import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
@@ -38,8 +39,10 @@ import useConfirm from "@shared/hooks/useConfirm";
 import FormHelperText from "@mui/material/FormHelperText";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
+import { formatFecha, formatPrecio } from "@shared/utils/formatters";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const EMPTY_CLIENTE_RAPIDO = {
   fc_razon_social: "",
@@ -101,14 +104,19 @@ export default function ListaEspera() {
 function ListaEsperaContent() {
   const showSnackbar = useSnackbar();
   const auth = useAuth();
-  const rol = auth.rol;
   const nombreUsuario = auth.nombre;
   const {
     ubicacionesGranja,
     defaultUbicacion,
-    resolveUnidadByRol,
   } = useUbicacionesGranja();
-  const granjaDefault = resolveUnidadByRol(rol)?.fc_nombre || defaultUbicacion;
+  const puedeElegirGranja = auth.granja === "ALL";
+  const puedeElegirUdN = auth.granja === "ALL";
+  const unidadNegocioIdUsuario = localStorage.getItem("unidad_negocio_id") || "";
+  const granjaDefault = puedeElegirGranja
+    ? defaultUbicacion
+    : auth.granja !== "SIN_UNIDAD"
+      ? auth.granja
+      : "";
 
   const [editId, setEditId] = useState(null);
   const [clientes, setClientes] = useState([]);
@@ -136,6 +144,24 @@ function ListaEsperaContent() {
 
   const [form, setForm] = useState(emptyForm);
   const [lista, setLista] = useState([]);
+
+  const filasPedidos = useMemo(() => ordenarYNumerar(lista, ["fi_lista_id"]), [lista]);
+
+  const unidadesDisponibles = useMemo(() => {
+    if (puedeElegirUdN) return unidadesNegocio;
+    if (auth.granja === "SIN_UNIDAD") return [];
+    if (unidadNegocioIdUsuario) {
+      return unidadesNegocio.filter(
+        (unidad) => String(unidad.fi_unidad_negocio_id) === unidadNegocioIdUsuario,
+      );
+    }
+    return unidadesNegocio.filter((unidad) => unidad.fc_nombre === auth.granja);
+  }, [auth.granja, puedeElegirUdN, unidadNegocioIdUsuario, unidadesNegocio]);
+
+  const udnDefaultClienteRapido = useMemo(() => {
+    if (puedeElegirUdN || auth.granja === "SIN_UNIDAD") return "";
+    return unidadNegocioIdUsuario || String(unidadesDisponibles[0]?.fi_unidad_negocio_id || "");
+  }, [auth.granja, puedeElegirUdN, unidadNegocioIdUsuario, unidadesDisponibles]);
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -272,6 +298,16 @@ function ListaEsperaContent() {
     });
   };
 
+  const abrirModalCliente = () => {
+    setNuevoCliente({ ...EMPTY_CLIENTE_RAPIDO, fi_unidad_negocio_id: udnDefaultClienteRapido });
+    setOpenCliente(true);
+  };
+
+  const cerrarModalCliente = () => {
+    setOpenCliente(false);
+    setNuevoCliente({ ...EMPTY_CLIENTE_RAPIDO, fi_unidad_negocio_id: udnDefaultClienteRapido });
+  };
+
   const editar = (item) => {
     clearErrors();
     setEditId(item.fi_lista_id);
@@ -396,8 +432,7 @@ function ListaEsperaContent() {
         fi_ejecutivo_empleado_id: Number(nuevoCliente.fi_ejecutivo_empleado_id),
       });
       await cargarClientes();
-      setOpenCliente(false);
-      setNuevoCliente(EMPTY_CLIENTE_RAPIDO);
+      cerrarModalCliente();
     } catch (err) {
       showSnackbar(err?.response?.data?.error || "Error al registrar cliente", "error");
     }
@@ -449,7 +484,7 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            {rol === "Administrador" ? (
+            {puedeElegirGranja ? (
               <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange} error={!!errors.fc_granja_asignada} helperText={errors.fc_granja_asignada}>
                 {ubicacionesGranja.map((op) => (
                   <MenuItem key={op.value} value={op.value}>
@@ -494,9 +529,9 @@ function ListaEsperaContent() {
           )}
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField
+            <CampoNumerico
               fullWidth
-              type="number"
+              decimalScale={0}
               label="Cantidad"
               name="fn_cantidad"
               value={form.fn_cantidad}
@@ -561,7 +596,7 @@ function ListaEsperaContent() {
                   fullWidth
                   variant="contained"
                   color="success"
-                  onClick={() => setOpenCliente(true)}
+                  onClick={abrirModalCliente}
                 >
                   <AddIcon />
                 </Button>
@@ -606,7 +641,7 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth type="number" label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} error={!!errors.fn_precio_venta} helperText={errors.fn_precio_venta} inputProps={{ min: 0, step: "0.01" }} />
+            <CampoNumerico fullWidth prefix="$" decimalScale={2} label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} error={!!errors.fn_precio_venta} helperText={errors.fn_precio_venta} inputProps={{ min: 0, step: "0.01" }} />
           </Grid>
         </Grid>
 
@@ -631,65 +666,82 @@ function ListaEsperaContent() {
       )}
 
       {/* Tabla */}
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          Lista de Pedidos
-        </Typography>
+      <Typography variant="h6" fontWeight="bold" sx={{ mb: 0.5 }}>
+        Lista de Pedidos
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        {auth.granja === "ALL"
+          ? "Se muestran los pedidos de todas las unidades de negocio."
+          : auth.granja === "SIN_UNIDAD"
+            ? "Tu usuario no tiene una unidad de negocio asignada; no hay pedidos visibles."
+            : `Solo se muestran los pedidos de tu unidad de negocio (${auth.granja}).`}
+      </Typography>
 
-        <TableContainer>
-          <Table>
-            <TableHead>
+      <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table size="small" sx={{ minWidth: 900 }}>
+            <TableHead sx={{ backgroundColor: "#006d77" }}>
               <TableRow>
-                <TableCell>Fecha</TableCell>
-                <TableCell>Tipo</TableCell>
-                <TableCell>Cliente</TableCell>
-                <TableCell>Cantidad</TableCell>
-                <TableCell>Pileta</TableCell>
-                <TableCell>Lugar</TableCell>
-                <TableCell>Granja</TableCell>
-                <TableCell>Precio</TableCell>
-                <TableCell>Estatus</TableCell>
-                <TableCell>Acciones</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tipo</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cliente</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lugar</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Granja</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Precio</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Estatus</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {lista.map((item) => (
-                <TableRow key={item.fi_lista_id}>
-                  <TableCell>{item.fd_fecha_entrega}</TableCell>
-                  <TableCell>{item.fc_uap_asignada ?? item.tipo_venta ?? "—"}</TableCell>
-                  <TableCell>{item.fc_cliente}</TableCell>
-                  <TableCell>{item.fn_cantidad}</TableCell>
-                  <TableCell>{item.nombre_pileta_origen ?? "—"}</TableCell>
-                  <TableCell>{item.fc_lugar_entrega}</TableCell>
-                <TableCell>{item.fc_granja_asignada ?? item.granja ?? "—"}</TableCell>
-                <TableCell>${item.fn_precio_venta}</TableCell>
-                <TableCell>{etiquetaEstatus(item)}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="outlined"
-                    color="warning"
-                    sx={{ mr: 1 }}
-                    onClick={() => editar(item)}
-                    disabled={Boolean(item.venta_id ?? item.fi_venta_id)}
-                  >
-                    Editar
-                  </Button>
-                  <Button variant="outlined" color="error" sx={{ mr: 1 }} onClick={() => cancelar(item)}>
-                    Cancelar
-                  </Button>
-                  <Button variant="contained" color="success" onClick={() => convertir(item)}>
-                    Convertir
-                  </Button>
-                </TableCell>
+              {filasPedidos.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={11} align="center">
+                    No hay pedidos registrados.
+                  </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filasPedidos.map((item) => (
+                  <TableRow key={item.fi_lista_id}>
+                    <TableCell>{item._num}</TableCell>
+                    <TableCell>{formatFecha(item.fd_fecha_entrega)}</TableCell>
+                    <TableCell>{item.fc_uap_asignada ?? item.tipo_venta ?? "—"}</TableCell>
+                    <TableCell>{item.fc_cliente}</TableCell>
+                    <TableCell>{item.fn_cantidad}</TableCell>
+                    <TableCell>{item.nombre_pileta_origen ?? "—"}</TableCell>
+                    <TableCell>{item.fc_lugar_entrega}</TableCell>
+                    <TableCell>{item.fc_granja_asignada ?? item.granja ?? "—"}</TableCell>
+                    <TableCell>{formatPrecio(item.fn_precio_venta)}</TableCell>
+                    <TableCell>{etiquetaEstatus(item)}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        sx={{ mr: 1 }}
+                        onClick={() => editar(item)}
+                        disabled={Boolean(item.venta_id ?? item.fi_venta_id)}
+                      >
+                        Editar
+                      </Button>
+                      <Button variant="outlined" color="error" sx={{ mr: 1 }} onClick={() => cancelar(item)}>
+                        Cancelar
+                      </Button>
+                      <Button variant="contained" color="success" onClick={() => convertir(item)}>
+                        Convertir
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       </Paper>
 
       {/* Modal para cliente rápido */}
-      <Dialog open={openCliente} onClose={() => setOpenCliente(false)} fullWidth maxWidth="sm">
+      <Dialog open={openCliente} onClose={cerrarModalCliente} fullWidth maxWidth="sm">
         <DialogTitle>Registrar nuevo cliente</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -700,12 +752,21 @@ function ListaEsperaContent() {
               <TextField name="fc_rfc" label="RFC" fullWidth value={nuevoCliente.fc_rfc} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 20 }} />
             </Grid>
             <Grid size={6}>
-              <TextField select name="fi_unidad_negocio_id" label="UdN" fullWidth value={nuevoCliente.fi_unidad_negocio_id} onChange={handleNuevoClienteChange}>
-                <MenuItem value="">Selecciona UdN</MenuItem>
-                {unidadesNegocio.map((unidad) => (
-                  <MenuItem key={unidad.fi_unidad_negocio_id} value={unidad.fi_unidad_negocio_id}>{unidad.fc_nombre}</MenuItem>
-                ))}
-              </TextField>
+              {puedeElegirUdN ? (
+                <TextField select name="fi_unidad_negocio_id" label="UdN" fullWidth value={nuevoCliente.fi_unidad_negocio_id} onChange={handleNuevoClienteChange}>
+                  <MenuItem value="">Selecciona UdN</MenuItem>
+                  {unidadesDisponibles.map((unidad) => (
+                    <MenuItem key={unidad.fi_unidad_negocio_id} value={unidad.fi_unidad_negocio_id}>{unidad.fc_nombre}</MenuItem>
+                  ))}
+                </TextField>
+              ) : (
+                <TextField
+                  label="UdN"
+                  fullWidth
+                  value={unidadesDisponibles[0]?.fc_nombre || auth.granja || ""}
+                  slotProps={{ input: { readOnly: true } }}
+                />
+              )}
             </Grid>
             <Grid size={6}>
               <TextField name="fc_nombre_contacto" label="Nombre del contacto" fullWidth value={nuevoCliente.fc_nombre_contacto} onChange={handleNuevoClienteChange} />
@@ -738,7 +799,7 @@ function ListaEsperaContent() {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenCliente(false)}>Cancelar</Button>
+          <Button onClick={cerrarModalCliente}>Cancelar</Button>
           <Button variant="contained" color="success" onClick={registrarClienteRapido}>
             Guardar
           </Button>

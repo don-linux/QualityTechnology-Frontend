@@ -7,6 +7,13 @@ import {
 } from "../services/alevinajeService";
 import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
+import {
+  CampoConEtiquetaArriba,
+  TituloSeccionFormulario,
+  botonRegistroInventarioSx,
+  campoFormSx,
+} from "@shared/components/FormularioInventarioSecciones";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
@@ -21,7 +28,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
-import Divider from "@mui/material/Divider";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -30,8 +36,10 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import { listPiletas } from "../services/piletasService";
 
 const MAX_OBSERVACION = 500;
@@ -51,7 +59,7 @@ const Alevinaje = () => {
     "fi_pileta_destino_id",
     "cantidad_total",
     "fecha_peso",
-    "peso_kg",
+    "peso_gramos",
   ];
 
   const [piletasDestinoAlevinaje, setPiletasDestinoAlevinaje] = useState([]);
@@ -61,9 +69,10 @@ const Alevinaje = () => {
   const [formData, setFormData] = useState({
     ubicacion: "",
     fi_pileta_destino_id: "",
+    fc_lote: "",
     cantidad_total: "",
     cantidad_alimento: "",
-    peso_kg: "",
+    peso_gramos: "",
     fecha_peso: "",
     observacion: "",
   });
@@ -83,9 +92,11 @@ const Alevinaje = () => {
   const payloadComunBackend = () => ({
     pileta_id: Number(formData.fi_pileta_destino_id),
     pileta_destino_id: Number(formData.fi_pileta_destino_id),
+    lote: formData.fc_lote?.trim() || null,
+    fc_lote: formData.fc_lote?.trim() || null,
     cantidad_total: Number(formData.cantidad_total || 0),
     cantidad_alimento: Number(formData.cantidad_alimento || 0),
-    peso_kg: formData.peso_kg === "" ? null : Number(formData.peso_kg),
+    peso_gramos: formData.peso_gramos === "" ? null : Number(formData.peso_gramos),
     fecha_peso: formData.fecha_peso || null,
     observacion: formData.observacion,
   });
@@ -96,7 +107,7 @@ const Alevinaje = () => {
     if (name === "cantidad_total" || name === "cantidad_alimento") {
       if (!soloEntero(value)) return;
     }
-    if (name === "peso_kg") {
+    if (name === "peso_gramos") {
       if (!soloDecimal(value)) return;
     }
 
@@ -168,11 +179,17 @@ const Alevinaje = () => {
       fi_pileta_destino_id: String(
         seleccionado.fi_pileta_destino_id ?? seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
       ),
+      fc_lote:
+        seleccionado.lote ??
+        seleccionado.fc_lote ??
+        seleccionado.lote_genetico ??
+        seleccionado.fc_lote_genetico ??
+        "",
       cantidad_total: String(seleccionado.cantidad_total ?? ""),
       cantidad_alimento: String(seleccionado.cantidad_alimento ?? ""),
-      peso_kg:
-        seleccionado.peso_kg != null
-          ? String(seleccionado.peso_kg)
+      peso_gramos:
+        seleccionado.peso_gramos != null
+          ? String(seleccionado.peso_gramos)
           : seleccionado.peso != null
             ? String(seleccionado.peso)
             : "",
@@ -227,9 +244,10 @@ const Alevinaje = () => {
     setFormData({
       ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
       fi_pileta_destino_id: "",
+      fc_lote: "",
       cantidad_total: "",
       cantidad_alimento: "",
-      peso_kg: "",
+      peso_gramos: "",
       fecha_peso: "",
       observacion: "",
     });
@@ -243,21 +261,7 @@ const Alevinaje = () => {
     resetFormulario();
   };
 
-  const formatearFecha = (fechaISO) => {
-    if (!fechaISO) return "";
-    const d = new Date(fechaISO);
-    return d.toLocaleDateString("es-MX");
-  };
-
-  const formatNumber = (num) => {
-    if (num === null || num === undefined) return "";
-    const n = Number(num);
-    if (Number.isInteger(n)) return n.toString();
-    return n.toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    });
-  };
+  const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
 
   const cargarHistorialObservaciones = useCallback(
     (piletaId) => listObservacionesPileta(piletaId),
@@ -271,135 +275,168 @@ const Alevinaje = () => {
       </Typography>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
-      <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#005f73" }}>
-            {modoEdicion ? "Editar registro" : "Registrar nuevo alevinaje"}
-          </Typography>
-          <Divider sx={{ mb: 3 }} />
+        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+            <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
+              {modoEdicion ? "Editar registro" : "Registrar nuevo alevinaje"}
+            </Typography>
 
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                select
-                label="Ubicación"
-                name="ubicacion"
-                value={formData.ubicacion || ""}
-                onChange={handleChange}
-                fullWidth
-                error={!!errors.ubicacion}
-                {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
-              >
-                {ubicacionesGranja.map((op) => (
-                  <MenuItem key={op.value} value={op.value}>
-                    {op.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                select
-                label="Pileta (alevinaje)"
-                name="fi_pileta_destino_id"
-                value={formData.fi_pileta_destino_id || ""}
-                onChange={handleChange}
-                fullWidth
-                error={!!errors.fi_pileta_destino_id}
-                {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
-              >
-                {piletasFiltradas.map((p) => {
-                  const pid = p.fi_pileta_id ?? p.pileta_id;
-                  return (
-                    <MenuItem key={pid} value={String(pid)}>
-                      {p.nombre}
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  select
+                  label="Ubicación"
+                  name="ubicacion"
+                  value={formData.ubicacion || ""}
+                  onChange={handleChange}
+                  fullWidth
+                  sx={campoFormSx}
+                  error={!!errors.ubicacion}
+                  {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
+                >
+                  {ubicacionesGranja.map((op) => (
+                    <MenuItem key={op.value} value={op.value}>
+                      {op.label}
                     </MenuItem>
-                  );
-                })}
-              </TextField>
-            </Grid>
+                  ))}
+                </TextField>
+              </Grid>
 
-            <Grid size={{ xs: 12, sm: 2 }}>
-              <TextField
-                label="Cantidad total"
-                name="cantidad_total"
-                type="number"
-                value={formData.cantidad_total}
-                onChange={handleChange}
-                fullWidth
-                inputProps={{ min: 0, inputMode: "numeric" }}
-                error={!!errors.cantidad_total}
-                {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
-              />
-            </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  select
+                  label="Instalación (alevinaje)"
+                  name="fi_pileta_destino_id"
+                  value={formData.fi_pileta_destino_id || ""}
+                  onChange={handleChange}
+                  fullWidth
+                  sx={campoFormSx}
+                  error={!!errors.fi_pileta_destino_id}
+                  {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
+                >
+                  {piletasFiltradas.map((p) => {
+                    const pid = p.fi_pileta_id ?? p.pileta_id;
+                    return (
+                      <MenuItem key={pid} value={String(pid)}>
+                        {p.nombre}
+                      </MenuItem>
+                    );
+                  })}
+                </TextField>
+              </Grid>
 
-            <Grid size={{ xs: 12, sm: 2 }}>
-              <TextField
-                label="Cantidad alimento"
-                name="cantidad_alimento"
-                type="number"
-                value={formData.cantidad_alimento}
-                onChange={handleChange}
-                fullWidth
-                inputProps={{ min: 0, inputMode: "numeric" }}
-              />
-            </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label="Lote genético"
+                  name="fc_lote"
+                  value={formData.fc_lote}
+                  onChange={handleChange}
+                  fullWidth
+                  placeholder="Lote heredado de incubación o captura manual"
+                  sx={campoFormSx}
+                  inputProps={{ maxLength: 60 }}
+                />
+              </Grid>
 
-            <Grid size={{ xs: 12, sm: 2 }}>
-              <TextField
-                label="Peso (kg)"
-                name="peso_kg"
-                value={formData.peso_kg}
-                onChange={handleChange}
-                fullWidth
-                inputProps={{ inputMode: "decimal" }}
-                error={!!errors.peso_kg}
-                {...(errors.peso_kg ? { helperText: errors.peso_kg } : {})}
-              />
-            </Grid>
+              <Grid size={12}>
+                <TituloSeccionFormulario titulo="Información de cantidades" mt={0} />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <CampoNumerico
+                      label="Cantidad inicial"
+                      name="cantidad_total"
+                      decimalScale={0}
+                      value={formData.cantidad_total}
+                      onChange={handleChange}
+                      fullWidth
+                      placeholder="Cantidad inicial"
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, step: 1 }}
+                      error={!!errors.cantidad_total}
+                      {...(errors.cantidad_total ? { helperText: errors.cantidad_total } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <CampoNumerico
+                      label="Cantidad actual"
+                      name="cantidad_alimento"
+                      decimalScale={0}
+                      value={formData.cantidad_alimento}
+                      onChange={handleChange}
+                      fullWidth
+                      placeholder="Cantidad actual"
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, step: 1 }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
 
-            <Grid size={{ xs: 12, sm: 2 }}>
-              <TextField
-                label="Fecha peso"
-                type="date"
-                name="fecha_peso"
-                value={formData.fecha_peso}
-                onChange={handleChange}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                error={!!errors.fecha_peso}
-                {...(errors.fecha_peso ? { helperText: errors.fecha_peso } : {})}
-              />
-            </Grid>
+              <Grid size={12}>
+                <TituloSeccionFormulario titulo="Datos biométricos" />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <CampoNumerico
+                      label="Peso (g)"
+                      name="peso_gramos"
+                      value={formData.peso_gramos}
+                      onChange={handleChange}
+                      fullWidth
+                      placeholder="Peso (g)"
+                      sx={campoFormSx}
+                      inputProps={{ min: 0, step: "any" }}
+                      error={!!errors.peso_gramos}
+                      {...(errors.peso_gramos ? { helperText: errors.peso_gramos } : {})}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label="Fecha peso"
+                      type="date"
+                      name="fecha_peso"
+                      value={formData.fecha_peso}
+                      onChange={handleChange}
+                      fullWidth
+                      sx={campoFormSx}
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.fecha_peso}
+                      {...(errors.fecha_peso ? { helperText: errors.fecha_peso } : {})}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
 
-            <Grid size={{ xs: 12, sm: 8 }}>
-              <TextField
-                label="Observación"
-                name="observacion"
-                value={formData.observacion}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                rows={2}
-                inputProps={{ maxLength: MAX_OBSERVACION }}
-              />
-            </Grid>
+              <Grid size={12}>
+                <CampoConEtiquetaArriba label="Observaciones">
+                  <TextField
+                    name="observacion"
+                    value={formData.observacion}
+                    onChange={handleChange}
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    placeholder="Escriba aquí cualquier detalle adicional..."
+                    sx={campoFormSx}
+                    hiddenLabel
+                    inputProps={{ maxLength: MAX_OBSERVACION }}
+                  />
+                </CampoConEtiquetaArriba>
+              </Grid>
 
-            <Grid size={12}>
-              <Button
-                variant="contained"
-                startIcon={<AddCircleIcon />}
-                color="success"
-                onClick={modoEdicion ? actualizarAlevinajeRegistro : registrarAlevinaje}
-                sx={{ mt: 1, fontWeight: "bold" }}
-              >
-                {modoEdicion ? "Guardar cambios" : "Registrar alevinaje"}
-              </Button>
+              <Grid size={12}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddCircleIcon />}
+                  onClick={modoEdicion ? actualizarAlevinajeRegistro : registrarAlevinaje}
+                  sx={botonRegistroInventarioSx}
+                >
+                  {modoEdicion ? "Guardar cambios" : "Registrar alevinaje"}
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
       </FormularioRegistroPanel>
 
       <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
@@ -411,29 +448,32 @@ const Alevinaje = () => {
 
       <TablasPorUbicacionGranja
         grupos={gruposRegistros}
-        renderTabla={(rows) => (
+        renderTabla={(rows) => {
+          const filas = ordenarYNumerar(rows, ["fi_id", "id"]);
+          return (
           <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
               <Table sx={{ minWidth: 900 }}>
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Peso (kg)</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Talla (g)</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha talla</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.length === 0 ? (
+                  {filas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    rows.map((l) => (
+                    filas.map((l) => (
                       <TableRow
                         key={l.fi_id ?? l.id}
                         onClick={() => setSeleccionado(l)}
@@ -445,13 +485,14 @@ const Alevinaje = () => {
                               : "transparent",
                         }}
                       >
+                        <TableCell>{l._num}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.cantidad_total)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.peso_gramos ?? l.peso)}</TableCell>
                         <TableCell>
-                          {l.nombre_pileta_destino || l.nombre_pileta || "—"}
+                          {l.lote ?? l.fc_lote ?? l.lote_genetico ?? l.fc_lote_genetico ?? ""}
                         </TableCell>
-                        <TableCell>{formatNumber(l.cantidad_total)}</TableCell>
-                        <TableCell>{formatNumber(l.cantidad_alimento)}</TableCell>
-                        <TableCell>{formatNumber(l.peso_kg ?? l.peso)}</TableCell>
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
+                        <TableCell align="right">{formatCantidad(l.cantidad_alimento)}</TableCell>
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                           <CeldaObservacionConHistorial
                             texto={l.observacion ?? l.fc_observacion ?? ""}
@@ -470,7 +511,8 @@ const Alevinaje = () => {
               </Table>
             </TableContainer>
           </Paper>
-        )}
+          );
+        }}
       />
 
       {seleccionado && (

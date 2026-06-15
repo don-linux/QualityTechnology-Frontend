@@ -43,6 +43,7 @@ import {
   getUnidadNegocioUbicacionId,
   getUnidadNegocioUbicacionNombre,
 } from "@features/catalogos/utils/catalogEntityGetters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -295,11 +296,11 @@ export default function UnidadesNegocio() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {unidades.map((u) => {
+                  {ordenarYNumerar(unidades, ["fi_unidad_negocio_id", "unidad_negocio_id"]).map((u) => {
                     const ubicNom = getUnidadNegocioUbicacionNombre(u);
                     return (
                       <TableRow key={getUnidadNegocioId(u) ?? ""} hover>
-                        <TableCell>{getUnidadNegocioId(u)}</TableCell>
+                        <TableCell>{u._num}</TableCell>
                         <TableCell>{getUnidadNegocioNombre(u)}</TableCell>
                         <TableCell sx={{ maxWidth: 220 }}>
                           <span title={ubicNom}>{truncar(ubicNom || "—")}</span>

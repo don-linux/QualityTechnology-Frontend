@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
@@ -31,6 +32,7 @@ import {
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 export default function Vacaciones() {
   const showSnackbar = useSnackbar();
@@ -230,9 +232,9 @@ export default function Vacaciones() {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <CampoNumerico
                 label="ID del empleado"
-                type="number"
+                decimalScale={0}
                 value={nuevoForm.idEmpleado}
                 onChange={(e) => {
                   clearFieldError("idEmpleado");
@@ -302,9 +304,19 @@ export default function Vacaciones() {
         <Table size="small">
           <TableHead>
             <TableRow sx={{ backgroundColor: "#1565c0" }}>
+              <TableCell
+                sx={{
+                  color: "white",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  borderRight: "1px solid #ffffff33",
+                }}
+              >
+                ID
+              </TableCell>
               {[
                 "Nombre empleado",
-                "ID",
+                "ID Empleado",
                 "Inicio",
                 "Fin",
                 "Departamento",
@@ -337,7 +349,7 @@ export default function Vacaciones() {
           </TableHead>
 
           <TableBody>
-            {vacaciones.map((v, i) => {
+            {ordenarYNumerar(vacaciones, ["fi_vacacion_id", "vacacion_id"]).map((v, i) => {
               const isEditing = editandoId === v.fi_vacacion_id;
               const data = isEditing ? tempData : v;
 
@@ -359,6 +371,7 @@ export default function Vacaciones() {
                   }}
                 >
                   {/* DATOS DEL EMPLEADO */}
+                  <TableCell align="center">{v._num}</TableCell>
                   <TableCell sx={{ maxWidth: 180, whiteSpace: "normal" }}>
                     {v.fc_nombre_empleado}
                   </TableCell>
@@ -400,8 +413,8 @@ export default function Vacaciones() {
                       }
                     >
                       {isEditing ? (
-                        <TextField
-                          type="number"
+                        <CampoNumerico
+                          decimalScale={0}
                           value={data[campo] ?? 0}
                           onChange={(e) =>
                             handleChange(campo, e.target.value)

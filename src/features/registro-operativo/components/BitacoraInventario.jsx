@@ -29,8 +29,11 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 function BitacoraInventarioContent() {
   const { usuarioId } = useAuth();
@@ -178,8 +181,8 @@ function BitacoraInventarioContent() {
       r.fn_cantidad,
       r.fn_talla,
       r.fc_lote,
-      r.fd_fecha_siembra?.split("T")[0],
-      r.fd_fecha_salida_hormonado?.split("T")[0],
+      formatFecha(r.fd_fecha_siembra),
+      formatFecha(r.fd_fecha_salida_hormonado),
       r.fc_observacion,
     ]);
 
@@ -195,18 +198,21 @@ function BitacoraInventarioContent() {
       },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Inventario_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaInventario = (rows) => (
+  const renderTablaInventario = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper>
       <Table>
         <TableHead sx={{ background: "#E3F2FD" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Instalación</TableCell>
             <TableCell>Cantidad</TableCell>
             <TableCell>Talla</TableCell>
@@ -218,14 +224,15 @@ function BitacoraInventarioContent() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r) => (
+          {filas.map((r) => (
             <TableRow key={r.fi_id}>
+              <TableCell>{r._num}</TableCell>
               <TableCell>{r.fn_num_instalacion}</TableCell>
               <TableCell>{r.fn_cantidad}</TableCell>
               <TableCell>{r.fn_talla}</TableCell>
               <TableCell>{r.fc_lote}</TableCell>
-              <TableCell>{r.fd_fecha_siembra?.split("T")[0]}</TableCell>
-              <TableCell>{r.fd_fecha_salida_hormonado?.split("T")[0]}</TableCell>
+              <TableCell>{formatFecha(r.fd_fecha_siembra)}</TableCell>
+              <TableCell>{formatFecha(r.fd_fecha_salida_hormonado)}</TableCell>
               <TableCell>{r.fc_observacion}</TableCell>
               <TableCell>
                 <Button
@@ -251,7 +258,8 @@ function BitacoraInventarioContent() {
         </TableBody>
       </Table>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>
@@ -293,10 +301,10 @@ function BitacoraInventarioContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Cantidad"
                 name="fn_cantidad"
-                type="number"
+                decimalScale={0}
                 value={form.fn_cantidad}
                 onChange={handleChange}
                 fullWidth
@@ -305,10 +313,9 @@ function BitacoraInventarioContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Talla"
                 name="fn_talla"
-                type="number"
                 value={form.fn_talla}
                 onChange={handleChange}
                 fullWidth

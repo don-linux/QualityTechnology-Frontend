@@ -32,6 +32,8 @@ import {
   removeProveedor,
 } from "../services/proveedoresService";
 import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
+import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
@@ -264,7 +266,7 @@ export default function Proveedores() {
       alternateRowStyles: { fillColor: [245, 245, 245] },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Proveedores_${fecha}.pdf`);
   };
@@ -393,7 +395,7 @@ export default function Proveedores() {
           </TableHead>
 
           <TableBody>
-            {proveedoresFiltrados.map((p, i) => (
+            {ordenarYNumerar(proveedoresFiltrados, ["fi_proveedor_id"]).map((p, i) => (
               <TableRow
                 key={p.fi_proveedor_id}
                 sx={{
@@ -401,7 +403,7 @@ export default function Proveedores() {
                   "&:hover": { backgroundColor: "#e3f2fd" },
                 }}
               >
-                <TableCell align="center">{p.fi_proveedor_id}</TableCell>
+                <TableCell align="center">{p._num}</TableCell>
                 <TableCell>{p.fc_razon_social || "-"}</TableCell>
                 <TableCell>{p.fc_rfc || "-"}</TableCell>
                 <TableCell>{p.fc_producto_servicio || "-"}</TableCell>

@@ -20,6 +20,7 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { formatFecha } from "@shared/utils/formatters";
 import Alert from "@mui/material/Alert";
 import {
   listBiometrias,
@@ -34,8 +35,10 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -398,7 +401,7 @@ export default function BioBiometrias() {
                               ? `proceso: ${piletaSeleccionada.fc_ultima_observacion_proceso}`
                               : null,
                             piletaSeleccionada.fd_ultima_observacion
-                              ? `fecha: ${String(piletaSeleccionada.fd_ultima_observacion).split("T")[0]}`
+                              ? `fecha: ${formatFecha(piletaSeleccionada.fd_ultima_observacion)}`
                               : null,
                           ]
                             .filter(Boolean)
@@ -417,10 +420,9 @@ export default function BioBiometrias() {
 
             {/* PESO TOTAL */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Peso Total (g)"
                 name="fn_peso_total_gramos"
-                type="number"
                 value={form.fn_peso_total_gramos}
                 onChange={handleChange}
                 fullWidth
@@ -431,10 +433,10 @@ export default function BioBiometrias() {
 
             {/* ORGANISMOS */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Organismos Muestreados"
                 name="fn_organismos_muestreados"
-                type="number"
+                decimalScale={0}
                 value={form.fn_organismos_muestreados}
                 onChange={handleChange}
                 fullWidth
@@ -445,10 +447,9 @@ export default function BioBiometrias() {
 
             {/* PESO PROMEDIO */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoNumerico
                 label="Peso Promedio (g)"
                 name="fn_peso_promedio"
-                type="number"
                 value={form.fn_peso_promedio}
                 slotProps={{ input: { readOnly: true } }}
                 fullWidth
@@ -528,6 +529,7 @@ export default function BioBiometrias() {
                 <Table sx={{ minWidth: 1120 }}>
                   <TableHead sx={{ background: "#E8F5E9" }}>
                     <TableRow>
+                      <TableCell>ID</TableCell>
                       <TableCell>Fecha</TableCell>
                       <TableCell>Pileta</TableCell>
                       <TableCell>Proceso (obs.)</TableCell>
@@ -542,9 +544,10 @@ export default function BioBiometrias() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {rows.map((row) => (
+                    {ordenarYNumerar(rows, ["fi_id"]).map((row) => (
                       <TableRow key={row.fi_id}>
-                        <TableCell>{row.fd_fecha?.split("T")[0]}</TableCell>
+                        <TableCell>{row._num}</TableCell>
+                        <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
                         <TableCell>{row.nombre_pileta || "—"}</TableCell>
                         <TableCell>{row.fc_observacion_proceso || "—"}</TableCell>
                         <TableCell>{formatNum(row.fn_peso_total_gramos)}</TableCell>

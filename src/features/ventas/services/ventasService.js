@@ -5,22 +5,14 @@ export function listVentas() {
   return axios.get(ENDPOINTS.ventas.base);
 }
 
-export function listClientes() {
-  return axios.get(ENDPOINTS.ventas.clientes);
+export function listPagosVenta(id) {
+  return axios.get(ENDPOINTS.ventas.pagos(id));
 }
 
-export function listEncargados(empresa) {
-  return axios.get(ENDPOINTS.ventas.encargados(empresa));
+export function registrarPagoVenta(id, data) {
+  return axios.post(ENDPOINTS.ventas.pagos(id), data);
 }
 
-export function createVenta(payload) {
-  return axios.post(ENDPOINTS.ventas.base, payload);
-}
-
-export function updateVenta(id, payload) {
-  return axios.put(ENDPOINTS.ventas.byId(id), payload);
-}
-
-export function removeVenta(id) {
-  return axios.delete(ENDPOINTS.ventas.byId(id));
+export function anularPagoVenta(id, movId) {
+  return axios.delete(ENDPOINTS.ventas.anularPago(id, movId));
 }

@@ -18,6 +18,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import MenuItem from "@mui/material/MenuItem";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { formatFecha } from "@shared/utils/formatters";
 import {
   listRecambios,
   listEmpleadosRecambios,
@@ -31,8 +32,10 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 function BitacoraRecambiosContent() {
   const { usuarioId } = useAuth();
@@ -235,17 +238,17 @@ const exportarPDF = async () => {
 
   const filas = data.map((r) => [
     r.fn_num_instalacion || "",
-    r.fd_fecha1?.split("T")[0] || "",
+    formatFecha(r.fd_fecha1, ""),
     r.fc_tipo1 || "",
-    r.fd_fecha2?.split("T")[0] || "",
+    formatFecha(r.fd_fecha2, ""),
     r.fc_tipo2 || "",
-    r.fd_fecha3?.split("T")[0] || "",
+    formatFecha(r.fd_fecha3, ""),
     r.fc_tipo3 || "",
-    r.fd_fecha4?.split("T")[0] || "",
+    formatFecha(r.fd_fecha4, ""),
     r.fc_tipo4 || "",
-    r.fd_fecha5?.split("T")[0] || "",
+    formatFecha(r.fd_fecha5, ""),
     r.fc_tipo5 || "",
-    r.fd_fecha6?.split("T")[0] || "",
+    formatFecha(r.fd_fecha6, ""),
     r.fc_tipo6 || "",
     r.fc_responsable || "",
   ]);
@@ -288,18 +291,21 @@ const exportarPDF = async () => {
   doc.text("Page 1 of 1", 270, y, { align: "right" });
 
   // Guardar
-  const fecha = new Date().toLocaleDateString("es-MX");
+  const fecha = formatFecha(new Date());
   doc.save(`Registro_Recambios_${getLabel(form.ubicacion)}_${fecha}.pdf`);
 };
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaRecambios = (rows) => (
+  const renderTablaRecambios = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"]);
+    return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table sx={{ minWidth: 920 }}>
         <TableHead sx={{ background: "#E3F2FD" }}>
           <TableRow>
+            <TableCell>ID</TableCell>
             <TableCell>Mes</TableCell>
             <TableCell>Instalación</TableCell>
             <TableCell>Fechas y Tipos</TableCell>
@@ -308,15 +314,16 @@ const exportarPDF = async () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((r) => (
+          {filas.map((r) => (
             <TableRow key={r.fi_id}>
+              <TableCell>{r._num}</TableCell>
               <TableCell>{r.fc_mes}</TableCell>
               <TableCell>{r.fn_num_instalacion}</TableCell>
               <TableCell>
                 {[1, 2, 3, 4, 5, 6]
                   .map((n) =>
                     r[`fd_fecha${n}`]
-                      ? `${r[`fd_fecha${n}`]?.split("T")[0]} (${r[`fc_tipo${n}`]})`
+                      ? `${formatFecha(r[`fd_fecha${n}`])} (${r[`fc_tipo${n}`]})`
                       : null
                   )
                   .filter(Boolean)
@@ -352,7 +359,8 @@ const exportarPDF = async () => {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box>
@@ -396,10 +404,10 @@ const exportarPDF = async () => {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="No. Instalación"
                 name="fn_num_instalacion"
-                type="number"
+                decimalScale={0}
                 value={form.fn_num_instalacion}
                 onChange={handleChange}
                 fullWidth

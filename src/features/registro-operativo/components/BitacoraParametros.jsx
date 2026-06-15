@@ -31,8 +31,11 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import { formatFecha } from "@shared/utils/formatters";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 function BitacoraParametrosContent() {
   const { usuarioId } = useAuth();
@@ -189,7 +192,7 @@ function BitacoraParametrosContent() {
     ];
 
     const filas = data.map((r) => [
-      r.fd_fecha?.split("T")[0],
+      formatFecha(r.fd_fecha),
       r.fn_num_estanque,
       r.fn_oxigeno,
       r.fn_temperatura,
@@ -212,7 +215,7 @@ function BitacoraParametrosContent() {
       },
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
     doc.save(`Bitacora_Parametros_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
@@ -261,10 +264,10 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Estanque"
                 name="fn_num_estanque"
-                type="number"
+                decimalScale={0}
                 inputProps={{ min: 0, step: 1 }}
                 value={form.fn_num_estanque}
                 onChange={handleChange}
@@ -274,10 +277,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Oxígeno"
                 name="fn_oxigeno"
-                type="number"
                 inputProps={{ min: 0, step: "any" }}
                 value={form.fn_oxigeno}
                 onChange={handleChange}
@@ -287,10 +289,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Temperatura"
                 name="fn_temperatura"
-                type="number"
                 inputProps={{ step: "any" }}
                 value={form.fn_temperatura}
                 onChange={handleChange}
@@ -300,10 +301,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="pH"
                 name="fn_ph"
-                type="number"
                 inputProps={{ min: 0, max: 14, step: "any" }}
                 value={form.fn_ph}
                 onChange={handleChange}
@@ -313,10 +313,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Amonio"
                 name="fn_amonio"
-                type="number"
                 inputProps={{ min: 0, step: "any" }}
                 value={form.fn_amonio}
                 onChange={handleChange}
@@ -326,10 +325,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Nitritos"
                 name="fn_nitritos"
-                type="number"
                 inputProps={{ min: 0, step: "any" }}
                 value={form.fn_nitritos}
                 onChange={handleChange}
@@ -339,10 +337,9 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoNumerico
                 label="Nitratos"
                 name="fn_nitratos"
-                type="number"
                 inputProps={{ min: 0, step: "any" }}
                 value={form.fn_nitratos}
                 onChange={handleChange}
@@ -413,6 +410,7 @@ function BitacoraParametrosContent() {
                 <Table sx={{ minWidth: 1100 }}>
                 <TableHead sx={{ background: "#FFFDE7" }}>
                   <TableRow>
+                    <TableCell>ID</TableCell>
                     <TableCell>Fecha</TableCell>
                     <TableCell>Estanque</TableCell>
                     <TableCell>Oxígeno</TableCell>
@@ -426,9 +424,10 @@ function BitacoraParametrosContent() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((r) => (
+                  {ordenarYNumerar(rows, ["fi_id"]).map((r) => (
                     <TableRow key={r.fi_id}>
-                      <TableCell>{r.fd_fecha?.split("T")[0]}</TableCell>
+                      <TableCell>{r._num}</TableCell>
+                      <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
                       <TableCell>{r.fn_num_estanque}</TableCell>
                       <TableCell>{r.fn_oxigeno}</TableCell>
                       <TableCell>{r.fn_temperatura}</TableCell>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
@@ -30,12 +31,22 @@ import {
   fetchMergedPorUbicaciones,
   filtrarPorUbicacion,
 } from "@shared/utils/fetchMergedPorUbicaciones";
+import { rowPerteneceAUbicacionGranja } from "@shared/utils/unidadesNegocio";
+import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import ProximaVentaModal from "@features/ventas/components/ProximaVentaModal";
+import CampoNumerico from "@shared/components/CampoNumerico";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
 import { listPiletas } from "../services/piletasService";
 import { listLista } from "@features/ventas/services/listaEsperaService";
 
 const TIPOS_MOVIMIENTO = [
+  {
+    value: "INCUBACION_A_ALEVINAJE",
+    label: "De incubación a alevinaje",
+    etapaOrigen: "incubacion",
+    etapaDestino: "alevinaje",
+    modo: "TRASLADO",
+  },
   {
     value: "ALEVINAJE_A_ALEVINAJE",
     label: "De alevinaje a alevinaje",
@@ -112,16 +123,6 @@ function stockPileta(p) {
   return Number(p?.cantidad ?? p?.fn_cantidad ?? 0);
 }
 
-function formatStock(num) {
-  return Number(num ?? 0).toLocaleString("en-US");
-}
-
-function formatFecha(value) {
-  if (!value) return "—";
-  const s = String(value);
-  return s.includes("T") ? s.split("T")[0] : s.slice(0, 10);
-}
-
 function tipoVentaParaEtapa(etapa) {
   if (etapa === "alevinaje") return "ALEVIN";
   if (etapa === "engorda") return "KG";
@@ -155,6 +156,8 @@ const EMPTY_FORM = {
   pileta_destino_id: "",
   cantidad: "",
   mortalidad: "",
+  peso_gramos: "",
+  fecha_peso: "",
   fecha_movimiento: "",
   observacion: "",
 };
@@ -209,6 +212,7 @@ export default function Trazabilidad() {
   const esVenta = tipoConfig.modo === "VENTA";
   const esMortalidad = tipoConfig.modo === "MORTALIDAD";
   const esTraslado = tipoConfig.modo === "TRASLADO";
+  const esIncubacionOrigen = tipoConfig.etapaOrigen === "incubacion";
 
   const cantidadMortalidad = Number(form.cantidad);
   const cantidadExcedeStockMortalidad =
@@ -278,13 +282,15 @@ export default function Trazabilidad() {
   const cargarPiletas = useCallback(async () => {
     if (!granja) return;
     try {
-      const [alevRes, engRes] = await Promise.all([
+      const [alevRes, engRes, incRes] = await Promise.all([
         listPiletas(null, "alevinaje"),
         listPiletas(null, "engorda"),
+        listPiletas(null, "incubacion"),
       ]);
       const rows = [
         ...(Array.isArray(alevRes.data) ? alevRes.data : []),
         ...(Array.isArray(engRes.data) ? engRes.data : []),
+        ...(Array.isArray(incRes.data) ? incRes.data : []),
       ];
       setPiletas(filtrarPorUbicacion(rows, granja, ubicacionesGranja));
     } catch (err) {
@@ -297,18 +303,24 @@ export default function Trazabilidad() {
     try {
       const res = await listLista();
       const rows = Array.isArray(res.data) ? res.data : [];
+      const granjaOp = ubicacionesGranja.find((op) => op.value === granja) ?? null;
       setPedidos(
         rows.filter((p) => {
           const tipo = String(p.fc_uap_asignada ?? p.tipo_venta ?? "").trim().toUpperCase();
-          const granjaPedido = p.fc_granja_asignada ?? p.granja ?? "";
-          return TIPOS_VENTA_TRAZABLES.has(tipo) && !p.venta_id && !p.fi_venta_id && granjaPedido === granja;
+          if (!TIPOS_VENTA_TRAZABLES.has(tipo) || p.venta_id || p.fi_venta_id) return false;
+          if (!granja) return true;
+          if (!granjaOp) {
+            const granjaPedido = p.fc_granja_asignada ?? p.granja ?? "";
+            return granjaPedido === granja;
+          }
+          return rowPerteneceAUbicacionGranja(p, granjaOp, "fc_granja_asignada");
         }),
       );
     } catch (err) {
       console.error("Error al cargar pedidos:", err);
       setPedidos([]);
     }
-  }, [granja]);
+  }, [granja, ubicacionesGranja]);
 
   useEffect(() => {
     cargarMovimientos();
@@ -353,7 +365,7 @@ export default function Trazabilidad() {
       }
       if (cantidadExcedeStock) {
         showSnackbar(
-          `Stock insuficiente: disponible ${formatStock(stockOrigen)}, pedido ${formatStock(cantidadVenta)}`,
+          `Stock insuficiente: disponible ${formatCantidad(stockOrigen)}, pedido ${formatCantidad(cantidadVenta)}`,
           "error",
         );
         return false;
@@ -374,7 +386,7 @@ export default function Trazabilidad() {
       }
       if (cantidadExcedeStockMortalidad) {
         showSnackbar(
-          `Stock insuficiente: disponible ${formatStock(stockOrigen)}, mortalidad ${formatStock(cantidadMortalidad)}`,
+          `Stock insuficiente: disponible ${formatCantidad(stockOrigen)}, mortalidad ${formatCantidad(cantidadMortalidad)}`,
           "error",
         );
         return false;
@@ -384,6 +396,11 @@ export default function Trazabilidad() {
 
     if (!form.pileta_origen_id || !form.pileta_destino_id) {
       showSnackbar("Seleccione pileta origen y destino", "warning");
+      return false;
+    }
+
+    if (esIncubacionOrigen && (form.peso_gramos === "" || Number(form.peso_gramos) <= 0)) {
+      showSnackbar("Ingrese el peso (g) de los alevines", "warning");
       return false;
     }
 
@@ -411,7 +428,12 @@ export default function Trazabilidad() {
       payload.pileta_origen_id = Number(form.pileta_origen_id);
       payload.pileta_destino_id = Number(form.pileta_destino_id);
       payload.cantidad = Number(form.cantidad);
-      if (form.mortalidad) payload.mortalidad = Number(form.mortalidad);
+      if (esIncubacionOrigen) {
+        if (form.peso_gramos !== "") payload.peso_gramos = Number(form.peso_gramos);
+        if (form.fecha_peso) payload.fecha_peso = form.fecha_peso;
+      } else if (form.mortalidad) {
+        payload.mortalidad = Number(form.mortalidad);
+      }
     }
 
     setCargando(true);
@@ -461,24 +483,31 @@ export default function Trazabilidad() {
 
   const etiquetaPedido = (p) => {
     const cliente = p.fc_cliente ?? p.cliente_nombre ?? "Cliente";
-    const cant = formatStock(p.fn_cantidad ?? p.cantidad_peces);
+    const cant = formatCantidad(p.fn_cantidad ?? p.cantidad_peces);
     const fecha = formatFecha(p.fd_fecha_entrega ?? p.fecha_entrega);
     return `#${p.fi_lista_id} · ${cliente} · ${cant} org. · ${fecha}`;
   };
 
-  const etiquetaPileta = (p) => `${p.nombre} — ${formatStock(stockPileta(p))} org.`;
+  const etiquetaPileta = (p) => {
+    const tipo = String(p.tipo ?? p.fc_tipo ?? "").toLowerCase();
+    if (tipo === "incubacion") return `${p.nombre} (lote en incubación)`;
+    return `${p.nombre} — ${formatCantidad(stockPileta(p))} org.`;
+  };
 
   const gruposMovimientos = useMemo(
     () => getGroups(movimientos, "fc_granja"),
     [getGroups, movimientos],
   );
 
-  const renderTablaMovimientos = (rows) => (
+  const renderTablaMovimientos = (rows) => {
+    const filas = ordenarYNumerar(rows, ["fi_movimiento_id"]);
+    return (
     <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
         <Table size="small" sx={{ minWidth: 900 }}>
           <TableHead sx={{ backgroundColor: "#006d77" }}>
             <TableRow>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tipo</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Origen</TableCell>
@@ -486,24 +515,27 @@ export default function Trazabilidad() {
               <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>
                 Cantidad
               </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Usuario</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.length === 0 ? (
+            {filas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={8} align="center">
                   No hay movimientos registrados.
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row) => (
+              filas.map((row) => (
                 <TableRow key={row.fi_movimiento_id}>
+                  <TableCell>{row._num}</TableCell>
                   <TableCell>{formatFecha(row.fecha_movimiento)}</TableCell>
                   <TableCell>{row.fc_etapa ?? "—"}</TableCell>
                   <TableCell>{row.origen ?? "—"}</TableCell>
                   <TableCell>{row.destino ?? "—"}</TableCell>
-                  <TableCell align="right">{formatStock(row.cantidad_trasladada)}</TableCell>
+                  <TableCell align="right">{formatCantidad(row.cantidad_trasladada)}</TableCell>
+                  <TableCell>{row.fc_usuario ?? row.usuario_nombre ?? "—"}</TableCell>
                   <TableCell>{row.observacion ?? "—"}</TableCell>
                 </TableRow>
               ))
@@ -512,7 +544,8 @@ export default function Trazabilidad() {
         </Table>
       </TableContainer>
     </Paper>
-  );
+    );
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -588,7 +621,7 @@ export default function Trazabilidad() {
                         helperText={
                           pedidosVenta.length === 0
                             ? `No hay pedidos pendientes de ${tipoConfig.etapaOrigen} en esta granja`
-                            : "Al registrar se creará la venta y se descontará inventario"
+                            : undefined
                         }
                         sx={{ flex: 1 }}
                       >
@@ -617,7 +650,7 @@ export default function Trazabilidad() {
                       <Alert severity="info">
                         Cliente: <strong>{pedidoSeleccionado.fc_cliente}</strong>
                         {" · "}
-                        Cantidad: {formatStock(cantidadVenta)} org.
+                        Cantidad: {formatCantidad(cantidadVenta)} org.
                         {" · "}
                         Tipo: {pedidoSeleccionado.fc_uap_asignada ?? pedidoSeleccionado.tipo_venta}
                       </Alert>
@@ -635,9 +668,9 @@ export default function Trazabilidad() {
                       error={cantidadExcedeStock}
                       helperText={
                         cantidadExcedeStock
-                          ? `Stock insuficiente: ${formatStock(stockOrigen)} disponibles`
+                          ? `Stock insuficiente: ${formatCantidad(stockOrigen)} disponibles`
                           : stockOrigen != null
-                            ? `Disponible: ${formatStock(stockOrigen)} organismos`
+                            ? `Disponible: ${formatCantidad(stockOrigen)} organismos`
                             : `Solo piletas de ${tipoConfig.etapaOrigen} con stock`
                       }
                     >
@@ -665,9 +698,9 @@ export default function Trazabilidad() {
                       error={cantidadExcedeStockMortalidad}
                       helperText={
                         cantidadExcedeStockMortalidad
-                          ? `Stock insuficiente: ${formatStock(stockOrigen)} disponibles`
+                          ? `Stock insuficiente: ${formatCantidad(stockOrigen)} disponibles`
                           : stockOrigen != null
-                            ? `Disponible: ${formatStock(stockOrigen)} organismos`
+                            ? `Disponible: ${formatCantidad(stockOrigen)} organismos`
                             : `Piletas de ${tipoConfig.etapaOrigen} con stock`
                       }
                     >
@@ -680,15 +713,14 @@ export default function Trazabilidad() {
                     </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoNumerico
                       fullWidth
-                      type="number"
+                      decimalScale={0}
                       label="Cantidad de bajas"
                       name="cantidad"
                       value={form.cantidad}
                       onChange={handleChange}
                       inputProps={{ min: 1 }}
-                      helperText="Organismos que murieron en la pileta"
                     />
                   </Grid>
                 </>
@@ -731,27 +763,53 @@ export default function Trazabilidad() {
                     </TextField>
                   </Grid>
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoNumerico
                       fullWidth
-                      type="number"
-                      label="Cantidad"
+                      decimalScale={0}
+                      label={esIncubacionOrigen ? "Cantidad de alevines" : "Cantidad"}
                       name="cantidad"
                       value={form.cantidad}
                       onChange={handleChange}
                       inputProps={{ min: 1 }}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Mortalidad en traslado (opcional)"
-                      name="mortalidad"
-                      value={form.mortalidad}
-                      onChange={handleChange}
-                      inputProps={{ min: 0 }}
-                    />
-                  </Grid>
+                  {esIncubacionOrigen ? (
+                    <>
+                      <Grid size={{ xs: 12, md: 4 }}>
+                        <CampoNumerico
+                          fullWidth
+                          label="Peso (g)"
+                          name="peso_gramos"
+                          value={form.peso_gramos}
+                          onChange={handleChange}
+                          inputProps={{ min: 0, step: "any" }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12, md: 4 }}>
+                        <TextField
+                          fullWidth
+                          type="date"
+                          label="Fecha peso"
+                          name="fecha_peso"
+                          value={form.fecha_peso}
+                          onChange={handleChange}
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      </Grid>
+                    </>
+                  ) : (
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <CampoNumerico
+                        fullWidth
+                        decimalScale={0}
+                        label="Mortalidad en traslado (opcional)"
+                        name="mortalidad"
+                        value={form.mortalidad}
+                        onChange={handleChange}
+                        inputProps={{ min: 0 }}
+                      />
+                    </Grid>
+                  )}
                 </>
               )}
 

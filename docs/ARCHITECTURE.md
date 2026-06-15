@@ -53,7 +53,7 @@ src/
 │   │   ├── components/           # Pileta, Instalaciones, Reproductores, Engorda, Equipos, Lotes, Alevines
 │   │   └── services/             # piletasService, instalacionesService, ...
 │   ├── ventas/
-│   │   ├── components/           # Venta, ListaEspera, FlujoCaja, TesoreriaGeneral, FormDialog, CuentasDialog
+│   │   ├── components/           # Venta, ListaEspera, FlujoCaja, TesoreriaGeneral, CuentasDialog
 │   │   └── services/             # ventasService, listaEsperaService, flujoCajaService, tesoreriaService
 │   ├── rrhh/
 │   │   ├── components/           # Empleados, Nomina, Vacaciones, CajaAhorro, Proveedores, DocumentosEmpleado, MiPerfil

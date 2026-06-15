@@ -25,6 +25,7 @@ import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import CategoryIcon from "@mui/icons-material/Category";
 import EggAltIcon from "@mui/icons-material/EggAlt";
 import WaterDropIcon from "@mui/icons-material/WaterDrop";
+import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
 import PoolOutlinedIcon from "@mui/icons-material/PoolOutlined";
 import MenuBook from "@mui/icons-material/MenuBook";
 import Security from "@mui/icons-material/Security";
@@ -69,8 +70,8 @@ export const MENU_SECTIONS = [
         sublabelColor: "#90cdffff",
         items: [
           { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
-          { to: "/inventarios/reproductores", icon: <Biotech />, label: "Reproductores" },
-          { to: "/inventarios/control-reproductivo", icon: <EggAltIcon />, label: "Control Reproductivo" },
+          { to: "/inventarios/reproductores", icon: <Biotech />, label: "Lote Reproductores" },
+          { to: "/inventarios/eventos-cosecha", icon: <EggAltIcon />, label: "Cosecha e incubación" },
           { to: "/inventarios/alevinaje", icon: <WaterDropIcon />, label: "Alevinaje" },
           { to: "/inventarios/engorda", icon: <Grass />, label: "Engorda" },
           { to: "/inventarios/trazabilidad", icon: <Timeline />, label: "Trazabilidad" },

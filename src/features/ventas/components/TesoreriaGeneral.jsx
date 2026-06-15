@@ -2,8 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -13,23 +11,20 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import { getDatos } from "../services/tesoreriaService";
-
-const GRANJAS = ["Medellin", "La Ceiba", "Quality"];
+import { formatPrecio } from "@shared/utils/formatters";
 
 export default function TesoreriaGeneral() {
-  const [tab, setTab] = useState(0);
   const [datos, setDatos] = useState([]);
   const [anioSeleccionado] = useState(() => new Date().getFullYear());
 
   const obtenerDatos = useCallback(async () => {
     try {
-      const granjaActual = GRANJAS[tab];
-      const res = await getDatos(anioSeleccionado, granjaActual);
+      const res = await getDatos(anioSeleccionado);
       setDatos(res.data || []);
     } catch (err) {
       console.error(" Error al obtener datos de tesoreria:", err);
     }
-  }, [anioSeleccionado, tab]);
+  }, [anioSeleccionado]);
 
   useEffect(() => {
     obtenerDatos();
@@ -45,7 +40,7 @@ export default function TesoreriaGeneral() {
       ws.addRows(datos);
     }
     const buffer = await wb.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `Tesoreria_${GRANJAS[tab]}_${anioSeleccionado}.xlsx`);
+    saveAs(new Blob([buffer]), `Tesoreria_${anioSeleccionado}.xlsx`);
   };
 
   const agrupados = datos.reduce((acc, item) => {
@@ -69,15 +64,9 @@ export default function TesoreriaGeneral() {
         </Typography>
       </Box>
 
-      <Tabs value={tab} onChange={(e, v) => setTab(v)} variant="scrollable" scrollButtons="auto">
-        <Tab label=" Medellin" />
-        <Tab label=" La Ceiba" />
-        <Tab label=" Quality" />
-      </Tabs>
-
       <Box sx={{ p: 3 }}>
         <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", color: "#0A3D2D" }}>
-          Tesoreria {GRANJAS[tab]} — {anioSeleccionado}
+          Tesoreria — {anioSeleccionado}
         </Typography>
 
         <TableContainer component={Paper}>
@@ -120,13 +109,13 @@ export default function TesoreriaGeneral() {
                         <TableCell>{r.subgrupo || "—"}</TableCell>
                         <TableCell>{r.categoria || "—"}</TableCell>
                         <TableCell align="right">
-                          {Number(r.total_ingreso || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                          {formatPrecio(r.total_ingreso)}
                         </TableCell>
                         <TableCell align="right">
-                          {Number(r.total_egreso || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                          {formatPrecio(r.total_egreso)}
                         </TableCell>
                         <TableCell align="right" sx={{ color: r.saldo_neto >= 0 ? "green" : "red", fontWeight: "bold" }}>
-                          {Number(r.saldo_neto || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                          {formatPrecio(r.saldo_neto)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -135,13 +124,13 @@ export default function TesoreriaGeneral() {
                         Subtotal {subgrupo}
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                        {totalIngreso.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                        {formatPrecio(totalIngreso)}
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                        {totalEgreso.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                        {formatPrecio(totalEgreso)}
                       </TableCell>
                       <TableCell align="right" sx={{ fontWeight: "bold", color: saldo >= 0 ? "green" : "red" }}>
-                        {saldo.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                        {formatPrecio(saldo)}
                       </TableCell>
                     </TableRow>
                   </React.Fragment>
@@ -154,13 +143,13 @@ export default function TesoreriaGeneral() {
                     TOTAL GENERAL {anioSeleccionado}
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: "bold", color: "#33691e" }}>
-                    {totalGeneral.ingreso.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                    {formatPrecio(totalGeneral.ingreso)}
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: "bold", color: "#33691e" }}>
-                    {totalGeneral.egreso.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                    {formatPrecio(totalGeneral.egreso)}
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: "bold", color: totalGeneral.saldo >= 0 ? "green" : "red" }}>
-                    {totalGeneral.saldo.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                    {formatPrecio(totalGeneral.saldo)}
                   </TableCell>
                 </TableRow>
               )}
@@ -168,7 +157,7 @@ export default function TesoreriaGeneral() {
               {datos.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
-                    No hay datos registrados para esta granja en {anioSeleccionado}.
+                    No hay datos registrados en {anioSeleccionado}.
                   </TableCell>
                 </TableRow>
               )}
