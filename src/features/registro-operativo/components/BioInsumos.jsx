@@ -17,6 +17,7 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import MenuItem from "@mui/material/MenuItem";
+import Chip from "@mui/material/Chip";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   listInsumos,
@@ -35,6 +36,7 @@ import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { formatFecha } from "@shared/utils/formatters";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import { listPiletas } from "@features/inventarios/services/piletasService";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -43,12 +45,21 @@ const truncar = (texto) =>
 const MAX_FC_DESCRIPCION = 300;
 const MAX_FC_OBSERVACIONES = 500;
 
+const TIPOS_MOVIMIENTO = [
+  { value: "ingreso", label: "Ingreso" },
+  { value: "egreso", label: "Egreso" },
+];
+
+const labelTipoMovimiento = (tipo) =>
+  TIPOS_MOVIMIENTO.find((t) => t.value === tipo)?.label ?? tipo ?? "—";
+
 export default function BioInsumos() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
   const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
+    fc_tipo_movimiento: "ingreso",
     fd_fecha: "",
     fc_cantidad_udm: "",
     fc_num_lote: "",
@@ -57,9 +68,11 @@ export default function BioInsumos() {
     fc_encargado_entrega: "",
     fc_encargado_recepcion: "",
     fi_usuario_id: usuarioId,
+    pileta_id: "",
   });
 
   const [data, setData] = useState([]);
+  const [piletas, setPiletas] = useState([]);
   const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -68,13 +81,21 @@ export default function BioInsumos() {
 
   const requiredFields = [
     "ubicacion",
+    "fc_tipo_movimiento",
     "fd_fecha", "fc_cantidad_udm", "fc_num_lote", "fc_descripcion",
     "fc_observaciones", "fc_encargado_entrega", "fc_encargado_recepcion",
   ];
 
+  const esEgreso = form.fc_tipo_movimiento === "egreso";
+
   const handleChange = (e) => {
-    clearFieldError(e.target.name);
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    clearFieldError(name);
+    if (name === "fc_tipo_movimiento" && value !== "egreso") {
+      setForm({ ...form, [name]: value, pileta_id: "" });
+      return;
+    }
+    setForm({ ...form, [name]: value });
   };
 
   const cargarDatos = async () => {
@@ -95,10 +116,23 @@ export default function BioInsumos() {
     }
   };
 
+  const cargarPiletas = async (ubicacion) => {
+    try {
+      const res = await listPiletas(ubicacion || form.ubicacion);
+      setPiletas(res.data ?? []);
+    } catch {
+      setPiletas([]);
+    }
+  };
+
   useEffect(() => {
     cargarDatos();
     cargarEmpleados();
   }, []);
+
+  useEffect(() => {
+    if (form.ubicacion) cargarPiletas(form.ubicacion);
+  }, [form.ubicacion]);
 
   useEffect(() => {
     if (!form.ubicacion && defaultUbicacion) {
@@ -118,6 +152,7 @@ export default function BioInsumos() {
       }
       setForm({
         ubicacion: form.ubicacion,
+        fc_tipo_movimiento: form.fc_tipo_movimiento,
         fd_fecha: "",
         fc_cantidad_udm: "",
         fc_num_lote: "",
@@ -126,6 +161,7 @@ export default function BioInsumos() {
         fc_encargado_entrega: "",
         fc_encargado_recepcion: "",
         fi_usuario_id: usuarioId,
+        pileta_id: form.pileta_id,
       });
       setEditId(null);
       cerrarFormulario();
@@ -141,6 +177,7 @@ export default function BioInsumos() {
     setEditId(row.fi_id);
     setForm({
       ubicacion: row.ubicacion || "",
+      fc_tipo_movimiento: row.fc_tipo_movimiento || row.tipo_movimiento || "ingreso",
       fd_fecha: row.fd_fecha?.split("T")[0],
       fc_cantidad_udm: row.fc_cantidad_udm,
       fc_num_lote: row.fc_num_lote,
@@ -149,6 +186,7 @@ export default function BioInsumos() {
       fc_encargado_entrega: row.fc_encargado_entrega,
       fc_encargado_recepcion: row.fc_encargado_recepcion,
       fi_usuario_id: row.fi_usuario_id,
+      pileta_id: row.pileta_id != null ? String(row.pileta_id) : "",
     });
     
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -184,6 +222,7 @@ export default function BioInsumos() {
     doc.text("Control de recepción, entrega y observaciones", 45, 26);
 
     const columnas = [
+      "Tipo",
       "Fecha",
       "Cantidad UdM",
       "Lote",
@@ -194,6 +233,7 @@ export default function BioInsumos() {
     ];
 
     const filas = data.map((r) => [
+      labelTipoMovimiento(r.fc_tipo_movimiento || r.tipo_movimiento),
       formatFecha(r.fd_fecha),
       r.fc_cantidad_udm,
       r.fc_num_lote,
@@ -231,6 +271,7 @@ export default function BioInsumos() {
         <TableHead sx={{ background: "#E8F5E9" }}>
           <TableRow>
             <TableCell>ID</TableCell>
+            <TableCell>Tipo</TableCell>
             <TableCell>Fecha</TableCell>
             <TableCell>Cantidad UdM</TableCell>
             <TableCell>Lote</TableCell>
@@ -246,6 +287,14 @@ export default function BioInsumos() {
           {filas.map((row) => (
             <TableRow key={row.fi_id}>
               <TableCell>{row._num}</TableCell>
+              <TableCell>
+                <Chip
+                  size="small"
+                  label={labelTipoMovimiento(row.fc_tipo_movimiento || row.tipo_movimiento)}
+                  color={(row.fc_tipo_movimiento || row.tipo_movimiento) === "egreso" ? "warning" : "success"}
+                  variant="outlined"
+                />
+              </TableCell>
               <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
               <TableCell>{row.fc_cantidad_udm}</TableCell>
               <TableCell>{row.fc_num_lote}</TableCell>
@@ -303,11 +352,35 @@ export default function BioInsumos() {
         <Card sx={{ mb: 4 }}>
           <CardContent>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
-                  select
-                  label="Ubicación"
-                  name="ubicacion"
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Tipo de movimiento"
+                name="fc_tipo_movimiento"
+                value={form.fc_tipo_movimiento}
+                onChange={handleChange}
+                fullWidth
+                error={!!errors.fc_tipo_movimiento}
+                helperText={
+                  errors.fc_tipo_movimiento
+                    || (esEgreso
+                      ? "Salida de insumo (ej. alimento entregado a pileta)"
+                      : "Entrada de insumo al inventario")
+                }
+              >
+                {TIPOS_MOVIMIENTO.map((op) => (
+                  <MenuItem key={op.value} value={op.value}>
+                    {op.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                select
+                label="Ubicación"
+                name="ubicacion"
                 value={form.ubicacion}
                 onChange={handleChange}
                 fullWidth
@@ -321,6 +394,27 @@ export default function BioInsumos() {
                 ))}
               </TextField>
             </Grid>
+
+            {esEgreso ? (
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  select
+                  label="Pileta (egreso)"
+                  name="pileta_id"
+                  value={form.pileta_id}
+                  onChange={handleChange}
+                  fullWidth
+                  helperText="Opcional: vincula el egreso para alimentacion interna"
+                >
+                  <MenuItem value="">Sin pileta</MenuItem>
+                  {piletas.map((pl) => (
+                    <MenuItem key={pl.fi_pileta_id} value={String(pl.fi_pileta_id)}>
+                      {pl.nombre} ({pl.tipo})
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            ) : null}
 
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField

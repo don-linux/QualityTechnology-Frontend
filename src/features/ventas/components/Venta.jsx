@@ -9,7 +9,13 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import Button from "@mui/material/Button";
-import { listVentas } from "../services/ventasService";
+import { listVentas, getTablaAlimentacionVenta } from "../services/ventasService";
+import { exportTablaAlimentacionPdf } from "@shared/utils/exportTablaAlimentacionPdf";
+import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 import PagoVentaDialog from "./PagoVentaDialog";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
@@ -26,6 +32,10 @@ const colorEstado = {
 export default function Venta() {
   const showSnackbar = useSnackbar();
   const { granja } = useAuth();
+  const { getLogo } = useUbicacionesGranja();
+  const [tablaDialogo, setTablaDialogo] = useState(null);
+  const [tablaDatos, setTablaDatos] = useState(null);
+  const [cargandoTabla, setCargandoTabla] = useState(false);
   const [ventas, setVentas] = useState([]);
   const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
   const [dialogoPagoAbierto, setDialogoPagoAbierto] = useState(false);
@@ -45,6 +55,35 @@ export default function Venta() {
   useEffect(() => {
     obtenerVentas();
   }, [obtenerVentas]);
+
+
+  const abrirTablaAlimentacion = async (venta) => {
+    setTablaDialogo(venta);
+    setCargandoTabla(true);
+    try {
+      const res = await getTablaAlimentacionVenta(venta.fi_venta_id ?? venta.venta_id);
+      setTablaDatos(res.data);
+    } catch {
+      showSnackbar("Error al generar tabla de alimentacion", "error");
+      setTablaDialogo(null);
+    } finally {
+      setCargandoTabla(false);
+    }
+  };
+
+  const cerrarTablaAlimentacion = () => {
+    setTablaDialogo(null);
+    setTablaDatos(null);
+  };
+
+  const descargarTablaPdf = async () => {
+    if (!tablaDatos) return;
+    try {
+      await exportTablaAlimentacionPdf(tablaDatos, { getLogo });
+    } catch {
+      showSnackbar("Error al exportar PDF", "error");
+    }
+  };
 
   const abrirDialogoPago = (venta) => {
     setVentaSeleccionada(venta);
@@ -124,6 +163,14 @@ export default function Venta() {
                       <Button
                         size="small"
                         variant="outlined"
+                        sx={{ mr: 1 }}
+                        onClick={() => abrirTablaAlimentacion(v)}
+                      >
+                        Tabla alimentacion
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
                         color="success"
                         onClick={() => abrirDialogoPago(v)}
                       >
@@ -137,6 +184,50 @@ export default function Venta() {
           </Table>
         </TableContainer>
       </Paper>
+
+
+      <Dialog open={Boolean(tablaDialogo)} onClose={cerrarTablaAlimentacion} maxWidth="lg" fullWidth>
+        <DialogTitle>Tabla de alimentacion — {tablaDialogo?.fc_folio}</DialogTitle>
+        <DialogContent dividers>
+          {cargandoTabla ? (
+            <Typography>Cargando...</Typography>
+          ) : tablaDatos ? (
+            <>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                Cliente: {tablaDatos.cliente} | Cantidad: {tablaDatos.cantidad} | Base: {tablaDatos.cantidad_base}
+              </Typography>
+              <TableContainer sx={{ maxHeight: 420, overflow: "auto" }}>
+                <Table size="small" stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Dia</TableCell>
+                      <TableCell>Tipo alimento</TableCell>
+                      <TableCell align="right">Peso (g)</TableCell>
+                      <TableCell align="right">Biomasa (kg)</TableCell>
+                      <TableCell align="right">Kg/dia</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {(tablaDatos.filas ?? []).slice(0, 30).map((f) => (
+                      <TableRow key={f.dia}>
+                        <TableCell>{f.dia}</TableCell>
+                        <TableCell>{f.tipo_alimento}</TableCell>
+                        <TableCell align="right">{f.peso_promedio_g}</TableCell>
+                        <TableCell align="right">{f.biomasa_kg}</TableCell>
+                        <TableCell align="right">{f.kg_alimento_dia}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cerrarTablaAlimentacion}>Cerrar</Button>
+          <Button variant="contained" onClick={descargarTablaPdf} disabled={!tablaDatos}>Descargar PDF</Button>
+        </DialogActions>
+      </Dialog>
 
       <PagoVentaDialog
         open={dialogoPagoAbierto}

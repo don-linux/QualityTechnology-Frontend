@@ -41,6 +41,8 @@ import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import { listPiletas } from "../services/piletasService";
+import TablaAlimentacionInterna from "@shared/components/TablaAlimentacionInterna";
+import useAlimentacionInterna from "@shared/hooks/useAlimentacionInterna";
 
 const MAX_OBSERVACION = 500;
 
@@ -75,6 +77,9 @@ export default function Engorda() {
     fecha_peso: "",
     observacion: "",
   });
+
+  const piletaSeleccionadaId = seleccionado?.pileta_id ?? seleccionado?.fi_pileta_destino_id ?? null;
+  const { data: alimentacionInterna, loading: cargandoAlimentacion } = useAlimentacionInterna(piletaSeleccionadaId, "engorda");
 
   const piletasFiltradas = useMemo(
     () => filtrarPorUbicacion(piletasDestinoEngorda, formData.ubicacion, ubicacionesGranja),
@@ -446,7 +451,7 @@ export default function Engorda() {
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
                     <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
-                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cant. actual</TableCell>
                     <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Peso (g)</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha peso</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
@@ -502,6 +507,15 @@ export default function Engorda() {
           );
         }}
       />
+
+
+      {seleccionado ? (
+        <TablaAlimentacionInterna
+          data={alimentacionInterna}
+          loading={cargandoAlimentacion}
+          piletaNombre={seleccionado.nombre_pileta_destino || seleccionado.nombre_pileta}
+        />
+      ) : null}
 
       {seleccionado && (
         <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>

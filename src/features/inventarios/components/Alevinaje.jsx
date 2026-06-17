@@ -41,6 +41,8 @@ import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import { listPiletas } from "../services/piletasService";
+import TablaAlimentacionInterna from "@shared/components/TablaAlimentacionInterna";
+import useAlimentacionInterna from "@shared/hooks/useAlimentacionInterna";
 
 const MAX_OBSERVACION = 500;
 
@@ -76,6 +78,9 @@ const Alevinaje = () => {
     fecha_peso: "",
     observacion: "",
   });
+
+  const piletaSeleccionadaId = seleccionado?.pileta_id ?? seleccionado?.fi_pileta_destino_id ?? null;
+  const { data: alimentacionInterna, loading: cargandoAlimentacion } = useAlimentacionInterna(piletaSeleccionadaId, "alevinaje");
 
   const piletasFiltradas = useMemo(
     () => filtrarPorUbicacion(piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja),
@@ -461,7 +466,7 @@ const Alevinaje = () => {
                     <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Talla (g)</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Fecha talla</TableCell>
-                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
+                    <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cant. actual</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Observación</TableCell>
                   </TableRow>
                 </TableHead>
@@ -514,6 +519,15 @@ const Alevinaje = () => {
           );
         }}
       />
+
+
+      {seleccionado ? (
+        <TablaAlimentacionInterna
+          data={alimentacionInterna}
+          loading={cargandoAlimentacion}
+          piletaNombre={seleccionado.nombre_pileta_destino || seleccionado.nombre_pileta}
+        />
+      ) : null}
 
       {seleccionado && (
         <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>

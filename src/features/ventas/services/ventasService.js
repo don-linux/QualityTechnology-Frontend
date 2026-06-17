@@ -16,3 +16,7 @@ export function registrarPagoVenta(id, data) {
 export function anularPagoVenta(id, movId) {
   return axios.delete(ENDPOINTS.ventas.anularPago(id, movId));
 }
+
+export function getTablaAlimentacionVenta(id) {
+  return axios.get(ENDPOINTS.ventas.tablaAlimentacion(id));
+}

@@ -56,11 +56,19 @@ export const ENDPOINTS = {
   engorda: {
     base: "/engorda",
     byGranja: (granja) => `/engorda/granja/${path(granja)}`,
+    alimentacionInterna: (piletaId) => `/engorda/piletas/${piletaId}/alimentacion-interna`,
     byId: (id) => `/engorda/${id}`,
+  },
+
+  ciclosEngorda: {
+    base: "/ciclos-engorda",
+    byId: (id) => `/ciclos-engorda/${id}`,
+    dashboard: (id) => `/ciclos-engorda/${id}/dashboard`,
   },
 
   alevinaje: {
     base: "/alevinaje",
+    alimentacionInterna: (piletaId) => `/alevinaje/piletas/${piletaId}/alimentacion-interna`,
     byId: (id) => `/alevinaje/${id}`,
   },
 
@@ -100,6 +108,7 @@ export const ENDPOINTS = {
 
   ventas: {
     base: "/ventas",
+    tablaAlimentacion: (id) => `/ventas/${id}/tabla-alimentacion`,
     pagos: (id) => `/ventas/${id}/pagos`,
     anularPago: (id, movId) => `/ventas/${id}/pagos/${movId}`,
   },
@@ -234,10 +243,6 @@ export const ENDPOINTS = {
       base: "/plagas",
       empleados: "/plagas/empleados",
       byId: (id) => `/plagas/${id}`,
-    },
-    alimentacion: {
-      base: "/alimentacion",
-      byId: (id) => `/alimentacion/${id}`,
     },
     insumos: {
       base: "/insumos",

@@ -23,6 +23,7 @@ const TiposPileta = lazy(() => import("@pages/catalogos/TiposPiletaPage"));
 const PiletasFisicas = lazy(() => import("@pages/inventarios/PiletasFisicasPage"));
 const Reproductores = lazy(() => import("@pages/inventarios/ReproductoresPage"));
 const Engorda = lazy(() => import("@pages/inventarios/EngordaPage"));
+const CiclosEngorda = lazy(() => import("@pages/inventarios/CiclosEngordaPage"));
 const Equipos = lazy(() => import("@pages/inventarios/EquiposPage"));
 const Alevinaje = lazy(() => import("@pages/inventarios/AlevinajePage"));
 const ControlReproductivo = lazy(() => import("@pages/inventarios/ControlReproductivoPage"));
@@ -45,7 +46,6 @@ const BitacoraMedicamentos = lazy(() => import("@pages/registro-operativo/Bitaco
 const BitacoraRecambios = lazy(() => import("@pages/registro-operativo/BitacoraRecambiosPage"));
 const BitacoraInventario = lazy(() => import("@pages/registro-operativo/BitacoraInventarioPage"));
 const BioBiometrias = lazy(() => import("@pages/registro-operativo/BioBiometriasPage"));
-const BioAlimentacion = lazy(() => import("@pages/registro-operativo/BioAlimentacionPage"));
 const BioInsumos = lazy(() => import("@pages/registro-operativo/BioInsumosPage"));
 
 // RRHH
@@ -92,7 +92,6 @@ export default function AppRouter() {
               <Route path="recambios" element={<BitacoraRecambios />} />
               <Route path="inventario" element={<BitacoraInventario />} />
               <Route path="biometrias" element={<BioBiometrias />} />
-              <Route path="alimentacion" element={<BioAlimentacion />} />
               <Route path="insumos" element={<BioInsumos />} />
             </Route>
           </Route>
@@ -134,6 +133,7 @@ export default function AppRouter() {
             <Route path="inventarios/piletas-fisicas" element={<PiletasFisicas />} />
             <Route path="inventarios/reproductores" element={<Reproductores />} />
             <Route path="inventarios/engorda" element={<Engorda />} />
+            <Route path="inventarios/ciclos-engorda" element={<CiclosEngorda />} />
             <Route path="inventarios/lotes" element={<Navigate to="/inventarios/eventos-cosecha" replace />} />
             <Route path="inventarios/control-reproductivo" element={<Navigate to="/inventarios/eventos-cosecha" replace />} />
             <Route path="inventarios/eventos-cosecha" element={<ControlReproductivo />} />
