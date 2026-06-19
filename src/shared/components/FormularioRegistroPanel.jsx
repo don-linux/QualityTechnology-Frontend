@@ -7,8 +7,13 @@ export default function FormularioRegistroPanel({
   children,
   label = "+ NUEVO REGISTRO",
   hideLabel = "OCULTAR FORMULARIO",
+  soloContenido = false,
   sx,
 }) {
+  if (soloContenido) {
+    return children;
+  }
+
   return (
     <>
       <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mb: 2, ...sx }}>

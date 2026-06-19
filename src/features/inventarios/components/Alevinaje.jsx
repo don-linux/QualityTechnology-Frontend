@@ -49,7 +49,7 @@ const MAX_OBSERVACION = 500;
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 
-const Alevinaje = () => {
+const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } = {}) => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -145,14 +145,23 @@ const Alevinaje = () => {
 
   useEffect(() => {
     cargarPiletasDestinoAlevinaje();
-    cargarRegistros();
-  }, [cargarPiletasDestinoAlevinaje, cargarRegistros]);
+    if (!embed) cargarRegistros();
+  }, [embed, cargarPiletasDestinoAlevinaje, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
       setFormData((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
     }
   }, [defaultUbicacion, formData.ubicacion]);
+
+  useEffect(() => {
+    if (!embed || !ubicacionInicial) return;
+    setFormData((prev) =>
+      prev.ubicacion === ubicacionInicial
+        ? prev
+        : { ...prev, ubicacion: ubicacionInicial, fi_pileta_destino_id: "" },
+    );
+  }, [embed, ubicacionInicial]);
 
   const registrarAlevinaje = async () => {
     if (!validate(formData, requiredFields)) return;
@@ -164,7 +173,8 @@ const Alevinaje = () => {
       await createAlevinaje(payloadComunBackend());
       showSnackbar("Registro periódico guardado (vista actual actualizada)", "success");
       resetFormulario();
-      cargarRegistros();
+      if (!embed) cargarRegistros();
+      onRegistroExitoso?.();
     } catch (err) {
       console.error("Error al registrar alevinaje:", err);
       showSnackbar(
@@ -246,8 +256,10 @@ const Alevinaje = () => {
   };
 
   const resetFormulario = () => {
+    const ubicacionBase =
+      (embed && ubicacionInicial) || defaultUbicacion || ubicacionesGranja[0]?.value || "";
     setFormData({
-      ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
+      ubicacion: ubicacionBase,
       fi_pileta_destino_id: "",
       fc_lote: "",
       cantidad_total: "",
@@ -257,7 +269,7 @@ const Alevinaje = () => {
       observacion: "",
     });
     clearErrors();
-    cerrarFormulario();
+    if (!embed) cerrarFormulario();
   };
 
   const resetEdicion = () => {
@@ -274,19 +286,26 @@ const Alevinaje = () => {
   );
 
   return (
-    <div style={{ padding: "25px" }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
-        Alevinaje
-      </Typography>
+    <div style={{ padding: embed ? 0 : "25px" }}>
+      {!embed && (
+        <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
+          Alevinaje
+        </Typography>
+      )}
 
-      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
-        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+      <FormularioRegistroPanel
+        soloContenido={embed}
+        visible={mostrarFormulario}
+        onToggle={toggleFormulario}
+      >
+        <Card sx={{ mb: embed ? 0 : 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
               {modoEdicion ? "Editar registro" : "Registrar nuevo alevinaje"}
             </Typography>
 
             <Grid container spacing={2.5}>
+              {!embed && (
               <Grid size={{ xs: 12, md: 6 }}>
                 <CampoTexto
                   select
@@ -306,8 +325,9 @@ const Alevinaje = () => {
                   ))}
                 </CampoTexto>
               </Grid>
+              )}
 
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: embed ? 12 : 6 }}>
                 <CampoTexto
                   select
                   label="Instalación (alevinaje)"
@@ -444,6 +464,8 @@ const Alevinaje = () => {
         </Card>
       </FormularioRegistroPanel>
 
+      {!embed && (
+      <>
       <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
         Estado actual por pileta
       </Typography>
@@ -552,6 +574,8 @@ const Alevinaje = () => {
         </div>
       )}
       {ConfirmModal}
+      </>
+      )}
     </div>
   );
 };

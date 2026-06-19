@@ -38,6 +38,22 @@ import CampoNumerico from "@shared/components/CampoNumerico";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
 import { listPiletas } from "../services/piletasService";
 import { listLista } from "@features/ventas/services/listaEsperaService";
+import Alevinaje from "./Alevinaje";
+import Engorda from "./Engorda";
+import Reproductores from "./Reproductores";
+import EventoCosecha from "./EventoCosecha";
+
+const TIPOS_REGISTRO = [
+  { value: "interna", label: "Interna" },
+  { value: "externa", label: "Externa" },
+];
+
+const MODULOS_EXTERNOS = [
+  { value: "alevinaje", label: "Alevinaje" },
+  { value: "reproductores", label: "Reproductores" },
+  { value: "engorda", label: "Engorda" },
+  { value: "eficiencia_reproductiva", label: "Eficiencia reproductiva" },
+];
 
 const TIPOS_MOVIMIENTO = [
   {
@@ -170,6 +186,8 @@ export default function Trazabilidad() {
     useFormularioVisible();
 
   const [granja, setGranja] = useState(defaultUbicacion || "");
+  const [tipoRegistro, setTipoRegistro] = useState("interna");
+  const [moduloExterno, setModuloExterno] = useState("alevinaje");
   const [form, setForm] = useState(EMPTY_FORM);
   const [movimientos, setMovimientos] = useState([]);
   const [piletas, setPiletas] = useState([]);
@@ -322,11 +340,30 @@ export default function Trazabilidad() {
     }
   }, [granja, ubicacionesGranja]);
 
+  const esRegistroInterno = tipoRegistro === "interna";
+
   useEffect(() => {
     cargarMovimientos();
+  }, [cargarMovimientos]);
+
+  useEffect(() => {
+    if (!esRegistroInterno) return;
     cargarPiletas();
     cargarPedidos();
-  }, [cargarMovimientos, cargarPiletas, cargarPedidos]);
+  }, [esRegistroInterno, cargarPiletas, cargarPedidos]);
+
+  const handleTipoRegistroChange = (e) => {
+    setTipoRegistro(e.target.value);
+    setForm({ ...EMPTY_FORM, fecha_movimiento: form.fecha_movimiento });
+  };
+
+  const handleModuloExternoChange = (e) => {
+    setModuloExterno(e.target.value);
+  };
+
+  const handleRegistroExternoExitoso = () => {
+    cerrarFormulario();
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -582,14 +619,14 @@ export default function Trazabilidad() {
 
               <Grid size={{ xs: 12, md: 4 }}>
                 <FormControl fullWidth>
-                  <InputLabel>Tipo de movimiento</InputLabel>
+                  <InputLabel>Tipo de registro</InputLabel>
                   <Select
-                    name="tipo_movimiento"
-                    value={form.tipo_movimiento}
-                    label="Tipo de movimiento"
-                    onChange={handleChange}
+                    name="tipo_registro"
+                    value={tipoRegistro}
+                    label="Tipo de registro"
+                    onChange={handleTipoRegistroChange}
                   >
-                    {TIPOS_MOVIMIENTO.map((t) => (
+                    {TIPOS_REGISTRO.map((t) => (
                       <MenuItem key={t.value} value={t.value}>
                         {t.label}
                       </MenuItem>
@@ -598,6 +635,46 @@ export default function Trazabilidad() {
                 </FormControl>
               </Grid>
 
+              {esRegistroInterno ? (
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Tipo de movimiento</InputLabel>
+                    <Select
+                      name="tipo_movimiento"
+                      value={form.tipo_movimiento}
+                      label="Tipo de movimiento"
+                      onChange={handleChange}
+                    >
+                      {TIPOS_MOVIMIENTO.map((t) => (
+                        <MenuItem key={t.value} value={t.value}>
+                          {t.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              ) : (
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Módulo</InputLabel>
+                    <Select
+                      name="modulo_externo"
+                      value={moduloExterno}
+                      label="Módulo"
+                      onChange={handleModuloExternoChange}
+                    >
+                      {MODULOS_EXTERNOS.map((m) => (
+                        <MenuItem key={m.value} value={m.value}>
+                          {m.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              )}
+
+              {esRegistroInterno && (
+              <>
               <Grid size={{ xs: 12, md: 4 }}>
                 <CampoTexto
                   fullWidth
@@ -609,7 +686,13 @@ export default function Trazabilidad() {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
+              </>
+              )}
+            </Grid>
 
+            {esRegistroInterno ? (
+            <>
+            <Grid container spacing={2} sx={{ mt: 0 }}>
               {esVenta && (
                 <>
                   <Grid size={{ xs: 12, md: 8 }}>
@@ -836,6 +919,39 @@ export default function Trazabilidad() {
                 Registrar
               </Button>
             </Box>
+            </>
+            ) : (
+              <Box sx={{ mt: 2 }}>
+                {moduloExterno === "alevinaje" && (
+                  <Alevinaje
+                    embed
+                    ubicacionInicial={granja}
+                    onRegistroExitoso={handleRegistroExternoExitoso}
+                  />
+                )}
+                {moduloExterno === "reproductores" && (
+                  <Reproductores
+                    embed
+                    ubicacionInicial={granja}
+                    onRegistroExitoso={handleRegistroExternoExitoso}
+                  />
+                )}
+                {moduloExterno === "engorda" && (
+                  <Engorda
+                    embed
+                    ubicacionInicial={granja}
+                    onRegistroExitoso={handleRegistroExternoExitoso}
+                  />
+                )}
+                {moduloExterno === "eficiencia_reproductiva" && (
+                  <EventoCosecha
+                    embed
+                    ubicacionInicial={granja}
+                    onRegistroExitoso={handleRegistroExternoExitoso}
+                  />
+                )}
+              </Box>
+            )}
           </CardContent>
         </Card>
       </FormularioRegistroPanel>

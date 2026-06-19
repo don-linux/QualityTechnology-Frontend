@@ -49,7 +49,7 @@ const MAX_OBSERVACION = 500;
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 
-export default function Engorda() {
+export default function Engorda({ embed = false, ubicacionInicial = "", onRegistroExitoso } = {}) {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -142,14 +142,23 @@ export default function Engorda() {
 
   useEffect(() => {
     cargarPiletasDestinoEngorda();
-    cargarRegistros();
-  }, [cargarPiletasDestinoEngorda, cargarRegistros]);
+    if (!embed) cargarRegistros();
+  }, [embed, cargarPiletasDestinoEngorda, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
       setFormData((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
     }
   }, [defaultUbicacion, formData.ubicacion]);
+
+  useEffect(() => {
+    if (!embed || !ubicacionInicial) return;
+    setFormData((prev) =>
+      prev.ubicacion === ubicacionInicial
+        ? prev
+        : { ...prev, ubicacion: ubicacionInicial, fi_pileta_destino_id: "" },
+    );
+  }, [embed, ubicacionInicial]);
 
   const registrarEngorda = async () => {
     if (!validate(formData, requiredFields)) return;
@@ -161,7 +170,8 @@ export default function Engorda() {
       await createEngorda(payloadComunBackend());
       showSnackbar("Registro periódico guardado (vista actual actualizada)", "success");
       resetFormulario();
-      cargarRegistros();
+      if (!embed) cargarRegistros();
+      onRegistroExitoso?.();
     } catch (err) {
       console.error("Error al registrar engorda:", err);
       showSnackbar(
@@ -237,8 +247,10 @@ export default function Engorda() {
   };
 
   const resetFormulario = () => {
+    const ubicacionBase =
+      (embed && ubicacionInicial) || defaultUbicacion || ubicacionesGranja[0]?.value || "";
     setFormData({
-      ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
+      ubicacion: ubicacionBase,
       fi_pileta_destino_id: "",
       cantidad_total: "",
       cantidad_alimento: "",
@@ -247,7 +259,7 @@ export default function Engorda() {
       observacion: "",
     });
     clearErrors();
-    cerrarFormulario();
+    if (!embed) cerrarFormulario();
   };
 
   const resetEdicion = () => {
@@ -269,7 +281,9 @@ export default function Engorda() {
   );
 
   return (
-    <div style={{ padding: "25px" }}>
+    <div style={{ padding: embed ? 0 : "25px" }}>
+      {!embed && (
+        <>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
         Engorda
       </Typography>
@@ -278,15 +292,22 @@ export default function Engorda() {
         <Typography><b>Registros:</b> {registros.length}</Typography>
         <Typography><b>Total organismos en engorda:</b> {formatCantidad(totalCantidad, "0")}</Typography>
       </Paper>
+        </>
+      )}
 
-      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
-        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+      <FormularioRegistroPanel
+        soloContenido={embed}
+        visible={mostrarFormulario}
+        onToggle={toggleFormulario}
+      >
+        <Card sx={{ mb: embed ? 0 : 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
               {modoEdicion ? "Editar registro" : "Registrar nueva engorda"}
             </Typography>
 
             <Grid container spacing={2.5}>
+              {!embed && (
               <Grid size={{ xs: 12, md: 6 }}>
                 <CampoTexto
                   select
@@ -306,8 +327,9 @@ export default function Engorda() {
                   ))}
                 </CampoTexto>
               </Grid>
+              )}
 
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: embed ? 12 : 6 }}>
                 <CampoTexto
                   select
                   label="Pileta (engorda)"
@@ -431,6 +453,8 @@ export default function Engorda() {
         </Card>
       </FormularioRegistroPanel>
 
+      {!embed && (
+      <>
       <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
         Estado actual por pileta
       </Typography>
@@ -541,6 +565,8 @@ export default function Engorda() {
       )}
 
       {ConfirmModal}
+      </>
+      )}
     </div>
   );
 }

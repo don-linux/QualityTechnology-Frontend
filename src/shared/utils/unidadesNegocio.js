@@ -131,7 +131,7 @@ export function getUnidadGranjaSigla(value) {
   const compacto = String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-Za-Z0-9]+/g, " ")
+    .replace(/[^A-Za-z0-9]+/g, " ")
     .trim()
     .split(/\s+/)
     .filter(Boolean)

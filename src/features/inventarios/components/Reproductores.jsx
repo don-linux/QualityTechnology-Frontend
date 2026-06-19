@@ -283,7 +283,7 @@ const colorDias = (dias) => {
   return "#c62828";
 };
 
-export default function Reproductores() {
+export default function Reproductores({ embed = false, ubicacionInicial = "", onRegistroExitoso } = {}) {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -420,14 +420,23 @@ export default function Reproductores() {
   useEffect(() => {
     cargarPiletasDestino();
     cargarPiletasEngorda();
-    cargarRegistros();
-  }, [cargarPiletasDestino, cargarPiletasEngorda, cargarRegistros]);
+    if (!embed) cargarRegistros();
+  }, [embed, cargarPiletasDestino, cargarPiletasEngorda, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
       setFormData((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
     }
   }, [defaultUbicacion, formData.ubicacion]);
+
+  useEffect(() => {
+    if (!embed || !ubicacionInicial) return;
+    setFormData((prev) =>
+      prev.ubicacion === ubicacionInicial
+        ? prev
+        : { ...prev, ubicacion: ubicacionInicial, fi_pileta_destino_id: "" },
+    );
+  }, [embed, ubicacionInicial]);
 
   const validarTotalPositivo = () => {
     const total = Number(formData.fn_machos || 0) + Number(formData.fn_hembras || 0);
@@ -445,7 +454,8 @@ export default function Reproductores() {
       await createReproductor(payloadComunBackend());
       showSnackbar("Registro guardado (vista actual actualizada)", "success");
       resetFormulario();
-      cargarRegistros();
+      if (!embed) cargarRegistros();
+      onRegistroExitoso?.();
     } catch (err) {
       console.error("Error al registrar reproductor:", err);
       showSnackbar(
@@ -546,12 +556,14 @@ export default function Reproductores() {
   };
 
   const resetFormulario = () => {
+    const ubicacionBase =
+      (embed && ubicacionInicial) || defaultUbicacion || ubicacionesGranja[0]?.value || "";
     setFormData({
       ...FORM_INICIAL,
-      ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
+      ubicacion: ubicacionBase,
     });
     clearErrors();
-    cerrarFormulario();
+    if (!embed) cerrarFormulario();
   };
 
   const resetEdicion = () => {
@@ -575,7 +587,9 @@ export default function Reproductores() {
   const headerCell = { color: "white", fontWeight: "bold", whiteSpace: "nowrap" };
 
   return (
-    <div style={{ padding: "25px" }}>
+    <div style={{ padding: embed ? 0 : "25px" }}>
+      {!embed && (
+        <>
       <Typography variant="h4" sx={{ mb: 1, fontWeight: "bold", color: "#004d73" }}>
         Lote de reproductores
       </Typography>
@@ -589,15 +603,22 @@ export default function Reproductores() {
           <b>Total reproductores (vista):</b> {formatCantidad(totalOrganismos, "0")}
         </Typography>
       </Paper>
+        </>
+      )}
 
-      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
-        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+      <FormularioRegistroPanel
+        soloContenido={embed}
+        visible={mostrarFormulario}
+        onToggle={toggleFormulario}
+      >
+        <Card sx={{ mb: embed ? 0 : 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
               {modoEdicion ? "Editar registro" : "Registrar nuevo inventario"}
             </Typography>
 
             <Grid container spacing={2.5}>
+              {!embed && (
               <Grid size={{ xs: 12, md: 6 }}>
                 <CampoTexto
                   select
@@ -617,8 +638,9 @@ export default function Reproductores() {
                   ))}
                 </CampoTexto>
               </Grid>
+              )}
 
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: embed ? 12 : 6 }}>
                 <CampoTexto
                   select
                   label="Pileta (reproductores)"
@@ -861,6 +883,8 @@ export default function Reproductores() {
         </Card>
       </FormularioRegistroPanel>
 
+      {!embed && (
+      <>
       <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
         Estado actual por pileta
       </Typography>
@@ -1027,6 +1051,8 @@ export default function Reproductores() {
       )}
 
       {ConfirmModal}
+      </>
+      )}
     </div>
   );
 }

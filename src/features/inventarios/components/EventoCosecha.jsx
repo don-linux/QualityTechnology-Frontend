@@ -101,7 +101,7 @@ const formularioVacio = (ubicacionDefault = "") => ({
   observacion: "",
 });
 
-const EventoCosecha = () => {
+const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } = {}) => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -246,8 +246,8 @@ const EventoCosecha = () => {
 
   useEffect(() => {
     cargarPiletas();
-    cargarRegistros();
-  }, [cargarPiletas, cargarRegistros]);
+    if (!embed) cargarRegistros();
+  }, [embed, cargarPiletas, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
@@ -255,13 +255,28 @@ const EventoCosecha = () => {
     }
   }, [defaultUbicacion, formData.ubicacion]);
 
+  useEffect(() => {
+    if (!embed || !ubicacionInicial) return;
+    setFormData((prev) =>
+      prev.ubicacion === ubicacionInicial
+        ? prev
+        : {
+            ...prev,
+            ubicacion: ubicacionInicial,
+            fi_pileta_origen_id: "",
+            fi_pileta_destino_id: "",
+          },
+    );
+  }, [embed, ubicacionInicial]);
+
   const registrar = async () => {
     if (!validarCosecha()) return;
     try {
       await createIncubacion(payloadBackend());
       showSnackbar("Cosecha e ingreso a incubación registrados", "success");
-      resetFormulario();
-      cargarRegistros();
+      resetFormulario(false);
+      if (!embed) cargarRegistros();
+      onRegistroExitoso?.();
     } catch (err) {
       showSnackbar(
         err?.response?.data?.error ||
@@ -339,11 +354,11 @@ const EventoCosecha = () => {
   };
 
   const resetFormulario = (cerrarPanel = true) => {
-    setFormData(
-      formularioVacio(defaultUbicacion || ubicacionesGranja[0]?.value || ""),
-    );
+    const ubicacionBase =
+      (embed && ubicacionInicial) || defaultUbicacion || ubicacionesGranja[0]?.value || "";
+    setFormData(formularioVacio(ubicacionBase));
     clearErrors();
-    if (cerrarPanel) cerrarFormulario();
+    if (cerrarPanel && !embed) cerrarFormulario();
   };
 
   const resetEdicion = () => {
@@ -365,7 +380,9 @@ const EventoCosecha = () => {
   const onSubmitFormulario = () => (modoEdicion ? actualizar() : registrar());
 
   return (
-    <div style={{ padding: "25px" }}>
+    <div style={{ padding: embed ? 0 : "25px" }}>
+      {!embed && (
+        <>
       <Typography variant="h4" sx={{ mb: 1, fontWeight: "bold", color: "#004d73" }}>
         Cosecha e incubación
       </Typography>
@@ -373,15 +390,22 @@ const EventoCosecha = () => {
         Registre el desove y el ingreso a la pileta de incubación en un solo paso. El historial
         muestra ambos en la misma fila. Para modificar un registro, selecciónelo y use Editar.
       </Typography>
+        </>
+      )}
 
-      <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
-        <Card sx={{ mb: 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+      <FormularioRegistroPanel
+        soloContenido={embed}
+        visible={mostrarFormulario}
+        onToggle={toggleFormulario}
+      >
+        <Card sx={{ mb: embed ? 0 : 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
               {tituloFormulario()}
             </Typography>
 
             <Grid container spacing={2.5}>
+              {!embed && (
               <Grid size={{ xs: 12, md: 6 }}>
                 <CampoTexto
                   select
@@ -401,8 +425,9 @@ const EventoCosecha = () => {
                   ))}
                 </CampoTexto>
               </Grid>
+              )}
 
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: embed ? 12 : 6 }}>
                 <CampoTexto
                   select
                   label="Estanque origen (TR)"
@@ -668,6 +693,8 @@ const EventoCosecha = () => {
         </Card>
       </FormularioRegistroPanel>
 
+      {!embed && (
+      <>
       <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, color: "#023047" }}>
         Historial de cosechas e incubación
       </Typography>
@@ -792,6 +819,8 @@ const EventoCosecha = () => {
       />
 
       {ConfirmModal}
+      </>
+      )}
     </div>
   );
 };
