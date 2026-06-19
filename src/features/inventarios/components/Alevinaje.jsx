@@ -465,6 +465,7 @@ const Alevinaje = () => {
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Instalación</TableCell>
                     <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
                     <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Talla (g)</TableCell>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lote</TableCell>
@@ -476,7 +477,7 @@ const Alevinaje = () => {
                 <TableBody>
                   {filas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
+                      <TableCell colSpan={8} align="center">
                         No hay registros.
                       </TableCell>
                     </TableRow>
@@ -494,6 +495,7 @@ const Alevinaje = () => {
                         }}
                       >
                         <TableCell>{l._num}</TableCell>
+                        <TableCell>{l.nombre_pileta_destino || l.nombre_pileta || "—"}</TableCell>
                         <TableCell align="right">{formatCantidad(l.cantidad_total)}</TableCell>
                         <TableCell align="right">{formatCantidad(l.peso_gramos ?? l.peso)}</TableCell>
                         <TableCell>
