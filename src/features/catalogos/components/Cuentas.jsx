@@ -19,7 +19,7 @@ import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -188,7 +188,7 @@ export default function Cuentas() {
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <CampoTexto
                 select
                 name="fc_udn"
                 label="UdN"
@@ -203,11 +203,11 @@ export default function Cuentas() {
                     {u.fc_nombre}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <CampoTexto
                 select
                 name="fc_tipo"
                 label="Tipo de cuenta"
@@ -220,11 +220,11 @@ export default function Cuentas() {
                 {TIPO_CUENTA_OPTIONS.map((opt) => (
                   <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 name="fc_nombre"
                 label="Nombre de la cuenta"
                 fullWidth
@@ -236,7 +236,7 @@ export default function Cuentas() {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <CampoTexto
                 name="fc_numero_cuenta"
                 label="Número de cuenta"
                 fullWidth
@@ -246,7 +246,7 @@ export default function Cuentas() {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+              <CampoTexto
                 name="fc_banco"
                 label="Nombre del banco"
                 fullWidth

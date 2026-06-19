@@ -15,7 +15,7 @@ import {
   campoFormSx,
 } from "@shared/components/FormularioInventarioSecciones";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Grid from "@mui/material/Grid";
 import MenuItem from "@mui/material/MenuItem";
 import Card from "@mui/material/Card";
@@ -288,7 +288,7 @@ export default function Engorda() {
 
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Ubicación"
                   name="ubicacion"
@@ -304,11 +304,11 @@ export default function Engorda() {
                       {op.label}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Pileta (engorda)"
                   name="fi_pileta_destino_id"
@@ -327,7 +327,7 @@ export default function Engorda() {
                       </MenuItem>
                     );
                   })}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={12}>
@@ -382,7 +382,7 @@ export default function Engorda() {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
+                    <CampoTexto
                       label="Fecha peso"
                       type="date"
                       name="fecha_peso"
@@ -400,7 +400,7 @@ export default function Engorda() {
 
               <Grid size={12}>
                 <CampoConEtiquetaArriba label="Observaciones">
-                  <TextField
+                  <CampoTexto
                     name="observacion"
                     value={formData.observacion}
                     onChange={handleChange}

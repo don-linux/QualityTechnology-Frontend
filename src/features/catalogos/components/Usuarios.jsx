@@ -4,7 +4,7 @@ import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Table from "@mui/material/Table";
@@ -172,17 +172,17 @@ export default function UsuariosRegistro() {
 
           <Grid container spacing={2}>
             <Grid size={12}>
-              <TextField name="nombre" label="Nombre de Usuario" fullWidth value={form.nombre} onChange={handleChange} error={!!errors.nombre} helperText={errors.nombre} />
+              <CampoTexto name="nombre" label="Nombre de Usuario" fullWidth value={form.nombre} onChange={handleChange} error={!!errors.nombre} helperText={errors.nombre} />
             </Grid>
             <Grid size={12}>
               <PasswordField name="contraseña" label="Contraseña" fullWidth value={form.contraseña} onChange={handleChange} error={!!errors.contraseña} helperText={errors.contraseña} />
             </Grid>
             <Grid size={12}>
-              <TextField select name="rol_id" label="Rol" fullWidth value={form.rol_id} onChange={handleChange} error={!!errors.rol_id} helperText={errors.rol_id}>
+              <CampoTexto select name="rol_id" label="Rol" fullWidth value={form.rol_id} onChange={handleChange} error={!!errors.rol_id} helperText={errors.rol_id}>
                 {roles.map((rol) => (
                   <MenuItem key={rid(rol)} value={rid(rol)}>{rnombre(rol)}</MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             {mostrarCamposEmpleado && (
@@ -193,36 +193,36 @@ export default function UsuariosRegistro() {
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField name="fc_nombre_empleado" label="Nombre" fullWidth value={form.fc_nombre_empleado} onChange={handleChange} error={!!errors.fc_nombre_empleado} helperText={errors.fc_nombre_empleado} />
+                  <CampoTexto name="fc_nombre_empleado" label="Nombre" fullWidth value={form.fc_nombre_empleado} onChange={handleChange} error={!!errors.fc_nombre_empleado} helperText={errors.fc_nombre_empleado} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField name="fc_apellido_paterno" label="Apellido Paterno" fullWidth value={form.fc_apellido_paterno} onChange={handleChange} error={!!errors.fc_apellido_paterno} helperText={errors.fc_apellido_paterno} />
+                  <CampoTexto name="fc_apellido_paterno" label="Apellido Paterno" fullWidth value={form.fc_apellido_paterno} onChange={handleChange} error={!!errors.fc_apellido_paterno} helperText={errors.fc_apellido_paterno} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField name="fc_apellido_materno" label="Apellido Materno" fullWidth value={form.fc_apellido_materno} onChange={handleChange} error={!!errors.fc_apellido_materno} helperText={errors.fc_apellido_materno} />
+                  <CampoTexto name="fc_apellido_materno" label="Apellido Materno" fullWidth value={form.fc_apellido_materno} onChange={handleChange} error={!!errors.fc_apellido_materno} helperText={errors.fc_apellido_materno} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField select name="fi_departamento_id" label="Departamento" fullWidth value={form.fi_departamento_id} onChange={handleChange} error={!!errors.fi_departamento_id} helperText={errors.fi_departamento_id}>
+                  <CampoTexto select name="fi_departamento_id" label="Departamento" fullWidth value={form.fi_departamento_id} onChange={handleChange} error={!!errors.fi_departamento_id} helperText={errors.fi_departamento_id}>
                     {departamentos.map((d) => (
                       <MenuItem key={deptKey(d)} value={deptKey(d)}>{deptLabel(d)}</MenuItem>
                     ))}
-                  </TextField>
+                  </CampoTexto>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField select name="fi_puesto_id" label="Puesto" fullWidth value={form.fi_puesto_id} onChange={handleChange}>
+                  <CampoTexto select name="fi_puesto_id" label="Puesto" fullWidth value={form.fi_puesto_id} onChange={handleChange}>
                     <MenuItem value="">Sin asignar</MenuItem>
                     {puestos.map((p) => (
                       <MenuItem key={puestoKey(p)} value={puestoKey(p)}>{puestoLabel(p)}</MenuItem>
                     ))}
-                  </TextField>
+                  </CampoTexto>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField select name="fi_unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.fi_unidad_negocio_id} onChange={handleChange}>
+                  <CampoTexto select name="fi_unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.fi_unidad_negocio_id} onChange={handleChange}>
                     <MenuItem value="">Sin asignar</MenuItem>
                     {unidadesNegocio.map((u) => (
                       <MenuItem key={udnKey(u)} value={udnKey(u)}>{udnLabel(u)}</MenuItem>
                     ))}
-                  </TextField>
+                  </CampoTexto>
                 </Grid>
               </>
             )}

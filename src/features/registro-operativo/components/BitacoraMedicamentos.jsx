@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -239,7 +239,7 @@ function BitacoraMedicamentosContent() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -254,10 +254,10 @@ function BitacoraMedicamentosContent() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Fecha" type="date" name="fd_fecha_hora" InputLabelProps={{ shrink: true }}
+              <CampoTexto label="Fecha" type="date" name="fd_fecha_hora" InputLabelProps={{ shrink: true }}
                 value={form.fd_fecha_hora} onChange={handleChange} fullWidth error={!!errors.fd_fecha_hora} helperText={errors.fd_fecha_hora} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -266,7 +266,7 @@ function BitacoraMedicamentosContent() {
                 value={form.fn_num_estanque} onChange={handleChange} fullWidth error={!!errors.fn_num_estanque} helperText={errors.fn_num_estanque} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
+              <CampoTexto
                 label="Diagnóstico"
                 name="fc_diagnosis"
                 value={form.fc_diagnosis}
@@ -280,7 +280,7 @@ function BitacoraMedicamentosContent() {
               />
             </Grid>
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Tratamiento"
                 name="fc_tratamiento"
                 value={form.fc_tratamiento}
@@ -294,7 +294,7 @@ function BitacoraMedicamentosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Dosis"
                 name="fc_dosis"
                 value={form.fc_dosis}
@@ -306,16 +306,16 @@ function BitacoraMedicamentosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Forma Aplicación" name="fc_forma_aplicacion"
+              <CampoTexto label="Forma Aplicación" name="fc_forma_aplicacion"
                 value={form.fc_forma_aplicacion} onChange={handleChange} fullWidth error={!!errors.fc_forma_aplicacion} helperText={errors.fc_forma_aplicacion} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Última Dosis" type="date" name="fd_fecha_ultima_dosis"
+              <CampoTexto label="Última Dosis" type="date" name="fd_fecha_ultima_dosis"
                 InputLabelProps={{ shrink: true }}
                 value={form.fd_fecha_ultima_dosis} onChange={handleChange} fullWidth error={!!errors.fd_fecha_ultima_dosis} helperText={errors.fd_fecha_ultima_dosis} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Responsable"
                 name="fc_responsable"
@@ -334,7 +334,7 @@ function BitacoraMedicamentosContent() {
                 {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
                   <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
           </Grid>
 

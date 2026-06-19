@@ -6,7 +6,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -334,7 +334,7 @@ function BitacoraVisitasContent() {
       </Typography>
 
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <TextField
+        <CampoTexto
           label="Buscar Nombre / Origen"
           variant="outlined"
           size="small"
@@ -357,7 +357,7 @@ function BitacoraVisitasContent() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -373,11 +373,11 @@ function BitacoraVisitasContent() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Fecha"
                 type="date"
                 name="fd_fecha"
@@ -392,7 +392,7 @@ function BitacoraVisitasContent() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 5 }}>
-              <TextField
+              <CampoTexto
                 label="Nombre Completo"
                 name="fc_nombre_completo"
                 value={form.fc_nombre_completo}
@@ -405,7 +405,7 @@ function BitacoraVisitasContent() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 label="Origen"
                 name="fc_origen"
                 value={form.fc_origen}
@@ -418,7 +418,7 @@ function BitacoraVisitasContent() {
             </Grid>
 
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Motivo"
                 name="fc_motivo"
                 value={form.fc_motivo}
@@ -432,7 +432,7 @@ function BitacoraVisitasContent() {
             </Grid>
 
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Observaciones"
                 name="fc_observaciones"
                 value={form.fc_observaciones}
@@ -491,7 +491,7 @@ function BitacoraVisitasContent() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
+                  <CampoTexto
                     label="Hora de Entrada"
                     type="time"
                 name="fd_entrada"
@@ -506,7 +506,7 @@ function BitacoraVisitasContent() {
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
+                  <CampoTexto
                     label="Hora de Salida"
                     type="time"
                 name="fd_salida"

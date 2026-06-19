@@ -9,7 +9,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Grid from "@mui/material/Grid";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -191,7 +191,7 @@ export default function CajaAhorro() {
       <Paper sx={{ p: 2, mb: 3, background: "#f8f9fa" }}>
         <Grid container spacing={2} alignItems="center">
           <Grid>
-            <TextField
+            <CampoTexto
               label="Buscar categoría"
               variant="outlined"
               size="small"
@@ -258,7 +258,7 @@ export default function CajaAhorro() {
               ))}
             </Select>
           </FormControl>
-          <TextField
+          <CampoTexto
             label="Nombre de la categoría"
             value={nuevaCategoria}
             onChange={(e) => {

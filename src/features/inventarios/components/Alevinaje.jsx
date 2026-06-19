@@ -15,7 +15,7 @@ import {
   campoFormSx,
 } from "@shared/components/FormularioInventarioSecciones";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Grid from "@mui/material/Grid";
 import MenuItem from "@mui/material/MenuItem";
 import Card from "@mui/material/Card";
@@ -288,7 +288,7 @@ const Alevinaje = () => {
 
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Ubicación"
                   name="ubicacion"
@@ -304,11 +304,11 @@ const Alevinaje = () => {
                       {op.label}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Instalación (alevinaje)"
                   name="fi_pileta_destino_id"
@@ -327,11 +327,11 @@ const Alevinaje = () => {
                       </MenuItem>
                     );
                   })}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   label="Lote genético"
                   name="fc_lote"
                   value={formData.fc_lote}
@@ -395,7 +395,7 @@ const Alevinaje = () => {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
+                    <CampoTexto
                       label="Fecha peso"
                       type="date"
                       name="fecha_peso"
@@ -413,7 +413,7 @@ const Alevinaje = () => {
 
               <Grid size={12}>
                 <CampoConEtiquetaArriba label="Observaciones">
-                  <TextField
+                  <CampoTexto
                     name="observacion"
                     value={formData.observacion}
                     onChange={handleChange}

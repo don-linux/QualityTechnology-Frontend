@@ -4,7 +4,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
@@ -144,7 +144,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
           {!liquidada && (
             <Grid container spacing={2}>
               <Grid size={6}>
-                <TextField
+                <CampoTexto
                   label="Fecha"
                   type="date"
                   name="fd_fecha"
@@ -157,7 +157,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 />
               </Grid>
               <Grid size={6}>
-                <TextField
+                <CampoTexto
                   select
                   label="Cuenta"
                   name="fc_cuenta"
@@ -172,7 +172,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                       {cuenta.fc_nombre} — {formatPrecio(cuenta.fn_saldo_actual)}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
               <Grid size={6}>
                 <CampoNumerico
@@ -188,7 +188,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 />
               </Grid>
               <Grid size={12}>
-                <TextField
+                <CampoTexto
                   label="Observaciones"
                   name="fc_observaciones"
                   value={formData.fc_observaciones}

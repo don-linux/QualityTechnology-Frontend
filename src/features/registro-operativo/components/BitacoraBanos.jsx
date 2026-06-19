@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
@@ -301,7 +301,7 @@ function BitacoraBanosContent() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -316,10 +316,10 @@ function BitacoraBanosContent() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Fecha"
                 type="date"
                 name="fd_fecha"
@@ -332,7 +332,7 @@ function BitacoraBanosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Tipo de Baño"
                 name="fc_tipo_banio"
@@ -345,10 +345,10 @@ function BitacoraBanosContent() {
                 <MenuItem value="">Selecciona un tipo</MenuItem>
                 <MenuItem value="Hombre">Hombre</MenuItem>
                 <MenuItem value="Mujer">Mujer</MenuItem>
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Regadera"
                 name="fc_regadera"
                 value={form.fc_regadera}
@@ -360,7 +360,7 @@ function BitacoraBanosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Realizó"
                 name="fc_realizo"
@@ -379,10 +379,10 @@ function BitacoraBanosContent() {
                 {form.fc_realizo && !empleados.some((e) => e.fc_nombre_completo === form.fc_realizo) && (
                   <MenuItem value={form.fc_realizo}>{form.fc_realizo}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Observaciones"
                 name="fc_observaciones"
                 multiline

@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -319,7 +319,7 @@ function RecepcionInsumosContent() {
       </Typography>
 
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <TextField
+        <CampoTexto
           label="Buscar Producto / Lote"
           variant="outlined"
           size="small"
@@ -342,7 +342,7 @@ function RecepcionInsumosContent() {
         <CardContent>
           <Grid container spacing={1.5}>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -358,10 +358,10 @@ function RecepcionInsumosContent() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Fecha"
                 type="date"
                 name="fd_fecha"
@@ -375,7 +375,7 @@ function RecepcionInsumosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Proveedor"
                 name="fc_proveedor"
                 value={form.fc_proveedor}
@@ -387,7 +387,7 @@ function RecepcionInsumosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Producto"
                 name="fc_producto"
                 value={form.fc_producto}
@@ -399,7 +399,7 @@ function RecepcionInsumosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Lote"
                 name="fc_lote"
                 value={form.fc_lote}
@@ -426,7 +426,7 @@ function RecepcionInsumosContent() {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Unidad de Medida"
                 name="fc_unidad_medida"
@@ -440,11 +440,11 @@ function RecepcionInsumosContent() {
                 {unidadesMedida.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Condiciones de entrega"
                 name="fc_condiciones_entrega"
                 value={form.fc_condiciones_entrega}
@@ -457,7 +457,7 @@ function RecepcionInsumosContent() {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Encargado de Entrega"
                 name="fc_encargado_entrega"
@@ -477,11 +477,11 @@ function RecepcionInsumosContent() {
                 {form.fc_encargado_entrega && !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado_entrega) && (
                   <MenuItem value={form.fc_encargado_entrega}>{form.fc_encargado_entrega}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Verificó"
                 name="fc_verifico"
@@ -501,11 +501,11 @@ function RecepcionInsumosContent() {
                 {form.fc_verifico && !empleados.some((e) => e.fc_nombre_completo === form.fc_verifico) && (
                   <MenuItem value={form.fc_verifico}>{form.fc_verifico}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Observaciones"
                 name="fc_observaciones"
                 value={form.fc_observaciones}

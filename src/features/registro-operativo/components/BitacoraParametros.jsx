@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -233,7 +233,7 @@ function BitacoraParametrosContent() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -248,10 +248,10 @@ function BitacoraParametrosContent() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Fecha"
                 type="date"
                 name="fd_fecha"
@@ -349,7 +349,7 @@ function BitacoraParametrosContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Responsable"
                 name="fc_responsable"
@@ -368,7 +368,7 @@ function BitacoraParametrosContent() {
                 {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
                   <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
           </Grid>
 

@@ -9,7 +9,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import {
@@ -128,7 +128,7 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
       <Typography variant="h6" sx={{ mb: 2 }}>Documentos</Typography>
 
       <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center", flexWrap: "wrap" }}>
-        <TextField
+        <CampoTexto
           select
           label="Tipo de documento"
           value={tipoSeleccionado}
@@ -141,7 +141,7 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
               {t.fc_nombre} {t.fb_obligatorio ? "*" : ""}
             </MenuItem>
           ))}
-        </TextField>
+        </CampoTexto>
         <Button variant="outlined" component="label" size="small">
           {archivo ? archivo.name : "Seleccionar archivo"}
           <input type="file" hidden onChange={(e) => setArchivo(e.target.files[0])} />

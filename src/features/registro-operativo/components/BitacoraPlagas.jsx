@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -345,7 +345,7 @@ function BitacoraPlagasContent() {
       </Typography>
 
       <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 2 }}>
-        <TextField
+        <CampoTexto
           label="Buscar Trampa / Tipo"
           variant="outlined"
           size="small"
@@ -369,7 +369,7 @@ function BitacoraPlagasContent() {
         <CardContent>
           <Grid container spacing={1.5}>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -385,10 +385,10 @@ function BitacoraPlagasContent() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Fecha"
                 type="date"
                 name="fd_fecha"
@@ -402,7 +402,7 @@ function BitacoraPlagasContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 label="No. Trampa"
                 name="fc_num_trampa"
                 value={form.fc_num_trampa}
@@ -414,7 +414,7 @@ function BitacoraPlagasContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Tipo de Trampa"
                 name="tipo_trampa"
@@ -428,10 +428,10 @@ function BitacoraPlagasContent() {
                 {tiposTrampa.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Unidad de Producción"
                 name="unidad_produccion"
@@ -445,11 +445,11 @@ function BitacoraPlagasContent() {
                 {unidadesProduccion.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Malla"
                 name="fc_malla"
@@ -463,10 +463,10 @@ function BitacoraPlagasContent() {
                 {tiposMalla.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Veneno"
                 name="fc_veneno"
@@ -480,10 +480,10 @@ function BitacoraPlagasContent() {
                 {tiposVeneno.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Verificó"
                 name="fc_verifico"
@@ -503,11 +503,11 @@ function BitacoraPlagasContent() {
                 {form.fc_verifico && !empleados.some((e) => e.fc_nombre_completo === form.fc_verifico) && (
                   <MenuItem value={form.fc_verifico}>{form.fc_verifico}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Hallazgo"
                 name="fc_hallazgo"
                 value={form.fc_hallazgo}
@@ -521,7 +521,7 @@ function BitacoraPlagasContent() {
             </Grid>
 
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Observaciones"
                 name="fc_observaciones"
                 value={form.fc_observaciones}

@@ -4,6 +4,7 @@
 //   - Fechas:  DD-MM-AAAA   (ej. 09-06-2026)
 //   - Precios: $000,000.00  (es-MX, 2 decimales, separador de miles)
 //   - Cantidades inventario: 000,000  (es-MX, enteros; hasta 3 decimales si aplica)
+//   - Texto en formularios: ver formatosTexto.js y CampoTexto.jsx
 //
 // Importante: los <input type="date"> requieren el valor en formato
 // "AAAA-MM-DD"; para ello usa `toInputDate`, NO `formatFecha`.

@@ -9,7 +9,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import MenuItem from "@mui/material/MenuItem";
 import Grid from "@mui/material/Grid";
 import Dialog from "@mui/material/Dialog";
@@ -319,7 +319,7 @@ export default function Proveedores() {
       <Paper sx={{ p: 2, mb: 3, background: "#f8f9fa" }}>
         <Grid container spacing={2} alignItems="center">
           <Grid>
-            <TextField
+            <CampoTexto
               label="Buscar"
               size="small"
               value={busqueda}
@@ -448,7 +448,7 @@ export default function Proveedores() {
           <Grid container spacing={2}>
             {CAMPOS_FORM.map((f) => (
               <Grid size={f.size || 6} key={f.name}>
-                <TextField
+                <CampoTexto
                   select={!!f.select}
                   label={f.label}
                   name={f.name}
@@ -466,7 +466,7 @@ export default function Proveedores() {
                 >
                   {f.select && <MenuItem value="">Selecciona {f.label}</MenuItem>}
                   {renderOpciones(f)}
-                </TextField>
+                </CampoTexto>
               </Grid>
             ))}
           </Grid>

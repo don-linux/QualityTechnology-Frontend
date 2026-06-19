@@ -12,7 +12,7 @@ import Grid from "@mui/material/Grid";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
@@ -198,7 +198,7 @@ export default function ProximaVentaModal({
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
+            <CampoTexto
               fullWidth
               type="date"
               label="Fecha de entrega"
@@ -229,7 +229,7 @@ export default function ProximaVentaModal({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
+            <CampoTexto
               fullWidth
               label="Granja"
               name="fc_granja_asignada"
@@ -243,7 +243,7 @@ export default function ProximaVentaModal({
 
           {ventaRequierePileta(form.fc_uap_asignada) && (
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 fullWidth
                 label="Pileta origen"
@@ -265,7 +265,7 @@ export default function ProximaVentaModal({
                     {etiquetaPileta(p)}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
           )}
 
@@ -307,7 +307,7 @@ export default function ProximaVentaModal({
                 clearFieldError("fc_cliente");
               }}
               renderInput={(params) => (
-                <TextField
+                <CampoTexto
                   {...params}
                   label="Cliente"
                   error={!!errors.fc_cliente}
@@ -318,7 +318,7 @@ export default function ProximaVentaModal({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
+            <CampoTexto
               fullWidth
               label="Lugar de entrega"
               name="fc_lugar_entrega"
@@ -330,7 +330,7 @@ export default function ProximaVentaModal({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
+            <CampoTexto
               fullWidth
               label="Unidad de producción"
               name="fc_unidad_produccion"
@@ -342,7 +342,7 @@ export default function ProximaVentaModal({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
+            <CampoTexto
               fullWidth
               type="time"
               label="Hora embolsado"
@@ -356,7 +356,7 @@ export default function ProximaVentaModal({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
+            <CampoTexto
               fullWidth
               type="time"
               label="Hora entrega"

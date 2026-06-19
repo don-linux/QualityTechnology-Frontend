@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -163,7 +163,7 @@ export default function Vacaciones() {
       <Paper sx={{ p: 2, mb: 3, background: "#f8f9fa" }}>
         <Grid container spacing={2} alignItems="center">
           <Grid>
-            <TextField
+            <CampoTexto
               label="Buscar por nombre"
               variant="outlined"
               size="small"
@@ -219,7 +219,7 @@ export default function Vacaciones() {
         <DialogContent dividers>
           <Grid container spacing={2} sx={{ mt: 0 }}>
             <Grid item xs={12}>
-              <TextField
+              <CampoTexto
                 label="Nombre del empleado"
                 value={nuevoForm.nombre}
                 onChange={(e) => {
@@ -246,7 +246,7 @@ export default function Vacaciones() {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <CampoTexto
                 label="Departamento"
                 value={nuevoForm.departamento}
                 onChange={(e) => {
@@ -259,7 +259,7 @@ export default function Vacaciones() {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <CampoTexto
                 label="Fecha inicio"
                 type="date"
                 InputLabelProps={{ shrink: true }}
@@ -274,7 +274,7 @@ export default function Vacaciones() {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <CampoTexto
                 label="Fecha fin"
                 type="date"
                 InputLabelProps={{ shrink: true }}

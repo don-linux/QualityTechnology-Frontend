@@ -8,7 +8,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Typography from "@mui/material/Typography";
 import {
   listActasAdministrativas,
@@ -131,14 +131,14 @@ export default function ActasAdministrativas({ empleadoId }) {
       <Typography variant="h6" sx={{ mb: 2 }}>Actas Administrativas</Typography>
 
       <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center", flexWrap: "wrap" }}>
-        <TextField
+        <CampoTexto
           label="Motivo"
           value={motivo}
           onChange={(e) => setMotivo(e.target.value)}
           size="small"
           sx={{ minWidth: 260 }}
         />
-        <TextField
+        <CampoTexto
           label="Fecha"
           type="date"
           value={fecha}

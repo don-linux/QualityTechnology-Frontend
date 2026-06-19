@@ -18,7 +18,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import AddIcon from "@mui/icons-material/Add";
@@ -562,7 +562,7 @@ export default function Trazabilidad() {
 
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 4 }}>
-                <TextField
+                <CampoTexto
                   select
                   fullWidth
                   label="Granja"
@@ -574,7 +574,7 @@ export default function Trazabilidad() {
                       {op.label}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 4 }}>
@@ -596,7 +596,7 @@ export default function Trazabilidad() {
               </Grid>
 
               <Grid size={{ xs: 12, md: 4 }}>
-                <TextField
+                <CampoTexto
                   fullWidth
                   type="date"
                   label="Fecha del movimiento"
@@ -611,7 +611,7 @@ export default function Trazabilidad() {
                 <>
                   <Grid size={{ xs: 12, md: 8 }}>
                     <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
-                      <TextField
+                      <CampoTexto
                         select
                         fullWidth
                         label="Pedido (próxima venta)"
@@ -631,7 +631,7 @@ export default function Trazabilidad() {
                             {etiquetaPedido(p)}
                           </MenuItem>
                         ))}
-                      </TextField>
+                      </CampoTexto>
                       <Tooltip title="Registrar nueva próxima venta">
                         <IconButton
                           color="primary"
@@ -658,7 +658,7 @@ export default function Trazabilidad() {
                   )}
 
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoTexto
                       select
                       fullWidth
                       label={`Pileta origen (${tipoConfig.etapaOrigen})`}
@@ -680,7 +680,7 @@ export default function Trazabilidad() {
                           {etiquetaPileta(p)}
                         </MenuItem>
                       ))}
-                    </TextField>
+                    </CampoTexto>
                   </Grid>
                 </>
               )}
@@ -688,7 +688,7 @@ export default function Trazabilidad() {
               {esMortalidad && (
                 <>
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoTexto
                       select
                       fullWidth
                       label={`Pileta (${tipoConfig.etapaOrigen})`}
@@ -710,7 +710,7 @@ export default function Trazabilidad() {
                           {etiquetaPileta(p)}
                         </MenuItem>
                       ))}
-                    </TextField>
+                    </CampoTexto>
                   </Grid>
                   <Grid size={{ xs: 12, md: 4 }}>
                     <CampoNumerico
@@ -729,7 +729,7 @@ export default function Trazabilidad() {
               {esTraslado && (
                 <>
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoTexto
                       select
                       fullWidth
                       label={`Pileta origen (${tipoConfig.etapaOrigen})`}
@@ -743,10 +743,10 @@ export default function Trazabilidad() {
                           {etiquetaPileta(p)}
                         </MenuItem>
                       ))}
-                    </TextField>
+                    </CampoTexto>
                   </Grid>
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoTexto
                       select
                       fullWidth
                       label={`Pileta destino (${tipoConfig.etapaDestino})`}
@@ -760,7 +760,7 @@ export default function Trazabilidad() {
                           {etiquetaPileta(p)}
                         </MenuItem>
                       ))}
-                    </TextField>
+                    </CampoTexto>
                   </Grid>
                   <Grid size={{ xs: 12, md: 4 }}>
                     <CampoNumerico
@@ -786,7 +786,7 @@ export default function Trazabilidad() {
                         />
                       </Grid>
                       <Grid size={{ xs: 12, md: 4 }}>
-                        <TextField
+                        <CampoTexto
                           fullWidth
                           type="date"
                           label="Fecha peso"
@@ -815,7 +815,7 @@ export default function Trazabilidad() {
 
               {!esVenta && (
                 <Grid size={{ xs: 12 }}>
-                  <TextField
+                  <CampoTexto
                     fullWidth
                     multiline
                     minRows={2}

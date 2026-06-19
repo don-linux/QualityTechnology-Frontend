@@ -13,7 +13,7 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Chip from "@mui/material/Chip";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
@@ -106,7 +106,7 @@ export default function CiclosEngorda() {
       </Typography>
 
       <Box sx={{ mb: 2, maxWidth: 260 }}>
-        <TextField
+        <CampoTexto
           select
           fullWidth
           size="small"
@@ -118,7 +118,7 @@ export default function CiclosEngorda() {
           <MenuItem value="activo">Activo</MenuItem>
           <MenuItem value="cerrado">Cerrado</MenuItem>
           <MenuItem value="vendido">Vendido</MenuItem>
-        </TextField>
+        </CampoTexto>
       </Box>
 
       <TablasPorUbicacionGranja

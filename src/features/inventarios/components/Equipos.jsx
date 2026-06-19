@@ -14,7 +14,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -306,7 +306,7 @@ function EquiposContent() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 label="Nombre"
                 name="fc_nombre"
                 value={form.fc_nombre}
@@ -317,7 +317,7 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 label="Marca"
                 name="fc_marca"
                 value={form.fc_marca}
@@ -328,7 +328,7 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 label="Modelo"
                 name="fc_modelo"
                 value={form.fc_modelo}
@@ -339,7 +339,7 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 label="Tipo"
                 name="fc_tipo"
                 value={form.fc_tipo}
@@ -350,7 +350,7 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 type="date"
                 label="Fecha Compra"
                 name="fd_fecha_compra"
@@ -375,7 +375,7 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Estado"
                 name="fc_estado"
@@ -388,10 +388,10 @@ function EquiposContent() {
                 <MenuItem value="Operativo">Operativo</MenuItem>
                 <MenuItem value="En mantenimiento">En mantenimiento</MenuItem>
                 <MenuItem value="Dañado">Dañado</MenuItem>
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="fc_ubicacion"
@@ -414,10 +414,10 @@ function EquiposContent() {
                 {form.fc_ubicacion && !ubicacionEnCatalogo && (
                   <MenuItem value={form.fc_ubicacion}>{form.fc_ubicacion}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Responsable"
                 name="fc_responsable"
@@ -436,10 +436,10 @@ function EquiposContent() {
                 {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
                   <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
+              <CampoTexto
                 type="date"
                 label="Próximo Mantenimiento"
                 name="fd_proximo_mantenimiento"
@@ -452,7 +452,7 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
+              <CampoTexto
                 label="Notas"
                 name="fc_notas"
                 value={form.fc_notas}
@@ -571,7 +571,7 @@ function EquiposContent() {
         <DialogContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 type="date"
                 label="Fecha"
                 name="fd_fecha"
@@ -590,7 +590,7 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Tipo"
                 name="fc_tipo"
@@ -608,10 +608,10 @@ function EquiposContent() {
               >
                 <MenuItem value="Preventivo">Preventivo</MenuItem>
                 <MenuItem value="Correctivo">Correctivo</MenuItem>
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Responsable"
                 name="fc_responsable"
@@ -636,10 +636,10 @@ function EquiposContent() {
                 {nuevoMantenimiento.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === nuevoMantenimiento.fc_responsable) && (
                   <MenuItem value={nuevoMantenimiento.fc_responsable}>{nuevoMantenimiento.fc_responsable}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Descripción"
                 name="fc_descripcion"
                 value={nuevoMantenimiento.fc_descripcion}
@@ -676,7 +676,7 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 label="Estado Posterior"
                 name="fc_estado_post"
                 value={nuevoMantenimiento.fc_estado_post}
@@ -693,7 +693,7 @@ function EquiposContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 type="date"
                 label="Próximo Mantenimiento"
                 name="fd_proximo_mantenimiento"

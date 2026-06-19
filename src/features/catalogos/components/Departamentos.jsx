@@ -6,7 +6,7 @@ import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Table from "@mui/material/Table";
@@ -121,7 +121,7 @@ export default function Departamentos() {
           </Typography>
           <Grid container spacing={2}>
             <Grid size={12}>
-              <TextField name="fc_nombre" label="Nombre del Departamento" fullWidth value={form.fc_nombre} onChange={handleChange} error={!!errors.fc_nombre} helperText={errors.fc_nombre} />
+              <CampoTexto name="fc_nombre" label="Nombre del Departamento" fullWidth value={form.fc_nombre} onChange={handleChange} error={!!errors.fc_nombre} helperText={errors.fc_nombre} />
             </Grid>
           </Grid>
           <Grid container spacing={2} mt={1}>

@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
@@ -282,7 +282,7 @@ export default function BioBiometrias() {
           <Grid container spacing={2}>
             {/* UBICACION */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -301,12 +301,12 @@ export default function BioBiometrias() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             {/* PILETA */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Pileta"
                 name="pileta_id"
@@ -337,12 +337,12 @@ export default function BioBiometrias() {
                     {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             {/* FECHA */}
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 type="date"
                 label="Fecha"
                 name="fd_fecha"
@@ -459,7 +459,7 @@ export default function BioBiometrias() {
 
             {/* ENCARGADO */}
             <Grid size={{ xs: 12, md: 8 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Encargado"
                 name="fc_encargado"
@@ -479,12 +479,12 @@ export default function BioBiometrias() {
                   !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado) && (
                     <MenuItem value={form.fc_encargado}>{form.fc_encargado}</MenuItem>
                   )}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             {/* OBSERVACIONES */}
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Observaciones"
                 name="fc_observaciones"
                 value={form.fc_observaciones}

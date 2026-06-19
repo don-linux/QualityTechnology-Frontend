@@ -11,7 +11,7 @@ import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -311,7 +311,7 @@ export default function Cliente() {
             {CAMPOS_FORM.map((campo) => (
               <Grid key={campo.name} size={campo.size || { xs: 12, md: 6 }}>
                 {campo.select === "udn" && !puedeElegirUdN ? (
-                  <TextField
+                  <CampoTexto
                     name={campo.name}
                     label={campo.label}
                     fullWidth
@@ -319,7 +319,7 @@ export default function Cliente() {
                     slotProps={{ input: { readOnly: true } }}
                   />
                 ) : (
-                <TextField
+                <CampoTexto
                   name={campo.name}
                   label={campo.label}
                   type={campo.type || "text"}
@@ -336,7 +336,7 @@ export default function Cliente() {
                 >
                   {campo.select && <MenuItem value="">Selecciona {campo.label}</MenuItem>}
                   {renderOpciones(campo)}
-                </TextField>
+                </CampoTexto>
                 )}
               </Grid>
             ))}

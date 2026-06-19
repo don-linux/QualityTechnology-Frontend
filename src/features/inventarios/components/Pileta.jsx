@@ -16,7 +16,7 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
@@ -326,7 +326,7 @@ function PiletasTab({
 
             <Grid container spacing={2}>
               <Grid size={12}>
-                <TextField
+                <CampoTexto
                   select
                   required
                   label="Ubicación (sede)"
@@ -349,11 +349,11 @@ function PiletasTab({
                       </MenuItem>
                     ))
                   )}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   label="Nombre"
                   name="nombre"
                   value={form.nombre}
@@ -365,7 +365,7 @@ function PiletasTab({
               </Grid>
 
               <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Etapa (tipo)"
                   name="tipo"
@@ -381,11 +381,11 @@ function PiletasTab({
                       {tipoLabel(t)}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Estado"
                   name="estado"
@@ -398,7 +398,7 @@ function PiletasTab({
                       {s}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 6, md: 3 }}>
@@ -435,7 +435,7 @@ function PiletasTab({
                 />
               </Grid>
               <Grid size={{ xs: 6, md: 3 }}>
-                <TextField
+                <CampoTexto
                   label="Volumen (m³)"
                   value={m3}
                   fullWidth
@@ -445,7 +445,7 @@ function PiletasTab({
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Material"
                   name="material"
@@ -461,11 +461,11 @@ function PiletasTab({
                       {m}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   required
                   label="Estado de conservación"
@@ -482,11 +482,11 @@ function PiletasTab({
                       {ec}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   required
                   label="Tipo de pileta"
@@ -511,7 +511,7 @@ function PiletasTab({
                       {getTipoPiletaNombre(ti)}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
             </Grid>
 

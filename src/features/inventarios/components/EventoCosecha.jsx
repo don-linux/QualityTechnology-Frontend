@@ -15,7 +15,7 @@ import {
   campoFormSx,
 } from "@shared/components/FormularioInventarioSecciones";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Grid from "@mui/material/Grid";
 import MenuItem from "@mui/material/MenuItem";
 import Box from "@mui/material/Box";
@@ -383,7 +383,7 @@ const EventoCosecha = () => {
 
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Ubicación"
                   name="ubicacion"
@@ -399,11 +399,11 @@ const EventoCosecha = () => {
                       {op.label}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Estanque origen (TR)"
                   name="fi_pileta_origen_id"
@@ -424,14 +424,14 @@ const EventoCosecha = () => {
                       </MenuItem>
                     );
                   })}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={12}>
                   <TituloSeccionFormulario titulo="Datos del desove" mt={0} />
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField
+                      <CampoTexto
                         label="Fecha de cosecha"
                         name="fd_fecha_cosecha"
                         type="date"
@@ -505,7 +505,7 @@ const EventoCosecha = () => {
                                   label={t.label}
                                 />
                                 {marcado && (
-                                  <TextField
+                                  <CampoTexto
                                     size="small"
                                     value={formData.fc_volumen_por_tipo?.[t.value] ?? ""}
                                     onChange={(e) =>
@@ -532,7 +532,7 @@ const EventoCosecha = () => {
                       )}
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField
+                      <CampoTexto
                         label="Hembras ovadas"
                         name="fn_hembras_ovadas"
                         value={formData.fn_hembras_ovadas}
@@ -546,7 +546,7 @@ const EventoCosecha = () => {
                       />
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
-                      <TextField
+                      <CampoTexto
                         label="Estadio de desarrollo (opcional)"
                         name="fc_estadio_desarrollo"
                         value={formData.fc_estadio_desarrollo}
@@ -575,7 +575,7 @@ const EventoCosecha = () => {
                 <TituloSeccionFormulario titulo="Incubación (destino)" mt={1} />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoTexto
                       select
                       label="Pileta de incubación"
                       name="fi_pileta_destino_id"
@@ -596,10 +596,10 @@ const EventoCosecha = () => {
                           </MenuItem>
                         );
                       })}
-                    </TextField>
+                    </CampoTexto>
                   </Grid>
                   <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
+                    <CampoTexto
                       label="Fecha de ingreso"
                       name="fecha_ingreso"
                       type="date"
@@ -617,7 +617,7 @@ const EventoCosecha = () => {
                   </Grid>
                   {modoEdicion && (
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <TextField
+                      <CampoTexto
                         label="Fecha de egreso (opcional)"
                         name="fecha_egreso"
                         type="date"
@@ -634,7 +634,7 @@ const EventoCosecha = () => {
 
               <Grid size={12}>
                 <CampoConEtiquetaArriba label="Observaciones">
-                  <TextField
+                  <CampoTexto
                     name="observacion"
                     value={formData.observacion}
                     onChange={handleChange}

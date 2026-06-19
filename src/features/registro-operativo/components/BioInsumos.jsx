@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -353,7 +353,7 @@ export default function BioInsumos() {
           <CardContent>
             <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Tipo de movimiento"
                 name="fc_tipo_movimiento"
@@ -373,11 +373,11 @@ export default function BioInsumos() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -392,12 +392,12 @@ export default function BioInsumos() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
 
             {esEgreso ? (
               <Grid size={{ xs: 12, md: 3 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Pileta (egreso)"
                   name="pileta_id"
@@ -412,12 +412,12 @@ export default function BioInsumos() {
                       {pl.nombre} ({pl.tipo})
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
             ) : null}
 
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 type="date"
                 label="Fecha"
                 name="fd_fecha"
@@ -431,7 +431,7 @@ export default function BioInsumos() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Cantidad UdM"
                 name="fc_cantidad_udm"
                 value={form.fc_cantidad_udm}
@@ -444,7 +444,7 @@ export default function BioInsumos() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="No. Lote"
                 name="fc_num_lote"
                 value={form.fc_num_lote}
@@ -457,7 +457,7 @@ export default function BioInsumos() {
             </Grid>
 
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Descripción"
                 name="fc_descripcion"
                 value={form.fc_descripcion}
@@ -472,7 +472,7 @@ export default function BioInsumos() {
             </Grid>
 
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Observaciones"
                 name="fc_observaciones"
                 multiline
@@ -487,7 +487,7 @@ export default function BioInsumos() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
+              <CampoTexto
                 label="Encargado de Entrega"
                 name="fc_encargado_entrega"
                 value={form.fc_encargado_entrega}
@@ -500,7 +500,7 @@ export default function BioInsumos() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Encargado de Recepción"
                 name="fc_encargado_recepcion"
@@ -519,7 +519,7 @@ export default function BioInsumos() {
                 {form.fc_encargado_recepcion && !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado_recepcion) && (
                   <MenuItem value={form.fc_encargado_recepcion}>{form.fc_encargado_recepcion}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
           </Grid>
 

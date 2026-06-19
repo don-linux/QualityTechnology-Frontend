@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -452,7 +452,7 @@ function ListaEsperaContent() {
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField
+            <CampoTexto
               fullWidth
               type="date"
               label="Fecha de Entrega"
@@ -485,21 +485,21 @@ function ListaEsperaContent() {
 
           <Grid size={{ xs: 12, md: 3 }}>
             {puedeElegirGranja ? (
-              <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange} error={!!errors.fc_granja_asignada} helperText={errors.fc_granja_asignada}>
+              <CampoTexto select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange} error={!!errors.fc_granja_asignada} helperText={errors.fc_granja_asignada}>
                 {ubicacionesGranja.map((op) => (
                   <MenuItem key={op.value} value={op.value}>
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             ) : (
-              <TextField fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} slotProps={{ input: { readOnly: true } }} />
+              <CampoTexto fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} slotProps={{ input: { readOnly: true } }} />
             )}
           </Grid>
 
           {ventaRequierePileta(form.fc_uap_asignada) && form.fc_granja_asignada && (
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 fullWidth
                 label="Pileta origen"
@@ -524,7 +524,7 @@ function ListaEsperaContent() {
                     {etiquetaPileta(p)}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
           )}
 
@@ -587,7 +587,7 @@ function ListaEsperaContent() {
                     clearFieldError("fc_cliente");
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label="Cliente" error={!!errors.fc_cliente} helperText={errors.fc_cliente} />
+                    <CampoTexto {...params} label="Cliente" error={!!errors.fc_cliente} helperText={errors.fc_cliente} />
                   )}
                 />
               </Grid>
@@ -605,15 +605,15 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Lugar" name="fc_lugar_entrega" value={form.fc_lugar_entrega} onChange={handleChange} error={!!errors.fc_lugar_entrega} helperText={errors.fc_lugar_entrega} />
+            <CampoTexto fullWidth label="Lugar" name="fc_lugar_entrega" value={form.fc_lugar_entrega} onChange={handleChange} error={!!errors.fc_lugar_entrega} helperText={errors.fc_lugar_entrega} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Unidad Producción" name="fc_unidad_produccion" value={form.fc_unidad_produccion} onChange={handleChange} error={!!errors.fc_unidad_produccion} helperText={errors.fc_unidad_produccion} />
+            <CampoTexto fullWidth label="Unidad Producción" name="fc_unidad_produccion" value={form.fc_unidad_produccion} onChange={handleChange} error={!!errors.fc_unidad_produccion} helperText={errors.fc_unidad_produccion} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField
+            <CampoTexto
               fullWidth
               type="time"
               label="Hora Embolsado"
@@ -627,7 +627,7 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField
+            <CampoTexto
               fullWidth
               type="time"
               label="Hora Entrega"
@@ -746,21 +746,21 @@ function ListaEsperaContent() {
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={12}>
-              <TextField name="fc_razon_social" label="Razón Social" fullWidth value={nuevoCliente.fc_razon_social} onChange={handleNuevoClienteChange} />
+              <CampoTexto name="fc_razon_social" label="Razón Social" fullWidth value={nuevoCliente.fc_razon_social} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_rfc" label="RFC" fullWidth value={nuevoCliente.fc_rfc} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 20 }} />
+              <CampoTexto name="fc_rfc" label="RFC" fullWidth value={nuevoCliente.fc_rfc} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 20 }} />
             </Grid>
             <Grid size={6}>
               {puedeElegirUdN ? (
-                <TextField select name="fi_unidad_negocio_id" label="UdN" fullWidth value={nuevoCliente.fi_unidad_negocio_id} onChange={handleNuevoClienteChange}>
+                <CampoTexto select name="fi_unidad_negocio_id" label="UdN" fullWidth value={nuevoCliente.fi_unidad_negocio_id} onChange={handleNuevoClienteChange}>
                   <MenuItem value="">Selecciona UdN</MenuItem>
                   {unidadesDisponibles.map((unidad) => (
                     <MenuItem key={unidad.fi_unidad_negocio_id} value={unidad.fi_unidad_negocio_id}>{unidad.fc_nombre}</MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               ) : (
-                <TextField
+                <CampoTexto
                   label="UdN"
                   fullWidth
                   value={unidadesDisponibles[0]?.fc_nombre || auth.granja || ""}
@@ -769,32 +769,32 @@ function ListaEsperaContent() {
               )}
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_nombre_contacto" label="Nombre del contacto" fullWidth value={nuevoCliente.fc_nombre_contacto} onChange={handleNuevoClienteChange} />
+              <CampoTexto name="fc_nombre_contacto" label="Nombre del contacto" fullWidth value={nuevoCliente.fc_nombre_contacto} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_telefono" label="Teléfono" fullWidth value={nuevoCliente.fc_telefono} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 10, inputMode: "numeric" }} />
+              <CampoTexto name="fc_telefono" label="Teléfono" fullWidth value={nuevoCliente.fc_telefono} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 10, inputMode: "numeric" }} />
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_correo" type="email" label="Correo" fullWidth value={nuevoCliente.fc_correo} onChange={handleNuevoClienteChange} />
+              <CampoTexto name="fc_correo" type="email" label="Correo" fullWidth value={nuevoCliente.fc_correo} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_localidad" label="Localidad" fullWidth value={nuevoCliente.fc_localidad} onChange={handleNuevoClienteChange} />
+              <CampoTexto name="fc_localidad" label="Localidad" fullWidth value={nuevoCliente.fc_localidad} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField select name="fc_estado" label="Estado" fullWidth value={nuevoCliente.fc_estado} onChange={handleNuevoClienteChange}>
+              <CampoTexto select name="fc_estado" label="Estado" fullWidth value={nuevoCliente.fc_estado} onChange={handleNuevoClienteChange}>
                 <MenuItem value="">Selecciona Estado</MenuItem>
                 {ESTADOS_MX.map((estado) => (
                   <MenuItem key={estado} value={estado}>{estado}</MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={6}>
-              <TextField select name="fi_ejecutivo_empleado_id" label="Ejecutivo" fullWidth value={nuevoCliente.fi_ejecutivo_empleado_id} onChange={handleNuevoClienteChange}>
+              <CampoTexto select name="fi_ejecutivo_empleado_id" label="Ejecutivo" fullWidth value={nuevoCliente.fi_ejecutivo_empleado_id} onChange={handleNuevoClienteChange}>
                 <MenuItem value="">Selecciona Ejecutivo</MenuItem>
                 {empleados.map((empleado) => (
                   <MenuItem key={empleado.fi_empleado_id} value={empleado.fi_empleado_id}>{nombreEmpleado(empleado)}</MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
           </Grid>
         </DialogContent>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { login as loginRequest } from "@features/auth/services/authService";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -130,7 +130,7 @@ const Login = () => {
                 Iniciar Sesión
               </Typography>
 
-              <TextField
+              <CampoTexto
                 label="Usuario"
                 fullWidth
                 margin="normal"

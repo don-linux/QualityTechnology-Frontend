@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -178,13 +178,13 @@ export default function Nomina() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField label="Nombre del empleado" name="fc_nombre_empleado" value={form.fc_nombre_empleado} onChange={handleChange} fullWidth error={!!errors.fc_nombre_empleado} helperText={errors.fc_nombre_empleado} />
+              <CampoTexto label="Nombre del empleado" name="fc_nombre_empleado" value={form.fc_nombre_empleado} onChange={handleChange} fullWidth error={!!errors.fc_nombre_empleado} helperText={errors.fc_nombre_empleado} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
               <CampoNumerico label="ID" decimalScale={0} name="fi_empleado_id" value={form.fi_empleado_id} onChange={handleChange} fullWidth error={!!errors.fi_empleado_id} helperText={errors.fi_empleado_id} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Fecha de Pago" type="date" name="fd_fecha_pago" InputLabelProps={{ shrink: true }} value={form.fd_fecha_pago} onChange={handleChange} fullWidth error={!!errors.fd_fecha_pago} helperText={errors.fd_fecha_pago} />
+              <CampoTexto label="Fecha de Pago" type="date" name="fd_fecha_pago" InputLabelProps={{ shrink: true }} value={form.fd_fecha_pago} onChange={handleChange} fullWidth error={!!errors.fd_fecha_pago} helperText={errors.fd_fecha_pago} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico label="Total" prefix="$" decimalScale={2} name="fn_total" value={form.fn_total} onChange={handleChange} fullWidth error={!!errors.fn_total} helperText={errors.fn_total} />
@@ -217,10 +217,10 @@ export default function Nomina() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField label="Buscar por nombre" value={busqueda.nombre} onChange={(e) => setBusqueda({ ...busqueda, nombre: e.target.value })} fullWidth />
+              <CampoTexto label="Buscar por nombre" value={busqueda.nombre} onChange={(e) => setBusqueda({ ...busqueda, nombre: e.target.value })} fullWidth />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Buscar por fecha" type="date" InputLabelProps={{ shrink: true }} value={busqueda.fecha} onChange={(e) => setBusqueda({ ...busqueda, fecha: e.target.value })} fullWidth />
+              <CampoTexto label="Buscar por fecha" type="date" InputLabelProps={{ shrink: true }} value={busqueda.fecha} onChange={(e) => setBusqueda({ ...busqueda, fecha: e.target.value })} fullWidth />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
               <Button variant="contained" sx={{ height: "100%" }} onClick={buscar}>Buscar</Button>

@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -373,7 +373,7 @@ const exportarPDF = async () => {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -388,10 +388,10 @@ const exportarPDF = async () => {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Mes"
                 type="month"
                 name="fc_mes"
@@ -419,7 +419,7 @@ const exportarPDF = async () => {
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <React.Fragment key={n}>
                 <Grid size={{ xs: 12, md: 3 }}>
-                  <TextField
+                  <CampoTexto
                     label={`Fecha ${n}`}
                     type="date"
                     name={`fd_fecha${n}`}
@@ -432,7 +432,7 @@ const exportarPDF = async () => {
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 3 }}>
-                  <TextField
+                  <CampoTexto
                     label={`Tipo ${n}`}
                     name={`fc_tipo${n}`}
                     value={form[`fc_tipo${n}`] || ""}
@@ -446,7 +446,7 @@ const exportarPDF = async () => {
             ))}
 
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Responsable"
                 name="fc_responsable"
@@ -465,7 +465,7 @@ const exportarPDF = async () => {
                 {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
                   <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
                 )}
-              </TextField>
+              </CampoTexto>
             </Grid>
           </Grid>
 

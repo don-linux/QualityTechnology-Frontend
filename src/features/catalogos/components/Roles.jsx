@@ -11,7 +11,7 @@ import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Table from "@mui/material/Table";
@@ -136,7 +136,7 @@ export default function Roles() {
             </Typography>
             <Grid container spacing={2}>
               <Grid size={12}>
-                <TextField
+                <CampoTexto
                   name="fc_nombre"
                   label="Nombre del Rol"
                   fullWidth

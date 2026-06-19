@@ -3,7 +3,7 @@ import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import MenuItem from "@mui/material/MenuItem";
@@ -93,41 +93,41 @@ export default function MiPerfil() {
           <Typography variant="subtitle1" fontWeight="bold" mb={2}>Datos Personales</Typography>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField name="fc_nombre" label="Nombre" fullWidth value={form.fc_nombre} onChange={handleChange} />
+              <CampoTexto name="fc_nombre" label="Nombre" fullWidth value={form.fc_nombre} onChange={handleChange} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField name="fc_apellido_paterno" label="Apellido Paterno" fullWidth value={form.fc_apellido_paterno} onChange={handleChange} />
+              <CampoTexto name="fc_apellido_paterno" label="Apellido Paterno" fullWidth value={form.fc_apellido_paterno} onChange={handleChange} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField name="fc_apellido_materno" label="Apellido Materno" fullWidth value={form.fc_apellido_materno} onChange={handleChange} />
+              <CampoTexto name="fc_apellido_materno" label="Apellido Materno" fullWidth value={form.fc_apellido_materno} onChange={handleChange} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField select name="fc_genero" label="Genero" fullWidth value={form.fc_genero} onChange={handleChange}>
+              <CampoTexto select name="fc_genero" label="Genero" fullWidth value={form.fc_genero} onChange={handleChange}>
                 <MenuItem value="">Sin especificar</MenuItem>
                 <MenuItem value="Masculino">Masculino</MenuItem>
                 <MenuItem value="Femenino">Femenino</MenuItem>
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField name="fd_fecha_nacimiento" label="Fecha Nacimiento" type="date" fullWidth value={form.fd_fecha_nacimiento} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+              <CampoTexto name="fd_fecha_nacimiento" label="Fecha Nacimiento" type="date" fullWidth value={form.fd_fecha_nacimiento} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField name="fc_estado" label="Estado" fullWidth value={form.fc_estado} onChange={handleChange} />
+              <CampoTexto name="fc_estado" label="Estado" fullWidth value={form.fc_estado} onChange={handleChange} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField name="fc_ciudad" label="Ciudad" fullWidth value={form.fc_ciudad} onChange={handleChange} />
+              <CampoTexto name="fc_ciudad" label="Ciudad" fullWidth value={form.fc_ciudad} onChange={handleChange} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField name="fc_codigo_postal" label="Codigo Postal" fullWidth value={form.fc_codigo_postal} onChange={handleChange} />
+              <CampoTexto name="fc_codigo_postal" label="Codigo Postal" fullWidth value={form.fc_codigo_postal} onChange={handleChange} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField name="fc_calle" label="Calle / Direccion" fullWidth value={form.fc_calle} onChange={handleChange} />
+              <CampoTexto name="fc_calle" label="Calle / Direccion" fullWidth value={form.fc_calle} onChange={handleChange} />
             </Grid>
             <Grid size={12}>
-              <TextField name="fc_referencias" label="Referencias" fullWidth value={form.fc_referencias} onChange={handleChange} />
+              <CampoTexto name="fc_referencias" label="Referencias" fullWidth value={form.fc_referencias} onChange={handleChange} />
             </Grid>
             <Grid size={12}>
-              <TextField name="ft_comentarios_adicionales" label="Comentarios" fullWidth multiline rows={2} value={form.ft_comentarios_adicionales} onChange={handleChange} />
+              <CampoTexto name="ft_comentarios_adicionales" label="Comentarios" fullWidth multiline rows={2} value={form.ft_comentarios_adicionales} onChange={handleChange} />
             </Grid>
             <Grid size={12}>
               <Button variant="contained" color="primary" onClick={guardar}>Guardar cambios</Button>
@@ -139,22 +139,22 @@ export default function MiPerfil() {
           <Typography variant="subtitle1" fontWeight="bold" mb={2}>Datos Laborales (solo lectura)</Typography>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField label="Puesto" fullWidth value={perfil.puesto_nombre || "-"} slotProps={{ input: { readOnly: true } }} />
+              <CampoTexto label="Puesto" fullWidth value={perfil.puesto_nombre || "-"} slotProps={{ input: { readOnly: true } }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField label="Departamento" fullWidth value={perfil.departamento_nombre || "-"} slotProps={{ input: { readOnly: true } }} />
+              <CampoTexto label="Departamento" fullWidth value={perfil.departamento_nombre || "-"} slotProps={{ input: { readOnly: true } }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField label="Unidad de Negocio" fullWidth value={perfil.unidad_negocio_nombre || "-"} slotProps={{ input: { readOnly: true } }} />
+              <CampoTexto label="Unidad de Negocio" fullWidth value={perfil.unidad_negocio_nombre || "-"} slotProps={{ input: { readOnly: true } }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField label="Fecha Contratacion" fullWidth value={perfil.fd_fecha_contratacion ? perfil.fd_fecha_contratacion.substring(0, 10) : "-"} slotProps={{ input: { readOnly: true } }} />
+              <CampoTexto label="Fecha Contratacion" fullWidth value={perfil.fd_fecha_contratacion ? perfil.fd_fecha_contratacion.substring(0, 10) : "-"} slotProps={{ input: { readOnly: true } }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField label="Fecha Baja" fullWidth value={perfil.fd_fecha_baja ? perfil.fd_fecha_baja.substring(0, 10) : "-"} slotProps={{ input: { readOnly: true } }} />
+              <CampoTexto label="Fecha Baja" fullWidth value={perfil.fd_fecha_baja ? perfil.fd_fecha_baja.substring(0, 10) : "-"} slotProps={{ input: { readOnly: true } }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField label="Uniformes" fullWidth value={perfil.fn_uniformes ? "Entregado" : "Sin uniforme"} slotProps={{ input: { readOnly: true } }} />
+              <CampoTexto label="Uniformes" fullWidth value={perfil.fn_uniformes ? "Entregado" : "Sin uniforme"} slotProps={{ input: { readOnly: true } }} />
             </Grid>
           </Grid>
 

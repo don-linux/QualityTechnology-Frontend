@@ -3,7 +3,7 @@ import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import TableContainer from "@mui/material/TableContainer";
@@ -166,76 +166,76 @@ export default function Empleados() {
             </Box>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_nombre" label="Nombre" fullWidth value={form.fc_nombre} onChange={handleChange} />
+                <CampoTexto name="fc_nombre" label="Nombre" fullWidth value={form.fc_nombre} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_apellido_paterno" label="Apellido Paterno" fullWidth value={form.fc_apellido_paterno} onChange={handleChange} />
+                <CampoTexto name="fc_apellido_paterno" label="Apellido Paterno" fullWidth value={form.fc_apellido_paterno} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_apellido_materno" label="Apellido Materno" fullWidth value={form.fc_apellido_materno} onChange={handleChange} />
+                <CampoTexto name="fc_apellido_materno" label="Apellido Materno" fullWidth value={form.fc_apellido_materno} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fc_genero" label="Genero" fullWidth value={form.fc_genero} onChange={handleChange}>
+                <CampoTexto select name="fc_genero" label="Genero" fullWidth value={form.fc_genero} onChange={handleChange}>
                   <MenuItem value="">Sin especificar</MenuItem>
                   <MenuItem value="Masculino">Masculino</MenuItem>
                   <MenuItem value="Femenino">Femenino</MenuItem>
-                </TextField>
+                </CampoTexto>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fd_fecha_nacimiento" label="Fecha Nacimiento" type="date" fullWidth value={form.fd_fecha_nacimiento} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+                <CampoTexto name="fd_fecha_nacimiento" label="Fecha Nacimiento" type="date" fullWidth value={form.fd_fecha_nacimiento} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fd_fecha_contratacion" label="Fecha Contratacion" type="date" fullWidth value={form.fd_fecha_contratacion} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+                <CampoTexto name="fd_fecha_contratacion" label="Fecha Contratacion" type="date" fullWidth value={form.fd_fecha_contratacion} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fd_fecha_baja" label="Fecha Baja" type="date" fullWidth value={form.fd_fecha_baja} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+                <CampoTexto name="fd_fecha_baja" label="Fecha Baja" type="date" fullWidth value={form.fd_fecha_baja} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fi_departamento_id" label="Departamento" fullWidth value={form.fi_departamento_id} onChange={handleChange}>
+                <CampoTexto select name="fi_departamento_id" label="Departamento" fullWidth value={form.fi_departamento_id} onChange={handleChange}>
                   {departamentos.map((d) => (
                     <MenuItem key={d.fi_departamento_id} value={d.fi_departamento_id}>{d.fc_nombre}</MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fi_puesto_id" label="Puesto" fullWidth value={form.fi_puesto_id} onChange={handleChange}>
+                <CampoTexto select name="fi_puesto_id" label="Puesto" fullWidth value={form.fi_puesto_id} onChange={handleChange}>
                   <MenuItem value="">Sin asignar</MenuItem>
                   {puestos.map((p) => (
                     <MenuItem key={p.fi_puesto_id} value={p.fi_puesto_id}>{p.fc_nombre}</MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fi_unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.fi_unidad_negocio_id} onChange={handleChange}>
+                <CampoTexto select name="fi_unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.fi_unidad_negocio_id} onChange={handleChange}>
                   <MenuItem value="">Sin asignar</MenuItem>
                   {unidadesNegocio.map((u) => (
                     <MenuItem key={u.fi_unidad_negocio_id} value={u.fi_unidad_negocio_id}>{u.fc_nombre}</MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fn_uniformes" label="Uniformes" fullWidth value={form.fn_uniformes} onChange={handleChange}>
+                <CampoTexto select name="fn_uniformes" label="Uniformes" fullWidth value={form.fn_uniformes} onChange={handleChange}>
                   <MenuItem value={0}>Sin uniforme</MenuItem>
                   <MenuItem value={1}>Entregado</MenuItem>
-                </TextField>
+                </CampoTexto>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_estado" label="Estado" fullWidth value={form.fc_estado} onChange={handleChange} />
+                <CampoTexto name="fc_estado" label="Estado" fullWidth value={form.fc_estado} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_ciudad" label="Ciudad" fullWidth value={form.fc_ciudad} onChange={handleChange} />
+                <CampoTexto name="fc_ciudad" label="Ciudad" fullWidth value={form.fc_ciudad} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_codigo_postal" label="Codigo Postal" fullWidth value={form.fc_codigo_postal} onChange={handleChange} />
+                <CampoTexto name="fc_codigo_postal" label="Codigo Postal" fullWidth value={form.fc_codigo_postal} onChange={handleChange} />
               </Grid>
               <Grid size={12}>
-                <TextField name="fc_calle" label="Calle / Direccion" fullWidth value={form.fc_calle} onChange={handleChange} />
+                <CampoTexto name="fc_calle" label="Calle / Direccion" fullWidth value={form.fc_calle} onChange={handleChange} />
               </Grid>
               <Grid size={12}>
-                <TextField name="fc_referencias" label="Referencias" fullWidth value={form.fc_referencias} onChange={handleChange} />
+                <CampoTexto name="fc_referencias" label="Referencias" fullWidth value={form.fc_referencias} onChange={handleChange} />
               </Grid>
               <Grid size={12}>
-                <TextField name="ft_comentarios_adicionales" label="Comentarios" fullWidth multiline rows={2} value={form.ft_comentarios_adicionales} onChange={handleChange} />
+                <CampoTexto name="ft_comentarios_adicionales" label="Comentarios" fullWidth multiline rows={2} value={form.ft_comentarios_adicionales} onChange={handleChange} />
               </Grid>
               <Grid size={12}>
                 <Button variant="contained" color="primary" sx={{ mr: 1 }} onClick={actualizarEmpleado}>Guardar</Button>

@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -272,7 +272,7 @@ function BitacoraInventarioContent() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 select
                 label="Ubicación"
                 name="ubicacion"
@@ -287,10 +287,10 @@ function BitacoraInventarioContent() {
                     {op.label}
                   </MenuItem>
                 ))}
-              </TextField>
+              </CampoTexto>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="No. Instalación"
                 name="fn_num_instalacion"
                 value={form.fn_num_instalacion}
@@ -324,7 +324,7 @@ function BitacoraInventarioContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
+              <CampoTexto
                 label="Lote"
                 name="fc_lote"
                 value={form.fc_lote}
@@ -335,7 +335,7 @@ function BitacoraInventarioContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 label="Fecha Siembra"
                 type="date"
                 name="fd_fecha_siembra"
@@ -348,7 +348,7 @@ function BitacoraInventarioContent() {
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
+              <CampoTexto
                 label="Fecha Salida Hormonado"
                 type="date"
                 name="fd_fecha_salida_hormonado"
@@ -361,7 +361,7 @@ function BitacoraInventarioContent() {
               />
             </Grid>
             <Grid size={12}>
-              <TextField
+              <CampoTexto
                 label="Observación"
                 name="fc_observacion"
                 multiline

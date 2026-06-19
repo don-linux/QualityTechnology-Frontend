@@ -10,7 +10,7 @@ import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionCon
 import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import CampoTexto from "@shared/components/CampoTexto";
 import Grid from "@mui/material/Grid";
 import MenuItem from "@mui/material/MenuItem";
 import Card from "@mui/material/Card";
@@ -194,7 +194,7 @@ function CamposProcedencia({ prefijo, etiquetaTipo, formData, handleChange, erro
   return (
     <>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <TextField
+        <CampoTexto
           select
           label={etiquetaTipo}
           name={tipoField}
@@ -210,11 +210,11 @@ function CamposProcedencia({ prefijo, etiquetaTipo, formData, handleChange, erro
               {op.label}
             </MenuItem>
           ))}
-        </TextField>
+        </CampoTexto>
       </Grid>
       {tipo === "interna" && (
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <TextField
+          <CampoTexto
             select
             label="Pileta de engorda"
             name={piletaField}
@@ -235,12 +235,12 @@ function CamposProcedencia({ prefijo, etiquetaTipo, formData, handleChange, erro
                 </MenuItem>
               );
             })}
-          </TextField>
+          </CampoTexto>
         </Grid>
       )}
       {tipo === "externa" && (
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <TextField
+          <CampoTexto
             label="Ubicación externa"
             name={externaField}
             value={formData[externaField] || ""}
@@ -599,7 +599,7 @@ export default function Reproductores() {
 
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Ubicación"
                   name="ubicacion"
@@ -615,11 +615,11 @@ export default function Reproductores() {
                       {op.label}
                     </MenuItem>
                   ))}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   select
                   label="Pileta (reproductores)"
                   name="fi_pileta_destino_id"
@@ -638,11 +638,11 @@ export default function Reproductores() {
                       </MenuItem>
                     );
                   })}
-                </TextField>
+                </CampoTexto>
               </Grid>
 
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   label="Fecha siembra reproductores"
                   name="fd_fecha_siembra"
                   type="date"
@@ -656,7 +656,7 @@ export default function Reproductores() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
+                <CampoTexto
                   label="Lote genético (origen padres)"
                   name="fc_lote_genetico"
                   value={formData.fc_lote_genetico}
@@ -687,7 +687,7 @@ export default function Reproductores() {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <CampoTexto
                       label="Genética machos"
                       name="fc_genetica_machos"
                       value={formData.fc_genetica_machos}
@@ -700,7 +700,7 @@ export default function Reproductores() {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <CampoTexto
                       label="Familia machos"
                       name="fc_familia_machos"
                       value={formData.fc_familia_machos}
@@ -741,7 +741,7 @@ export default function Reproductores() {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <CampoTexto
                       label="Genética hembras"
                       name="fc_genetica_hembras"
                       value={formData.fc_genetica_hembras}
@@ -754,7 +754,7 @@ export default function Reproductores() {
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <CampoTexto
                       label="Familia hembras"
                       name="fc_familia_hembras"
                       value={formData.fc_familia_hembras}
@@ -782,7 +782,7 @@ export default function Reproductores() {
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <CampoConEtiquetaArriba label="Total reproductores">
-                        <TextField
+                        <CampoTexto
                           name="fn_cantidad"
                           value={formData.fn_cantidad}
                           fullWidth
@@ -795,7 +795,7 @@ export default function Reproductores() {
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <CampoConEtiquetaArriba label="Relación (H/M)">
-                        <TextField
+                        <CampoTexto
                           name="fc_ratio"
                           value={formData.fc_ratio}
                           fullWidth
@@ -808,7 +808,7 @@ export default function Reproductores() {
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <CampoConEtiquetaArriba label="Talla (Gr)">
-                        <TextField
+                        <CampoTexto
                           name="fn_talla"
                           value={formData.fn_talla}
                           onChange={handleChange}
@@ -828,7 +828,7 @@ export default function Reproductores() {
 
               <Grid size={12}>
                 <CampoConEtiquetaArriba label="Observaciones">
-                  <TextField
+                  <CampoTexto
                     name="observacion"
                     value={formData.observacion}
                     onChange={handleChange}
