@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listReproductores,
   createReproductor,
-  updateReproductor,
   removeReproductor,
 } from "../services/reproductoresService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
@@ -16,6 +15,9 @@ import MenuItem from "@mui/material/MenuItem";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
+import Alert from "@mui/material/Alert";
+import { Link as RouterLink } from "react-router-dom";
+import Link from "@mui/material/Link";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -27,7 +29,6 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
-import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
@@ -287,19 +288,12 @@ export default function Reproductores({ embed = false, ubicacionInicial = "", on
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const {
-    visible: mostrarFormulario,
-    abrir: abrirFormulario,
-    cerrar: cerrarFormulario,
-    toggle: toggleFormulario,
-  } = useFormularioVisible();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
   const [piletasDestino, setPiletasDestino] = useState([]);
   const [piletasEngorda, setPiletasEngorda] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
-  const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState({ ...FORM_INICIAL });
 
   const piletasFiltradas = useMemo(
@@ -418,9 +412,13 @@ export default function Reproductores({ embed = false, ubicacionInicial = "", on
   }, []);
 
   useEffect(() => {
-    cargarPiletasDestino();
-    cargarPiletasEngorda();
-    if (!embed) cargarRegistros();
+    if (embed) {
+      cargarPiletasDestino();
+      cargarPiletasEngorda();
+    } else {
+      cargarPiletasEngorda();
+      cargarRegistros();
+    }
   }, [embed, cargarPiletasDestino, cargarPiletasEngorda, cargarRegistros]);
 
   useEffect(() => {
@@ -467,88 +465,13 @@ export default function Reproductores({ embed = false, ubicacionInicial = "", on
     }
   };
 
-  const mapSeleccionadoAForm = (row) => {
-    const procedenciaMachos = parseProcedenciaDesdeBackend(
-      row.fc_procedencia_machos ?? row.procedencia_machos,
-      piletasEngorda,
-    );
-    const procedenciaHembras = parseProcedenciaDesdeBackend(
-      row.fc_procedencia_hembras ?? row.procedencia_hembras,
-      piletasEngorda,
-    );
-
-    return {
-      ubicacion: row.fc_granja || defaultUbicacion || "",
-      fi_pileta_destino_id: String(
-        row.fi_pileta_destino_id ?? row.pileta_destino_id ?? row.pileta_id ?? "",
-      ),
-      fd_fecha_siembra: row.fecha_siembra
-        ? String(row.fecha_siembra).split("T")[0]
-        : row.fd_fecha_siembra
-          ? String(row.fd_fecha_siembra).split("T")[0]
-          : hoyISO(),
-      fc_lote_genetico: row.lote_genetico ?? row.fc_lote_genetico ?? "",
-      fn_machos: String(row.fn_machos ?? row.machos ?? ""),
-      fc_genetica_machos: row.fc_genetica_machos ?? row.genetica_machos ?? "",
-      fc_familia_machos: row.fc_familia_machos ?? row.familia_machos ?? "",
-      fc_tipo_procedencia_machos: procedenciaMachos.tipo,
-      fc_procedencia_machos_pileta_id: procedenciaMachos.piletaId,
-      fc_procedencia_machos_externa: procedenciaMachos.externa,
-      fn_hembras: String(row.fn_hembras ?? row.hembras ?? ""),
-      fc_genetica_hembras: row.fc_genetica_hembras ?? row.genetica_hembras ?? "",
-      fc_familia_hembras: row.fc_familia_hembras ?? row.familia_hembras ?? "",
-      fc_tipo_procedencia_hembras: procedenciaHembras.tipo,
-      fc_procedencia_hembras_pileta_id: procedenciaHembras.piletaId,
-      fc_procedencia_hembras_externa: procedenciaHembras.externa,
-      fn_cantidad: String(row.fn_cantidad ?? row.cantidad_total ?? row.cantidad ?? ""),
-      fc_ratio: row.fc_ratio ?? row.ratio ?? "",
-      fn_talla:
-        row.fn_talla != null
-          ? String(row.fn_talla)
-          : row.talla != null
-            ? String(row.talla)
-            : "",
-      observacion: row.observacion ?? row.fc_observacion ?? "",
-    };
-  };
-
-  const activarEdicion = () => {
-    if (!seleccionado) return;
-    clearErrors();
-    setFormData(mapSeleccionadoAForm(seleccionado));
-    setModoEdicion(true);
-    abrirFormulario();
-  };
-
-  const actualizarRegistro = async () => {
-    if (!validate(formData, camposRequeridosProcedencia(formData))) return;
-    if (!validarTotalPositivo()) return;
-    try {
-      await updateReproductor(
-        seleccionado.fi_reproductor_id ?? seleccionado.fi_id ?? seleccionado.id,
-        payloadComunBackend(),
-      );
-      showSnackbar("Registro actualizado", "success");
-      resetEdicion();
-      cargarRegistros();
-    } catch (err) {
-      console.error("Error al actualizar reproductor:", err);
-      showSnackbar(
-        err?.response?.data?.error ||
-          err?.response?.data?.detalle ||
-          "No se pudo actualizar",
-        "error",
-      );
-    }
-  };
-
   const eliminarRegistro = async (id) => {
     if (!await confirm("¿Seguro que deseas eliminar este registro de reproductores?")) return;
     try {
       await removeReproductor(id);
       showSnackbar("Registro eliminado", "success");
       cargarRegistros();
-      resetEdicion();
+      setSeleccionado(null);
     } catch (err) {
       console.error("Error al eliminar reproductor:", err);
       showSnackbar("No se pudo eliminar", "error");
@@ -563,13 +486,6 @@ export default function Reproductores({ embed = false, ubicacionInicial = "", on
       ubicacion: ubicacionBase,
     });
     clearErrors();
-    if (!embed) cerrarFormulario();
-  };
-
-  const resetEdicion = () => {
-    setModoEdicion(false);
-    setSeleccionado(null);
-    resetFormulario();
   };
 
   const formatearFecha = (fechaISO) => formatFecha(fechaISO);
@@ -593,9 +509,17 @@ export default function Reproductores({ embed = false, ubicacionInicial = "", on
       <Typography variant="h4" sx={{ mb: 1, fontWeight: "bold", color: "#004d73" }}>
         Lote de reproductores
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Módulo 1: registra el grupo activo en el estanque de reproducción (padres, proporción y lote genético).
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Vista del grupo activo en cada estanque de reproducción.
       </Typography>
+
+      <Alert severity="info" sx={{ mb: 3 }}>
+        Los registros se capturan en{" "}
+        <Link component={RouterLink} to="/inventarios/trazabilidad">
+          Trazabilidad
+        </Link>
+        {" "}(tipo de registro Externa → Reproductores).
+      </Alert>
 
       <Paper sx={{ p: 2, mb: 3, backgroundColor: "#E3F2FD", boxShadow: 2 }}>
         <Typography><b>Registros:</b> {registros.length}</Typography>
@@ -606,41 +530,16 @@ export default function Reproductores({ embed = false, ubicacionInicial = "", on
         </>
       )}
 
-      <FormularioRegistroPanel
-        soloContenido={embed}
-        visible={mostrarFormulario}
-        onToggle={toggleFormulario}
-      >
-        <Card sx={{ mb: embed ? 0 : 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+      {embed && (
+      <FormularioRegistroPanel soloContenido>
+        <Card sx={{ mb: 0, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
-              {modoEdicion ? "Editar registro" : "Registrar nuevo inventario"}
+              Registrar nuevo inventario
             </Typography>
 
             <Grid container spacing={2.5}>
-              {!embed && (
-              <Grid size={{ xs: 12, md: 6 }}>
-                <CampoTexto
-                  select
-                  label="Ubicación"
-                  name="ubicacion"
-                  value={formData.ubicacion || ""}
-                  onChange={handleChange}
-                  fullWidth
-                  sx={campoFormSx}
-                  error={!!errors.ubicacion}
-                  {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
-                >
-                  {ubicacionesGranja.map((op) => (
-                    <MenuItem key={op.value} value={op.value}>
-                      {op.label}
-                    </MenuItem>
-                  ))}
-                </CampoTexto>
-              </Grid>
-              )}
-
-              <Grid size={{ xs: 12, md: embed ? 12 : 6 }}>
+              <Grid size={{ xs: 12, md: 12 }}>
                 <CampoTexto
                   select
                   label="Pileta (reproductores)"
@@ -872,16 +771,17 @@ export default function Reproductores({ embed = false, ubicacionInicial = "", on
                   variant="contained"
                   color="primary"
                   startIcon={<AddCircleIcon />}
-                  onClick={modoEdicion ? actualizarRegistro : registrarReproductor}
+                  onClick={registrarReproductor}
                   sx={botonRegistroInventarioSx}
                 >
-                  {modoEdicion ? "Guardar cambios" : "Registrar reproductor"}
+                  Registrar reproductor
                 </Button>
               </Grid>
             </Grid>
           </CardContent>
         </Card>
       </FormularioRegistroPanel>
+      )}
 
       {!embed && (
       <>
@@ -1032,9 +932,6 @@ export default function Reproductores({ embed = false, ubicacionInicial = "", on
 
       {seleccionado && (
         <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>
-          <Button variant="contained" color="warning" onClick={activarEdicion}>
-            Editar registro
-          </Button>
           <Button
             variant="contained"
             color="error"
@@ -1044,7 +941,7 @@ export default function Reproductores({ embed = false, ubicacionInicial = "", on
           >
             Eliminar registro
           </Button>
-          <Button variant="outlined" color="inherit" onClick={resetEdicion}>
+          <Button variant="outlined" color="inherit" onClick={() => setSeleccionado(null)}>
             Cerrar
           </Button>
         </div>

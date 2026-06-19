@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listIncubacion,
   createIncubacion,
-  updateIncubacion,
   removeIncubacion,
 } from "../services/eventoCosechaService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
@@ -22,6 +21,9 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
+import Alert from "@mui/material/Alert";
+import { Link as RouterLink } from "react-router-dom";
+import Link from "@mui/material/Link";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -36,7 +38,6 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
-import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
@@ -54,28 +55,6 @@ const TIPOS_COSECHA = [
 
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
-
-// Reconstruye el mapa { tipo: "valor" } para edición a partir del registro serializado,
-// con compatibilidad para registros antiguos de un solo tipo (sin desglose).
-const mapaVolumenDesdeEvento = (ev) => {
-  const fuente = ev.volumen_por_tipo ?? ev.fc_volumen_por_tipo;
-  const mapa = {};
-  if (fuente && typeof fuente === "object" && !Array.isArray(fuente)) {
-    for (const [tipo, valor] of Object.entries(fuente)) {
-      if (valor != null && valor !== "") mapa[tipo] = String(valor);
-    }
-  }
-  const tipos = Array.isArray(ev.tipo_cosecha)
-    ? ev.tipo_cosecha
-    : ev.tipo_cosecha
-      ? [ev.tipo_cosecha]
-      : [];
-  if (Object.keys(mapa).length === 0 && tipos.length === 1) {
-    const total = ev.volumen_ml ?? ev.huevos_ml;
-    if (total != null) mapa[tipos[0]] = String(total);
-  }
-  return mapa;
-};
 
 const requiredFieldsCosecha = [
   "ubicacion",
@@ -105,19 +84,11 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const {
-    visible: mostrarFormulario,
-    abrir: abrirFormulario,
-    cerrar: cerrarFormulario,
-    toggle: toggleFormulario,
-  } = useFormularioVisible();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
   const [piletasReproductoras, setPiletasReproductoras] = useState([]);
   const [piletasDestinoIncubacion, setPiletasDestinoIncubacion] = useState([]);
   const [registros, setRegistros] = useState([]);
-  const [seleccionadoEvento, setSeleccionadoEvento] = useState(null);
-  const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState(formularioVacio());
 
   const piletasOrigenFiltradas = useMemo(
@@ -175,7 +146,7 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
         return { ...prev, [name]: checked };
       }
       const next = { ...prev, [name]: value };
-      if (name === "fd_fecha_cosecha" && !modoEdicion) {
+      if (name === "fd_fecha_cosecha") {
         next.fecha_ingreso = value;
       }
       return next;
@@ -245,8 +216,11 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
   }, []);
 
   useEffect(() => {
-    cargarPiletas();
-    if (!embed) cargarRegistros();
+    if (embed) {
+      cargarPiletas();
+    } else {
+      cargarRegistros();
+    }
   }, [embed, cargarPiletas, cargarRegistros]);
 
   useEffect(() => {
@@ -274,7 +248,7 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
     try {
       await createIncubacion(payloadBackend());
       showSnackbar("Cosecha e ingreso a incubación registrados", "success");
-      resetFormulario(false);
+      resetFormulario();
       if (!embed) cargarRegistros();
       onRegistroExitoso?.();
     } catch (err) {
@@ -287,84 +261,22 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
     }
   };
 
-  const activarEdicionEvento = () => {
-    if (!seleccionadoEvento) return;
-    clearErrors();
-    const ev = seleccionadoEvento;
-    setFormData({
-      ubicacion: ev.fc_granja || defaultUbicacion || "",
-      fi_pileta_origen_id: String(ev.fi_pileta_origen_id ?? ev.pileta_origen_id ?? ""),
-      fd_fecha_cosecha: ev.fecha_cosecha
-        ? String(ev.fecha_cosecha).split("T")[0]
-        : hoyISO(),
-      fc_tipo_cosecha: Array.isArray(ev.tipo_cosecha)
-        ? ev.tipo_cosecha
-        : ev.tipo_cosecha
-          ? [ev.tipo_cosecha]
-          : [],
-      fc_estadio_desarrollo: ev.estadio_desarrollo ?? "",
-      fc_volumen_por_tipo: mapaVolumenDesdeEvento(ev),
-      fn_hembras_ovadas:
-        ev.hembras_ovadas != null
-          ? String(ev.hembras_ovadas)
-          : ev.fn_hembras_ovadas != null
-            ? String(ev.fn_hembras_ovadas)
-            : "",
-      fb_marcar_agotado: false,
-      fi_pileta_destino_id: String(ev.fi_pileta_destino_id ?? ev.pileta_id ?? ""),
-      fecha_ingreso: ev.fecha_ingreso
-        ? String(ev.fecha_ingreso).split("T")[0]
-        : ev.fecha_cosecha
-          ? String(ev.fecha_cosecha).split("T")[0]
-          : hoyISO(),
-      fecha_egreso: ev.fecha_egreso ? String(ev.fecha_egreso).split("T")[0] : "",
-      observacion: ev.observacion ?? "",
-    });
-    setModoEdicion(true);
-    abrirFormulario();
-  };
-
-  const actualizar = async () => {
-    if (!validarCosecha()) return;
-    const incubacionId =
-      seleccionadoEvento.fi_id ??
-      seleccionadoEvento.id ??
-      seleccionadoEvento.incubacion_id;
-
-    try {
-      await updateIncubacion(incubacionId, payloadBackend());
-      showSnackbar("Registro actualizado", "success");
-      resetEdicion();
-      cargarRegistros();
-    } catch (err) {
-      showSnackbar(err?.response?.data?.error || "No se pudo actualizar", "error");
-    }
-  };
-
   const eliminarEvento = async (id) => {
     if (!await confirm("¿Eliminar este registro de cosecha e incubación?")) return;
     try {
       await removeIncubacion(id);
       showSnackbar("Registro eliminado", "success");
       cargarRegistros();
-      resetEdicion();
     } catch (err) {
       showSnackbar(err?.response?.data?.error || "No se pudo eliminar", "error");
     }
   };
 
-  const resetFormulario = (cerrarPanel = true) => {
+  const resetFormulario = () => {
     const ubicacionBase =
       (embed && ubicacionInicial) || defaultUbicacion || ubicacionesGranja[0]?.value || "";
     setFormData(formularioVacio(ubicacionBase));
     clearErrors();
-    if (cerrarPanel && !embed) cerrarFormulario();
-  };
-
-  const resetEdicion = () => {
-    setModoEdicion(false);
-    setSeleccionadoEvento(null);
-    resetFormulario();
   };
 
   const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
@@ -374,10 +286,7 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
     [],
   );
 
-  const tituloFormulario = () =>
-    modoEdicion ? "Editar cosecha e incubación" : "Registrar cosecha e ingreso a incubación";
-
-  const onSubmitFormulario = () => (modoEdicion ? actualizar() : registrar());
+  const onSubmitFormulario = () => registrar();
 
   return (
     <div style={{ padding: embed ? 0 : "25px" }}>
@@ -386,48 +295,26 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
       <Typography variant="h4" sx={{ mb: 1, fontWeight: "bold", color: "#004d73" }}>
         Cosecha e incubación
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Registre el desove y el ingreso a la pileta de incubación en un solo paso. El historial
-        muestra ambos en la misma fila. Para modificar un registro, selecciónelo y use Editar.
-      </Typography>
+      <Alert severity="info" sx={{ mb: 3 }}>
+        Los registros de eficiencia reproductiva se capturan en{" "}
+        <Link component={RouterLink} to="/inventarios/trazabilidad">
+          Trazabilidad
+        </Link>
+        {" "}(tipo de registro Externa → Eficiencia reproductiva).
+      </Alert>
         </>
       )}
 
-      <FormularioRegistroPanel
-        soloContenido={embed}
-        visible={mostrarFormulario}
-        onToggle={toggleFormulario}
-      >
-        <Card sx={{ mb: embed ? 0 : 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+      {embed && (
+      <FormularioRegistroPanel soloContenido>
+        <Card sx={{ mb: 0, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
-              {tituloFormulario()}
+              Registrar cosecha e ingreso a incubación
             </Typography>
 
             <Grid container spacing={2.5}>
-              {!embed && (
-              <Grid size={{ xs: 12, md: 6 }}>
-                <CampoTexto
-                  select
-                  label="Ubicación"
-                  name="ubicacion"
-                  value={formData.ubicacion || ""}
-                  onChange={handleChange}
-                  fullWidth
-                  sx={campoFormSx}
-                  error={!!errors.ubicacion}
-                  {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
-                >
-                  {ubicacionesGranja.map((op) => (
-                    <MenuItem key={op.value} value={op.value}>
-                      {op.label}
-                    </MenuItem>
-                  ))}
-                </CampoTexto>
-              </Grid>
-              )}
-
-              <Grid size={{ xs: 12, md: embed ? 12 : 6 }}>
+              <Grid size={{ xs: 12, md: 12 }}>
                 <CampoTexto
                   select
                   label="Estanque origen (TR)"
@@ -633,27 +520,9 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
                       fullWidth
                       InputLabelProps={{ shrink: true }}
                       sx={campoFormSx}
-                      helperText={
-                        modoEdicion
-                          ? undefined
-                          : "Por defecto coincide con la fecha de cosecha"
-                      }
+                      helperText="Por defecto coincide con la fecha de cosecha"
                     />
                   </Grid>
-                  {modoEdicion && (
-                    <Grid size={{ xs: 12, md: 4 }}>
-                      <CampoTexto
-                        label="Fecha de egreso (opcional)"
-                        name="fecha_egreso"
-                        type="date"
-                        value={formData.fecha_egreso}
-                        onChange={handleChange}
-                        fullWidth
-                        InputLabelProps={{ shrink: true }}
-                        sx={campoFormSx}
-                      />
-                    </Grid>
-                  )}
                 </Grid>
               </Grid>
 
@@ -680,18 +549,14 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
                   sx={botonRegistroInventarioSx}
                   onClick={onSubmitFormulario}
                 >
-                  {modoEdicion ? "ACTUALIZAR" : "REGISTRAR"}
+                  REGISTRAR
                 </Button>
-                {modoEdicion && (
-                  <Button sx={{ ml: 2 }} onClick={resetEdicion}>
-                    Cancelar
-                  </Button>
-                )}
               </Grid>
             </Grid>
           </CardContent>
         </Card>
       </FormularioRegistroPanel>
+      )}
 
       {!embed && (
       <>
@@ -699,8 +564,7 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
         Historial de cosechas e incubación
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Cada fila incluye el desove y su ingreso a incubación. Seleccione un registro para
-        editarlo.
+        Cada fila incluye el desove y su ingreso a incubación.
       </Typography>
 
       <TablasPorUbicacionGranja
@@ -739,15 +603,7 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
                   </TableRow>
                 ) : (
                   filas.map((row) => (
-                    <TableRow
-                      key={row.fi_id ?? row.id}
-                      hover
-                      selected={
-                        (seleccionadoEvento?.fi_id ?? seleccionadoEvento?.id) ===
-                        (row.fi_id ?? row.id)
-                      }
-                      onClick={() => setSeleccionadoEvento(row)}
-                    >
+                    <TableRow key={row.fi_id ?? row.id} hover>
                       <TableCell>{row._num}</TableCell>
                       <TableCell>{row.codigo ?? row.fc_codigo}</TableCell>
                       <TableCell>{row.nombre_pileta_origen}</TableCell>
@@ -789,17 +645,6 @@ const EventoCosecha = ({ embed = false, ubicacionInicial = "", onRegistroExitoso
                         />
                       </TableCell>
                       <TableCell align="center" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          size="small"
-                          onClick={activarEdicionEvento}
-                          disabled={
-                            !seleccionadoEvento ||
-                            (seleccionadoEvento?.fi_id ?? seleccionadoEvento?.id) !==
-                              (row.fi_id ?? row.id)
-                          }
-                        >
-                          Editar
-                        </Button>
                         <Button
                           size="small"
                           color="error"

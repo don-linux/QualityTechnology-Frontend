@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listAlevinaje,
   createAlevinaje,
-  updateAlevinaje,
   removeAlevinaje,
 } from "../services/alevinajeService";
 import { listObservacionesPileta } from "../services/piletasService";
@@ -21,6 +20,9 @@ import MenuItem from "@mui/material/MenuItem";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
+import Alert from "@mui/material/Alert";
+import { Link as RouterLink } from "react-router-dom";
+import Link from "@mui/material/Link";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -32,7 +34,6 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
-import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
@@ -53,7 +54,6 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
-  const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
   const requiredFields = [
@@ -67,7 +67,6 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
   const [piletasDestinoAlevinaje, setPiletasDestinoAlevinaje] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
-  const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState({
     ubicacion: "",
     fi_pileta_destino_id: "",
@@ -144,8 +143,11 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
   }, []);
 
   useEffect(() => {
-    cargarPiletasDestinoAlevinaje();
-    if (!embed) cargarRegistros();
+    if (embed) {
+      cargarPiletasDestinoAlevinaje();
+    } else {
+      cargarRegistros();
+    }
   }, [embed, cargarPiletasDestinoAlevinaje, cargarRegistros]);
 
   useEffect(() => {
@@ -186,69 +188,13 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
     }
   };
 
-  const activarEdicion = () => {
-    if (!seleccionado) return;
-    clearErrors();
-    setFormData({
-      ubicacion: seleccionado.fc_granja || formData.ubicacion || defaultUbicacion || "",
-      fi_pileta_destino_id: String(
-        seleccionado.fi_pileta_destino_id ?? seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
-      ),
-      fc_lote:
-        seleccionado.lote ??
-        seleccionado.fc_lote ??
-        seleccionado.lote_genetico ??
-        seleccionado.fc_lote_genetico ??
-        "",
-      cantidad_total: String(seleccionado.cantidad_total ?? ""),
-      cantidad_alimento: String(seleccionado.cantidad_alimento ?? ""),
-      peso_gramos:
-        seleccionado.peso_gramos != null
-          ? String(seleccionado.peso_gramos)
-          : seleccionado.peso != null
-            ? String(seleccionado.peso)
-            : "",
-      fecha_peso: seleccionado.fecha_peso
-        ? String(seleccionado.fecha_peso).split("T")[0]
-        : "",
-      observacion: seleccionado.observacion ?? seleccionado.fc_observacion ?? "",
-    });
-    setModoEdicion(true);
-    abrirFormulario();
-  };
-
-  const actualizarAlevinajeRegistro = async () => {
-    if (!validate(formData, requiredFields)) return;
-    if (Number(formData.cantidad_total || 0) < 1) {
-      showSnackbar("La cantidad total debe ser mayor a cero.", "error");
-      return;
-    }
-    try {
-      await updateAlevinaje(
-        seleccionado.fi_id ?? seleccionado.id,
-        payloadComunBackend(),
-      );
-      showSnackbar("Registro actualizado", "success");
-      resetEdicion();
-      cargarRegistros();
-    } catch (err) {
-      console.error("Error al actualizar alevinaje:", err);
-      showSnackbar(
-        err?.response?.data?.error ||
-          err?.response?.data?.detalle ||
-          "No se pudo actualizar",
-        "error",
-      );
-    }
-  };
-
   const eliminarAlevinajeRegistro = async (id) => {
     if (!await confirm("¿Seguro que deseas eliminar este registro de alevinaje?")) return;
     try {
       await removeAlevinaje(id);
       showSnackbar("Registro eliminado", "success");
       cargarRegistros();
-      resetEdicion();
+      setSeleccionado(null);
     } catch (err) {
       console.error("Error al eliminar alevinaje:", err);
       showSnackbar("No se pudo eliminar", "error");
@@ -269,13 +215,6 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
       observacion: "",
     });
     clearErrors();
-    if (!embed) cerrarFormulario();
-  };
-
-  const resetEdicion = () => {
-    setModoEdicion(false);
-    setSeleccionado(null);
-    resetFormulario();
   };
 
   const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
@@ -288,46 +227,30 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
   return (
     <div style={{ padding: embed ? 0 : "25px" }}>
       {!embed && (
-        <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold", color: "#004d73" }}>
+        <>
+        <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold", color: "#004d73" }}>
           Alevinaje
         </Typography>
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Los registros periódicos se capturan en{" "}
+          <Link component={RouterLink} to="/inventarios/trazabilidad">
+            Trazabilidad
+          </Link>
+          {" "}(tipo de registro Externa → Alevinaje).
+        </Alert>
+        </>
       )}
 
-      <FormularioRegistroPanel
-        soloContenido={embed}
-        visible={mostrarFormulario}
-        onToggle={toggleFormulario}
-      >
-        <Card sx={{ mb: embed ? 0 : 5, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
+      {embed && (
+      <FormularioRegistroPanel soloContenido>
+        <Card sx={{ mb: 0, borderRadius: 3, boxShadow: 3, bgcolor: "#fff" }}>
           <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: "#1a3c34" }}>
-              {modoEdicion ? "Editar registro" : "Registrar nuevo alevinaje"}
+              Registrar nuevo alevinaje
             </Typography>
 
             <Grid container spacing={2.5}>
-              {!embed && (
-              <Grid size={{ xs: 12, md: 6 }}>
-                <CampoTexto
-                  select
-                  label="Ubicación"
-                  name="ubicacion"
-                  value={formData.ubicacion || ""}
-                  onChange={handleChange}
-                  fullWidth
-                  sx={campoFormSx}
-                  error={!!errors.ubicacion}
-                  {...(errors.ubicacion ? { helperText: errors.ubicacion } : {})}
-                >
-                  {ubicacionesGranja.map((op) => (
-                    <MenuItem key={op.value} value={op.value}>
-                      {op.label}
-                    </MenuItem>
-                  ))}
-                </CampoTexto>
-              </Grid>
-              )}
-
-              <Grid size={{ xs: 12, md: embed ? 12 : 6 }}>
+              <Grid size={{ xs: 12, md: 12 }}>
                 <CampoTexto
                   select
                   label="Instalación (alevinaje)"
@@ -453,16 +376,17 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
                   variant="contained"
                   color="primary"
                   startIcon={<AddCircleIcon />}
-                  onClick={modoEdicion ? actualizarAlevinajeRegistro : registrarAlevinaje}
+                  onClick={registrarAlevinaje}
                   sx={botonRegistroInventarioSx}
                 >
-                  {modoEdicion ? "Guardar cambios" : "Registrar alevinaje"}
+                  Registrar alevinaje
                 </Button>
               </Grid>
             </Grid>
           </CardContent>
         </Card>
       </FormularioRegistroPanel>
+      )}
 
       {!embed && (
       <>
@@ -470,7 +394,7 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
         Estado actual por pileta
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Muestra el último registro periódico de cada pileta. El historial de movimientos está en Trazabilidad.
+        Muestra el último registro periódico de cada pileta. Los movimientos internos están en Trazabilidad.
       </Typography>
 
       <TablasPorUbicacionGranja
@@ -558,9 +482,6 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
 
       {seleccionado && (
         <div style={{ marginTop: "20px", display: "flex", gap: "15px" }}>
-          <Button variant="contained" color="warning" onClick={activarEdicion}>
-            Editar registro
-          </Button>
           <Button
             variant="contained"
             color="error"
@@ -568,7 +489,7 @@ const Alevinaje = ({ embed = false, ubicacionInicial = "", onRegistroExitoso } =
           >
             Eliminar registro
           </Button>
-          <Button variant="outlined" color="inherit" onClick={resetEdicion}>
+          <Button variant="outlined" color="inherit" onClick={() => setSeleccionado(null)}>
             Cerrar
           </Button>
         </div>
