@@ -32,7 +32,7 @@ import {
   filtrarPorUbicacion,
 } from "@shared/utils/fetchMergedPorUbicaciones";
 import { rowPerteneceAUbicacionGranja } from "@shared/utils/unidadesNegocio";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import { ordenarYNumerar, SIGLAS_MODULO } from "@shared/utils/ordenarFilas";
 import ProximaVentaModal from "@features/ventas/components/ProximaVentaModal";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
@@ -499,8 +499,11 @@ export default function Trazabilidad() {
     [getGroups, movimientos],
   );
 
-  const renderTablaMovimientos = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_movimiento_id"]);
+  const renderTablaMovimientos = (rows, { siglaGranja } = {}) => {
+    const filas = ordenarYNumerar(rows, ["fi_movimiento_id"], {
+      siglaGranja,
+      siglaModulo: SIGLAS_MODULO.trazabilidad,
+    });
     return (
     <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>

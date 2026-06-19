@@ -39,7 +39,7 @@ import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranj
 import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
 import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import { ordenarYNumerar, SIGLAS_MODULO } from "@shared/utils/ordenarFilas";
 import { listPiletas } from "../services/piletasService";
 import TablaAlimentacionInterna from "@shared/components/TablaAlimentacionInterna";
 import useAlimentacionInterna from "@shared/hooks/useAlimentacionInterna";
@@ -453,8 +453,11 @@ const Alevinaje = () => {
 
       <TablasPorUbicacionGranja
         grupos={gruposRegistros}
-        renderTabla={(rows) => {
-          const filas = ordenarYNumerar(rows, ["fi_id", "id"]);
+        renderTabla={(rows, { siglaGranja } = {}) => {
+          const filas = ordenarYNumerar(rows, ["fi_id", "id"], {
+            siglaGranja,
+            siglaModulo: SIGLAS_MODULO.alevinaje,
+          });
           return (
           <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>

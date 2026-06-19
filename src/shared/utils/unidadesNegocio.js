@@ -123,6 +123,24 @@ export function getUnidadGranjaSlug(value) {
   return nombre.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+/** Sigla corta de sede/granja para IDs visibles (p. ej. GAM-ENG-001). */
+export function getUnidadGranjaSigla(value) {
+  const nombre = normalizarTexto(value);
+  if (nombre.includes("ceiba")) return "GAC";
+  if (nombre.includes("medellin")) return "GAM";
+  const compacto = String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-Za-Z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+  return compacto.slice(0, 4) || "GRJ";
+}
+
 export function getUnidadGranjaLogo(value) {
   const slug = getUnidadGranjaSlug(value);
   return slug ? `/images/${slug}.png` : "";

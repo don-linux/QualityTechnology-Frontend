@@ -31,7 +31,7 @@ import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import { ordenarYNumerar, SIGLAS_MODULO } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -222,8 +222,11 @@ function BitacoraBanosContent() {
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaBanos = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_id"]);
+  const renderTablaBanos = (rows, { siglaGranja } = {}) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"], {
+      siglaGranja,
+      siglaModulo: SIGLAS_MODULO.banos,
+    });
     return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>

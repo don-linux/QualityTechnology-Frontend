@@ -38,7 +38,7 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 import { formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import { ordenarYNumerar, SIGLAS_MODULO } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -248,8 +248,11 @@ function RecepcionInsumosContent() {
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaRecepcion = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_id"]);
+  const renderTablaRecepcion = (rows, { siglaGranja } = {}) => {
+    const filas = ordenarYNumerar(rows, ["fi_id"], {
+      siglaGranja,
+      siglaModulo: SIGLAS_MODULO.recepcionInsumos,
+    });
     return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>

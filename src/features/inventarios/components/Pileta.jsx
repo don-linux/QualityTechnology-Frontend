@@ -44,7 +44,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import CampoNumerico from "@shared/components/CampoNumerico";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import { ordenarYNumerar, SIGLAS_MODULO } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 60;
 const truncar = (texto) =>
@@ -532,8 +532,11 @@ function PiletasTab({
 
       <TablasPorUbicacionGranja
         grupos={gruposPiletas}
-        renderTabla={(rows) => {
-          const filas = ordenarYNumerar(rows, ["fi_pileta_id"]);
+        renderTabla={(rows, { siglaGranja } = {}) => {
+          const filas = ordenarYNumerar(rows, ["fi_pileta_id"], {
+            siglaGranja,
+            siglaModulo: SIGLAS_MODULO.piletas,
+          });
           return (
           <Paper>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>

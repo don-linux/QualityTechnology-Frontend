@@ -41,7 +41,7 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import { ordenarYNumerar, SIGLAS_MODULO } from "@shared/utils/ordenarFilas";
 
 const MAX_OBSERVACION = 500;
 const hoyISO = () => new Date().toISOString().split("T")[0];
@@ -678,8 +678,11 @@ const EventoCosecha = () => {
 
       <TablasPorUbicacionGranja
         grupos={gruposRegistros}
-        renderTabla={(rows) => {
-          const filas = ordenarYNumerar(rows, ["fi_id", "id"]);
+        renderTabla={(rows, { siglaGranja } = {}) => {
+          const filas = ordenarYNumerar(rows, ["fi_id", "id"], {
+            siglaGranja,
+            siglaModulo: SIGLAS_MODULO.eventosCosecha,
+          });
           return (
           <TableContainer component={Paper} sx={{ borderRadius: 2, mb: 4 }}>
             <Table size="small">

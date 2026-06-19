@@ -19,7 +19,7 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import { formatCantidad, formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import { ordenarYNumerar, SIGLAS_MODULO } from "@shared/utils/ordenarFilas";
 import {
   getCicloEngordaDashboard,
   listCiclosEngorda,
@@ -123,8 +123,11 @@ export default function CiclosEngorda() {
 
       <TablasPorUbicacionGranja
         grupos={grupos}
-        renderTabla={(rows) => {
-          const filas = ordenarYNumerar(rows, ["fi_ciclo_id", "id"]);
+        renderTabla={(rows, { siglaGranja } = {}) => {
+          const filas = ordenarYNumerar(rows, ["fi_ciclo_id", "id"], {
+            siglaGranja,
+            siglaModulo: SIGLAS_MODULO.ciclosEngorda,
+          });
           return (
             <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
               <TableContainer sx={{ overflowX: "auto" }}>
