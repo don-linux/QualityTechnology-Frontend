@@ -131,6 +131,8 @@ const Login = () => {
               </Typography>
 
               <CampoTexto
+                name="usuario"
+                formato={null}
                 label="Usuario"
                 fullWidth
                 margin="normal"

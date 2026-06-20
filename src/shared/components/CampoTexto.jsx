@@ -44,7 +44,7 @@ export default function CampoTexto({
     select,
     inputMode: inputMode || inputProps?.inputMode,
     readOnly: readOnlyField,
-    formato: formato === undefined ? FORMATOS_TEXTO.MAYUSCULA_INICIAL_TODO : formato,
+    formato,
   });
 
   const setInputRef = (node) => {

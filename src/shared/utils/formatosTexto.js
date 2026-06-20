@@ -16,7 +16,7 @@ export const ETIQUETAS_FORMATO_TEXTO = {
 const LOCALE = "es";
 
 const CLAVES_SIN_FORMATO =
-  /(correo|email|password|rfc|codigo|busqueda|usuario|token|url|foto|mime)/i;
+  /(correo|email|password|contrase|contrasena|rfc|codigo|busqueda|usuario|token|url|foto|mime)/i;
 
 /**
  * Indica si un campo de formulario debe recibir title case.
@@ -49,6 +49,7 @@ export function debeAplicarFormatoTexto({
 
   const n = String(name || "").toLowerCase();
   if (!n) return true;
+  if (n === "nombre") return false;
   if (CLAVES_SIN_FORMATO.test(n)) return false;
   if (/(^|_)id$/.test(n) || n.endsWith("_id")) return false;
   if (/^fd_|fecha|hora/.test(n)) return false;
@@ -128,6 +129,7 @@ export function debeAplicarFormatoTextoCampo(fieldName) {
   if (!fieldName) return false;
   const k = String(fieldName).toLowerCase();
 
+  if (k === "nombre") return false;
   if (CLAVES_SIN_FORMATO.test(k)) return false;
   if (/(^|_)id$/.test(k) || k.endsWith("_id")) return false;
   if (/^fd_|fecha|hora/.test(k)) return false;
