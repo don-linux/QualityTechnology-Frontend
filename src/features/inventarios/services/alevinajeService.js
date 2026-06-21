@@ -16,7 +16,7 @@ export function listAlevinaje(filtroUbicacion, piletaId, opciones = {}) {
   return axios.get(ENDPOINTS.alevinaje.base, { params });
 }
 
-/** Todos los registros periódicos de una pileta (incluye observaciones históricas). */
+/** Todos los registros periódicos de una pileta. */
 export function listAlevinajeHistorialPileta(piletaId, filtroUbicacion) {
   return listAlevinaje(filtroUbicacion, piletaId, { historial: true });
 }
