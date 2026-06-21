@@ -121,14 +121,25 @@ export const MENU_SECTIONS = [
     modulo: "Catálogos",
     label: "CATÁLOGOS",
     moduleIcon: <MenuBook />,
-    items: [
-      { to: "/usuarios", icon: <People />, label: "Usuarios" },
-      { to: "/roles", icon: <Assignment />, label: "Roles" },
-      { to: "/departamentos", icon: <Business />, label: "Departamentos" },
-      { to: "/puestos", icon: <Work />, label: "Puestos" },
-      { to: "/unidades-negocio", icon: <Business />, label: "Unidades de Negocio" },
-      { to: "/ubicaciones",     icon: <HomeWorkIcon />, label: "Ubicaciones" },
-      { to: "/tipos-pileta", icon: <CategoryIcon />, label: "Tipos de pileta" },
+    subsections: [
+      {
+        sublabel: "Catálogos administrativos",
+        sublabelColor: "#90cdffff",
+        items: [
+          { to: "/usuarios", icon: <People />, label: "Usuarios" },
+          { to: "/roles", icon: <Assignment />, label: "Roles" },
+          { to: "/departamentos", icon: <Business />, label: "Departamentos" },
+          { to: "/puestos", icon: <Work />, label: "Puestos" },
+          { to: "/unidades-negocio", icon: <Business />, label: "Unidades de Negocio" },
+          { to: "/ubicaciones", icon: <HomeWorkIcon />, label: "Ubicaciones" },
+          { to: "/tipos-pileta", icon: <CategoryIcon />, label: "Tipos de pileta" },
+        ],
+      },
+      {
+        sublabel: "Catálogos de control de fauna nociva",
+        sublabelColor: "#90cdffff",
+        items: [],
+      },
     ],
   },
   {
