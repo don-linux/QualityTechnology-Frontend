@@ -200,18 +200,9 @@ export default function MiPerfil() {
               <Typography variant="h5" fontWeight={800} gutterBottom>
                 Mi Perfil
               </Typography>
-              <Alert severity="warning" sx={{ textAlign: "left", mb: 3 }}>
+              <Alert severity="warning" sx={{ textAlign: "left" }}>
                 {error}
               </Alert>
-              <Button
-                component={RouterLink}
-                to="/mi-expediente"
-                variant="contained"
-                endIcon={<ArrowForward />}
-                sx={{ borderRadius: 2.5, textTransform: "none", fontWeight: 700, px: 3 }}
-              >
-                Ir a Mi Expediente
-              </Button>
             </CardContent>
           </Card>
         </MotionDiv>

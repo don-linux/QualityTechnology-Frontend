@@ -32,6 +32,7 @@ import MenuBook from "@mui/icons-material/MenuBook";
 import Security from "@mui/icons-material/Security";
 import Groups from "@mui/icons-material/Groups";
 import Timeline from "@mui/icons-material/Timeline";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 
 export const DASHBOARD_SECTION = {
   modulo: "Dashboard",
@@ -63,6 +64,7 @@ export const MENU_SECTIONS = [
     items: [
       { to: "/inventarios/trazabilidad", icon: <Timeline />, label: "Trazabilidad" },
       { to: "/inventarios/eficiencia-reproductiva", icon: <EggAltIcon />, label: "Eficiencia reproductiva" },
+      { to: "/inventarios/ciclos-engorda", icon: <AutorenewIcon />, label: "Ciclos de engorda" },
       { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
       { to: "/inventarios/equipos", icon: <Handyman />, label: "Equipo y Herramientas" },
     ],

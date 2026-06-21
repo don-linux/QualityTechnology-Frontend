@@ -26,6 +26,7 @@ const Engorda = lazy(() => import("@pages/inventarios/EngordaPage"));
 const Equipos = lazy(() => import("@pages/inventarios/EquiposPage"));
 const Alevinaje = lazy(() => import("@pages/inventarios/AlevinajePage"));
 const EficienciaReproductiva = lazy(() => import("@pages/inventarios/EficienciaReproductivaPage"));
+const CiclosEngorda = lazy(() => import("@pages/inventarios/CiclosEngordaPage"));
 const Trazabilidad = lazy(() => import("@pages/inventarios/TrazabilidadPage"));
 
 // Ventas + Finanzas
@@ -142,6 +143,7 @@ export default function AppRouter() {
             <Route path="inventarios/reproductores" element={<Reproductores />} />
             <Route path="inventarios/engorda" element={<Engorda />} />
             <Route path="inventarios/eficiencia-reproductiva" element={<EficienciaReproductiva />} />
+            <Route path="inventarios/ciclos-engorda" element={<CiclosEngorda />} />
             <Route path="inventarios/lotes" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
             <Route path="inventarios/control-reproductivo" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
             <Route path="inventarios/eventos-cosecha" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
