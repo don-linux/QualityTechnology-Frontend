@@ -46,7 +46,6 @@ const BitacoraRecambios = lazy(() => import("@pages/registro-operativo/BitacoraR
 const BitacoraInventario = lazy(() => import("@pages/registro-operativo/BitacoraInventarioPage"));
 const BioBiometrias = lazy(() => import("@pages/registro-operativo/BioBiometriasPage"));
 const BioAlimentacion = lazy(() => import("@pages/registro-operativo/BioAlimentacionPage"));
-const BioInsumos = lazy(() => import("@pages/registro-operativo/BioInsumosPage"));
 
 // RRHH
 const Empleados = lazy(() => import("@pages/rrhh/EmpleadosPage"));
@@ -93,7 +92,6 @@ export default function AppRouter() {
               <Route path="inventario" element={<BitacoraInventario />} />
               <Route path="biometrias" element={<BioBiometrias />} />
               <Route path="alimentacion" element={<BioAlimentacion />} />
-              <Route path="insumos" element={<BioInsumos />} />
             </Route>
           </Route>
         </Route>

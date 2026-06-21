@@ -44,7 +44,6 @@ const ETIQUETA_PROCESO = {
   parametros: "Parámetros de agua",
   medicamentos: "Medicamentos",
   plagas: "Plagas",
-  insumos: "Insumos",
   visitas: "Visitas",
   banos: "Baños",
   recepcion_insumos: "Recepción insumos",

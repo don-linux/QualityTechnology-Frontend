@@ -57,7 +57,6 @@ export const MENU_SECTIONS = [
       { to: "/registro-operativo/recambios", icon: <ScienceOutlined />, label: "Recambios" },
       { to: "/registro-operativo/biometrias", icon: <Science />, label: "Biometrías" },
       { to: "/registro-operativo/alimentacion", icon: <Grass />, label: "Alimentación" },
-      { to: "/registro-operativo/insumos", icon: <Inventory />, label: "Ingresos / Egresos Insumos" },
     ],
   },
   {
