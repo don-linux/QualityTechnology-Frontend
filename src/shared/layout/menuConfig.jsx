@@ -1,5 +1,6 @@
 import Dashboard from "@mui/icons-material/Dashboard";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import FolderShared from "@mui/icons-material/FolderShared";
 import Assignment from "@mui/icons-material/Assignment";
 import Inventory from "@mui/icons-material/Inventory";
 import Store from "@mui/icons-material/Store";
@@ -39,6 +40,7 @@ export const DASHBOARD_SECTION = {
   items: [
     { to: "/", icon: <Dashboard />, label: "Inicio" },
     { to: "/mi-perfil", icon: <AccountCircle />, label: "Mi Perfil" },
+    { to: "/mi-expediente", icon: <FolderShared />, label: "Mi Expediente" },
   ],
 };
 

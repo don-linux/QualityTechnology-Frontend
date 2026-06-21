@@ -50,6 +50,7 @@ const BioAlimentacion = lazy(() => import("@pages/bitacoras/BioAlimentacionPage"
 // RRHH
 const Empleados = lazy(() => import("@pages/rrhh/EmpleadosPage"));
 const MiPerfil = lazy(() => import("@pages/perfil/MiPerfilPage"));
+const MiExpediente = lazy(() => import("@pages/perfil/MiExpedientePage"));
 const Nomina = lazy(() => import("@pages/rrhh/NominaPage"));
 const Vacaciones = lazy(() => import("@pages/rrhh/VacacionesPage"));
 const CajaAhorro = lazy(() => import("@pages/rrhh/CajaAhorroPage"));
@@ -81,6 +82,7 @@ export default function AppRouter() {
           <Route element={<CorporateLayout />}>
             <Route index element={<Inicio />} />
             <Route path="mi-perfil" element={<MiPerfil />} />
+            <Route path="mi-expediente" element={<MiExpediente />} />
             <Route path="sin-acceso" element={<SinAcceso />} />
           </Route>
         </Route>
