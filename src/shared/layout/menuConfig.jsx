@@ -44,19 +44,19 @@ export const DASHBOARD_SECTION = {
 
 export const MENU_SECTIONS = [
   {
-    modulo: "Operaciones",
-    label: "OPERACIONES / BITÁCORAS",
+    modulo: "Bitacoras",
+    label: "BITÁCORAS",
     moduleIcon: <Assignment />,
     items: [
-      { to: "/registro-operativo/plagas", icon: <BugReport />, label: "Control de Plagas" },
-      { to: "/registro-operativo/recepcion-insumos", icon: <ReceiptLong />, label: "Recepción de Insumos" },
-      { to: "/registro-operativo/visitas", icon: <People />, label: "Control de Visitas" },
-      { to: "/registro-operativo/limpieza-banos", icon: <CleaningServices />, label: "Limpieza de Baños" },
-      { to: "/registro-operativo/parametros", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
-      { to: "/registro-operativo/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
-      { to: "/registro-operativo/recambios", icon: <ScienceOutlined />, label: "Recambios" },
-      { to: "/registro-operativo/biometrias", icon: <Science />, label: "Biometrías" },
-      { to: "/registro-operativo/alimentacion", icon: <Grass />, label: "Alimentación" },
+      { to: "/bitacoras/plagas", icon: <BugReport />, label: "Control de Plagas" },
+      { to: "/bitacoras/recepcion-insumos", icon: <ReceiptLong />, label: "Recepción de Insumos" },
+      { to: "/bitacoras/visitas", icon: <People />, label: "Control de Visitas" },
+      { to: "/bitacoras/limpieza-banos", icon: <CleaningServices />, label: "Limpieza de Baños" },
+      { to: "/bitacoras/parametros", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
+      { to: "/bitacoras/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
+      { to: "/bitacoras/recambios", icon: <ScienceOutlined />, label: "Recambios" },
+      { to: "/bitacoras/biometrias", icon: <Science />, label: "Biometrías" },
+      { to: "/bitacoras/alimentacion", icon: <Grass />, label: "Alimentación" },
     ],
   },
   {

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 
@@ -35,17 +35,17 @@ const ListaEspera = lazy(() => import("@pages/ventas/ListaEsperaPage"));
 const TesoreriaGeneral = lazy(() => import("@pages/ventas/TesoreriaGeneralPage"));
 const Cuentas = lazy(() => import("@pages/catalogos/CuentasPage"));
 
-// Registro Operativo
-const BitacoraPlagas = lazy(() => import("@pages/registro-operativo/BitacoraPlagasPage"));
-const BitacoraRecepcionInsumos = lazy(() => import("@pages/registro-operativo/BitacoraRecepcionInsumosPage"));
-const BitacoraVisitas = lazy(() => import("@pages/registro-operativo/BitacoraVisitasPage"));
-const BitacoraBanos = lazy(() => import("@pages/registro-operativo/BitacoraBanosPage"));
-const BitacoraParametros = lazy(() => import("@pages/registro-operativo/BitacoraParametrosPage"));
-const BitacoraMedicamentos = lazy(() => import("@pages/registro-operativo/BitacoraMedicamentosPage"));
-const BitacoraRecambios = lazy(() => import("@pages/registro-operativo/BitacoraRecambiosPage"));
-const BitacoraInventario = lazy(() => import("@pages/registro-operativo/BitacoraInventarioPage"));
-const BioBiometrias = lazy(() => import("@pages/registro-operativo/BioBiometriasPage"));
-const BioAlimentacion = lazy(() => import("@pages/registro-operativo/BioAlimentacionPage"));
+// Bitácoras
+const BitacoraPlagas = lazy(() => import("@pages/bitacoras/BitacoraPlagasPage"));
+const BitacoraRecepcionInsumos = lazy(() => import("@pages/bitacoras/BitacoraRecepcionInsumosPage"));
+const BitacoraVisitas = lazy(() => import("@pages/bitacoras/BitacoraVisitasPage"));
+const BitacoraBanos = lazy(() => import("@pages/bitacoras/BitacoraBanosPage"));
+const BitacoraParametros = lazy(() => import("@pages/bitacoras/BitacoraParametrosPage"));
+const BitacoraMedicamentos = lazy(() => import("@pages/bitacoras/BitacoraMedicamentosPage"));
+const BitacoraRecambios = lazy(() => import("@pages/bitacoras/BitacoraRecambiosPage"));
+const BitacoraInventario = lazy(() => import("@pages/bitacoras/BitacoraInventarioPage"));
+const BioBiometrias = lazy(() => import("@pages/bitacoras/BioBiometriasPage"));
+const BioAlimentacion = lazy(() => import("@pages/bitacoras/BioAlimentacionPage"));
 
 // RRHH
 const Empleados = lazy(() => import("@pages/rrhh/EmpleadosPage"));
@@ -65,6 +65,12 @@ const LazyFallback = () => (
   </Box>
 );
 
+function RedirectRegistroOperativo() {
+  const { pathname, search } = useLocation();
+  const destino = pathname.replace(/^\/registro-operativo/, "/bitacoras") + search;
+  return <Navigate to={destino} replace />;
+}
+
 export default function AppRouter() {
   return (
     <Suspense fallback={<LazyFallback />}>
@@ -79,9 +85,9 @@ export default function AppRouter() {
           </Route>
         </Route>
 
-        <Route element={<PrivateRoute modulo="Operaciones" />}>
+        <Route element={<PrivateRoute modulo="Bitacoras" />}>
           <Route element={<CorporateLayout />}>
-            <Route path="registro-operativo">
+            <Route path="bitacoras">
               <Route path="plagas" element={<BitacoraPlagas />} />
               <Route path="recepcion-insumos" element={<BitacoraRecepcionInsumos />} />
               <Route path="visitas" element={<BitacoraVisitas />} />
@@ -93,6 +99,7 @@ export default function AppRouter() {
               <Route path="biometrias" element={<BioBiometrias />} />
               <Route path="alimentacion" element={<BioAlimentacion />} />
             </Route>
+            <Route path="registro-operativo/*" element={<RedirectRegistroOperativo />} />
           </Route>
         </Route>
 

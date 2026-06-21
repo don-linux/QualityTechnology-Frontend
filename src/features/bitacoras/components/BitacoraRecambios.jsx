@@ -284,7 +284,7 @@ const exportarPDF = async () => {
 
   doc.setTextColor(0);
   y += 10;
-  doc.text("Departamento: Operaciones", 10, y);
+  doc.text("Departamento: Bitácoras", 10, y);
   doc.text("Aprobó: Juan Carlos Jiménez Ara", 70, y);
   y += 8;
   doc.text("Rev. 07/08/2024", 10, y);

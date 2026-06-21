@@ -30,7 +30,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const MENUS_PRINCIPALES = new Set([
-  "Operaciones",
+  "Bitacoras",
   "Inventarios",
   "Ventas",
   "Finanzas",
