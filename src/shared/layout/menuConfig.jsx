@@ -44,22 +44,6 @@ export const DASHBOARD_SECTION = {
 
 export const MENU_SECTIONS = [
   {
-    modulo: "Bitacoras",
-    label: "BITÁCORAS",
-    moduleIcon: <Assignment />,
-    items: [
-      { to: "/bitacoras/plagas", icon: <BugReport />, label: "Control de Plagas" },
-      { to: "/bitacoras/recepcion-insumos", icon: <ReceiptLong />, label: "Recepción de Insumos" },
-      { to: "/bitacoras/visitas", icon: <People />, label: "Control de Visitas" },
-      { to: "/bitacoras/limpieza-banos", icon: <CleaningServices />, label: "Limpieza de Baños" },
-      { to: "/bitacoras/parametros", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
-      { to: "/bitacoras/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
-      { to: "/bitacoras/recambios", icon: <ScienceOutlined />, label: "Recambios" },
-      { to: "/bitacoras/biometrias", icon: <Science />, label: "Biometrías" },
-      { to: "/bitacoras/alimentacion", icon: <Grass />, label: "Alimentación" },
-    ],
-  },
-  {
     modulo: "Inventarios",
     label: "INVENTARIOS",
     moduleIcon: <Inventory />,
@@ -83,6 +67,22 @@ export const MENU_SECTIONS = [
           { to: "/inventarios/equipos", icon: <Handyman />, label: "Equipo y Herramientas" },
         ],
       },
+    ],
+  },
+  {
+    modulo: "Bitacoras",
+    label: "BITÁCORAS",
+    moduleIcon: <Assignment />,
+    items: [
+      { to: "/bitacoras/plagas", icon: <BugReport />, label: "Control de Plagas" },
+      { to: "/bitacoras/recepcion-insumos", icon: <ReceiptLong />, label: "Recepción de Insumos" },
+      { to: "/bitacoras/visitas", icon: <People />, label: "Control de Visitas" },
+      { to: "/bitacoras/limpieza-banos", icon: <CleaningServices />, label: "Limpieza de Baños" },
+      { to: "/bitacoras/parametros", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
+      { to: "/bitacoras/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
+      { to: "/bitacoras/recambios", icon: <ScienceOutlined />, label: "Recambios" },
+      { to: "/bitacoras/biometrias", icon: <Science />, label: "Biometrías" },
+      { to: "/bitacoras/alimentacion", icon: <Grass />, label: "Alimentación" },
     ],
   },
   {
