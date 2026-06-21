@@ -25,7 +25,7 @@ const Reproductores = lazy(() => import("@pages/inventarios/ReproductoresPage"))
 const Engorda = lazy(() => import("@pages/inventarios/EngordaPage"));
 const Equipos = lazy(() => import("@pages/inventarios/EquiposPage"));
 const Alevinaje = lazy(() => import("@pages/inventarios/AlevinajePage"));
-const ControlReproductivo = lazy(() => import("@pages/inventarios/ControlReproductivoPage"));
+const EficienciaReproductiva = lazy(() => import("@pages/inventarios/EficienciaReproductivaPage"));
 const Trazabilidad = lazy(() => import("@pages/inventarios/TrazabilidadPage"));
 
 // Ventas + Finanzas
@@ -139,11 +139,12 @@ export default function AppRouter() {
             <Route path="inventarios/piletas-fisicas" element={<PiletasFisicas />} />
             <Route path="inventarios/reproductores" element={<Reproductores />} />
             <Route path="inventarios/engorda" element={<Engorda />} />
-            <Route path="inventarios/lotes" element={<Navigate to="/inventarios/eventos-cosecha" replace />} />
-            <Route path="inventarios/control-reproductivo" element={<Navigate to="/inventarios/eventos-cosecha" replace />} />
-            <Route path="inventarios/eventos-cosecha" element={<ControlReproductivo />} />
+            <Route path="inventarios/eficiencia-reproductiva" element={<EficienciaReproductiva />} />
+            <Route path="inventarios/lotes" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
+            <Route path="inventarios/control-reproductivo" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
+            <Route path="inventarios/eventos-cosecha" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
             <Route path="inventarios/alevinaje" element={<Alevinaje />} />
-            <Route path="inventarios/incubacion" element={<Navigate to="/inventarios/eventos-cosecha" replace />} />
+            <Route path="inventarios/incubacion" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
             <Route path="inventarios/trazabilidad" element={<Trazabilidad />} />
             <Route path="inventarios/equipos" element={<Equipos />} />
           </Route>

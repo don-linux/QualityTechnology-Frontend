@@ -21,9 +21,9 @@ function isPathActive(pathname, target) {
 }
 
 function flattenItems(section) {
-  if (section.items) return section.items;
-  if (section.subsections) return section.subsections.flatMap((s) => s.items);
-  return [];
+  const fromSubsections = section.subsections?.flatMap((s) => s.items) ?? [];
+  const fromItems = section.items ?? [];
+  return [...fromSubsections, ...fromItems];
 }
 
 function sectionHasActiveItem(section, pathname) {
@@ -176,6 +176,16 @@ function ModuleSection({ section, drawerOpen, pathname }) {
 
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
+          {section.subsections &&
+            section.subsections.map((sub) => (
+              <SubSection
+                key={sub.sublabel}
+                sub={sub}
+                drawerOpen={drawerOpen}
+                pathname={pathname}
+              />
+            ))}
+
           {section.items &&
             section.items.map((item) => (
               <NavItem
@@ -184,16 +194,6 @@ function ModuleSection({ section, drawerOpen, pathname }) {
                 drawerOpen={drawerOpen}
                 pathname={pathname}
                 pl={4}
-              />
-            ))}
-
-          {section.subsections &&
-            section.subsections.map((sub) => (
-              <SubSection
-                key={sub.sublabel}
-                sub={sub}
-                drawerOpen={drawerOpen}
-                pathname={pathname}
               />
             ))}
         </List>

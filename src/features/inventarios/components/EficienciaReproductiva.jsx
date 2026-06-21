@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  listIncubacion,
-  createIncubacion,
-  updateIncubacion,
-  removeIncubacion,
-} from "../services/eventoCosechaService";
+  listEficienciaReproductiva,
+  createEficienciaReproductiva,
+  updateEficienciaReproductiva,
+  removeEficienciaReproductiva,
+} from "../services/eficienciaReproductivaService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
 import { formatCantidad, formatFecha } from "@shared/utils/formatters";
@@ -101,7 +101,7 @@ const formularioVacio = (ubicacionDefault = "") => ({
   observacion: "",
 });
 
-const EventoCosecha = () => {
+const EficienciaReproductiva = () => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
@@ -237,8 +237,8 @@ const EventoCosecha = () => {
 
   const cargarRegistros = useCallback(async () => {
     try {
-      const inc = await listIncubacion(null, null, { historial: true });
-      setRegistros(Array.isArray(inc.data) ? inc.data : []);
+      const res = await listEficienciaReproductiva(null, null, { historial: true });
+      setRegistros(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error cargando registros:", err);
     }
@@ -258,8 +258,8 @@ const EventoCosecha = () => {
   const registrar = async () => {
     if (!validarCosecha()) return;
     try {
-      await createIncubacion(payloadBackend());
-      showSnackbar("Cosecha e ingreso a incubación registrados", "success");
+      await createEficienciaReproductiva(payloadBackend());
+      showSnackbar("Registro de eficiencia reproductiva guardado", "success");
       resetFormulario();
       cargarRegistros();
     } catch (err) {
@@ -311,13 +311,14 @@ const EventoCosecha = () => {
 
   const actualizar = async () => {
     if (!validarCosecha()) return;
-    const incubacionId =
+    const eficienciaReproductivaId =
       seleccionadoEvento.fi_id ??
       seleccionadoEvento.id ??
+      seleccionadoEvento.eficiencia_reproductiva_id ??
       seleccionadoEvento.incubacion_id;
 
     try {
-      await updateIncubacion(incubacionId, payloadBackend());
+      await updateEficienciaReproductiva(eficienciaReproductivaId, payloadBackend());
       showSnackbar("Registro actualizado", "success");
       resetEdicion();
       cargarRegistros();
@@ -327,9 +328,9 @@ const EventoCosecha = () => {
   };
 
   const eliminarEvento = async (id) => {
-    if (!await confirm("¿Eliminar este registro de cosecha e incubación?")) return;
+    if (!await confirm("¿Eliminar este registro de eficiencia reproductiva?")) return;
     try {
-      await removeIncubacion(id);
+      await removeEficienciaReproductiva(id);
       showSnackbar("Registro eliminado", "success");
       cargarRegistros();
       resetEdicion();
@@ -360,14 +361,14 @@ const EventoCosecha = () => {
   );
 
   const tituloFormulario = () =>
-    modoEdicion ? "Editar cosecha e incubación" : "Registrar cosecha e ingreso a incubación";
+    modoEdicion ? "Editar eficiencia reproductiva" : "Registrar eficiencia reproductiva";
 
   const onSubmitFormulario = () => (modoEdicion ? actualizar() : registrar());
 
   return (
     <div style={{ padding: "25px" }}>
       <Typography variant="h4" sx={{ mb: 1, fontWeight: "bold", color: "#004d73" }}>
-        Cosecha e incubación
+        Eficiencia reproductiva
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Registre el desove y el ingreso a la pileta de incubación en un solo paso. El historial
@@ -572,7 +573,7 @@ const EventoCosecha = () => {
               </Grid>
 
               <Grid size={12}>
-                <TituloSeccionFormulario titulo="Incubación (destino)" mt={1} />
+                <TituloSeccionFormulario titulo="Destino en pileta de incubación" mt={1} />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
@@ -669,10 +670,10 @@ const EventoCosecha = () => {
       </FormularioRegistroPanel>
 
       <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, color: "#023047" }}>
-        Historial de cosechas e incubación
+        Historial de eficiencia reproductiva
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Cada fila incluye el desove y su ingreso a incubación. Seleccione un registro para
+        Cada fila incluye el desove y su ingreso a la pileta de incubación. Seleccione un registro para
         editarlo.
       </Typography>
 
@@ -691,10 +692,10 @@ const EventoCosecha = () => {
                   <TableCell>Lote genético</TableCell>
                   <TableCell>Fecha cosecha</TableCell>
                   <TableCell>Tipo</TableCell>
-                  <TableCell>Pileta incubación</TableCell>
+                  <TableCell>Pileta destino</TableCell>
                   <TableCell>Huevos/ml</TableCell>
                   <TableCell>F. ingreso</TableCell>
-                  <TableCell>Días en incubación</TableCell>
+                  <TableCell>Días en pileta</TableCell>
                   <TableCell>F. egreso</TableCell>
                   <TableCell>Observación</TableCell>
                   <TableCell align="center">Acciones</TableCell>
@@ -730,7 +731,10 @@ const EventoCosecha = () => {
                             : row.tipo_cosecha)}
                       </TableCell>
                       <TableCell>
-                        {row.incubacion_pileta_nombre ?? row.nombre_pileta_destino ?? "—"}
+                        {row.eficiencia_reproductiva_pileta_nombre ??
+                          row.incubacion_pileta_nombre ??
+                          row.nombre_pileta_destino ??
+                          "—"}
                       </TableCell>
                       <TableCell align="right">{formatCantidad(row.huevos_ml ?? row.fn_huevos_ml)}</TableCell>
                       <TableCell>{formatearFecha(row.fecha_ingreso ?? row.fd_fecha_ingreso)}</TableCell>
@@ -741,6 +745,8 @@ const EventoCosecha = () => {
                           texto={
                             row.observacion ??
                             row.fc_observacion ??
+                            row.observacion_eficiencia_reproductiva ??
+                            row.fc_observacion_eficiencia_reproductiva ??
                             row.observacion_incubacion ??
                             row.fc_observacion_incubacion
                           }
@@ -750,11 +756,12 @@ const EventoCosecha = () => {
                             row.fi_pileta_origen_id
                           }
                           piletaNombre={
+                            row.eficiencia_reproductiva_pileta_nombre ??
                             row.incubacion_pileta_nombre ??
                             row.nombre_pileta_destino ??
                             row.nombre_pileta_origen
                           }
-                          etapaLabel="Cosecha e incubación"
+                          etapaLabel="Eficiencia reproductiva"
                           cargarHistorial={cargarHistorialObservaciones}
                         />
                       </TableCell>
@@ -793,4 +800,4 @@ const EventoCosecha = () => {
   );
 };
 
-export default EventoCosecha;
+export default EficienciaReproductiva;

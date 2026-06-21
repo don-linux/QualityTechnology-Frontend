@@ -52,21 +52,17 @@ export const MENU_SECTIONS = [
         sublabel: "Inventario de Organismos",
         sublabelColor: "#90cdffff",
         items: [
-          { to: "/inventarios/trazabilidad", icon: <Timeline />, label: "Trazabilidad" },
           { to: "/inventarios/alevinaje", icon: <WaterDropIcon />, label: "Alevinaje" },
           { to: "/inventarios/reproductores", icon: <Biotech />, label: "Lote Reproductores" },
           { to: "/inventarios/engorda", icon: <Grass />, label: "Engorda" },
-          { to: "/inventarios/eventos-cosecha", icon: <EggAltIcon />, label: "Cosecha e incubación" },
-          { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
         ],
       },
-      {
-        sublabel: "Otros Inventarios",
-        sublabelColor: "#e3eb72ff",
-        items: [
-          { to: "/inventarios/equipos", icon: <Handyman />, label: "Equipo y Herramientas" },
-        ],
-      },
+    ],
+    items: [
+      { to: "/inventarios/trazabilidad", icon: <Timeline />, label: "Trazabilidad" },
+      { to: "/inventarios/eficiencia-reproductiva", icon: <EggAltIcon />, label: "Eficiencia reproductiva" },
+      { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
+      { to: "/inventarios/equipos", icon: <Handyman />, label: "Equipo y Herramientas" },
     ],
   },
   {

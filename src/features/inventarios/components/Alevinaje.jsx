@@ -335,7 +335,7 @@ const Alevinaje = () => {
                   value={formData.fc_lote}
                   onChange={handleChange}
                   fullWidth
-                  placeholder="Lote heredado de incubación o captura manual"
+                  placeholder="Lote heredado de eficiencia reproductiva o captura manual"
                   sx={campoFormSx}
                   inputProps={{ maxLength: 60 }}
                 />

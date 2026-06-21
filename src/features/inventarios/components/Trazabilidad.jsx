@@ -42,7 +42,7 @@ import { listLista } from "@features/ventas/services/listaEsperaService";
 const TIPOS_MOVIMIENTO = [
   {
     value: "INCUBACION_A_ALEVINAJE",
-    label: "De incubación a alevinaje",
+    label: "De eficiencia reproductiva a alevinaje",
     etapaOrigen: "incubacion",
     etapaDestino: "alevinaje",
     modo: "TRASLADO",
@@ -490,7 +490,7 @@ export default function Trazabilidad() {
 
   const etiquetaPileta = (p) => {
     const tipo = String(p.tipo ?? p.fc_tipo ?? "").toLowerCase();
-    if (tipo === "incubacion") return `${p.nombre} (lote en incubación)`;
+    if (tipo === "incubacion") return `${p.nombre} (lote en eficiencia reproductiva)`;
     return `${p.nombre} — ${formatCantidad(stockPileta(p))} org.`;
   };
 
