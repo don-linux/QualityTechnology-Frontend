@@ -222,6 +222,54 @@ export const ENDPOINTS = {
     deactivate: (id) => `/tipos-pileta/${id}/deactivate`,
   },
 
+  areasInstalacion: {
+    base: "/areas-instalacion",
+    activos: "/areas-instalacion/activos",
+    byId: (id) => `/areas-instalacion/${id}`,
+    activate: (id) => `/areas-instalacion/${id}/activate`,
+    deactivate: (id) => `/areas-instalacion/${id}/deactivate`,
+  },
+
+  faunasDetectadas: {
+    base: "/faunas-detectadas",
+    activos: "/faunas-detectadas/activos",
+    byId: (id) => `/faunas-detectadas/${id}`,
+    activate: (id) => `/faunas-detectadas/${id}/activate`,
+    deactivate: (id) => `/faunas-detectadas/${id}/deactivate`,
+  },
+
+  evidenciasFauna: {
+    base: "/evidencias-fauna",
+    activos: "/evidencias-fauna/activos",
+    byId: (id) => `/evidencias-fauna/${id}`,
+    activate: (id) => `/evidencias-fauna/${id}/activate`,
+    deactivate: (id) => `/evidencias-fauna/${id}/deactivate`,
+  },
+
+  estadosTrampa: {
+    base: "/estados-trampa",
+    activos: "/estados-trampa/activos",
+    byId: (id) => `/estados-trampa/${id}`,
+    activate: (id) => `/estados-trampa/${id}/activate`,
+    deactivate: (id) => `/estados-trampa/${id}/deactivate`,
+  },
+
+  accionesCorrectivas: {
+    base: "/acciones-correctivas",
+    activos: "/acciones-correctivas/activos",
+    byId: (id) => `/acciones-correctivas/${id}`,
+    activate: (id) => `/acciones-correctivas/${id}/activate`,
+    deactivate: (id) => `/acciones-correctivas/${id}/deactivate`,
+  },
+
+  insumos: {
+    base: "/insumos",
+    activos: "/insumos/activos",
+    byId: (id) => `/insumos/${id}`,
+    activate: (id) => `/insumos/${id}/activate`,
+    deactivate: (id) => `/insumos/${id}/deactivate`,
+  },
+
   bitacoras: {
     biometrias: {
       base: "/biometrias",
@@ -230,10 +278,10 @@ export const ENDPOINTS = {
       byGranja: (granja) => `/biometrias/${path(granja)}`,
       byId: (id) => `/biometrias/${id}`,
     },
-    plagas: {
-      base: "/plagas",
-      empleados: "/plagas/empleados",
-      byId: (id) => `/plagas/${id}`,
+    faunaNociva: {
+      base: "/fauna-nociva",
+      empleados: "/fauna-nociva/empleados",
+      byId: (id) => `/fauna-nociva/${id}`,
     },
     alimentacion: {
       base: "/alimentacion",

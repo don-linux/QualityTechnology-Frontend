@@ -33,6 +33,7 @@ import Security from "@mui/icons-material/Security";
 import Groups from "@mui/icons-material/Groups";
 import Timeline from "@mui/icons-material/Timeline";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
 
 export const DASHBOARD_SECTION = {
   modulo: "Dashboard",
@@ -74,7 +75,7 @@ export const MENU_SECTIONS = [
     label: "BITÁCORAS",
     moduleIcon: <Assignment />,
     items: [
-      { to: "/bitacoras/plagas", icon: <BugReport />, label: "Control de Plagas" },
+      { to: "/bitacoras/fauna-nociva", icon: <BugReport />, label: "Control de Fauna Nociva" },
       { to: "/bitacoras/recepcion-insumos", icon: <ReceiptLong />, label: "Recepción de Insumos" },
       { to: "/bitacoras/visitas", icon: <People />, label: "Control de Visitas" },
       { to: "/bitacoras/limpieza-banos", icon: <CleaningServices />, label: "Limpieza de Baños" },
@@ -138,7 +139,20 @@ export const MENU_SECTIONS = [
       {
         sublabel: "Catálogos de control de fauna nociva",
         sublabelColor: "#90cdffff",
-        items: [],
+        items: [
+          { to: "/areas-instalacion", icon: <HomeWorkIcon />, label: "Áreas de instalación" },
+          { to: "/faunas-detectadas", icon: <BugReport />, label: "Faunas detectadas" },
+          { to: "/evidencias-fauna", icon: <Assignment />, label: "Evidencias" },
+          { to: "/estados-trampa", icon: <CategoryIcon />, label: "Estados de trampa" },
+          { to: "/acciones-correctivas", icon: <CleaningServices />, label: "Acciones correctivas" },
+        ],
+      },
+      {
+        sublabel: "Insumos",
+        sublabelColor: "#90cdffff",
+        items: [
+          { to: "/insumos", icon: <Inventory2Icon />, label: "Catálogo de Insumos" },
+        ],
       },
     ],
   },

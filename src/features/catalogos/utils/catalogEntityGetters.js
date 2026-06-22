@@ -71,6 +71,66 @@ export function tipoPiletaActivo(t) {
   return t?.activo ?? t?.esta_activo ?? t?.fb_activo ?? false;
 }
 
+export function getAreaInstalacionId(a) {
+  return a?.area_instalacion_id ?? a?.id;
+}
+
+export function getAreaInstalacionNombre(a) {
+  return a?.nombre ?? a?.fc_nombre ?? "";
+}
+
+export function areaInstalacionActivo(a) {
+  return a?.activo ?? a?.esta_activo ?? a?.fb_activo ?? false;
+}
+
+export function getFaunaDetectadaId(f) {
+  return f?.fauna_detectada_id ?? f?.id;
+}
+
+export function getFaunaDetectadaNombre(f) {
+  return f?.nombre ?? f?.fc_nombre ?? "";
+}
+
+export function faunaDetectadaActivo(f) {
+  return f?.activo ?? f?.esta_activo ?? f?.fb_activo ?? false;
+}
+
+export function getEvidenciaFaunaId(e) {
+  return e?.evidencia_fauna_id ?? e?.id;
+}
+
+export function getEvidenciaFaunaNombre(e) {
+  return e?.nombre ?? e?.fc_nombre ?? "";
+}
+
+export function evidenciaFaunaActivo(e) {
+  return e?.activo ?? e?.esta_activo ?? e?.fb_activo ?? false;
+}
+
+export function getEstadoTrampaId(e) {
+  return e?.estado_trampa_id ?? e?.id;
+}
+
+export function getEstadoTrampaNombre(e) {
+  return e?.nombre ?? e?.fc_nombre ?? "";
+}
+
+export function estadoTrampaActivo(e) {
+  return e?.activo ?? e?.esta_activo ?? e?.fb_activo ?? false;
+}
+
+export function getAccionCorrectivaId(a) {
+  return a?.accion_correctiva_id ?? a?.id;
+}
+
+export function getAccionCorrectivaNombre(a) {
+  return a?.nombre ?? a?.fc_nombre ?? "";
+}
+
+export function accionCorrectivaActivo(a) {
+  return a?.activo ?? a?.esta_activo ?? a?.fb_activo ?? false;
+}
+
 /** Sede física enlazada (`unidadNegocio.ubicacionId` / serializers). */
 export function getUnidadNegocioUbicacionId(u) {
   const v = u?.fi_ubicacion_id ?? u?.ubicacion_id;

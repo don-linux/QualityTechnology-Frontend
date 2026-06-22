@@ -4,25 +4,25 @@ import { ENDPOINTS } from "@shared/lib/endpoints";
 const B = ENDPOINTS.bitacoras;
 
 /* =====================================================
-   Plagas
+   Fauna Nociva
 ===================================================== */
-export function listEmpleadosPlagas() {
-  return axios.get(B.plagas.empleados);
+export function listEmpleadosFaunaNociva() {
+  return axios.get(B.faunaNociva.empleados);
 }
-export function listPlagas(ubicacion) {
-  return axios.get(B.plagas.base, { params: { ubicacion } });
+export function listFaunaNociva(ubicacion) {
+  return axios.get(B.faunaNociva.base, { params: { ubicacion } });
 }
-export function createPlaga(data) {
-  return axios.post(B.plagas.base, data);
+export function createFaunaNociva(data) {
+  return axios.post(B.faunaNociva.base, data);
 }
-export function updatePlaga(id, data) {
-  return axios.put(B.plagas.byId(id), data);
+export function updateFaunaNociva(id, data) {
+  return axios.put(B.faunaNociva.byId(id), data);
 }
-export function removePlaga(id) {
-  return axios.delete(B.plagas.byId(id));
+export function removeFaunaNociva(id) {
+  return axios.delete(B.faunaNociva.byId(id));
 }
-export function removeAllPlagas(ubicacion) {
-  return axios.delete(B.plagas.base, { params: { ubicacion } });
+export function removeAllFaunaNociva(ubicacion) {
+  return axios.delete(B.faunaNociva.base, { params: { ubicacion } });
 }
 
 /* =====================================================

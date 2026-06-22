@@ -18,6 +18,12 @@ const Departamentos = lazy(() => import("@pages/catalogos/DepartamentosPage"));
 const UnidadesNegocio = lazy(() => import("@pages/catalogos/UnidadesNegocioPage"));
 const Ubicaciones = lazy(() => import("@pages/catalogos/UbicacionesPage"));
 const TiposPileta = lazy(() => import("@pages/catalogos/TiposPiletaPage"));
+const AreasInstalacion = lazy(() => import("@pages/catalogos/AreasInstalacionPage"));
+const FaunasDetectadas = lazy(() => import("@pages/catalogos/FaunasDetectadasPage"));
+const EvidenciasFauna = lazy(() => import("@pages/catalogos/EvidenciasFaunaPage"));
+const EstadosTrampa = lazy(() => import("@pages/catalogos/EstadosTrampaPage"));
+const AccionesCorrectivas = lazy(() => import("@pages/catalogos/AccionesCorrectivasPage"));
+const Insumos = lazy(() => import("@pages/catalogos/InsumosPage"));
 
 // Inventarios
 const PiletasFisicas = lazy(() => import("@pages/inventarios/PiletasFisicasPage"));
@@ -37,7 +43,7 @@ const TesoreriaGeneral = lazy(() => import("@pages/ventas/TesoreriaGeneralPage")
 const Cuentas = lazy(() => import("@pages/catalogos/CuentasPage"));
 
 // Bitácoras
-const BitacoraPlagas = lazy(() => import("@pages/bitacoras/BitacoraPlagasPage"));
+const BitacoraFaunaNociva = lazy(() => import("@pages/bitacoras/BitacoraFaunaNocivaPage"));
 const BitacoraRecepcionInsumos = lazy(() => import("@pages/bitacoras/BitacoraRecepcionInsumosPage"));
 const BitacoraVisitas = lazy(() => import("@pages/bitacoras/BitacoraVisitasPage"));
 const BitacoraBanos = lazy(() => import("@pages/bitacoras/BitacoraBanosPage"));
@@ -91,7 +97,7 @@ export default function AppRouter() {
         <Route element={<PrivateRoute modulo="Bitacoras" />}>
           <Route element={<CorporateLayout />}>
             <Route path="bitacoras">
-              <Route path="plagas" element={<BitacoraPlagas />} />
+              <Route path="fauna-nociva" element={<BitacoraFaunaNociva />} />
               <Route path="recepcion-insumos" element={<BitacoraRecepcionInsumos />} />
               <Route path="visitas" element={<BitacoraVisitas />} />
               <Route path="limpieza-banos" element={<BitacoraBanos />} />
@@ -133,6 +139,12 @@ export default function AppRouter() {
             <Route path="unidades-negocio" element={<UnidadesNegocio />} />
             <Route path="ubicaciones" element={<Ubicaciones />} />
             <Route path="tipos-pileta" element={<TiposPileta />} />
+            <Route path="areas-instalacion" element={<AreasInstalacion />} />
+            <Route path="faunas-detectadas" element={<FaunasDetectadas />} />
+            <Route path="evidencias-fauna" element={<EvidenciasFauna />} />
+            <Route path="estados-trampa" element={<EstadosTrampa />} />
+            <Route path="acciones-correctivas" element={<AccionesCorrectivas />} />
+            <Route path="insumos" element={<Insumos />} />
           </Route>
         </Route>
 
