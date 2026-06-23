@@ -2,6 +2,15 @@ import axiosInstance from "./axiosInstance";
 import { API_URL } from "./config";
 
 /**
+ * Base de los recursos estáticos subidos. `API_URL` incluye el prefijo `/api`,
+ * pero el backend sirve los archivos en la raíz del servidor (`/uploads`),
+ * fuera de `/api`. Por eso quitamos el sufijo `/api` para apuntar al origen.
+ */
+function staticBaseUrl() {
+  return API_URL.replace(/\/api\/?$/, "");
+}
+
+/**
  * Construye la URL absoluta de un recurso subido SIN incluir el token.
  * El token nunca debe viajar en la query string: queda expuesto en el
  * historial del navegador, en la cabecera Referer y en los logs del servidor.
@@ -9,7 +18,7 @@ import { API_URL } from "./config";
 export function buildUploadUrl(path) {
   if (!path) return null;
   if (path.startsWith("http")) return path;
-  return `${API_URL}/${path.replace(/^\//, "")}`;
+  return `${staticBaseUrl()}/${path.replace(/^\//, "")}`;
 }
 
 /**

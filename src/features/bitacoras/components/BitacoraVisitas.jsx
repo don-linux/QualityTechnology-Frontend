@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { openUpload } from "@shared/lib/uploadUrl";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import Card from "@mui/material/Card";
@@ -21,6 +20,8 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import SearchIcon from "@mui/icons-material/Search";
+import PhotoCameraRoundedIcon from "@mui/icons-material/PhotoCameraRounded";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import {
   listVisitas,
   createVisita,
@@ -39,6 +40,8 @@ import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranj
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 import { formatFecha } from "@shared/utils/formatters";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import CapturaIdentificacionModal from "./CapturaIdentificacionModal";
+import FotoIdentificacionDialog from "./FotoIdentificacionDialog";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
@@ -69,10 +72,15 @@ function BitacoraVisitasContent() {
   const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [fotoPreview, setFotoPreview] = useState("");
+  const [fotoVer, setFotoVer] = useState({ open: false, path: "" });
+
   const requiredFields = [
     "ubicacion",
     "fd_fecha", "fc_nombre_completo", "fc_origen", "fc_motivo",
-    "fc_observaciones", "fd_entrada", "fd_salida",
+    "fc_observaciones", "fd_entrada",
+    ...(editId ? [] : ["fc_foto_identificacion"]),
   ];
 
   const handleChange = (e) => {
@@ -80,11 +88,9 @@ function BitacoraVisitasContent() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.files[0],
-    });
+  const handleCapturaFoto = (file) => {
+    clearFieldError("fc_foto_identificacion");
+    setForm((prev) => ({ ...prev, fc_foto_identificacion: file }));
   };
 
   const cargarDatos = useCallback(async () => {
@@ -113,6 +119,17 @@ function BitacoraVisitasContent() {
       setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
     }
   }, [defaultUbicacion, form.ubicacion]);
+
+  useEffect(() => {
+    const foto = form.fc_foto_identificacion;
+    if (foto instanceof File) {
+      const url = URL.createObjectURL(foto);
+      setFotoPreview(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setFotoPreview("");
+    return undefined;
+  }, [form.fc_foto_identificacion]);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
@@ -209,7 +226,7 @@ function BitacoraVisitasContent() {
 
     doc.setFontSize(14);
     const ubicLabel = "Todas las ubicaciones";
-    doc.text(`Bitácora de Visitas — ${ubicLabel}`, 45, 20);
+    doc.text(`Control de Visitas — ${ubicLabel}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Registro de visitas, motivos y observaciones", 45, 26);
 
@@ -235,7 +252,7 @@ function BitacoraVisitasContent() {
 
     const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Visitas_${fecha}.pdf`);
+    doc.save(`Control_Visitas_${fecha}.pdf`);
   };
 
   const gruposUbicacion = getGroups(data);
@@ -275,13 +292,7 @@ function BitacoraVisitasContent() {
                   <Link
                     component="button"
                     type="button"
-                    onClick={async () => {
-                      try {
-                        await openUpload(r.fc_foto_identificacion);
-                      } catch {
-                        showSnackbar("No se pudo abrir la foto", "error");
-                      }
-                    }}
+                    onClick={() => setFotoVer({ open: true, path: r.fc_foto_identificacion })}
                     sx={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
                   >
                     Ver foto
@@ -330,7 +341,7 @@ function BitacoraVisitasContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Bitacora de Visitas
+        Control de Visitas
       </Typography>
 
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -446,79 +457,138 @@ function BitacoraVisitasContent() {
               />
             </Grid>
 
-            {/*  Fila final con carga de archivo y horas alineadas */}
+            {/* Fila final: identificación (cámara) y horas */}
             <Grid size={12}>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      fullWidth
-                      sx={{
-                        textTransform: "none",
-                        borderColor: "#1976d2",
-                        color: "#1976d2",
-                        "&:hover": { backgroundColor: "rgba(25,118,210,0.08)" },
-                      }}
-                    >
-                       Subir identificación
-                      <input
-                        type="file"
-                        hidden
-                        name="fc_foto_identificacion"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                      />
-                    </Button>
-                    {form.fc_foto_identificacion && (
-                      <Typography
-                        variant="body2"
+              <Grid container spacing={2} alignItems="flex-start">
+                <Grid size={{ xs: 12, md: editId ? 4 : 6 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      p: 1,
+                      borderRadius: 1.5,
+                      border: "1px solid",
+                      borderColor: errors.fc_foto_identificacion ? "error.main" : "divider",
+                    }}
+                  >
+                    {fotoPreview ? (
+                      <Box
+                        component="img"
+                        src={fotoPreview}
+                        alt="Identificación"
                         sx={{
-                          color: "text.secondary",
-                          fontSize: "0.8rem",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "120px",
+                          width: 64,
+                          height: 44,
+                          objectFit: "cover",
+                          borderRadius: 1,
+                          border: "1px solid",
+                          borderColor: "divider",
+                          flexShrink: 0,
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 64,
+                          height: 44,
+                          borderRadius: 1,
+                          flexShrink: 0,
+                          display: "grid",
+                          placeItems: "center",
+                          bgcolor: "rgba(25,118,210,0.06)",
+                          border: "1px dashed",
+                          borderColor: "rgba(25,118,210,0.4)",
+                          color: "#1976d2",
                         }}
                       >
-                        {form.fc_foto_identificacion.name ||
-                          String(form.fc_foto_identificacion).slice(0, 20)}
-                      </Typography>
+                        <PhotoCameraRoundedIcon fontSize="small" />
+                      </Box>
                     )}
+
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, minWidth: 0 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<PhotoCameraRoundedIcon />}
+                          onClick={() => setCameraOpen(true)}
+                          sx={{
+                            textTransform: "none",
+                            borderColor: "#1976d2",
+                            color: "#1976d2",
+                            "&:hover": { backgroundColor: "rgba(25,118,210,0.08)" },
+                          }}
+                        >
+                          {form.fc_foto_identificacion ? "Volver a tomar" : "Tomar fotografía"}
+                        </Button>
+                        {editId &&
+                          typeof form.fc_foto_identificacion === "string" &&
+                          form.fc_foto_identificacion && (
+                            <Button
+                              variant="text"
+                              size="small"
+                              startIcon={<VisibilityRoundedIcon />}
+                              onClick={() =>
+                                setFotoVer({ open: true, path: form.fc_foto_identificacion })
+                              }
+                              sx={{ textTransform: "none" }}
+                            >
+                              Ver
+                            </Button>
+                          )}
+                      </Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: errors.fc_foto_identificacion ? "error.main" : "text.secondary",
+                        }}
+                      >
+                        {errors.fc_foto_identificacion
+                          ? errors.fc_foto_identificacion
+                          : form.fc_foto_identificacion
+                            ? fotoPreview
+                              ? "Fotografía lista"
+                              : "Identificación registrada"
+                            : editId
+                              ? "Sin identificación"
+                              : "Identificación (obligatoria)"}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: editId ? 4 : 6 }}>
                   <TextField
                     label="Hora de Entrada"
                     type="time"
-                name="fd_entrada"
-                value={form.fd_entrada}
-                onChange={handleChange}
-                fullWidth
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                error={!!errors.fd_entrada}
-                helperText={errors.fd_entrada}
-              />
+                    name="fd_entrada"
+                    value={form.fd_entrada}
+                    onChange={handleChange}
+                    fullWidth
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
+                    error={!!errors.fd_entrada}
+                    helperText={errors.fd_entrada}
+                  />
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
-                    label="Hora de Salida"
-                    type="time"
-                name="fd_salida"
-                value={form.fd_salida}
-                onChange={handleChange}
-                fullWidth
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                error={!!errors.fd_salida}
-                helperText={errors.fd_salida}
-              />
-                </Grid>
+                {editId && (
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <TextField
+                      label="Hora de Salida (opcional)"
+                      type="time"
+                      name="fd_salida"
+                      value={form.fd_salida}
+                      onChange={handleChange}
+                      fullWidth
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.fd_salida}
+                      helperText={errors.fd_salida}
+                    />
+                  </Grid>
+                )}
               </Grid>
             </Grid>
           </Grid>
@@ -550,6 +620,17 @@ function BitacoraVisitasContent() {
       </FormularioRegistroPanel>
 
       <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaVisitas} />
+
+      <CapturaIdentificacionModal
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onCapture={handleCapturaFoto}
+      />
+      <FotoIdentificacionDialog
+        open={fotoVer.open}
+        path={fotoVer.path}
+        onClose={() => setFotoVer({ open: false, path: "" })}
+      />
       {ConfirmModal}
     </Box>
   );
