@@ -75,7 +75,7 @@ export const MENU_SECTIONS = [
     label: "BITÁCORAS",
     moduleIcon: <Assignment />,
     items: [
-      { to: "/bitacoras/fauna-nociva", icon: <BugReport />, label: "Control de Fauna Nociva" },
+      { to: "/bitacoras/control-fauna-nociva", icon: <BugReport />, label: "Control de Fauna Nociva" },
       { to: "/bitacoras/recepcion-insumos", icon: <ReceiptLong />, label: "Recepción de Insumos" },
       { to: "/bitacoras/control-visitas", icon: <People />, label: "Control de Visitas" },
       { to: "/bitacoras/limpieza-banos", icon: <CleaningServices />, label: "Limpieza de Baños" },

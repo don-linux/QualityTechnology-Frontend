@@ -4,25 +4,25 @@ import { ENDPOINTS } from "@shared/lib/endpoints";
 const B = ENDPOINTS.bitacoras;
 
 /* =====================================================
-   Fauna Nociva
+   Control de Fauna Nociva
 ===================================================== */
-export function listEmpleadosFaunaNociva() {
-  return axios.get(B.faunaNociva.empleados);
+export function listEmpleadosControlFaunaNociva() {
+  return axios.get(B.controlFaunaNociva.empleados);
 }
-export function listFaunaNociva(ubicacion) {
-  return axios.get(B.faunaNociva.base, { params: { ubicacion } });
+export function listControlFaunaNociva(ubicacion) {
+  return axios.get(B.controlFaunaNociva.base, { params: { ubicacion } });
 }
-export function createFaunaNociva(data) {
-  return axios.post(B.faunaNociva.base, data);
+export function createControlFaunaNociva(data) {
+  return axios.post(B.controlFaunaNociva.base, data);
 }
-export function updateFaunaNociva(id, data) {
-  return axios.put(B.faunaNociva.byId(id), data);
+export function updateControlFaunaNociva(id, data) {
+  return axios.put(B.controlFaunaNociva.byId(id), data);
 }
-export function removeFaunaNociva(id) {
-  return axios.delete(B.faunaNociva.byId(id));
+export function removeControlFaunaNociva(id) {
+  return axios.delete(B.controlFaunaNociva.byId(id));
 }
-export function removeAllFaunaNociva(ubicacion) {
-  return axios.delete(B.faunaNociva.base, { params: { ubicacion } });
+export function removeAllControlFaunaNociva(ubicacion) {
+  return axios.delete(B.controlFaunaNociva.base, { params: { ubicacion } });
 }
 
 /* =====================================================

@@ -22,12 +22,12 @@ import DialogActions from "@mui/material/DialogActions";
 import Divider from "@mui/material/Divider";
 import SearchIcon from "@mui/icons-material/Search";
 import {
-  listFaunaNociva,
-  listEmpleadosFaunaNociva,
-  createFaunaNociva,
-  updateFaunaNociva,
-  removeFaunaNociva,
-  removeAllFaunaNociva,
+  listControlFaunaNociva,
+  listEmpleadosControlFaunaNociva,
+  createControlFaunaNociva,
+  updateControlFaunaNociva,
+  removeControlFaunaNociva,
+  removeAllControlFaunaNociva,
 } from "../services/bitacorasService";
 import { listAreasInstalacionActivos } from "@features/catalogos/services/areasInstalacionService";
 import { listFaunasDetectadasActivos } from "@features/catalogos/services/faunasDetectadasService";
@@ -113,7 +113,7 @@ function CatalogSelect({
   );
 }
 
-function BitacoraFaunaNocivaContent() {
+function ControlFaunaNocivaContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
   const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } =
@@ -165,7 +165,7 @@ function BitacoraFaunaNocivaContent() {
           listEvidenciasFaunaActivos(),
           listEstadosTrampaActivos(),
           listAccionesCorrectivasActivos(),
-          listEmpleadosFaunaNociva(),
+          listEmpleadosControlFaunaNociva(),
         ]);
       setAreasInstalacion(areasRes.data ?? []);
       setFaunasDetectadas(faunasRes.data ?? []);
@@ -186,7 +186,7 @@ function BitacoraFaunaNocivaContent() {
 
     try {
       const granjas = ubicacionesGranja.map((op) => op.value);
-      const rows = await fetchMergedPorUbicaciones(granjas, listFaunaNociva);
+      const rows = await fetchMergedPorUbicaciones(granjas, listControlFaunaNociva);
       const q = busqueda.trim().toLowerCase();
       const filtrados = rows.filter((r) => {
         if (!q) return true;
@@ -234,8 +234,8 @@ function BitacoraFaunaNocivaContent() {
         estado_trampa_id: Number(form.estado_trampa_id),
         accion_correctiva_id: Number(form.accion_correctiva_id),
       };
-      if (editId) await updateFaunaNociva(editId, payload);
-      else await createFaunaNociva(payload);
+      if (editId) await updateControlFaunaNociva(editId, payload);
+      else await createControlFaunaNociva(payload);
 
       const wasEdit = Boolean(editId);
       setEditId(null);
@@ -269,13 +269,13 @@ function BitacoraFaunaNocivaContent() {
 
   const eliminar = async (id) => {
     if (!(await confirm("¿Eliminar registro?"))) return;
-    await removeFaunaNociva(id);
+    await removeControlFaunaNociva(id);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!(await confirm("¿Eliminar todos los registros de todas las ubicaciones?"))) return;
-    await Promise.all(ubicacionesGranja.map((op) => removeAllFaunaNociva(op.value)));
+    await Promise.all(ubicacionesGranja.map((op) => removeAllControlFaunaNociva(op.value)));
     cargarDatos();
   };
 
@@ -293,7 +293,7 @@ function BitacoraFaunaNocivaContent() {
     }
 
     doc.setFontSize(14);
-    doc.text("Bitácora de Control de Fauna Nociva — Todas las ubicaciones", 45, 20);
+    doc.text("Control de Fauna Nociva — Todas las ubicaciones", 45, 20);
     doc.setFontSize(10);
     doc.text("Registro de hallazgos y acciones correctivas por área de instalación", 45, 26);
 
@@ -330,7 +330,7 @@ function BitacoraFaunaNocivaContent() {
 
     const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Fauna_Nociva_${fecha}.pdf`);
+    doc.save(`Control_Fauna_Nociva_${fecha}.pdf`);
   };
 
   const gruposUbicacion = getGroups(data);
@@ -652,6 +652,6 @@ function BitacoraFaunaNocivaContent() {
   );
 }
 
-export default function BitacoraFaunaNociva() {
-  return <BitacoraFaunaNocivaContent />;
+export default function ControlFaunaNociva() {
+  return <ControlFaunaNocivaContent />;
 }

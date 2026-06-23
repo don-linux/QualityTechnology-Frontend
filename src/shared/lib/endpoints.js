@@ -278,10 +278,10 @@ export const ENDPOINTS = {
       byGranja: (granja) => `/biometrias/${path(granja)}`,
       byId: (id) => `/biometrias/${id}`,
     },
-    faunaNociva: {
-      base: "/fauna-nociva",
-      empleados: "/fauna-nociva/empleados",
-      byId: (id) => `/fauna-nociva/${id}`,
+    controlFaunaNociva: {
+      base: "/control-fauna-nociva",
+      empleados: "/control-fauna-nociva/empleados",
+      byId: (id) => `/control-fauna-nociva/${id}`,
     },
     alimentacion: {
       base: "/alimentacion",
