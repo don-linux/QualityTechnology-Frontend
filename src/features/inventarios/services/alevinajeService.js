@@ -28,7 +28,3 @@ export function createAlevinaje(data) {
 export function updateAlevinaje(id, data) {
   return axios.put(ENDPOINTS.alevinaje.byId(id), data);
 }
-
-export function removeAlevinaje(id) {
-  return axios.delete(ENDPOINTS.alevinaje.byId(id));
-}

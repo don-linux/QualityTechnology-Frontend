@@ -26,8 +26,6 @@ import {
   listEmpleadosControlFaunaNociva,
   createControlFaunaNociva,
   updateControlFaunaNociva,
-  removeControlFaunaNociva,
-  removeAllControlFaunaNociva,
 } from "../services/bitacorasService";
 import { listAreasInstalacionActivos } from "@features/catalogos/services/areasInstalacionService";
 import { listFaunasDetectadasActivos } from "@features/catalogos/services/faunasDetectadasService";
@@ -47,7 +45,6 @@ import {
   getAccionCorrectivaNombre,
 } from "@features/catalogos/utils/catalogEntityGetters";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -131,7 +128,6 @@ function ControlFaunaNocivaContent() {
   const [busqueda, setBusqueda] = useState("");
   const [registroDetalle, setRegistroDetalle] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const {
     visible: mostrarFormulario,
     abrir: abrirFormulario,
@@ -267,18 +263,6 @@ function ControlFaunaNocivaContent() {
     abrirFormulario();
   };
 
-  const eliminar = async (id) => {
-    if (!(await confirm("¿Eliminar registro?"))) return;
-    await removeControlFaunaNociva(id);
-    cargarDatos();
-  };
-
-  const eliminarTodos = async () => {
-    if (!(await confirm("¿Eliminar todos los registros de todas las ubicaciones?"))) return;
-    await Promise.all(ubicacionesGranja.map((op) => removeAllControlFaunaNociva(op.value)));
-    cargarDatos();
-  };
-
   const exportarPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
@@ -397,14 +381,6 @@ function ControlFaunaNocivaContent() {
                         onClick={() => editar(r)}
                       >
                         Editar
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="error"
-                        onClick={() => eliminar(r.fi_id)}
-                      >
-                        Eliminar
                       </Button>
                     </Box>
                   </TableCell>
@@ -598,16 +574,12 @@ function ControlFaunaNocivaContent() {
               <Button variant="outlined" size="small" onClick={exportarPDF}>
                 Exportar PDF
               </Button>
-              <Button variant="contained" size="small" color="error" onClick={eliminarTodos}>
-                Eliminar Todos
-              </Button>
             </Box>
           </CardContent>
         </Card>
       </FormularioRegistroPanel>
 
       <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTabla} />
-      {ConfirmModal}
 
       <Dialog
         open={!!registroDetalle}

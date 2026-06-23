@@ -13,6 +13,10 @@ export function updateRol(id, nombre) {
   return axios.put(ENDPOINTS.roles.byId(id), { nombre });
 }
 
-export function removeRol(id) {
-  return axios.delete(ENDPOINTS.roles.byId(id));
+export function deactivateRol(id) {
+  return axios.patch(ENDPOINTS.roles.deactivate(id));
+}
+
+export function activateRol(id) {
+  return axios.patch(ENDPOINTS.roles.activate(id));
 }

@@ -21,10 +21,6 @@ export function createEmpleado(data) {
   return axios.post(ENDPOINTS.empleados.base, data);
 }
 
-export function removeEmpleado(id) {
-  return axios.delete(ENDPOINTS.empleados.byId(id));
-}
-
 export function toggleEmpleadoActivo(id, activate, data = {}) {
   const url = activate ? ENDPOINTS.empleados.activate(id) : ENDPOINTS.empleados.deactivate(id);
   return axios.patch(url, data);

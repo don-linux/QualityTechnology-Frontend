@@ -21,12 +21,9 @@ import {
   listAlimentacion,
   createAlimentacion,
   updateAlimentacion,
-  removeAlimentacion,
-  removeAllAlimentacion,
 } from "../services/alimentacionService";
 import { listPiletas } from "@features/inventarios/services/piletasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -78,7 +75,6 @@ export default function BioAlimentacion() {
   const [origenes, setOrigenes] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
@@ -208,12 +204,6 @@ export default function BioAlimentacion() {
     abrirFormulario();
   };
 
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar registro?")) return;
-    await removeAlimentacion(id);
-    cargarDatos();
-  };
-
   //  Exportar a PDF
   const exportarPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
@@ -280,13 +270,6 @@ export default function BioAlimentacion() {
     doc.save(`Bitacora_Alimentacion_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
-  //  Eliminar todos los registros
-  const eliminarTodos = async () => {
-    if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await removeAllAlimentacion();
-    cargarDatos();
-  };
-
   const gruposUbicacion = getGroups(data);
 
   const tablaAlimentacion = (rows) => {
@@ -344,14 +327,6 @@ export default function BioAlimentacion() {
                     onClick={() => editar(row)}
                   >
                     Editar
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    size="small"
-                    onClick={() => eliminar(row.fi_id)}
-                  >
-                    Eliminar
                   </Button>
                 </Box>
               </TableCell>
@@ -574,14 +549,6 @@ export default function BioAlimentacion() {
             >
                Exportar PDF
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ ml: 2 }}
-              onClick={eliminarTodos}
-            >
-               Eliminar Todos
-            </Button>
           </Box>
         </CardContent>
       </Card>
@@ -597,8 +564,6 @@ export default function BioAlimentacion() {
           </AccordionDetails>
         </Accordion>
       ))}
-
-      {ConfirmModal}
     </Box>
   );
 }

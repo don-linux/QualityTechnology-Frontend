@@ -3,7 +3,6 @@ import {
   listEficienciaReproductiva,
   createEficienciaReproductiva,
   updateEficienciaReproductiva,
-  removeEficienciaReproductiva,
 } from "../services/eficienciaReproductivaService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
@@ -34,7 +33,6 @@ import FormHelperText from "@mui/material/FormHelperText";
 import Checkbox from "@mui/material/Checkbox";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -104,7 +102,6 @@ const formularioVacio = (ubicacionDefault = "") => ({
 const EficienciaReproductiva = () => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const {
     visible: mostrarFormulario,
     abrir: abrirFormulario,
@@ -324,18 +321,6 @@ const EficienciaReproductiva = () => {
       cargarRegistros();
     } catch (err) {
       showSnackbar(err?.response?.data?.error || "No se pudo actualizar", "error");
-    }
-  };
-
-  const eliminarEvento = async (id) => {
-    if (!await confirm("¿Eliminar este registro de eficiencia reproductiva?")) return;
-    try {
-      await removeEficienciaReproductiva(id);
-      showSnackbar("Registro eliminado", "success");
-      cargarRegistros();
-      resetEdicion();
-    } catch (err) {
-      showSnackbar(err?.response?.data?.error || "No se pudo eliminar", "error");
     }
   };
 
@@ -777,13 +762,6 @@ const EficienciaReproductiva = () => {
                         >
                           Editar
                         </Button>
-                        <Button
-                          size="small"
-                          color="error"
-                          onClick={() => eliminarEvento(row.fi_id ?? row.id)}
-                        >
-                          Eliminar
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -794,8 +772,6 @@ const EficienciaReproductiva = () => {
           );
         }}
       />
-
-      {ConfirmModal}
     </div>
   );
 };

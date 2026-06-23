@@ -21,7 +21,6 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -29,7 +28,6 @@ import {
   listPiletas,
   createPileta,
   updatePileta,
-  removePileta,
 } from "../services/piletasService";
 import { listTiposPiletaActivos } from "@features/catalogos/services/tiposPiletaService";
 import {
@@ -39,7 +37,6 @@ import {
 import { ESTADOS_CONSERVACION_PILETA } from "@shared/constants/estadosConservacionPileta";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
@@ -65,7 +62,6 @@ const tipoLabel = (t) => {
  * ========================================================================= */
 export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
   const showSnackbar = useSnackbar();
-  const { confirm, ConfirmModal } = useConfirm();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
   const [piletas, setPiletas] = useState([]);
@@ -100,13 +96,10 @@ export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
         piletas={piletas}
         onChange={cargarPiletas}
         showSnackbar={showSnackbar}
-        confirm={confirm}
         ubicacionesGranja={ubicacionesGranja}
         defaultUbicacion={defaultUbicacion}
         getGroups={getGroups}
       />
-
-      {ConfirmModal}
     </Box>
   );
 }
@@ -118,7 +111,6 @@ function PiletasTab({
   piletas,
   onChange,
   showSnackbar,
-  confirm,
   ubicacionesGranja,
   defaultUbicacion,
   getGroups,
@@ -277,17 +269,6 @@ function PiletasTab({
       tipo_pileta_id: p.tipo_pileta_id != null ? String(p.tipo_pileta_id) : "",
     });
     setMostrarFormulario(true);
-  };
-
-  const eliminar = async (p) => {
-    if (!(await confirm(`¿Eliminar pileta "${p.nombre}"?`))) return;
-    try {
-      await removePileta(p.fi_pileta_id);
-      showSnackbar("Pileta eliminada", "success");
-      onChange();
-    } catch (err) {
-      showSnackbar(err.response?.data?.error || "Error eliminando", "error");
-    }
   };
 
   return (
@@ -616,11 +597,6 @@ function PiletasTab({
                         <Tooltip title="Editar">
                           <IconButton size="small" color="primary" onClick={() => editar(p)}>
                             <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Eliminar">
-                          <IconButton size="small" color="error" onClick={() => eliminar(p)}>
-                            <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       </TableCell>

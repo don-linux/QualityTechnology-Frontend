@@ -18,19 +18,14 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import CleaningServices from "@mui/icons-material/CleaningServices";
 import EventAvailable from "@mui/icons-material/EventAvailable";
-import Delete from "@mui/icons-material/Delete";
 import Add from "@mui/icons-material/Add";
-import DeleteForever from "@mui/icons-material/DeleteForever";
 import Edit from "@mui/icons-material/Edit";
 import {
   listVacaciones,
   createVacaciones,
   updateVacaciones,
-  removeVacaciones,
-  removeAllVacaciones,
 } from "../services/vacacionesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
@@ -50,7 +45,6 @@ export default function Vacaciones() {
   });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = ["nombre", "idEmpleado", "departamento", "inicio", "fin"];
 
@@ -110,18 +104,6 @@ export default function Vacaciones() {
     } catch (err) {
       showSnackbar(" Error al crear registro.", "error");
     }
-  };
-
-  const eliminarRegistro = async (id) => {
-    if (!await confirm("¿Eliminar este registro?")) return;
-    await removeVacaciones(id);
-    obtenerDatos();
-  };
-
-  const eliminarTodos = async () => {
-    if (!await confirm(" Eliminar TODOS los registros?")) return;
-    await removeAllVacaciones();
-    obtenerDatos();
   };
 
   const handleChange = (campo, value) => {
@@ -198,16 +180,6 @@ export default function Vacaciones() {
               onClick={crearRegistro}
             >
               NUEVO
-            </Button>
-          </Grid>
-          <Grid>
-            <Button
-              variant="contained"
-              color="error"
-              startIcon={<DeleteForever />}
-              onClick={eliminarTodos}
-            >
-              ELIMINAR TODO
             </Button>
           </Grid>
         </Grid>
@@ -480,15 +452,6 @@ export default function Vacaciones() {
                         >
                           Editar
                         </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color="error"
-                          startIcon={<Delete />}
-                          onClick={() => eliminarRegistro(v.fi_vacacion_id)}
-                        >
-                          Eliminar
-                        </Button>
                       </>
                     )}
                   </TableCell>
@@ -498,7 +461,6 @@ export default function Vacaciones() {
           </TableBody>
         </Table>
       </TableContainer>
-      {ConfirmModal}
     </Box>
   );
 }

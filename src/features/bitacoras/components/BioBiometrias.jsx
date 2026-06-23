@@ -27,11 +27,9 @@ import {
   listEmpleadosBiometrias,
   createBiometria,
   updateBiometria,
-  removeBiometria,
 } from "../services/biometriasService";
 import { listPiletas } from "@features/inventarios/services/piletasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -64,7 +62,6 @@ export default function BioBiometrias() {
   const [piletas, setPiletas] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
@@ -218,20 +215,6 @@ export default function BioBiometrias() {
       fi_usuario_id: usuario_id,
     });
     abrirFormulario();
-  };
-
-  /* -----------------------------
-      ELIMINAR
-  ------------------------------*/
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar registro?")) return;
-    try {
-      await removeBiometria(id);
-      cargarDatos();
-      showSnackbar("Registro eliminado", "success");
-    } catch {
-      showSnackbar("Error al eliminar biometría", "error");
-    }
   };
 
   /* -----------------------------
@@ -582,14 +565,6 @@ export default function BioBiometrias() {
                             >
                               Editar
                             </Button>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              color="error"
-                              onClick={() => eliminar(row.fi_id)}
-                            >
-                              Eliminar
-                            </Button>
                           </Box>
                         </TableCell>
                       </TableRow>
@@ -601,7 +576,6 @@ export default function BioBiometrias() {
           </AccordionDetails>
         </Accordion>
       ))}
-      {ConfirmModal}
     </Box>
   );
 }

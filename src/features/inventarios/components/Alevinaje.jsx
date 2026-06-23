@@ -3,7 +3,6 @@ import {
   listAlevinaje,
   createAlevinaje,
   updateAlevinaje,
-  removeAlevinaje,
 } from "../services/alevinajeService";
 import { formatCantidad } from "@shared/utils/formatters";
 import {
@@ -26,7 +25,6 @@ import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -44,7 +42,6 @@ const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 const Alevinaje = () => {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
@@ -206,19 +203,6 @@ const Alevinaje = () => {
           "No se pudo actualizar",
         "error",
       );
-    }
-  };
-
-  const eliminarAlevinajeRegistro = async (id) => {
-    if (!await confirm("¿Seguro que deseas eliminar este registro de alevinaje?")) return;
-    try {
-      await removeAlevinaje(id);
-      showSnackbar("Registro eliminado", "success");
-      cargarRegistros();
-      resetEdicion();
-    } catch (err) {
-      console.error("Error al eliminar alevinaje:", err);
-      showSnackbar("No se pudo eliminar", "error");
     }
   };
 
@@ -426,19 +410,11 @@ const Alevinaje = () => {
           <Button variant="contained" color="warning" onClick={activarEdicion}>
             Editar registro
           </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => eliminarAlevinajeRegistro(seleccionado.fi_id ?? seleccionado.id)}
-          >
-            Eliminar registro
-          </Button>
           <Button variant="outlined" color="inherit" onClick={resetEdicion}>
             Cerrar
           </Button>
         </div>
       )}
-      {ConfirmModal}
     </div>
   );
 };

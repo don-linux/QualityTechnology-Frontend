@@ -4,7 +4,8 @@ import {
   listEmpleadosActivosClientes,
   createCliente,
   updateCliente,
-  removeCliente,
+  deactivateCliente,
+  activateCliente,
 } from "@features/catalogos/services/clientesService";
 import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
 import Container from "@mui/material/Container";
@@ -44,6 +45,7 @@ const EMPTY_FORM = {
   fc_localidad: "",
   fc_estado: "",
   fi_ejecutivo_empleado_id: "",
+  activo: true,
 };
 
 const REQUIRED_FIELDS = [
@@ -233,16 +235,18 @@ export default function Cliente() {
     }
   };
 
-  const eliminarCliente = async () => {
-    if (!form.fi_cliente_id) return showSnackbar("Selecciona un cliente para eliminar", "error");
-    if (!await confirm("¿Seguro que deseas eliminar este cliente?")) return;
+  const toggleActivoCliente = async () => {
+    if (!form.fi_cliente_id) return showSnackbar("Selecciona un cliente", "error");
+    const activo = form.activo !== false;
+    if (!await confirm(activo ? "¿Desactivar este cliente?" : "¿Activar este cliente?")) return;
     try {
-      await removeCliente(form.fi_cliente_id);
+      if (activo) await deactivateCliente(form.fi_cliente_id);
+      else await activateCliente(form.fi_cliente_id);
       obtenerDatos();
       limpiarFormulario();
     } catch (error) {
-      console.error("Error al eliminar cliente", error);
-      showSnackbar("Error al eliminar cliente", "error");
+      console.error("Error al cambiar el estado del cliente", error);
+      showSnackbar(error?.response?.data?.error || "Error al cambiar el estado del cliente", "error");
     }
   };
 
@@ -259,6 +263,7 @@ export default function Cliente() {
       fc_localidad: cliente.fc_localidad || "",
       fc_estado: cliente.fc_estado || "",
       fi_ejecutivo_empleado_id: cliente.fi_ejecutivo_empleado_id ? String(cliente.fi_ejecutivo_empleado_id) : "",
+      activo: cliente.activo,
     });
     abrirFormulario();
   };
@@ -351,8 +356,13 @@ export default function Cliente() {
               Actualizar
             </Button>
 
-            <Button variant="contained" color="error" onClick={eliminarCliente} disabled={!form.fi_cliente_id}>
-              Eliminar
+            <Button
+              variant="contained"
+              color={form.activo !== false ? "warning" : "success"}
+              onClick={toggleActivoCliente}
+              disabled={!form.fi_cliente_id}
+            >
+              {form.activo !== false ? "Desactivar" : "Activar"}
             </Button>
 
             <Button variant="outlined" onClick={limpiarFormulario}>
@@ -383,7 +393,7 @@ export default function Cliente() {
             </TableHead>
             <TableBody>
               {ordenarYNumerar(clientes, ["fi_cliente_id", "cliente_id"]).map((cli) => (
-                <TableRow key={cli.fi_cliente_id} hover>
+                <TableRow key={cli.fi_cliente_id} hover sx={{ opacity: cli.activo !== false ? 1 : 0.5 }}>
                   <TableCell>{cli._num}</TableCell>
                   <TableCell>{cli.fc_razon_social}</TableCell>
                   <TableCell>{cli.fc_rfc}</TableCell>

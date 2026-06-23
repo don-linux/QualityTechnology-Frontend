@@ -21,8 +21,6 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CleaningServices from "@mui/icons-material/CleaningServices";
 import Add from "@mui/icons-material/Add";
-import Delete from "@mui/icons-material/Delete";
-import DeleteForever from "@mui/icons-material/DeleteForever";
 import EventAvailable from "@mui/icons-material/EventAvailable";
 import { formatPrecio } from "@shared/utils/formatters";
 import CampoNumerico from "@shared/components/CampoNumerico";
@@ -30,11 +28,8 @@ import {
   listByGranja,
   createCategoria,
   updateCampo,
-  removeRegistro,
-  removeAllByGranja,
 } from "../services/cajaAhorroService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
@@ -50,7 +45,6 @@ export default function CajaAhorro() {
   const [granjaNueva, setGranjaNueva] = useState("");
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = ["nuevaCategoria"];
 
@@ -120,25 +114,6 @@ export default function CajaAhorro() {
     } catch (err) {
       console.error("Error al actualizar:", err);
     }
-  };
-
-  /* =========================================================
-      Eliminar registro
-     ========================================================= */
-  const eliminarRegistro = async (id) => {
-    if (!await confirm("¿Eliminar esta categoría?")) return;
-    await removeRegistro(id);
-    obtenerDatos();
-  };
-
-  /* =========================================================
-      Eliminar todo por granja
-     ========================================================= */
-  const eliminarTodo = async () => {
-    if (!await confirm("¿Eliminar TODOS los registros de caja de ahorro?")) return;
-    const granjas = [...new Set(ubicacionesGranja.map((op) => op.value))];
-    await Promise.all(granjas.map((g) => removeAllByGranja(g)));
-    obtenerDatos();
   };
 
   /* =========================================================
@@ -228,16 +203,6 @@ export default function CajaAhorro() {
               NUEVA CATEGORÍA
             </Button>
           </Grid>
-          <Grid>
-            <Button
-              variant="contained"
-              color="error"
-              startIcon={<DeleteForever />}
-              onClick={eliminarTodo}
-            >
-              ELIMINAR TODO
-            </Button>
-          </Grid>
         </Grid>
       </Paper>
 
@@ -322,9 +287,6 @@ export default function CajaAhorro() {
               <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
                 Total
               </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
-                Acciones
-              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -374,18 +336,6 @@ export default function CajaAhorro() {
                 >
                   {formatPrecio(r.total)}
                 </TableCell>
-
-                <TableCell align="center">
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="error"
-                    startIcon={<Delete />}
-                    onClick={() => eliminarRegistro(r.id)}
-                  >
-                    Eliminar
-                  </Button>
-                </TableCell>
               </TableRow>
             ))}
 
@@ -434,13 +384,10 @@ export default function CajaAhorro() {
               >
                 {formatPrecio(totalGeneral)}
               </TableCell>
-
-              <TableCell sx={{ backgroundColor: "#0d47a1" }} />
             </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
-      {ConfirmModal}
     </Box>
   );
 }

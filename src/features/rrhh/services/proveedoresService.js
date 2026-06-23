@@ -13,6 +13,10 @@ export function updateProveedor(id, data) {
   return axios.put(ENDPOINTS.proveedores.byId(id), data);
 }
 
-export function removeProveedor(id) {
-  return axios.delete(ENDPOINTS.proveedores.byId(id));
+export function deactivateProveedor(id) {
+  return axios.patch(ENDPOINTS.proveedores.deactivate(id));
+}
+
+export function activateProveedor(id) {
+  return axios.patch(ENDPOINTS.proveedores.activate(id));
 }

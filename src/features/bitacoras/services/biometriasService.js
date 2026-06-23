@@ -34,7 +34,3 @@ export function createBiometria(data) {
 export function updateBiometria(id, data) {
   return axios.put(ENDPOINTS.bitacoras.biometrias.byId(id), data);
 }
-
-export function removeBiometria(id) {
-  return axios.delete(ENDPOINTS.bitacoras.biometrias.byId(id));
-}

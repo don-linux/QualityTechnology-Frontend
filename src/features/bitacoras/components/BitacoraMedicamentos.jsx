@@ -23,11 +23,8 @@ import {
   listEmpleadosMedicamentos,
   createMedicamento,
   updateMedicamento,
-  removeMedicamento,
-  removeAllMedicamentos,
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -65,7 +62,6 @@ function BitacoraMedicamentosContent() {
   const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
@@ -156,20 +152,6 @@ function BitacoraMedicamentosContent() {
     
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
-  };
-
-  //  Eliminar uno
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar registro?")) return;
-    await removeMedicamento(id);
-    cargarDatos();
-  };
-
-  //  Eliminar todos
-  const eliminarTodos = async () => {
-    if (!await confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await removeAllMedicamentos();
-    cargarDatos();
   };
 
   //  Exportar PDF
@@ -351,14 +333,6 @@ function BitacoraMedicamentosContent() {
             >
                Exportar PDF
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ ml: 2 }}
-              onClick={eliminarTodos}
-            >
-               Eliminar Todos
-            </Button>
           </Box>
         </CardContent>
       </Card>
@@ -416,9 +390,6 @@ function BitacoraMedicamentosContent() {
                           <Button size="small" color="warning" variant="contained" onClick={() => editar(r)}>
                             Editar
                           </Button>
-                          <Button size="small" color="error" variant="contained" onClick={() => eliminar(r.fi_id)}>
-                            Eliminar
-                          </Button>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -430,7 +401,6 @@ function BitacoraMedicamentosContent() {
           </AccordionDetails>
         </Accordion>
       ))}
-      {ConfirmModal}
     </Box>
   );
 }

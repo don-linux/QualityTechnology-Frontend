@@ -33,10 +33,6 @@ export function updatePileta(id, data) {
   return axios.put(ENDPOINTS.piletas.byId(id), data);
 }
 
-export function removePileta(id) {
-  return axios.delete(ENDPOINTS.piletas.byId(id));
-}
-
 /**
  * Historial completo de `observacion` para una pileta (todos los procesos y bitácoras vinculadas).
  * @param {number|string} piletaId

@@ -18,7 +18,3 @@ export function createEficienciaReproductiva(data) {
 export function updateEficienciaReproductiva(id, data) {
   return axios.put(ENDPOINTS.eficienciaReproductiva.byId(id), data);
 }
-
-export function removeEficienciaReproductiva(id) {
-  return axios.delete(ENDPOINTS.eficienciaReproductiva.byId(id));
-}

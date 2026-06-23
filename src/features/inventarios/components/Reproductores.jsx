@@ -3,7 +3,6 @@ import {
   listReproductores,
   createReproductor,
   updateReproductor,
-  removeReproductor,
 } from "../services/reproductoresService";
 import { listObservacionesPileta, listPiletas } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
@@ -25,7 +24,6 @@ import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -286,7 +284,6 @@ const colorDias = (dias) => {
 export default function Reproductores() {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const {
     visible: mostrarFormulario,
     abrir: abrirFormulario,
@@ -529,19 +526,6 @@ export default function Reproductores() {
           "No se pudo actualizar",
         "error",
       );
-    }
-  };
-
-  const eliminarRegistro = async (id) => {
-    if (!await confirm("¿Seguro que deseas eliminar este registro de reproductores?")) return;
-    try {
-      await removeReproductor(id);
-      showSnackbar("Registro eliminado", "success");
-      cargarRegistros();
-      resetEdicion();
-    } catch (err) {
-      console.error("Error al eliminar reproductor:", err);
-      showSnackbar("No se pudo eliminar", "error");
     }
   };
 
@@ -1008,22 +992,11 @@ export default function Reproductores() {
           <Button variant="contained" color="warning" onClick={activarEdicion}>
             Editar registro
           </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() =>
-              eliminarRegistro(seleccionado.fi_reproductor_id ?? seleccionado.fi_id ?? seleccionado.id)
-            }
-          >
-            Eliminar registro
-          </Button>
           <Button variant="outlined" color="inherit" onClick={resetEdicion}>
             Cerrar
           </Button>
         </div>
       )}
-
-      {ConfirmModal}
     </div>
   );
 }

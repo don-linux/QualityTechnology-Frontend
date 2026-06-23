@@ -18,12 +18,6 @@ export function createControlFaunaNociva(data) {
 export function updateControlFaunaNociva(id, data) {
   return axios.put(B.controlFaunaNociva.byId(id), data);
 }
-export function removeControlFaunaNociva(id) {
-  return axios.delete(B.controlFaunaNociva.byId(id));
-}
-export function removeAllControlFaunaNociva(ubicacion) {
-  return axios.delete(B.controlFaunaNociva.base, { params: { ubicacion } });
-}
 
 /* =====================================================
    Recepción de Insumos
@@ -40,12 +34,6 @@ export function createRecepcionInsumo(data) {
 export function updateRecepcionInsumo(id, data) {
   return axios.put(B.recepcionInsumos.byId(id), data);
 }
-export function removeRecepcionInsumo(id) {
-  return axios.delete(B.recepcionInsumos.byId(id));
-}
-export function removeAllRecepcionInsumos(ubicacion) {
-  return axios.delete(B.recepcionInsumos.base, { params: { ubicacion } });
-}
 
 /* =====================================================
    Control de Visitas
@@ -58,12 +46,6 @@ export function createControlVisita(formData) {
 }
 export function updateControlVisita(id, formData) {
   return axios.put(B.controlVisitas.byId(id), formData);
-}
-export function removeControlVisita(id) {
-  return axios.delete(B.controlVisitas.byId(id));
-}
-export function removeAllControlVisitas() {
-  return axios.delete(B.controlVisitas.base);
 }
 
 /* =====================================================
@@ -81,12 +63,6 @@ export function createControlLimpieza(data) {
 export function updateControlLimpieza(id, data) {
   return axios.put(B.controlLimpieza.byId(id), data);
 }
-export function removeControlLimpieza(id) {
-  return axios.delete(B.controlLimpieza.byId(id));
-}
-export function removeAllControlLimpieza() {
-  return axios.delete(B.controlLimpieza.base);
-}
 
 /* =====================================================
    Parámetros
@@ -102,12 +78,6 @@ export function createParametro(data) {
 }
 export function updateParametro(id, data) {
   return axios.put(B.parametros.byId(id), data);
-}
-export function removeParametro(id) {
-  return axios.delete(B.parametros.byId(id));
-}
-export function removeAllParametros() {
-  return axios.delete(B.parametros.base);
 }
 
 /* =====================================================
@@ -125,12 +95,6 @@ export function createMedicamento(data) {
 export function updateMedicamento(id, data) {
   return axios.put(B.medicamentos.byId(id), data);
 }
-export function removeMedicamento(id) {
-  return axios.delete(B.medicamentos.byId(id));
-}
-export function removeAllMedicamentos() {
-  return axios.delete(B.medicamentos.base);
-}
 
 /* =====================================================
    Recambios
@@ -147,12 +111,6 @@ export function createRecambio(data) {
 export function updateRecambio(id, data) {
   return axios.put(B.recambios.byId(id), data);
 }
-export function removeRecambio(id) {
-  return axios.delete(B.recambios.byId(id));
-}
-export function removeAllRecambios() {
-  return axios.delete(B.recambios.base);
-}
 
 /* =====================================================
    Inventario
@@ -165,10 +123,4 @@ export function createInventario(data) {
 }
 export function updateInventario(id, data) {
   return axios.put(B.inventario.byId(id), data);
-}
-export function removeInventario(id) {
-  return axios.delete(B.inventario.byId(id));
-}
-export function removeAllInventario() {
-  return axios.delete(B.inventario.base);
 }

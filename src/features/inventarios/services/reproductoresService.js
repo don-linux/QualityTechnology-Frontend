@@ -33,7 +33,3 @@ export function createReproductor(data) {
 export function updateReproductor(id, data) {
   return axios.put(ENDPOINTS.reproductores.byId(id), data);
 }
-
-export function removeReproductor(id) {
-  return axios.delete(ENDPOINTS.reproductores.byId(id));
-}

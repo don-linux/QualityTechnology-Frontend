@@ -29,6 +29,8 @@ export const ENDPOINTS = {
   roles: {
     base: "/roles",
     byId: (id) => `/roles/${id}`,
+    activate: (id) => `/roles/${id}/activate`,
+    deactivate: (id) => `/roles/${id}/deactivate`,
   },
 
   modulos: {
@@ -95,6 +97,8 @@ export const ENDPOINTS = {
   clientes: {
     base: "/clientes",
     byId: (id) => `/clientes/${id}`,
+    activate: (id) => `/clientes/${id}/activate`,
+    deactivate: (id) => `/clientes/${id}/deactivate`,
     empleadosActivos: "/clientes/empleados-activos",
   },
 
@@ -113,6 +117,8 @@ export const ENDPOINTS = {
   proveedores: {
     base: "/proveedores",
     byId: (id) => `/proveedores/${id}`,
+    activate: (id) => `/proveedores/${id}/activate`,
+    deactivate: (id) => `/proveedores/${id}/deactivate`,
   },
 
   flujoCaja: {

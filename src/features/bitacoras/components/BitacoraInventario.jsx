@@ -21,11 +21,8 @@ import {
   listInventario,
   createInventario,
   updateInventario,
-  removeInventario,
-  removeAllInventario,
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -53,7 +50,6 @@ function BitacoraInventarioContent() {
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
@@ -130,24 +126,6 @@ function BitacoraInventarioContent() {
     
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
-  };
-
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar registro?")) return;
-    await removeInventario(id);
-    cargarDatos();
-  };
-
-  //  Eliminar todos
-  const eliminarTodos = async () => {
-    if (!await confirm(" ¿Deseas eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    try {
-      await removeAllInventario();
-      cargarDatos();
-      showSnackbar("Todos los registros fueron eliminados correctamente.", "success");
-    } catch (err) {
-      showSnackbar("Error eliminando todos los registros: " + err.message, "error");
-    }
   };
 
   //  Exportar PDF
@@ -239,18 +217,9 @@ function BitacoraInventarioContent() {
                   size="small"
                   color="warning"
                   variant="contained"
-                  sx={{ mr: 1 }}
                   onClick={() => editar(r)}
                 >
                   Editar
-                </Button>
-                <Button
-                  size="small"
-                  color="error"
-                  variant="contained"
-                  onClick={() => eliminar(r.fi_id)}
-                >
-                  Eliminar
                 </Button>
               </TableCell>
             </TableRow>
@@ -387,14 +356,6 @@ function BitacoraInventarioContent() {
             >
                Exportar PDF
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ ml: 2 }}
-              onClick={eliminarTodos}
-            >
-               Eliminar Todos
-            </Button>
           </Box>
         </CardContent>
       </Card>
@@ -411,7 +372,6 @@ function BitacoraInventarioContent() {
           </AccordionDetails>
         </Accordion>
       ))}
-      {ConfirmModal}
     </Box>
   );
 }

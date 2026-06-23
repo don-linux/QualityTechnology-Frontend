@@ -33,7 +33,3 @@ export function createEngorda(data) {
 export function updateEngorda(id, data) {
   return axios.put(ENDPOINTS.engorda.byId(id), data);
 }
-
-export function removeEngorda(id) {
-  return axios.delete(ENDPOINTS.engorda.byId(id));
-}

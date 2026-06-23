@@ -17,6 +17,10 @@ export function updateCliente(id, data) {
   return axios.put(ENDPOINTS.clientes.byId(id), data);
 }
 
-export function removeCliente(id) {
-  return axios.delete(ENDPOINTS.clientes.byId(id));
+export function deactivateCliente(id) {
+  return axios.patch(ENDPOINTS.clientes.deactivate(id));
+}
+
+export function activateCliente(id) {
+  return axios.patch(ENDPOINTS.clientes.activate(id));
 }

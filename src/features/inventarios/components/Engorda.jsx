@@ -3,7 +3,6 @@ import {
   listEngordas,
   createEngorda,
   updateEngorda,
-  removeEngorda,
 } from "../services/engordaService";
 import { listObservacionesPileta } from "../services/piletasService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
@@ -30,7 +29,6 @@ import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -50,7 +48,6 @@ const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
 export default function Engorda() {
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
@@ -215,19 +212,6 @@ export default function Engorda() {
           "No se pudo actualizar",
         "error",
       );
-    }
-  };
-
-  const eliminarEngordaRegistro = async (id) => {
-    if (!await confirm("¿Seguro que deseas eliminar este registro de engorda?")) return;
-    try {
-      await removeEngorda(id);
-      showSnackbar("Registro eliminado", "success");
-      cargarRegistros();
-      resetEdicion();
-    } catch (err) {
-      console.error("Error al eliminar engorda:", err);
-      showSnackbar("No se pudo eliminar", "error");
     }
   };
 
@@ -508,22 +492,11 @@ export default function Engorda() {
           <Button variant="contained" color="warning" onClick={activarEdicion}>
             Editar registro
           </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() =>
-              eliminarEngordaRegistro(seleccionado.fi_engorda_id ?? seleccionado.fi_id ?? seleccionado.id)
-            }
-          >
-            Eliminar registro
-          </Button>
           <Button variant="outlined" color="inherit" onClick={resetEdicion}>
             Cerrar
           </Button>
         </div>
       )}
-
-      {ConfirmModal}
     </div>
   );
 }

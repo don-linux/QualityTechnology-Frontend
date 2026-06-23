@@ -24,11 +24,8 @@ import {
   listEmpleadosRecambios,
   createRecambio,
   updateRecambio,
-  removeRecambio,
-  removeAllRecambios,
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -64,7 +61,6 @@ function BitacoraRecambiosContent() {
   const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
@@ -169,23 +165,6 @@ function BitacoraRecambiosContent() {
     
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
-  };
-
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar registro?")) return;
-    await removeRecambio(id);
-    cargarDatos();
-  };
-
-  const eliminarTodos = async () => {
-    if (!await confirm(" ¿Deseas eliminar todos los registros?")) return;
-    try {
-      await removeAllRecambios();
-      cargarDatos();
-      showSnackbar("Todos los registros fueron eliminados correctamente.", "success");
-    } catch (err) {
-      showSnackbar("Error eliminando registros: " + err.message, "error");
-    }
   };
 
 //  Exportar PDF (formato institucional limpio)
@@ -343,14 +322,6 @@ const exportarPDF = async () => {
                   >
                     Editar
                   </Button>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="error"
-                    onClick={() => eliminar(r.fi_id)}
-                  >
-                    Eliminar
-                  </Button>
                 </Box>
               </TableCell>
             </TableRow>
@@ -481,14 +452,6 @@ const exportarPDF = async () => {
             >
                Exportar PDF
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ ml: 2 }}
-              onClick={eliminarTodos}
-            >
-               Eliminar Todos
-            </Button>
           </Box>
         </CardContent>
       </Card>
@@ -503,7 +466,6 @@ const exportarPDF = async () => {
           <AccordionDetails>{renderTablaRecambios(rows)}</AccordionDetails>
         </Accordion>
       ))}
-      {ConfirmModal}
     </Box>
   );
 }

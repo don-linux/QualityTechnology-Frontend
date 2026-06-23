@@ -4,7 +4,6 @@ import {
   listEmpleadosEquipos,
   createEquipo,
   updateEquipo,
-  removeEquipo,
   listMantenimientos,
   createMantenimiento,
 } from "../services/equiposService";
@@ -29,11 +28,9 @@ import DialogActions from "@mui/material/DialogActions";
 import MenuItem from "@mui/material/MenuItem";
 import Add from "@mui/icons-material/Add";
 import Edit from "@mui/icons-material/Edit";
-import Delete from "@mui/icons-material/Delete";
 import Build from "@mui/icons-material/Build";
 import Close from "@mui/icons-material/Close";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -83,7 +80,6 @@ function EquiposContent() {
   });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const requiredFields = [
     "fc_nombre", "fc_marca", "fc_modelo", "fc_tipo",
@@ -172,20 +168,6 @@ function EquiposContent() {
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
-  };
-
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar este equipo?")) return;
-    await removeEquipo(id);
-    cargarDatos();
-    showSnackbar(" Equipo eliminado correctamente", "info");
-  };
-
-  const eliminarTodos = async () => {
-    if (!await confirm(" ¿Eliminar todos los equipos?")) return;
-    await Promise.all(data.map((r) => removeEquipo(r.fi_equipo_id)));
-    cargarDatos();
-    showSnackbar(" Todos los equipos fueron eliminados", "warning");
   };
 
   const limpiar = () => {
@@ -486,14 +468,6 @@ function EquiposContent() {
             >
                Exportar PDF
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ ml: 2 }}
-              onClick={eliminarTodos}
-            >
-               Eliminar Todos
-            </Button>
           </Box>
         </CardContent>
       </Card>
@@ -535,15 +509,6 @@ function EquiposContent() {
                     onClick={() => editar(row)}
                   >
                     <Edit />
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    size="small"
-                    sx={{ mr: 1 }}
-                    onClick={() => eliminar(row.fi_equipo_id)}
-                  >
-                    <Delete />
                   </Button>
                   <Button
                     variant="outlined"
@@ -757,8 +722,6 @@ function EquiposContent() {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {ConfirmModal}
     </Box>
   );
 }

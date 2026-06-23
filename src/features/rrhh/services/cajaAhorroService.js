@@ -12,11 +12,3 @@ export function createCategoria(data) {
 export function updateCampo(id, data) {
   return axios.put(ENDPOINTS.cajaAhorro.byId(id), data);
 }
-
-export function removeRegistro(id) {
-  return axios.delete(ENDPOINTS.cajaAhorro.byId(id));
-}
-
-export function removeAllByGranja(granja) {
-  return axios.delete(ENDPOINTS.cajaAhorro.base, { params: { granja } });
-}

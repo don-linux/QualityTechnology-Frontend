@@ -12,11 +12,3 @@ export function createVacaciones(data) {
 export function updateVacaciones(id, data) {
   return axios.put(ENDPOINTS.vacaciones.byId(id), data);
 }
-
-export function removeVacaciones(id) {
-  return axios.delete(ENDPOINTS.vacaciones.byId(id));
-}
-
-export function removeAllVacaciones() {
-  return axios.delete(ENDPOINTS.vacaciones.base);
-}

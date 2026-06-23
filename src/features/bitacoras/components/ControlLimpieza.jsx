@@ -19,11 +19,8 @@ import {
   listEmpleadosControlLimpieza,
   createControlLimpieza,
   updateControlLimpieza,
-  removeControlLimpieza,
-  removeAllControlLimpieza,
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -67,7 +64,6 @@ function ControlLimpiezaContent() {
   const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
@@ -151,18 +147,6 @@ function ControlLimpiezaContent() {
 
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
-  };
-
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar registro?")) return;
-    await removeControlLimpieza(id);
-    cargarDatos();
-  };
-
-  const eliminarTodos = async () => {
-    if (!await confirm(" ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer.")) return;
-    await removeAllControlLimpieza();
-    cargarDatos();
   };
 
   const exportarPDF = async () => {
@@ -259,14 +243,6 @@ function ControlLimpiezaContent() {
                     onClick={() => editar(r)}
                   >
                     Editar
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="error"
-                    onClick={() => eliminar(r.fi_id)}
-                  >
-                    Eliminar
                   </Button>
                 </Box>
               </TableCell>
@@ -389,21 +365,12 @@ function ControlLimpiezaContent() {
             >
                Exportar PDF
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ ml: 2 }}
-              onClick={eliminarTodos}
-            >
-               Eliminar Todos
-            </Button>
           </Box>
         </CardContent>
       </Card>
       </FormularioRegistroPanel>
 
       <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaControlLimpieza} />
-      {ConfirmModal}
     </Box>
   );
 }

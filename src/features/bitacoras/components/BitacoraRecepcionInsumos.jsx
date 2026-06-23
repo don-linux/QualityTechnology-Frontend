@@ -24,11 +24,8 @@ import {
   listEmpleadosRecepcionInsumos,
   createRecepcionInsumo,
   updateRecepcionInsumo,
-  removeRecepcionInsumo,
-  removeAllRecepcionInsumos,
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
@@ -69,7 +66,6 @@ function RecepcionInsumosContent() {
   const [editId, setEditId] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
@@ -170,20 +166,6 @@ function RecepcionInsumosContent() {
     
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
-  };
-
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar registro?")) return;
-    await removeRecepcionInsumo(id);
-    cargarDatos();
-  };
-
-  const eliminarTodos = async () => {
-    if (!await confirm("¿Eliminar todos los registros de todas las ubicaciones?")) return;
-    await Promise.all(
-      ubicacionesGranja.map((op) => removeAllRecepcionInsumos(op.value)),
-    );
-    cargarDatos();
   };
 
   const exportarPDF = async () => {
@@ -297,9 +279,6 @@ function RecepcionInsumosContent() {
                 <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
                   <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
                     Editar
-                  </Button>
-                  <Button size="small" variant="contained" color="error" onClick={() => eliminar(r.fi_id)}>
-                    Eliminar
                   </Button>
                 </Box>
               </TableCell>
@@ -529,16 +508,12 @@ function RecepcionInsumosContent() {
             <Button variant="outlined" size="small" onClick={exportarPDF}>
                Exportar PDF
             </Button>
-            <Button variant="contained" size="small" color="error" onClick={eliminarTodos}>
-               Eliminar Todos
-            </Button>
           </Box>
         </CardContent>
       </Card>
       </FormularioRegistroPanel>
 
       <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaRecepcion} />
-      {ConfirmModal}
     </Box>
   );
 }

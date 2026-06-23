@@ -19,7 +19,6 @@ import DialogActions from "@mui/material/DialogActions";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import Add from "@mui/icons-material/Add";
-import Delete from "@mui/icons-material/Delete";
 import Edit from "@mui/icons-material/Edit";
 import Business from "@mui/icons-material/Business";
 import PictureAsPdf from "@mui/icons-material/PictureAsPdf";
@@ -29,7 +28,8 @@ import {
   listProveedores,
   createProveedor,
   updateProveedor,
-  removeProveedor,
+  deactivateProveedor,
+  activateProveedor,
 } from "../services/proveedoresService";
 import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
 import { formatFecha } from "@shared/utils/formatters";
@@ -209,10 +209,16 @@ export default function Proveedores() {
     }
   };
 
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar proveedor?")) return;
-    await removeProveedor(id);
-    obtenerDatos();
+  const toggleActivo = async (p) => {
+    const activo = p.activo !== false;
+    if (!await confirm(activo ? "¿Desactivar proveedor?" : "¿Activar proveedor?")) return;
+    try {
+      if (activo) await deactivateProveedor(p.fi_proveedor_id);
+      else await activateProveedor(p.fi_proveedor_id);
+      obtenerDatos();
+    } catch (err) {
+      showSnackbar(err?.response?.data?.error || "Error al cambiar el estado del proveedor", "error");
+    }
   };
 
   const exportarPDF = async () => {
@@ -400,6 +406,7 @@ export default function Proveedores() {
                 key={p.fi_proveedor_id}
                 sx={{
                   backgroundColor: i % 2 === 0 ? "#f9f9f9" : "#ffffff",
+                  opacity: p.activo !== false ? 1 : 0.5,
                   "&:hover": { backgroundColor: "#e3f2fd" },
                 }}
               >
@@ -427,11 +434,10 @@ export default function Proveedores() {
                   <Button
                     size="small"
                     variant="outlined"
-                    color="error"
-                    startIcon={<Delete />}
-                    onClick={() => eliminar(p.fi_proveedor_id)}
+                    color={p.activo !== false ? "warning" : "success"}
+                    onClick={() => toggleActivo(p)}
                   >
-                    Eliminar
+                    {p.activo !== false ? "Desactivar" : "Activar"}
                   </Button>
                 </TableCell>
               </TableRow>

@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { listRoles, createRol, updateRol, removeRol } from "@features/catalogos/services/rolesService";
+import {
+  listRoles,
+  createRol,
+  updateRol,
+  deactivateRol,
+  activateRol,
+} from "@features/catalogos/services/rolesService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
-import { getRolId, getRolNombre, rolEsRoot } from "@features/catalogos/utils/catalogEntityGetters";
+import { getRolId, getRolNombre, rolEsRoot, rolActivo } from "@features/catalogos/utils/catalogEntityGetters";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -95,19 +101,6 @@ export default function Roles() {
     }
   };
 
-  const eliminar = async (id, nombre) => {
-    if (!await confirm(`¿Eliminar el rol "${nombre}"?`)) return;
-    try {
-      await removeRol(id);
-      showSnackbar("Rol eliminado correctamente", "success");
-      obtenerRoles();
-      if (form.fi_rol_id === id) limpiar();
-    } catch (error) {
-      console.error("Error al eliminar rol", error);
-      showSnackbar(error?.response?.data?.error || "Error al eliminar rol", "error");
-    }
-  };
-
   const seleccionar = (rol) => {
     setForm({
       fi_rol_id: getRolId(rol),
@@ -115,6 +108,22 @@ export default function Roles() {
     });
     clearErrors();
     abrirFormulario();
+  };
+
+  const toggleActivo = async (rol) => {
+    const activo = rolActivo(rol);
+    const nombre = getRolNombre(rol);
+    if (!await confirm(activo ? `¿Desactivar el rol "${nombre}"?` : `¿Activar el rol "${nombre}"?`)) return;
+    try {
+      if (activo) await deactivateRol(getRolId(rol));
+      else await activateRol(getRolId(rol));
+      showSnackbar(activo ? "Rol desactivado correctamente" : "Rol activado correctamente", "success");
+      obtenerRoles();
+      if (form.fi_rol_id === getRolId(rol)) limpiar();
+    } catch (error) {
+      console.error("Error al cambiar el estado del rol", error);
+      showSnackbar(error?.response?.data?.error || "Error al cambiar el estado del rol", "error");
+    }
   };
 
   return (
@@ -192,18 +201,28 @@ export default function Roles() {
                   <TableCell>ID</TableCell>
                   <TableCell>Nombre</TableCell>
                   <TableCell>Tipo</TableCell>
+                  <TableCell>Estado</TableCell>
                   <TableCell align="center">Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {ordenarYNumerar(roles, ["fi_rol_id", "rol_id"]).map((rol) => (
-                  <TableRow key={getRolId(rol) ?? ""} hover>
+                {ordenarYNumerar(roles, ["fi_rol_id", "rol_id"]).map((rol) => {
+                  const activo = rolActivo(rol);
+                  return (
+                  <TableRow key={getRolId(rol) ?? ""} hover sx={{ opacity: activo ? 1 : 0.5 }}>
                     <TableCell>{rol._num}</TableCell>
                     <TableCell>{getRolNombre(rol)}</TableCell>
                     <TableCell>
                       <Chip
                         label={rolEsRoot(rol) ? "Root" : "Estándar"}
                         color={rolEsRoot(rol) ? "warning" : "default"}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={activo ? "Activo" : "Inactivo"}
+                        color={activo ? "success" : "default"}
                         size="small"
                       />
                     </TableCell>
@@ -223,15 +242,17 @@ export default function Roles() {
                         <Button
                           size="small"
                           variant="outlined"
-                          color="error"
-                          onClick={() => eliminar(getRolId(rol), getRolNombre(rol))}
+                          color={activo ? "warning" : "success"}
+                          onClick={() => toggleActivo(rol)}
+                          disabled={rolEsRoot(rol)}
                         >
-                          Eliminar
+                          {activo ? "Desactivar" : "Activar"}
                         </Button>
                       </Box>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>

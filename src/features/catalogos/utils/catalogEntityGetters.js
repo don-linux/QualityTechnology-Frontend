@@ -59,6 +59,10 @@ export function rolEsRoot(r) {
   return Boolean(r?.es_root ?? r?.fb_es_root);
 }
 
+export function rolActivo(r) {
+  return r?.activo ?? r?.esta_activo ?? r?.fb_activo ?? true;
+}
+
 export function getTipoPiletaId(t) {
   return t?.tipo_pileta_id ?? t?.id;
 }

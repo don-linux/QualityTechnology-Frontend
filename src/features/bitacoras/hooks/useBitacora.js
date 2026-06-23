@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import useFormValidation from "@shared/hooks/useFormValidation";
-import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useAuth from "@app/providers/AuthProvider";
 
@@ -11,8 +10,6 @@ import useAuth from "@app/providers/AuthProvider";
  * @param {Function} options.listFn        - Service fn to list records
  * @param {Function} options.createFn      - Service fn to create a record
  * @param {Function} options.updateFn      - Service fn to update a record (id, data)
- * @param {Function} options.removeFn      - Service fn to delete one record (id)
- * @param {Function} options.removeAllFn   - Service fn to delete all records (optional)
  * @param {Object}   options.initialForm   - Default form state (without fi_usuario_id)
  * @param {string[]} options.requiredFields
  * @param {string}   options.idField       - Primary key field name (default: "fi_id")
@@ -23,8 +20,6 @@ export default function useBitacora({
   listFn,
   createFn,
   updateFn,
-  removeFn,
-  removeAllFn,
   initialForm,
   requiredFields,
   idField = "fi_id",
@@ -34,7 +29,6 @@ export default function useBitacora({
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
-  const { confirm, ConfirmModal } = useConfirm();
 
   const buildForm = useCallback(
     (overrides = {}) => ({ ...initialForm, fi_usuario_id: usuarioId, ...overrides }),
@@ -102,28 +96,6 @@ export default function useBitacora({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const eliminar = async (id) => {
-    if (!await confirm("¿Eliminar registro?")) return;
-    try {
-      await removeFn(id);
-      cargarDatos();
-    } catch (err) {
-      showSnackbar("Error al eliminar: " + (err.message || "ver consola"), "error");
-    }
-  };
-
-  const eliminarTodos = async (params) => {
-    if (!removeAllFn) return;
-    if (!await confirm("¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    try {
-      await removeAllFn(params);
-      cargarDatos();
-      showSnackbar("Todos los registros fueron eliminados.", "success");
-    } catch (err) {
-      showSnackbar("Error eliminando registros: " + (err.message || "ver consola"), "error");
-    }
-  };
-
   return {
     data,
     form,
@@ -131,13 +103,10 @@ export default function useBitacora({
     editId,
     loading,
     errors,
-    ConfirmModal,
     handleChange,
     cargarDatos,
     guardar,
     editar,
-    eliminar,
-    eliminarTodos,
     limpiar,
     clearFieldError,
     validate,
