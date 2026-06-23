@@ -23,11 +23,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import PhotoCameraRoundedIcon from "@mui/icons-material/PhotoCameraRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import {
-  listVisitas,
-  createVisita,
-  updateVisita,
-  removeVisita,
-  removeAllVisitas,
+  listControlVisitas,
+  createControlVisita,
+  updateControlVisita,
+  removeControlVisita,
+  removeAllControlVisitas,
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -47,7 +47,7 @@ const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-function BitacoraVisitasContent() {
+function ControlVisitasContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
   const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor, getGroups } =
@@ -102,7 +102,7 @@ function BitacoraVisitasContent() {
     try {
       const granjas = ubicacionesGranja.map((op) => op.value);
       const rows = await fetchMergedPorUbicaciones(granjas, (g) =>
-        listVisitas(g, busqueda),
+        listControlVisitas(g, busqueda),
       );
       setData(rows);
     } catch (err) {
@@ -155,9 +155,9 @@ function BitacoraVisitasContent() {
       appendIfValue("ubicacion", form.ubicacion);
 
       if (editId) {
-        await updateVisita(editId, formData);
+        await updateControlVisita(editId, formData);
       } else {
-        await createVisita(formData);
+        await createControlVisita(formData);
       }
       setEditId(null);
       cerrarFormulario();
@@ -201,13 +201,13 @@ function BitacoraVisitasContent() {
 
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await removeVisita(id);
+    await removeControlVisita(id);
     cargarDatos();
   };
 
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Eliminar todos los registros? Esta acción no se puede deshacer.")) return;
-    await removeAllVisitas();
+    await removeAllControlVisitas();
     cargarDatos();
   };
 
@@ -636,6 +636,6 @@ function BitacoraVisitasContent() {
   );
 }
 
-export default function BitacoraVisitas() {
-  return <BitacoraVisitasContent />;
+export default function ControlVisitas() {
+  return <ControlVisitasContent />;
 }

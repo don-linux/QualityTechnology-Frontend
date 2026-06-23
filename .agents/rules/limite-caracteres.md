@@ -52,7 +52,7 @@ La celda envuelve el valor con `<span title={valor}>{truncar(valor)}</span>` par
 
 | Campo              | Límite | Módulo de referencia                          |
 |--------------------|-------:|-----------------------------------------------|
-| `fc_motivo`        |    300 | `bitacora_visitas`                             |
-| `fc_observaciones` |    500 | `bitacora_visitas` (alineado con recepción)   |
+| `fc_motivo`        |    300 | `control_visitas`                             |
+| `fc_observaciones` |    500 | `control_visitas` (alineado con recepción)   |
 
 Cuando añadas un campo de texto libre nuevo, decide su `N`, actualiza `db.sql`, la validación del controller y el `maxLength` + contador del formulario a la vez.

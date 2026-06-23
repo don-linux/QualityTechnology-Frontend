@@ -48,22 +48,22 @@ export function removeAllRecepcionInsumos(ubicacion) {
 }
 
 /* =====================================================
-   Visitas
+   Control de Visitas
 ===================================================== */
-export function listVisitas(ubicacion, filtro) {
-  return axios.get(B.visitas.base, { params: { ubicacion, filtro } });
+export function listControlVisitas(ubicacion, filtro) {
+  return axios.get(B.controlVisitas.base, { params: { ubicacion, filtro } });
 }
-export function createVisita(formData) {
-  return axios.post(B.visitas.base, formData);
+export function createControlVisita(formData) {
+  return axios.post(B.controlVisitas.base, formData);
 }
-export function updateVisita(id, formData) {
-  return axios.put(B.visitas.byId(id), formData);
+export function updateControlVisita(id, formData) {
+  return axios.put(B.controlVisitas.byId(id), formData);
 }
-export function removeVisita(id) {
-  return axios.delete(B.visitas.byId(id));
+export function removeControlVisita(id) {
+  return axios.delete(B.controlVisitas.byId(id));
 }
-export function removeAllVisitas() {
-  return axios.delete(B.visitas.base);
+export function removeAllControlVisitas() {
+  return axios.delete(B.controlVisitas.base);
 }
 
 /* =====================================================

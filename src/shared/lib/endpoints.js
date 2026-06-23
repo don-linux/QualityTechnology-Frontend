@@ -292,9 +292,9 @@ export const ENDPOINTS = {
       empleados: "/recepcion_insumos/empleados",
       byId: (id) => `/recepcion_insumos/${id}`,
     },
-    visitas: {
-      base: "/visitas",
-      byId: (id) => `/visitas/${id}`,
+    controlVisitas: {
+      base: "/control-visitas",
+      byId: (id) => `/control-visitas/${id}`,
     },
     banos: {
       base: "/banos",

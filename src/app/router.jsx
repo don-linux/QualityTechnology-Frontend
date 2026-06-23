@@ -45,7 +45,7 @@ const Cuentas = lazy(() => import("@pages/catalogos/CuentasPage"));
 // Bitácoras
 const BitacoraFaunaNociva = lazy(() => import("@pages/bitacoras/BitacoraFaunaNocivaPage"));
 const BitacoraRecepcionInsumos = lazy(() => import("@pages/bitacoras/BitacoraRecepcionInsumosPage"));
-const BitacoraVisitas = lazy(() => import("@pages/bitacoras/BitacoraVisitasPage"));
+const ControlVisitas = lazy(() => import("@pages/bitacoras/ControlVisitasPage"));
 const BitacoraBanos = lazy(() => import("@pages/bitacoras/BitacoraBanosPage"));
 const BitacoraParametros = lazy(() => import("@pages/bitacoras/BitacoraParametrosPage"));
 const BitacoraMedicamentos = lazy(() => import("@pages/bitacoras/BitacoraMedicamentosPage"));
@@ -99,7 +99,7 @@ export default function AppRouter() {
             <Route path="bitacoras">
               <Route path="fauna-nociva" element={<BitacoraFaunaNociva />} />
               <Route path="recepcion-insumos" element={<BitacoraRecepcionInsumos />} />
-              <Route path="visitas" element={<BitacoraVisitas />} />
+              <Route path="control-visitas" element={<ControlVisitas />} />
               <Route path="limpieza-banos" element={<BitacoraBanos />} />
               <Route path="parametros" element={<BitacoraParametros />} />
               <Route path="medicamentos" element={<BitacoraMedicamentos />} />
