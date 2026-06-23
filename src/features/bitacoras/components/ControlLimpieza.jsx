@@ -282,7 +282,7 @@ function ControlLimpiezaContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Limpieza de Baños
+        Control de Limpieza
       </Typography>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
