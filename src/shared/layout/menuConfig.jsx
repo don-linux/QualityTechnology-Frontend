@@ -78,7 +78,7 @@ export const MENU_SECTIONS = [
       { to: "/bitacoras/control-fauna-nociva", icon: <BugReport />, label: "Control de Fauna Nociva" },
       { to: "/bitacoras/recepcion-insumos", icon: <ReceiptLong />, label: "Recepción de Insumos" },
       { to: "/bitacoras/control-visitas", icon: <People />, label: "Control de Visitas" },
-      { to: "/bitacoras/limpieza-banos", icon: <CleaningServices />, label: "Limpieza de Baños" },
+      { to: "/bitacoras/control-limpieza", icon: <CleaningServices />, label: "Limpieza de Baños" },
       { to: "/bitacoras/parametros", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
       { to: "/bitacoras/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
       { to: "/bitacoras/recambios", icon: <ScienceOutlined />, label: "Recambios" },

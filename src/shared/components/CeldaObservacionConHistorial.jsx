@@ -46,7 +46,7 @@ const ETIQUETA_PROCESO = {
   medicamentos: "Medicamentos",
   controlFaunaNociva: "Control de Fauna Nociva",
   controlVisitas: "Control de Visitas",
-  banos: "Baños",
+  controlLimpieza: "Control de Limpieza",
   recepcion_insumos: "Recepción insumos",
 };
 

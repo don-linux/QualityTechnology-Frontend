@@ -15,12 +15,12 @@ import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import {
-  listBanos,
-  listEmpleadosBanos,
-  createBano,
-  updateBano,
-  removeBano,
-  removeAllBanos,
+  listControlLimpieza,
+  listEmpleadosControlLimpieza,
+  createControlLimpieza,
+  updateControlLimpieza,
+  removeControlLimpieza,
+  removeAllControlLimpieza,
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
@@ -37,22 +37,26 @@ const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-const MAX_FC_REGADERA = 100;
 const MAX_FC_OBSERVACIONES = 500;
 
-const getTipoBanio = (row) => {
-  return row.fc_tipo_banio || "";
+const TIPOS_INSTALACION = [
+  "Baño de Hombres",
+  "Baño de Mujeres",
+  "Regadera",
+];
+
+const getTipoInstalacion = (row) => {
+  return row.fc_tipo_instalacion || "";
 };
 
-function BitacoraBanosContent() {
+function ControlLimpiezaContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
   const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } =
     useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
-    fc_tipo_banio: "",
-    fc_regadera: "",
+    fc_tipo_instalacion: "",
     fc_realizo: "",
     fc_observaciones: "",
     fi_usuario_id: usuarioId,
@@ -67,8 +71,8 @@ function BitacoraBanosContent() {
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
-    "fd_fecha", "fc_tipo_banio",
-    "fc_regadera", "fc_realizo", "fc_observaciones", "ubicacion",
+    "fd_fecha", "fc_tipo_instalacion",
+    "fc_realizo", "fc_observaciones", "ubicacion",
   ];
 
   const handleChange = (e) => {
@@ -76,10 +80,9 @@ function BitacoraBanosContent() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  //  Cargar datos
   const cargarDatos = async () => {
     try {
-      const res = await listBanos();
+      const res = await listControlLimpieza();
       setData(res.data);
     } catch {
       showSnackbar("Error al cargar registros.", "error");
@@ -88,7 +91,7 @@ function BitacoraBanosContent() {
 
   const cargarEmpleados = async () => {
     try {
-      const res = await listEmpleadosBanos();
+      const res = await listEmpleadosControlLimpieza();
       setEmpleados(res.data);
     } catch {
       showSnackbar("Error al cargar empleados.", "error");
@@ -106,22 +109,20 @@ function BitacoraBanosContent() {
     }
   }, [defaultUbicacion, form.ubicacion]);
 
-  //  Guardar / Actualizar
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId) {
-        await updateBano(editId, form);
+        await updateControlLimpieza(editId, form);
         showSnackbar("Registro actualizado.", "success");
       } else {
-        await createBano(form);
+        await createControlLimpieza(form);
         showSnackbar("Registro guardado.", "success");
       }
 
       setForm({
         fd_fecha: "",
-        fc_tipo_banio: "",
-        fc_regadera: "",
+        fc_tipo_instalacion: "",
         fc_realizo: "",
         fc_observaciones: "",
         fi_usuario_id: usuarioId,
@@ -136,68 +137,60 @@ function BitacoraBanosContent() {
     }
   };
 
-  //  Editar
   const editar = (row) => {
     clearErrors();
     setEditId(row.fi_id);
     setForm({
       fd_fecha: row.fd_fecha?.split("T")[0] || "",
-      fc_tipo_banio: getTipoBanio(row),
-      fc_regadera: row.fc_regadera,
+      fc_tipo_instalacion: getTipoInstalacion(row),
       fc_realizo: row.fc_realizo,
       fc_observaciones: row.fc_observaciones,
       fi_usuario_id: row.fi_usuario_id,
       ubicacion: row.ubicacion || "",
     });
-    
+
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
   };
 
-  //  Eliminar uno
   const eliminar = async (id) => {
     if (!await confirm("¿Eliminar registro?")) return;
-    await removeBano(id);
+    await removeControlLimpieza(id);
     cargarDatos();
   };
 
-  //  Eliminar todos
   const eliminarTodos = async () => {
     if (!await confirm(" ¿Deseas eliminar TODOS los registros? Esta acción no se puede deshacer.")) return;
-    await removeAllBanos();
+    await removeAllControlLimpieza();
     cargarDatos();
   };
 
-  //  Exportar PDF
   const exportarPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF("l", "mm", "a4");
     const logo = getLogo(form.ubicacion);
 
-    // Encabezado
     try {
       doc.addImage(logo, "PNG", 10, 8, 25, 25);
     } catch {
       // Logo is optional for exported PDFs.
     }
     doc.setFontSize(14);
-    doc.text(`Bitácora de Baños - ${getLabel(form.ubicacion)}`, 45, 20);
+    doc.text(`Control de Limpieza - ${getLabel(form.ubicacion)}`, 45, 20);
     doc.setFontSize(10);
     doc.text("Control de limpieza y mantenimiento de baños y regaderas", 45, 26);
 
     const columnas = [
       "Fecha",
-      "Tipo de Baño",
-      "Regadera",
+      "Tipo de Instalación",
       "Realizó",
       "Observaciones",
     ];
 
     const filas = data.map((r) => [
       formatFecha(r.fd_fecha),
-      getTipoBanio(r),
-      r.fc_regadera,
+      getTipoInstalacion(r),
       r.fc_realizo,
       r.fc_observaciones,
     ]);
@@ -208,7 +201,7 @@ function BitacoraBanosContent() {
       body: filas,
       styles: { fontSize: 8, cellWidth: "wrap" },
       headStyles: {
-        fillColor: [33, 150, 243], // Azul Medellín
+        fillColor: [33, 150, 243],
         textColor: 255,
         halign: "center",
       },
@@ -217,12 +210,12 @@ function BitacoraBanosContent() {
 
     const fecha = formatFecha(new Date());
     doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Banos_${getLabel(form.ubicacion)}_${fecha}.pdf`);
+    doc.save(`Control_Limpieza_${getLabel(form.ubicacion)}_${fecha}.pdf`);
   };
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaBanos = (rows) => {
+  const renderTablaControlLimpieza = (rows) => {
     const filas = ordenarYNumerar(rows, ["fi_id"]);
     return (
     <Paper sx={{ width: "100%" }}>
@@ -232,8 +225,7 @@ function BitacoraBanosContent() {
           <TableRow>
             <TableCell>ID</TableCell>
             <TableCell>Fecha</TableCell>
-            <TableCell>Tipo de Baño</TableCell>
-            <TableCell>Regadera</TableCell>
+            <TableCell>Tipo de Instalación</TableCell>
             <TableCell>Realizó</TableCell>
             <TableCell>Observaciones</TableCell>
             <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
@@ -247,10 +239,7 @@ function BitacoraBanosContent() {
                 {formatFecha(r.fd_fecha)}
               </TableCell>
               <TableCell sx={{ maxWidth: 160 }}>
-                <span title={getTipoBanio(r)}>{truncar(getTipoBanio(r))}</span>
-              </TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={r.fc_regadera}>{truncar(r.fc_regadera)}</span>
+                <span title={getTipoInstalacion(r)}>{truncar(getTipoInstalacion(r))}</span>
               </TableCell>
               <TableCell sx={{ maxWidth: 160 }}>
                 <span title={r.fc_realizo}>{truncar(r.fc_realizo)}</span>
@@ -293,7 +282,7 @@ function BitacoraBanosContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Bitacora de Baños
+        Limpieza de Baños
       </Typography>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
@@ -334,30 +323,21 @@ function BitacoraBanosContent() {
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 select
-                label="Tipo de Baño"
-                name="fc_tipo_banio"
-                value={form.fc_tipo_banio}
+                label="Tipo de Instalación"
+                name="fc_tipo_instalacion"
+                value={form.fc_tipo_instalacion}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_tipo_banio}
-                helperText={errors.fc_tipo_banio}
+                error={!!errors.fc_tipo_instalacion}
+                helperText={errors.fc_tipo_instalacion}
               >
                 <MenuItem value="">Selecciona un tipo</MenuItem>
-                <MenuItem value="Hombre">Hombre</MenuItem>
-                <MenuItem value="Mujer">Mujer</MenuItem>
+                {TIPOS_INSTALACION.map((tipo) => (
+                  <MenuItem key={tipo} value={tipo}>
+                    {tipo}
+                  </MenuItem>
+                ))}
               </TextField>
-            </Grid>
-            <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
-                label="Regadera"
-                name="fc_regadera"
-                value={form.fc_regadera}
-                onChange={handleChange}
-                fullWidth
-                error={!!errors.fc_regadera}
-                helperText={errors.fc_regadera || `${String(form.fc_regadera).length}/${MAX_FC_REGADERA}`}
-                inputProps={{ maxLength: MAX_FC_REGADERA }}
-              />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
@@ -397,7 +377,6 @@ function BitacoraBanosContent() {
             </Grid>
           </Grid>
 
-          {/* BOTONES */}
           <Box sx={{ mt: 3 }}>
             <Button variant="contained" onClick={guardar}>
               {editId ? "Actualizar" : "Guardar"}
@@ -423,12 +402,12 @@ function BitacoraBanosContent() {
       </Card>
       </FormularioRegistroPanel>
 
-      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaBanos} />
+      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaControlLimpieza} />
       {ConfirmModal}
     </Box>
   );
 }
 
-export default function BitacoraBanos() {
-  return <BitacoraBanosContent />;
+export default function ControlLimpieza() {
+  return <ControlLimpiezaContent />;
 }

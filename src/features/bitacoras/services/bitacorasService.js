@@ -67,25 +67,25 @@ export function removeAllControlVisitas() {
 }
 
 /* =====================================================
-   Baños
+   Control de Limpieza
 ===================================================== */
-export function listBanos() {
-  return axios.get(B.banos.base);
+export function listControlLimpieza() {
+  return axios.get(B.controlLimpieza.base);
 }
-export function listEmpleadosBanos() {
-  return axios.get(B.banos.empleados);
+export function listEmpleadosControlLimpieza() {
+  return axios.get(B.controlLimpieza.empleados);
 }
-export function createBano(data) {
-  return axios.post(B.banos.base, data);
+export function createControlLimpieza(data) {
+  return axios.post(B.controlLimpieza.base, data);
 }
-export function updateBano(id, data) {
-  return axios.put(B.banos.byId(id), data);
+export function updateControlLimpieza(id, data) {
+  return axios.put(B.controlLimpieza.byId(id), data);
 }
-export function removeBano(id) {
-  return axios.delete(B.banos.byId(id));
+export function removeControlLimpieza(id) {
+  return axios.delete(B.controlLimpieza.byId(id));
 }
-export function removeAllBanos() {
-  return axios.delete(B.banos.base);
+export function removeAllControlLimpieza() {
+  return axios.delete(B.controlLimpieza.base);
 }
 
 /* =====================================================
