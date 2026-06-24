@@ -2,17 +2,20 @@ import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import { Outlet } from "react-router-dom";
 import useAuth from "@app/providers/AuthProvider";
+import useMiPerfilHeader from "@features/rrhh/hooks/useMiPerfilHeader";
 import TopBar from "./TopBar";
 import Sidebar from "./Sidebar";
+import { HeaderInfoProvider } from "./HeaderInfoContext";
 
 export default function CorporateLayout() {
-  const { rolLegible, logout, hasModulo } = useAuth();
+  const { esAdministrador, logout, hasModulo } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(true);
+  const headerInfo = useMiPerfilHeader(esAdministrador);
 
   return (
     <Box sx={{ display: "flex" }}>
       <TopBar
-        rolLegible={rolLegible}
+        headerInfo={headerInfo}
         drawerOpen={drawerOpen}
         onToggleDrawer={() => setDrawerOpen((prev) => !prev)}
         onLogout={logout}
@@ -30,7 +33,9 @@ export default function CorporateLayout() {
           overflow: "hidden",
         }}
       >
-        <Outlet />
+        <HeaderInfoProvider value={headerInfo}>
+          <Outlet />
+        </HeaderInfoProvider>
       </Box>
     </Box>
   );

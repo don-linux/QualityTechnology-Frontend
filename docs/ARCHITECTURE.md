@@ -65,7 +65,7 @@ src/
 │       ├── components/ModulosPorRol.jsx
 │       └── services/seguridadService.js
 ├── shared/                       # Cross-cutting concerns
-│   ├── components/               # PageHeader, PasswordField, PanelAdmin, PanelEmpresa
+│   ├── components/               # PageHeader, PasswordField, Copyright, SinAcceso
 │   ├── layout/CorporateLayout.jsx
 │   ├── guards/PrivateRoute.jsx
 │   ├── hooks/                    # useConfirm, useFormValidation

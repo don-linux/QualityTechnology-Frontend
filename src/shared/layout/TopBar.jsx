@@ -8,7 +8,21 @@ import Box from "@mui/material/Box";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 
-export default function TopBar({ rolLegible, drawerOpen, onToggleDrawer, onLogout }) {
+function resolveHeaderText(headerInfo) {
+  const mode = headerInfo?.mode;
+  if (mode === "empleado") {
+    const primary = [headerInfo.nombre, headerInfo.apellidoPaterno].filter(Boolean).join(" ") || "Empleado";
+    const secondary = [headerInfo.unidadNegocio, headerInfo.puesto].filter(Boolean).join(" · ");
+    return { primary, secondary };
+  }
+  if (mode === "loading") return { primary: "Cargando…", secondary: "" };
+  return { primary: headerInfo?.label || "Usuario", secondary: "" };
+}
+
+export default function TopBar({ headerInfo, drawerOpen, onToggleDrawer, onLogout }) {
+  const { primary, secondary } = resolveHeaderText(headerInfo);
+  const avatarInitial = headerInfo?.avatarInitial || primary.charAt(0).toUpperCase();
+
   return (
     <AppBar
       position="fixed"
@@ -44,11 +58,20 @@ export default function TopBar({ rolLegible, drawerOpen, onToggleDrawer, onLogou
         </Box>
 
         <Box display="flex" alignItems="center" gap={2}>
-          <Typography sx={{ fontWeight: "bold", fontSize: "1rem" }}>{rolLegible}</Typography>
+          <Box sx={{ textAlign: "right", minWidth: 0, maxWidth: { xs: 140, sm: 280 } }}>
+            <Typography noWrap title={primary} sx={{ fontWeight: "bold", fontSize: "1rem", lineHeight: 1.2 }}>
+              {primary}
+            </Typography>
+            {secondary && (
+              <Typography noWrap title={secondary} sx={{ fontSize: "0.78rem", opacity: 0.9, lineHeight: 1.2 }}>
+                {secondary}
+              </Typography>
+            )}
+          </Box>
           <Avatar
             sx={{ bgcolor: "#004d40", border: "2px solid white", boxShadow: "0 2px 5px rgba(0,0,0,0.3)" }}
           >
-            {rolLegible.charAt(0).toUpperCase()}
+            {avatarInitial}
           </Avatar>
           <Button
             variant="outlined"

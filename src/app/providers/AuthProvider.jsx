@@ -1,16 +1,9 @@
 import { createContext, useContext, useState, useCallback, useMemo } from "react";
 import axiosInstance from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
+import { normalizeRol, esAdministrador } from "@shared/lib/rolUtils";
 
 const AuthContext = createContext(null);
-
-function normalize(str) {
-  return (str || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .toLowerCase();
-}
 
 function readSession() {
   const token = localStorage.getItem("token");
@@ -19,6 +12,7 @@ function readSession() {
     token,
     refreshToken: localStorage.getItem("refreshToken") || "",
     rol: localStorage.getItem("rol") || "",
+    esRoot: localStorage.getItem("es_root") === "true",
     nombre: (localStorage.getItem("nombre") || "Usuario").trim(),
     usuarioId: localStorage.getItem("usuario_id") || "",
     granja: localStorage.getItem("granja") || "ALL",
@@ -44,6 +38,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem("token", data.token || "");
     localStorage.setItem("refreshToken", data.refreshToken || "");
     localStorage.setItem("rol", rolTexto);
+    localStorage.setItem("es_root", String(usuario.es_root === true));
     localStorage.setItem("nombre", usuario.nombre || "Usuario");
     localStorage.setItem("usuario_id", String(usuarioId));
     localStorage.setItem("modulos", JSON.stringify(data.modulos || []));
@@ -87,13 +82,13 @@ export function AuthProvider({ children }) {
   const hasModulo = useCallback(
     (nombre) => {
       if (!session?.modulos) return false;
-      const target = normalize(nombre);
+      const target = normalizeRol(nombre);
       return session.modulos.some(
         (m) =>
           m &&
           (
-            (typeof m.nombre === "string" && normalize(m.nombre) === target) ||
-            (typeof m.fc_nombre === "string" && normalize(m.fc_nombre) === target)
+            (typeof m.nombre === "string" && normalizeRol(m.nombre) === target) ||
+            (typeof m.fc_nombre === "string" && normalizeRol(m.fc_nombre) === target)
           )
       );
     },
@@ -102,28 +97,24 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!session?.token;
 
-  const rolLegible = useMemo(() => {
-    if (!session) return "Usuario";
-    const rol = normalize(session.rol);
-    const nombreLower = (session.nombre || "").toLowerCase();
-    if (rol.includes("admin") || rol.includes("administrador") || rol.includes("jefedeempresa")) {
-      if (nombreLower.includes("jefegam")) return "Jefe de Medellín";
-      if (nombreLower.includes("jefegac")) return "Jefe de La Ceiba";
-      return "Administrador";
-    }
-    return "Usuario";
-  }, [session]);
+  const isAdmin = useMemo(
+    () => esAdministrador({ esRoot: session?.esRoot, rol: session?.rol }),
+    [session?.esRoot, session?.rol]
+  );
+
+  const rolLegible = isAdmin ? "Administrador" : "Usuario";
 
   const value = useMemo(
     () => ({
       ...session,
       isAuthenticated,
+      esAdministrador: isAdmin,
       rolLegible,
       login,
       logout,
       hasModulo,
     }),
-    [session, isAuthenticated, rolLegible, login, logout, hasModulo]
+    [session, isAuthenticated, isAdmin, rolLegible, login, logout, hasModulo]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
