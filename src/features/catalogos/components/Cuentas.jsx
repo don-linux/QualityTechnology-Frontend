@@ -316,7 +316,7 @@ export default function Cuentas() {
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                        <Button size="small" variant="outlined" onClick={() => seleccionar(cuenta)}>Seleccionar</Button>
+                        <Button size="small" variant="outlined" onClick={() => seleccionar(cuenta)}>Editar</Button>
                         {cuenta.fb_activo ? (
                           <Button size="small" variant="outlined" color="error" onClick={() => desactivar(cuenta)}>
                             Desactivar

@@ -233,7 +233,7 @@ export default function TiposPileta() {
                         }}
                       >
                         <Button size="small" variant="outlined" onClick={() => seleccionar(item)}>
-                          Seleccionar
+                          Editar
                         </Button>
                         {tipoPiletaActivo(item) ? (
                           <Button

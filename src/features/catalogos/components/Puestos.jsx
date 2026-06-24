@@ -160,7 +160,7 @@ export default function Puestos() {
                   </TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                      <Button size="small" variant="outlined" onClick={() => seleccionar(p)}>Seleccionar</Button>
+                      <Button size="small" variant="outlined" onClick={() => seleccionar(p)}>Editar</Button>
                       {puestoActivo(p) ? (
                         <Button size="small" variant="outlined" color="error" onClick={() => desactivar(getPuestoId(p), getPuestoNombre(p))}>Desactivar</Button>
                       ) : (

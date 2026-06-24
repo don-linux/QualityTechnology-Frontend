@@ -474,7 +474,7 @@ export default function Insumos() {
                           size="small"
                           onClick={() => seleccionarInsumo(insumo)}
                         >
-                          Seleccionar
+                          Editar
                         </Button>
                         {insumo.activo !== false ? (
                           <Button

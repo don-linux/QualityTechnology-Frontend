@@ -326,7 +326,7 @@ export default function UnidadesNegocio() {
                             }}
                           >
                             <Button size="small" variant="outlined" onClick={() => seleccionar(u)}>
-                              Seleccionar
+                              Editar
                             </Button>
                             {unidadNegocioActivo(u) ? (
                               <Button

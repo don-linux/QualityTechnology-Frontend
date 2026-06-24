@@ -406,7 +406,7 @@ export default function Cliente() {
                   <TableCell>{cli.ejecutivo_nombre}</TableCell>
                   <TableCell>
                     <Button variant="outlined" size="small" onClick={() => seleccionarCliente(cli)}>
-                      Seleccionar
+                      Editar
                     </Button>
                   </TableCell>
                 </TableRow>

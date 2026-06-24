@@ -237,7 +237,7 @@ export default function Roles() {
                         }}
                       >
                         <Button size="small" variant="outlined" onClick={() => seleccionar(rol)}>
-                          Seleccionar
+                          Editar
                         </Button>
                         <Button
                           size="small"

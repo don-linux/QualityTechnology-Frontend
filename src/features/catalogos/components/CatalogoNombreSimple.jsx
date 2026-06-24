@@ -242,7 +242,7 @@ export default function CatalogoNombreSimple({
                         }}
                       >
                         <Button size="small" variant="outlined" onClick={() => seleccionar(item)}>
-                          Seleccionar
+                          Editar
                         </Button>
                         {isActivo(item) ? (
                           <Button

@@ -194,7 +194,7 @@ export default function Ubicaciones({
                     <TableCell align="center">
                       <Box sx={{ display: "inline-flex", gap: 1, flexWrap: "nowrap" }}>
                         <Button size="small" variant="outlined" onClick={() => seleccionar(u)}>
-                          Seleccionar
+                          Editar
                         </Button>
                       </Box>
                     </TableCell>

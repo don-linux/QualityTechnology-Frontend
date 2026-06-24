@@ -269,7 +269,7 @@ export default function UsuariosRegistro() {
                 </TableCell>
                 <TableCell align="center">
                   <Button variant="outlined" size="small" sx={{ mr: 1 }} onClick={() => seleccionarUsuario(usuario)}>
-                    Seleccionar
+                    Editar
                   </Button>
                   <Button
                     variant="outlined"
