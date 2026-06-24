@@ -19,11 +19,11 @@ El mismo número `N` aparece en las tres capas y se cambia en la **misma PR**:
 
 ```jsx
 <TextField
-  name="fc_motivo"
-  value={form.fc_motivo}
+  name="motivo"
+  value={form.motivo}
   onChange={handleChange}
   inputProps={{ maxLength: 300 }}
-  helperText={`${form.fc_motivo.length}/300`}
+  helperText={`${form.motivo.length}/300`}
   // ...
 />
 ```
@@ -44,7 +44,7 @@ La celda envuelve el valor con `<span title={valor}>{truncar(valor)}</span>` par
 
 ```jsx
 <TableCell sx={{ maxWidth: 160 }}>
-  <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
+  <span title={r.observaciones}>{truncar(r.observaciones)}</span>
 </TableCell>
 ```
 
@@ -52,7 +52,7 @@ La celda envuelve el valor con `<span title={valor}>{truncar(valor)}</span>` par
 
 | Campo              | Límite | Módulo de referencia                          |
 |--------------------|-------:|-----------------------------------------------|
-| `fc_motivo`        |    300 | `control_visitas`                             |
-| `fc_observaciones` |    500 | `control_visitas` (alineado con recepción)   |
+| `motivo`           |    300 | `control_visitas`                             |
+| `observaciones`    |    500 | `control_visitas` (alineado con recepción)   |
 
 Cuando añadas un campo de texto libre nuevo, decide su `N`, actualiza `db.sql`, la validación del controller y el `maxLength` + contador del formulario a la vez.
