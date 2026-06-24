@@ -7,19 +7,10 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
-import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
-import SearchIcon from "@mui/icons-material/Search";
 import PhotoCameraRoundedIcon from "@mui/icons-material/PhotoCameraRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import {
@@ -34,15 +25,11 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import ListadoTabla from "@shared/components/ListadoTabla";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 import { formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import CapturaIdentificacionModal from "./CapturaIdentificacionModal";
 import FotoIdentificacionDialog from "./FotoIdentificacionDialog";
-
-const TRUNCAR_MAX = 40;
-const truncar = (texto) =>
-  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 function ControlVisitasContent() {
   const showSnackbar = useSnackbar();
@@ -64,7 +51,6 @@ function ControlVisitasContent() {
 
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
-  const [busqueda, setBusqueda] = useState("");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
@@ -98,13 +84,13 @@ function ControlVisitasContent() {
     try {
       const granjas = ubicacionesGranja.map((op) => op.value);
       const rows = await fetchMergedPorUbicaciones(granjas, (g) =>
-        listControlVisitas(g, busqueda),
+        listControlVisitas(g),
       );
       setData(rows);
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
     }
-  }, [ubicacionesGranja, busqueda]);
+  }, [ubicacionesGranja]);
 
   useEffect(() => {
     cargarDatos();
@@ -195,149 +181,53 @@ function ControlVisitasContent() {
     abrirFormulario();
   };
 
-  const exportarPDF = async () => {
-    const { default: jsPDF } = await import("jspdf");
-    const { default: autoTable } = await import("jspdf-autotable");
-    const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(defaultUbicacion);
-    const color = getColor(defaultUbicacion);
-
-    try {
-      doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {
-      // Logo is optional for exported PDFs.
-    }
-
-    doc.setFontSize(14);
-    const ubicLabel = "Todas las ubicaciones";
-    doc.text(`Control de Visitas — ${ubicLabel}`, 45, 20);
-    doc.setFontSize(10);
-    doc.text("Registro de visitas, motivos y observaciones", 45, 26);
-
-    const columnas = ["Fecha", "Nombre", "Origen", "Motivo", "Foto ID", "Entrada", "Salida", "Observaciones"];
-    const filas = data.map((r) => [
-      formatFecha(r.fd_fecha),
-      r.fc_nombre_completo,
-      r.fc_origen,
-      r.fc_motivo,
-      r.fc_foto_identificacion,
-      r.fd_entrada,
-      r.fd_salida,
-      r.fc_observaciones,
-    ]);
-
-    autoTable(doc, {
-      startY: 40,
-      head: [columnas],
-      body: filas,
-      styles: { fontSize: 7 },
-      headStyles: { fillColor: color, textColor: 255, halign: "center" },
-    });
-
-    const fecha = formatFecha(new Date());
-    doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Control_Visitas_${fecha}.pdf`);
-  };
+  const columnas = [
+    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Nombre", value: (r) => r.fc_nombre_completo },
+    { header: "Origen", value: (r) => r.fc_origen },
+    { header: "Motivo", value: (r) => r.fc_motivo, truncate: true, maxWidth: 160 },
+    {
+      header: "Foto ID",
+      value: (r) => (r.fc_foto_identificacion ? "Sí" : "No"),
+      render: (r) =>
+        r.fc_foto_identificacion ? (
+          <Link
+            component="button"
+            type="button"
+            onClick={() => setFotoVer({ open: true, path: r.fc_foto_identificacion })}
+            sx={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
+          >
+            Ver foto
+          </Link>
+        ) : (
+          "—"
+        ),
+    },
+    { header: "Entrada", value: (r) => r.fd_entrada },
+    { header: "Salida", value: (r) => r.fd_salida },
+    { header: "Observaciones", value: (r) => r.fc_observaciones, truncate: true, maxWidth: 160 },
+  ];
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaVisitas = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_id"]);
-    return (
-    <Paper sx={{ width: "100%" }}>
-      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-        <Table sx={{ minWidth: 1180 }}>
-        <TableHead sx={{ background: "#FFF9C4" }}>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Fecha</TableCell>
-            <TableCell>Nombre</TableCell>
-            <TableCell>Origen</TableCell>
-            <TableCell>Motivo</TableCell>
-            <TableCell>Foto ID</TableCell>
-            <TableCell>Entrada</TableCell>
-            <TableCell>Salida</TableCell>
-            <TableCell>Observaciones</TableCell>
-            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filas.map((r) => (
-            <TableRow key={r.fi_id}>
-              <TableCell>{r._num}</TableCell>
-              <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
-              <TableCell>{r.fc_nombre_completo}</TableCell>
-              <TableCell>{r.fc_origen}</TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={r.fc_motivo}>{truncar(r.fc_motivo)}</span>
-              </TableCell>
-              <TableCell>
-                {r.fc_foto_identificacion ? (
-                  <Link
-                    component="button"
-                    type="button"
-                    onClick={() => setFotoVer({ open: true, path: r.fc_foto_identificacion })}
-                    sx={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
-                  >
-                    Ver foto
-                  </Link>
-                ) : (
-                  "—"
-                )}
-              </TableCell>
-              <TableCell>{r.fd_entrada}</TableCell>
-              <TableCell>{r.fd_salida}</TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-              >
-                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="warning"
-                    onClick={() => editar(r)}
-                  >
-                    Editar
-                  </Button>
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
-    );
-  };
+  const renderTablaVisitas = (rows) => (
+    <ListadoTabla
+      columnas={columnas}
+      filas={rows}
+      minWidth={1180}
+      acciones={(r) => (
+        <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
+          Editar
+        </Button>
+      )}
+    />
+  );
 
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
         Control de Visitas
       </Typography>
-
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <TextField
-          label="Buscar Nombre / Origen"
-          variant="outlined"
-          size="small"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="primary" />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-      </Box>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
@@ -574,20 +464,26 @@ function ControlVisitasContent() {
             <Button variant="contained" onClick={guardar}>
               {editId ? "Actualizar" : "Guardar"}
             </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              sx={{ ml: 2 }}
-              onClick={exportarPDF}
-            >
-               Exportar PDF
-            </Button>
           </Box>
         </CardContent>
       </Card>
       </FormularioRegistroPanel>
 
-      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaVisitas} />
+      <TablasPorUbicacionGranja
+        grupos={gruposUbicacion}
+        renderTabla={renderTablaVisitas}
+        buscar
+        searchKeys={["fc_nombre_completo", "fc_origen", "fc_motivo", "fc_observaciones"]}
+        placeholderBusqueda="Buscar nombre, origen o motivo"
+        exportar={{
+          columnas,
+          titulo: "Control de Visitas",
+          subtitulo: "Registro de visitas, motivos y observaciones",
+          nombreArchivo: "Control_Visitas",
+        }}
+        getLogo={getLogo}
+        getColor={getColor}
+      />
 
       <CapturaIdentificacionModal
         open={cameraOpen}

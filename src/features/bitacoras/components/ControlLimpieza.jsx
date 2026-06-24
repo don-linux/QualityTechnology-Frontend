@@ -7,13 +7,6 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
 import {
   listControlLimpieza,
   listEmpleadosControlLimpieza,
@@ -27,12 +20,8 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import ListadoTabla from "@shared/components/ListadoTabla";
 import { formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
-
-const TRUNCAR_MAX = 40;
-const truncar = (texto) =>
-  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 const MAX_FC_OBSERVACIONES = 500;
 
@@ -49,7 +38,7 @@ const getTipoInstalacion = (row) => {
 function ControlLimpiezaContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } =
+  const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } =
     useUbicacionesGranja();
   const [form, setForm] = useState({
     fd_fecha: "",
@@ -149,111 +138,27 @@ function ControlLimpiezaContent() {
     abrirFormulario();
   };
 
-  const exportarPDF = async () => {
-    const { default: jsPDF } = await import("jspdf");
-    const { default: autoTable } = await import("jspdf-autotable");
-    const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(form.ubicacion);
-
-    try {
-      doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {
-      // Logo is optional for exported PDFs.
-    }
-    doc.setFontSize(14);
-    doc.text(`Control de Limpieza - ${getLabel(form.ubicacion)}`, 45, 20);
-    doc.setFontSize(10);
-    doc.text("Control de limpieza y mantenimiento de baños y regaderas", 45, 26);
-
-    const columnas = [
-      "Fecha",
-      "Tipo de Instalación",
-      "Realizó",
-      "Observaciones",
-    ];
-
-    const filas = data.map((r) => [
-      formatFecha(r.fd_fecha),
-      getTipoInstalacion(r),
-      r.fc_realizo,
-      r.fc_observaciones,
-    ]);
-
-    autoTable(doc, {
-      startY: 40,
-      head: [columnas],
-      body: filas,
-      styles: { fontSize: 8, cellWidth: "wrap" },
-      headStyles: {
-        fillColor: [33, 150, 243],
-        textColor: 255,
-        halign: "center",
-      },
-      bodyStyles: { valign: "middle" },
-    });
-
-    const fecha = formatFecha(new Date());
-    doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Control_Limpieza_${getLabel(form.ubicacion)}_${fecha}.pdf`);
-  };
+  const columnas = [
+    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Tipo de Instalación", value: (r) => getTipoInstalacion(r), truncate: true, maxWidth: 160 },
+    { header: "Realizó", value: (r) => r.fc_realizo, truncate: true, maxWidth: 160 },
+    { header: "Observaciones", value: (r) => r.fc_observaciones, truncate: true, maxWidth: 160 },
+  ];
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaControlLimpieza = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_id"]);
-    return (
-    <Paper sx={{ width: "100%" }}>
-      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-        <Table sx={{ minWidth: 960 }}>
-        <TableHead sx={{ background: "#E3F2FD" }}>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Fecha</TableCell>
-            <TableCell>Tipo de Instalación</TableCell>
-            <TableCell>Realizó</TableCell>
-            <TableCell>Observaciones</TableCell>
-            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filas.map((r) => (
-            <TableRow key={r.fi_id}>
-              <TableCell>{r._num}</TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                {formatFecha(r.fd_fecha)}
-              </TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={getTipoInstalacion(r)}>{truncar(getTipoInstalacion(r))}</span>
-              </TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={r.fc_realizo}>{truncar(r.fc_realizo)}</span>
-              </TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-              >
-                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="warning"
-                    onClick={() => editar(r)}
-                  >
-                    Editar
-                  </Button>
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
-    );
-  };
+  const renderTablaControlLimpieza = (rows) => (
+    <ListadoTabla
+      columnas={columnas}
+      filas={rows}
+      minWidth={960}
+      acciones={(r) => (
+        <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
+          Editar
+        </Button>
+      )}
+    />
+  );
 
   return (
     <Box>
@@ -357,20 +262,26 @@ function ControlLimpiezaContent() {
             <Button variant="contained" onClick={guardar}>
               {editId ? "Actualizar" : "Guardar"}
             </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              sx={{ ml: 2 }}
-              onClick={exportarPDF}
-            >
-               Exportar PDF
-            </Button>
           </Box>
         </CardContent>
       </Card>
       </FormularioRegistroPanel>
 
-      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaControlLimpieza} />
+      <TablasPorUbicacionGranja
+        grupos={gruposUbicacion}
+        renderTabla={renderTablaControlLimpieza}
+        buscar
+        searchKeys={["fc_tipo_instalacion", "fc_realizo", "fc_observaciones"]}
+        placeholderBusqueda="Buscar tipo, responsable u observaciones"
+        exportar={{
+          columnas,
+          titulo: "Control de Limpieza",
+          subtitulo: "Control de limpieza y mantenimiento de baños y regaderas",
+          nombreArchivo: "Control_Limpieza",
+        }}
+        getLogo={getLogo}
+        getColor={getColor}
+      />
     </Box>
   );
 }

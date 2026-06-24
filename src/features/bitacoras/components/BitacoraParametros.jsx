@@ -6,17 +6,6 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MenuItem from "@mui/material/MenuItem";
 import {
   listParametros,
@@ -31,13 +20,14 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import ListadoTabla from "@shared/components/ListadoTabla";
 import { formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 function BitacoraParametrosContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
     fd_fecha: "",
@@ -145,65 +135,32 @@ function BitacoraParametrosContent() {
     abrirFormulario();
   };
 
-  //  Exportar PDF
-  const exportarPDF = async () => {
-    const { default: jsPDF } = await import("jspdf");
-    const { default: autoTable } = await import("jspdf-autotable");
-    const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(form.ubicacion);
-
-    try {
-      doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {
-      // Logo is optional for exported PDFs.
-    }
-    doc.setFontSize(14);
-    doc.text(`Bitácora de Parámetros - ${getLabel(form.ubicacion)}`, 45, 20);
-    doc.setFontSize(10);
-    doc.text("Registro de oxígeno, pH, temperatura y otros indicadores", 45, 26);
-
-    const columnas = [
-      "Fecha",
-      "Estanque",
-      "Oxígeno",
-      "Temp (°C)",
-      "pH",
-      "Amonio",
-      "Nitritos",
-      "Nitratos",
-      "Responsable",
-    ];
-
-    const filas = data.map((r) => [
-      formatFecha(r.fd_fecha),
-      r.fn_num_estanque,
-      r.fn_oxigeno,
-      r.fn_temperatura,
-      r.fn_ph,
-      r.fn_amonio,
-      r.fn_nitritos,
-      r.fn_nitratos,
-      r.fc_responsable,
-    ]);
-
-    autoTable(doc, {
-      startY: 40,
-      head: [columnas],
-      body: filas,
-      styles: { fontSize: 8, cellWidth: "wrap" },
-      headStyles: {
-        fillColor: [255, 235, 59], // Amarillo claro Medellín
-        textColor: 0,
-        halign: "center",
-      },
-    });
-
-    const fecha = formatFecha(new Date());
-    doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Parametros_${getLabel(form.ubicacion)}_${fecha}.pdf`);
-  };
+  const columnas = [
+    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Estanque", value: (r) => r.fn_num_estanque },
+    { header: "Oxígeno", value: (r) => r.fn_oxigeno },
+    { header: "Temperatura", value: (r) => r.fn_temperatura },
+    { header: "pH", value: (r) => r.fn_ph },
+    { header: "Amonio", value: (r) => r.fn_amonio },
+    { header: "Nitritos", value: (r) => r.fn_nitritos },
+    { header: "Nitratos", value: (r) => r.fn_nitratos },
+    { header: "Responsable", value: (r) => r.fc_responsable },
+  ];
 
   const gruposUbicacion = getGroups(data);
+
+  const renderTablaParametros = (rows) => (
+    <ListadoTabla
+      columnas={columnas}
+      filas={rows}
+      minWidth={1100}
+      acciones={(r) => (
+        <Button size="small" color="warning" variant="contained" onClick={() => editar(r)}>
+          Editar
+        </Button>
+      )}
+    />
+  );
 
   return (
     <Box>
@@ -360,81 +317,27 @@ function BitacoraParametrosContent() {
             <Button variant="contained" onClick={guardar}>
               {editId ? "Actualizar" : "Guardar"}
             </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              sx={{ ml: 2 }}
-              onClick={exportarPDF}
-            >
-               Exportar PDF
-            </Button>
           </Box>
         </CardContent>
       </Card>
       </FormularioRegistroPanel>
 
       {/* TABLAS POR UBICACIÓN */}
-      {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography fontWeight="bold">{label} ({rows.length})</Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ p: 0 }}>
-            <Paper sx={{ width: "100%" }}>
-              <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-                <Table sx={{ minWidth: 1100 }}>
-                <TableHead sx={{ background: "#FFFDE7" }}>
-                  <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell>Fecha</TableCell>
-                    <TableCell>Estanque</TableCell>
-                    <TableCell>Oxígeno</TableCell>
-                    <TableCell>Temperatura</TableCell>
-                    <TableCell>pH</TableCell>
-                    <TableCell>Amonio</TableCell>
-                    <TableCell>Nitritos</TableCell>
-                    <TableCell>Nitratos</TableCell>
-                    <TableCell>Responsable</TableCell>
-                    <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {ordenarYNumerar(rows, ["fi_id"]).map((r) => (
-                    <TableRow key={r.fi_id}>
-                      <TableCell>{r._num}</TableCell>
-                      <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
-                      <TableCell>{r.fn_num_estanque}</TableCell>
-                      <TableCell>{r.fn_oxigeno}</TableCell>
-                      <TableCell>{r.fn_temperatura}</TableCell>
-                      <TableCell>{r.fn_ph}</TableCell>
-                      <TableCell>{r.fn_amonio}</TableCell>
-                      <TableCell>{r.fn_nitritos}</TableCell>
-                      <TableCell>{r.fn_nitratos}</TableCell>
-                      <TableCell>{r.fc_responsable}</TableCell>
-                      <TableCell
-                        align="center"
-                        sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-                      >
-                        <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                          <Button
-                            size="small"
-                            color="warning"
-                            variant="contained"
-                            onClick={() => editar(r)}
-                          >
-                            Editar
-                          </Button>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+      <TablasPorUbicacionGranja
+        grupos={gruposUbicacion}
+        renderTabla={renderTablaParametros}
+        buscar
+        searchKeys={["fn_num_estanque", "fc_responsable"]}
+        placeholderBusqueda="Buscar estanque o responsable"
+        exportar={{
+          columnas,
+          titulo: "Bitácora de Parámetros",
+          subtitulo: "Registro de oxígeno, pH, temperatura y otros indicadores",
+          nombreArchivo: "Bitacora_Parametros",
+        }}
+        getLogo={getLogo}
+        getColor={getColor}
+      />
     </Box>
   );
 }

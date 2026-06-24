@@ -7,16 +7,6 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   listAlimentacion,
   createAlimentacion,
@@ -30,12 +20,9 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import ListadoTabla from "@shared/components/ListadoTabla";
 import { formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
-
-const TRUNCAR_MAX = 40;
-const truncar = (texto) =>
-  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 const MAX_FC_OBSERVACIONES = 500;
 
@@ -53,7 +40,7 @@ const mesDesdefecha = (fecha) => {
 export default function BioAlimentacion() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
     fn_num_instalacion: "",
@@ -204,139 +191,36 @@ export default function BioAlimentacion() {
     abrirFormulario();
   };
 
-  //  Exportar a PDF
-  const exportarPDF = async () => {
-    const { default: jsPDF } = await import("jspdf");
-    const { default: autoTable } = await import("jspdf-autotable");
-    const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(form.ubicacion);
-
-    try {
-      doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {
-      // Logo is optional for exported PDFs.
-    }
-    doc.setFontSize(14);
-    doc.text(`Bitácora de Alimentación - ${getLabel(form.ubicacion)}`, 45, 20);
-    doc.setFontSize(10);
-    doc.text("Control de alimentación, parámetros y observaciones", 45, 26);
-
-    const columnas = [
-      "Mes",
-      "Instalación",
-      "Peso Entrada",
-      "Siembra",
-      "Origen",
-      "Fecha",
-      "Alimento (g)",
-      "Mortalidad",
-      "Recambio",
-      "Temp",
-      "Amonio",
-      "pH",
-      "Observaciones",
-    ];
-
-    const filas = data.map((r) => [
-      r.fc_mes,
-      r.fn_num_instalacion,
-      r.fn_peso_promedio_entrada,
-      formatFecha(r.fd_fecha_siembra),
-      r.fc_origen_alevines,
-      formatFecha(r.fd_fecha),
-      r.fn_total_alimento_gramos,
-      r.fn_mortalidad,
-      r.fc_recambio_agua,
-      r.fn_temp_agua,
-      r.fn_amonio,
-      r.fn_ph,
-      r.fc_observaciones,
-    ]);
-
-    autoTable(doc, {
-      startY: 40,
-      head: [columnas],
-      body: filas,
-      styles: { fontSize: 7, cellWidth: "wrap" },
-      headStyles: {
-        fillColor: [56, 142, 60],
-        textColor: 255,
-        halign: "center",
-      },
-    });
-
-    const fecha = formatFecha(new Date());
-    doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Alimentacion_${getLabel(form.ubicacion)}_${fecha}.pdf`);
-  };
+  const columnas = [
+    { header: "Mes", value: (r) => r.fc_mes },
+    { header: "Instalación", value: (r) => r.fn_num_instalacion },
+    { header: "Peso Entrada", value: (r) => r.fn_peso_promedio_entrada },
+    { header: "Siembra", value: (r) => formatFecha(r.fd_fecha_siembra) },
+    { header: "Origen", value: (r) => r.fc_origen_alevines },
+    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Alimento (g)", value: (r) => r.fn_total_alimento_gramos },
+    { header: "Mortalidad", value: (r) => r.fn_mortalidad },
+    { header: "Recambio", value: (r) => r.fc_recambio_agua },
+    { header: "Temp", value: (r) => r.fn_temp_agua },
+    { header: "Amonio", value: (r) => r.fn_amonio },
+    { header: "pH", value: (r) => r.fn_ph },
+    { header: "Observaciones", value: (r) => r.fc_observaciones, truncate: true, maxWidth: 160 },
+  ];
 
   const gruposUbicacion = getGroups(data);
 
-  const tablaAlimentacion = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_id"]);
-    return (
-    <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-      <Table sx={{ minWidth: 1350 }}>
-        <TableHead sx={{ background: "#E8F5E9" }}>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Mes</TableCell>
-            <TableCell>Instalación</TableCell>
-            <TableCell>Peso Entrada</TableCell>
-            <TableCell>Siembra</TableCell>
-            <TableCell>Origen</TableCell>
-            <TableCell>Fecha</TableCell>
-            <TableCell>Alimento (g)</TableCell>
-            <TableCell>Mortalidad</TableCell>
-            <TableCell>Recambio</TableCell>
-            <TableCell>Temp</TableCell>
-            <TableCell>Amonio</TableCell>
-            <TableCell>pH</TableCell>
-            <TableCell>Observaciones</TableCell>
-            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filas.map((row) => (
-            <TableRow key={row.fi_id}>
-              <TableCell>{row._num}</TableCell>
-              <TableCell>{row.fc_mes}</TableCell>
-              <TableCell>{row.fn_num_instalacion}</TableCell>
-              <TableCell>{row.fn_peso_promedio_entrada}</TableCell>
-              <TableCell>{formatFecha(row.fd_fecha_siembra)}</TableCell>
-              <TableCell>{row.fc_origen_alevines}</TableCell>
-              <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
-              <TableCell>{row.fn_total_alimento_gramos}</TableCell>
-              <TableCell>{row.fn_mortalidad}</TableCell>
-              <TableCell>{row.fc_recambio_agua}</TableCell>
-              <TableCell>{row.fn_temp_agua}</TableCell>
-              <TableCell>{row.fn_amonio}</TableCell>
-              <TableCell>{row.fn_ph}</TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-              >
-                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                  <Button
-                    variant="contained"
-                    color="warning"
-                    size="small"
-                    onClick={() => editar(row)}
-                  >
-                    Editar
-                  </Button>
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-    );
-  };
+  const tablaAlimentacion = (rows) => (
+    <ListadoTabla
+      columnas={columnas}
+      filas={rows}
+      minWidth={1350}
+      acciones={(row) => (
+        <Button variant="contained" color="warning" size="small" onClick={() => editar(row)}>
+          Editar
+        </Button>
+      )}
+    />
+  );
 
   return (
     <Box>
@@ -541,29 +425,26 @@ export default function BioAlimentacion() {
             <Button variant="contained" onClick={guardar}>
               {editId ? "Actualizar" : "Guardar"}
             </Button>
-            <Button
-              variant="outlined"
-              color="success"
-              sx={{ ml: 2 }}
-              onClick={exportarPDF}
-            >
-               Exportar PDF
-            </Button>
           </Box>
         </CardContent>
       </Card>
       </FormularioRegistroPanel>
 
-      {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} sx={{ mt: 1 }}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography component="span" fontWeight="bold">{label}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            {tablaAlimentacion(rows)}
-          </AccordionDetails>
-        </Accordion>
-      ))}
+      <TablasPorUbicacionGranja
+        grupos={gruposUbicacion}
+        renderTabla={tablaAlimentacion}
+        buscar
+        searchKeys={["fc_mes", "fn_num_instalacion", "fc_origen_alevines", "fc_observaciones"]}
+        placeholderBusqueda="Buscar mes, instalación u origen"
+        exportar={{
+          columnas,
+          titulo: "Bitácora de Alimentación",
+          subtitulo: "Control de alimentación, parámetros y observaciones",
+          nombreArchivo: "Bitacora_Alimentacion",
+        }}
+        getLogo={getLogo}
+        getColor={getColor}
+      />
     </Box>
   );
 }

@@ -6,19 +6,10 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
-import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
-import SearchIcon from "@mui/icons-material/Search";
 import {
   listRecepcionInsumos,
   listEmpleadosRecepcionInsumos,
@@ -33,13 +24,9 @@ import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import ListadoTabla from "@shared/components/ListadoTabla";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 import { formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
-
-const TRUNCAR_MAX = 40;
-const truncar = (texto) =>
-  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
 function RecepcionInsumosContent() {
   const showSnackbar = useSnackbar();
@@ -64,7 +51,6 @@ function RecepcionInsumosContent() {
   const [data, setData] = useState([]);
   const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
-  const [busqueda, setBusqueda] = useState("");
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
@@ -102,18 +88,11 @@ function RecepcionInsumosContent() {
     try {
       const granjas = ubicacionesGranja.map((op) => op.value);
       const rows = await fetchMergedPorUbicaciones(granjas, listRecepcionInsumos);
-      const filtrados = rows.filter((r) => {
-        if (!busqueda) return true;
-        return (
-          r.fc_producto?.toLowerCase().includes(busqueda.toLowerCase()) ||
-          r.fc_lote?.toString().includes(busqueda)
-        );
-      });
-      setData(filtrados);
+      setData(rows);
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
     }
-  }, [ubicacionesGranja, busqueda]);
+  }, [ubicacionesGranja]);
 
   useEffect(() => {
     cargarEmpleados();
@@ -168,153 +147,39 @@ function RecepcionInsumosContent() {
     abrirFormulario();
   };
 
-  const exportarPDF = async () => {
-    const { default: jsPDF } = await import("jspdf");
-    const { default: autoTable } = await import("jspdf-autotable");
-    const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(defaultUbicacion);
-    const color = getColor(defaultUbicacion);
-
-    try {
-      doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {
-      // El PDF debe generarse aunque el logo de la ubicación no esté disponible.
-    }
-
-    doc.setFontSize(14);
-    doc.text(
-      "Bitácora de Recepción de Insumos — Todas las ubicaciones",
-      45,
-      20
-    );
-    doc.setFontSize(10);
-    doc.text("Registro de insumos recibidos en la granja", 45, 26);
-
-    const columnas = [
-      "Fecha",
-      "Proveedor",
-      "Producto",
-      "Lote",
-      "Cantidad",
-      "Unidad",
-      "Condiciones de entrega",
-      "Encargado entrega",
-      "Verificó",
-      "Observaciones",
-    ];
-    const filas = data.map((r) => [
-      formatFecha(r.fd_fecha),
-      r.fc_proveedor,
-      r.fc_producto,
-      r.fc_lote,
-      r.fc_cantidad,
-      r.fc_unidad_medida,
-      r.fc_condiciones_entrega,
-      r.fc_encargado_entrega,
-      r.fc_verifico,
-      r.fc_observaciones,
-    ]);
-
-    autoTable(doc, {
-      startY: 40,
-      head: [columnas],
-      body: filas,
-      styles: { fontSize: 7 },
-      headStyles: { fillColor: color, textColor: 255, halign: "center" },
-    });
-
-    const fecha = formatFecha(new Date());
-    doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Recepcion_Insumos_${fecha}.pdf`);
-  };
+  const columnas = [
+    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Proveedor", value: (r) => r.fc_proveedor },
+    { header: "Producto", value: (r) => r.fc_producto, truncate: true, maxWidth: 160 },
+    { header: "Lote", value: (r) => r.fc_lote },
+    { header: "Cantidad", value: (r) => r.fc_cantidad },
+    { header: "Unidad", value: (r) => r.fc_unidad_medida },
+    { header: "Condiciones de entrega", value: (r) => r.fc_condiciones_entrega, truncate: true, maxWidth: 160 },
+    { header: "Encargado entrega", value: (r) => r.fc_encargado_entrega },
+    { header: "Verificó", value: (r) => r.fc_verifico },
+    { header: "Observaciones", value: (r) => r.fc_observaciones, truncate: true, maxWidth: 160 },
+  ];
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaRecepcion = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_id"]);
-    return (
-    <Paper sx={{ width: "100%" }}>
-      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-        <Table sx={{ minWidth: 1320 }}>
-        <TableHead>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Fecha</TableCell>
-            <TableCell>Proveedor</TableCell>
-            <TableCell>Producto</TableCell>
-            <TableCell>Lote</TableCell>
-            <TableCell>Cantidad</TableCell>
-            <TableCell>Unidad</TableCell>
-            <TableCell>Condiciones de entrega</TableCell>
-            <TableCell>Encargado entrega</TableCell>
-            <TableCell>Verificó</TableCell>
-            <TableCell>Observaciones</TableCell>
-            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filas.map((r) => (
-            <TableRow key={r.fi_id}>
-              <TableCell>{r._num}</TableCell>
-              <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
-              <TableCell>{r.fc_proveedor}</TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={r.fc_producto}>{truncar(r.fc_producto)}</span>
-              </TableCell>
-              <TableCell>{r.fc_lote}</TableCell>
-              <TableCell>{r.fc_cantidad}</TableCell>
-              <TableCell>{r.fc_unidad_medida}</TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={r.fc_condiciones_entrega}>{truncar(r.fc_condiciones_entrega)}</span>
-              </TableCell>
-              <TableCell>{r.fc_encargado_entrega}</TableCell>
-              <TableCell>{r.fc_verifico}</TableCell>
-              <TableCell sx={{ maxWidth: 160 }}>
-                <span title={r.fc_observaciones}>{truncar(r.fc_observaciones)}</span>
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-              >
-                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                  <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
-                    Editar
-                  </Button>
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
-    );
-  };
+  const renderTablaRecepcion = (rows) => (
+    <ListadoTabla
+      columnas={columnas}
+      filas={rows}
+      minWidth={1320}
+      acciones={(r) => (
+        <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
+          Editar
+        </Button>
+      )}
+    />
+  );
 
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
         Recepción de Insumos
       </Typography>
-
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <TextField
-          label="Buscar Producto / Lote"
-          variant="outlined"
-          size="small"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="primary" />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-      </Box>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
       <Card sx={{ mb: 4 }}>
@@ -505,15 +370,26 @@ function RecepcionInsumosContent() {
             <Button variant="contained" size="small" onClick={guardar}>
               {editId ? "Actualizar" : "Guardar"}
             </Button>
-            <Button variant="outlined" size="small" onClick={exportarPDF}>
-               Exportar PDF
-            </Button>
           </Box>
         </CardContent>
       </Card>
       </FormularioRegistroPanel>
 
-      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTablaRecepcion} />
+      <TablasPorUbicacionGranja
+        grupos={gruposUbicacion}
+        renderTabla={renderTablaRecepcion}
+        buscar
+        searchKeys={["fc_producto", "fc_lote", "fc_proveedor"]}
+        placeholderBusqueda="Buscar producto, lote o proveedor"
+        exportar={{
+          columnas,
+          titulo: "Bitácora de Recepción de Insumos",
+          subtitulo: "Registro de insumos recibidos en la granja",
+          nombreArchivo: "Recepcion_Insumos",
+        }}
+        getLogo={getLogo}
+        getColor={getColor}
+      />
     </Box>
   );
 }

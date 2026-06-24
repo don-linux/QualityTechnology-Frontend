@@ -6,18 +6,7 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
 import MenuItem from "@mui/material/MenuItem";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { formatFecha } from "@shared/utils/formatters";
 import {
   listRecambios,
@@ -32,12 +21,13 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import ListadoTabla from "@shared/components/ListadoTabla";
 
 function BitacoraRecambiosContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
     fc_mes: "",
@@ -167,171 +157,54 @@ function BitacoraRecambiosContent() {
     abrirFormulario();
   };
 
-//  Exportar PDF (formato institucional limpio)
-const exportarPDF = async () => {
-  const { default: jsPDF } = await import("jspdf");
-  const { default: autoTable } = await import("jspdf-autotable");
-  const doc = new jsPDF("l", "mm", "a4");
-  const logo = getLogo(form.ubicacion);
-
-  // Logo superior
-  try {
-    doc.addImage(logo, "PNG", 10, 8, 25, 25);
-  } catch {
-    // Logo is optional for exported PDFs.
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text("Registro de Recambios", 140, 20, { align: "center" });
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-  doc.text(getLabel(form.ubicacion), 140, 27, { align: "center" });
-
-  // Línea para mes
-  doc.setFontSize(10);
-  doc.text("Mes:", 250, 35);
-  doc.line(260, 35, 285, 35);
-
-  //  Mostrar el mes actual sobre la línea
-  if (form.fc_mes) {
-    doc.text(form.fc_mes, 262, 35);
-  }
-
-  // Encabezados
-  const columnas = [
-    "No. Instalación",
-    "Fecha 1",
-    "Tipo 1",
-    "Fecha 2",
-    "Tipo 2",
-    "Fecha 3",
-    "Tipo 3",
-    "Fecha 4",
-    "Tipo 4",
-    "Fecha 5",
-    "Tipo 5",
-    "Fecha 6",
-    "Tipo 6",
-    "Responsable",
+  const columnasExport = [
+    { header: "Mes", value: (r) => r.fc_mes || "" },
+    { header: "No. Instalación", value: (r) => r.fn_num_instalacion || "" },
+    { header: "Fecha 1", value: (r) => formatFecha(r.fd_fecha1, "") },
+    { header: "Tipo 1", value: (r) => r.fc_tipo1 || "" },
+    { header: "Fecha 2", value: (r) => formatFecha(r.fd_fecha2, "") },
+    { header: "Tipo 2", value: (r) => r.fc_tipo2 || "" },
+    { header: "Fecha 3", value: (r) => formatFecha(r.fd_fecha3, "") },
+    { header: "Tipo 3", value: (r) => r.fc_tipo3 || "" },
+    { header: "Fecha 4", value: (r) => formatFecha(r.fd_fecha4, "") },
+    { header: "Tipo 4", value: (r) => r.fc_tipo4 || "" },
+    { header: "Fecha 5", value: (r) => formatFecha(r.fd_fecha5, "") },
+    { header: "Tipo 5", value: (r) => r.fc_tipo5 || "" },
+    { header: "Fecha 6", value: (r) => formatFecha(r.fd_fecha6, "") },
+    { header: "Tipo 6", value: (r) => r.fc_tipo6 || "" },
+    { header: "Responsable", value: (r) => r.fc_responsable || "" },
   ];
 
-  const filas = data.map((r) => [
-    r.fn_num_instalacion || "",
-    formatFecha(r.fd_fecha1, ""),
-    r.fc_tipo1 || "",
-    formatFecha(r.fd_fecha2, ""),
-    r.fc_tipo2 || "",
-    formatFecha(r.fd_fecha3, ""),
-    r.fc_tipo3 || "",
-    formatFecha(r.fd_fecha4, ""),
-    r.fc_tipo4 || "",
-    formatFecha(r.fd_fecha5, ""),
-    r.fc_tipo5 || "",
-    formatFecha(r.fd_fecha6, ""),
-    r.fc_tipo6 || "",
-    r.fc_responsable || "",
-  ]);
-
-  autoTable(doc, {
-    startY: 40,
-    head: [columnas],
-    body: filas,
-    styles: {
-      fontSize: 8,
-      halign: "center",
-      valign: "middle",
-      cellPadding: 1.5,
+  const columnas = [
+    { header: "Mes", value: (r) => r.fc_mes },
+    { header: "Instalación", value: (r) => r.fn_num_instalacion },
+    {
+      header: "Fechas y Tipos",
+      value: (r) =>
+        [1, 2, 3, 4, 5, 6]
+          .map((n) =>
+            r[`fd_fecha${n}`] ? `${formatFecha(r[`fd_fecha${n}`])} (${r[`fc_tipo${n}`]})` : null,
+          )
+          .filter(Boolean)
+          .join(", "),
     },
-    headStyles: {
-      fillColor: [0, 82, 155],
-      textColor: 255,
-      fontStyle: "bold",
-    },
-    theme: "grid",
-  });
-
-  let y = doc.lastAutoTable.finalY + 8;
-
-  // Pie de página
-  doc.setFontSize(8);
-  doc.setTextColor(255, 0, 0);
-  doc.text(
-    "IMPORTANTE: No. Instalación (Estanque, Pila, Liner y su número), Fecha (DD/MM/AAAA), Tipo: (Total, Parcial o Recirculación)",
-    10,
-    y
-  );
-
-  doc.setTextColor(0);
-  y += 10;
-  doc.text("Departamento: Bitácoras", 10, y);
-  doc.text("Aprobó: Juan Carlos Jiménez Ara", 70, y);
-  y += 8;
-  doc.text("Rev. 07/08/2024", 10, y);
-  doc.text("Page 1 of 1", 270, y, { align: "right" });
-
-  // Guardar
-  const fecha = formatFecha(new Date());
-  doc.save(`Registro_Recambios_${getLabel(form.ubicacion)}_${fecha}.pdf`);
-};
+    { header: "Responsable", value: (r) => r.fc_responsable },
+  ];
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaRecambios = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_id"]);
-    return (
-    <Paper sx={{ width: "100%" }}>
-      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-        <Table sx={{ minWidth: 920 }}>
-        <TableHead sx={{ background: "#E3F2FD" }}>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Mes</TableCell>
-            <TableCell>Instalación</TableCell>
-            <TableCell>Fechas y Tipos</TableCell>
-            <TableCell>Responsable</TableCell>
-            <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filas.map((r) => (
-            <TableRow key={r.fi_id}>
-              <TableCell>{r._num}</TableCell>
-              <TableCell>{r.fc_mes}</TableCell>
-              <TableCell>{r.fn_num_instalacion}</TableCell>
-              <TableCell>
-                {[1, 2, 3, 4, 5, 6]
-                  .map((n) =>
-                    r[`fd_fecha${n}`]
-                      ? `${formatFecha(r[`fd_fecha${n}`])} (${r[`fc_tipo${n}`]})`
-                      : null
-                  )
-                  .filter(Boolean)
-                  .join(", ")}
-              </TableCell>
-              <TableCell>{r.fc_responsable}</TableCell>
-              <TableCell
-                align="center"
-                sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-              >
-                <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="warning"
-                    onClick={() => editar(r)}
-                  >
-                    Editar
-                  </Button>
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
-    );
-  };
+  const renderTablaRecambios = (rows) => (
+    <ListadoTabla
+      columnas={columnas}
+      filas={rows}
+      minWidth={920}
+      acciones={(r) => (
+        <Button size="small" variant="contained" color="warning" onClick={() => editar(r)}>
+          Editar
+        </Button>
+      )}
+    />
+  );
 
   return (
     <Box>
@@ -444,28 +317,27 @@ const exportarPDF = async () => {
             <Button variant="contained" onClick={guardar}>
               {editId ? "Actualizar" : "Guardar"}
             </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              sx={{ ml: 2 }}
-              onClick={exportarPDF}
-            >
-               Exportar PDF
-            </Button>
           </Box>
         </CardContent>
       </Card>
       </FormularioRegistroPanel>
 
       {/* TABLAS POR UBICACIÓN */}
-      {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} sx={{ mt: 1 }}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography fontWeight="bold">{label}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>{renderTablaRecambios(rows)}</AccordionDetails>
-        </Accordion>
-      ))}
+      <TablasPorUbicacionGranja
+        grupos={gruposUbicacion}
+        renderTabla={renderTablaRecambios}
+        buscar
+        searchKeys={["fc_mes", "fn_num_instalacion", "fc_responsable"]}
+        placeholderBusqueda="Buscar mes, instalación o responsable"
+        exportar={{
+          columnas: columnasExport,
+          titulo: "Registro de Recambios",
+          subtitulo: "Recambios de agua por instalación",
+          nombreArchivo: "Registro_Recambios",
+        }}
+        getLogo={getLogo}
+        getColor={getColor}
+      />
     </Box>
   );
 }

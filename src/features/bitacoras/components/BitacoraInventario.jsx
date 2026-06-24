@@ -6,17 +6,7 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import Paper from "@mui/material/Paper";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
 import MenuItem from "@mui/material/MenuItem";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   listInventario,
   createInventario,
@@ -29,13 +19,14 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import ListadoTabla from "@shared/components/ListadoTabla";
 import { formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 function BitacoraInventarioContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
-  const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getGroups } = useUbicacionesGranja();
+  const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
     fn_num_instalacion: "",
@@ -128,107 +119,30 @@ function BitacoraInventarioContent() {
     abrirFormulario();
   };
 
-  //  Exportar PDF
-  const exportarPDF = async () => {
-    const { default: jsPDF } = await import("jspdf");
-    const { default: autoTable } = await import("jspdf-autotable");
-    const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(form.ubicacion);
-
-    try {
-      doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {
-      // Logo is optional for exported PDFs.
-    }
-    doc.setFontSize(14);
-    doc.text(`Bitácora de Inventario — ${getLabel(form.ubicacion)}`, 45, 20);
-    doc.setFontSize(10);
-    doc.text("Control de inventario de alevines, siembras y observaciones", 45, 26);
-
-    const columnas = [
-      "Instalación",
-      "Cantidad",
-      "Talla",
-      "Lote",
-      "Siembra",
-      "Salida Hormonado",
-      "Observación",
-    ];
-    const filas = data.map((r) => [
-      r.fn_num_instalacion,
-      r.fn_cantidad,
-      r.fn_talla,
-      r.fc_lote,
-      formatFecha(r.fd_fecha_siembra),
-      formatFecha(r.fd_fecha_salida_hormonado),
-      r.fc_observacion,
-    ]);
-
-    autoTable(doc, {
-      startY: 40,
-      head: [columnas],
-      body: filas,
-      styles: { fontSize: 7, cellWidth: "wrap" },
-      headStyles: {
-        fillColor: [21, 101, 192], // Azul institucional
-        textColor: 255,
-        halign: "center",
-      },
-    });
-
-    const fecha = formatFecha(new Date());
-    doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Bitacora_Inventario_${getLabel(form.ubicacion)}_${fecha}.pdf`);
-  };
+  const columnas = [
+    { header: "Instalación", value: (r) => r.fn_num_instalacion },
+    { header: "Cantidad", value: (r) => r.fn_cantidad },
+    { header: "Talla", value: (r) => r.fn_talla },
+    { header: "Lote", value: (r) => r.fc_lote },
+    { header: "Siembra", value: (r) => formatFecha(r.fd_fecha_siembra) },
+    { header: "Salida Hormonado", value: (r) => formatFecha(r.fd_fecha_salida_hormonado) },
+    { header: "Observación", value: (r) => r.fc_observacion, truncate: true, maxWidth: 200 },
+  ];
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTablaInventario = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_id"]);
-    return (
-    <Paper>
-      <Table>
-        <TableHead sx={{ background: "#E3F2FD" }}>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Instalación</TableCell>
-            <TableCell>Cantidad</TableCell>
-            <TableCell>Talla</TableCell>
-            <TableCell>Lote</TableCell>
-            <TableCell>Siembra</TableCell>
-            <TableCell>Salida Hormonado</TableCell>
-            <TableCell>Observación</TableCell>
-            <TableCell>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filas.map((r) => (
-            <TableRow key={r.fi_id}>
-              <TableCell>{r._num}</TableCell>
-              <TableCell>{r.fn_num_instalacion}</TableCell>
-              <TableCell>{r.fn_cantidad}</TableCell>
-              <TableCell>{r.fn_talla}</TableCell>
-              <TableCell>{r.fc_lote}</TableCell>
-              <TableCell>{formatFecha(r.fd_fecha_siembra)}</TableCell>
-              <TableCell>{formatFecha(r.fd_fecha_salida_hormonado)}</TableCell>
-              <TableCell>{r.fc_observacion}</TableCell>
-              <TableCell>
-                <Button
-                  size="small"
-                  color="warning"
-                  variant="contained"
-                  onClick={() => editar(r)}
-                >
-                  Editar
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Paper>
-    );
-  };
+  const renderTablaInventario = (rows) => (
+    <ListadoTabla
+      columnas={columnas}
+      filas={rows}
+      minWidth={1000}
+      acciones={(r) => (
+        <Button size="small" color="warning" variant="contained" onClick={() => editar(r)}>
+          Editar
+        </Button>
+      )}
+    />
+  );
 
   return (
     <Box>
@@ -348,30 +262,27 @@ function BitacoraInventarioContent() {
             <Button variant="contained" onClick={guardar}>
               {editId ? "Actualizar" : "Guardar"}
             </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              sx={{ ml: 2 }}
-              onClick={exportarPDF}
-            >
-               Exportar PDF
-            </Button>
           </Box>
         </CardContent>
       </Card>
       </FormularioRegistroPanel>
 
       {/* TABLAS POR UBICACIÓN */}
-      {gruposUbicacion.map(({ value, label, rows }) => (
-        <Accordion key={value} sx={{ mt: 1 }}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography fontWeight="bold">{label}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            {renderTablaInventario(rows)}
-          </AccordionDetails>
-        </Accordion>
-      ))}
+      <TablasPorUbicacionGranja
+        grupos={gruposUbicacion}
+        renderTabla={renderTablaInventario}
+        buscar
+        searchKeys={["fn_num_instalacion", "fc_lote", "fc_observacion"]}
+        placeholderBusqueda="Buscar instalación, lote u observación"
+        exportar={{
+          columnas,
+          titulo: "Bitácora de Inventario",
+          subtitulo: "Control de inventario de alevines, siembras y observaciones",
+          nombreArchivo: "Bitacora_Inventario",
+        }}
+        getLogo={getLogo}
+        getColor={getColor}
+      />
     </Box>
   );
 }

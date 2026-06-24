@@ -6,21 +6,12 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
-import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Divider from "@mui/material/Divider";
-import SearchIcon from "@mui/icons-material/Search";
 import {
   listControlFaunaNociva,
   listEmpleadosControlFaunaNociva,
@@ -51,9 +42,9 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import ListadoTabla from "@shared/components/ListadoTabla";
 import { fetchMergedPorUbicaciones } from "@shared/utils/fetchMergedPorUbicaciones";
 import { formatFecha } from "@shared/utils/formatters";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const CONDICIONES_MALLA = ["Bueno", "Regular", "Malo"];
 
@@ -125,7 +116,6 @@ function ControlFaunaNocivaContent() {
   const [estadosTrampa, setEstadosTrampa] = useState([]);
   const [accionesCorrectivas, setAccionesCorrectivas] = useState([]);
   const [editId, setEditId] = useState(null);
-  const [busqueda, setBusqueda] = useState("");
   const [registroDetalle, setRegistroDetalle] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const {
@@ -183,27 +173,11 @@ function ControlFaunaNocivaContent() {
     try {
       const granjas = ubicacionesGranja.map((op) => op.value);
       const rows = await fetchMergedPorUbicaciones(granjas, listControlFaunaNociva);
-      const q = busqueda.trim().toLowerCase();
-      const filtrados = rows.filter((r) => {
-        if (!q) return true;
-        return [
-          r.codigo,
-          r.area_instalacion_nombre,
-          r.fauna_detectada_nombre,
-          r.evidencia_fauna_nombre,
-          r.estado_trampa_nombre,
-          r.accion_correctiva_nombre,
-          r.responsable,
-          r.condicion_malla,
-        ]
-          .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q));
-      });
-      setData(filtrados);
+      setData(rows);
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
     }
-  }, [ubicacionesGranja, busqueda]);
+  }, [ubicacionesGranja]);
 
   useEffect(() => {
     cargarCatalogos();
@@ -263,161 +237,55 @@ function ControlFaunaNocivaContent() {
     abrirFormulario();
   };
 
-  const exportarPDF = async () => {
-    const { default: jsPDF } = await import("jspdf");
-    const { default: autoTable } = await import("jspdf-autotable");
-    const doc = new jsPDF("l", "mm", "a4");
-    const logo = getLogo(defaultUbicacion);
-    const color = getColor(defaultUbicacion);
-
-    try {
-      doc.addImage(logo, "PNG", 10, 8, 25, 25);
-    } catch {
-      // Logo is optional for exported PDFs.
-    }
-
-    doc.setFontSize(14);
-    doc.text("Control de Fauna Nociva — Todas las ubicaciones", 45, 20);
-    doc.setFontSize(10);
-    doc.text("Registro de hallazgos y acciones correctivas por área de instalación", 45, 26);
-
-    const columnas = [
-      "Folio",
-      "Fecha",
-      "Área",
-      "Fauna",
-      "Evidencia",
-      "Estado trampa",
-      "Malla",
-      "Acción",
-      "Responsable",
-    ];
-    const filas = data.map((r) => [
-      r.codigo || "",
-      formatFecha(r.fd_fecha),
-      r.area_instalacion_nombre,
-      r.fauna_detectada_nombre,
-      r.evidencia_fauna_nombre,
-      r.estado_trampa_nombre,
-      r.condicion_malla,
-      r.accion_correctiva_nombre,
-      r.responsable,
-    ]);
-
-    autoTable(doc, {
-      startY: 40,
-      head: [columnas],
-      body: filas,
-      styles: { fontSize: 7 },
-      headStyles: { fillColor: color, textColor: 255, halign: "center" },
-    });
-
-    const fecha = formatFecha(new Date());
-    doc.text(`Fecha de generación: ${fecha}`, 10, doc.lastAutoTable.finalY + 10);
-    doc.save(`Control_Fauna_Nociva_${fecha}.pdf`);
-  };
+  const columnas = [
+    { header: "Folio", value: (r) => r.codigo || "", render: (r) => r.codigo || r._num },
+    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Área / Instalación", value: (r) => r.area_instalacion_nombre },
+    { header: "Fauna detectada", value: (r) => r.fauna_detectada_nombre },
+    { header: "Evidencia", value: (r) => r.evidencia_fauna_nombre },
+    { header: "Estado trampa", value: (r) => r.estado_trampa_nombre },
+    { header: "Malla antipájaro", value: (r) => r.condicion_malla },
+    { header: "Acción correctiva", value: (r) => r.accion_correctiva_nombre },
+    { header: "Responsable", value: (r) => r.responsable },
+  ];
 
   const gruposUbicacion = getGroups(data);
 
-  const renderTabla = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_id"]);
-    return (
-      <Paper sx={{ width: "100%" }}>
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table sx={{ minWidth: 1200 }}>
-            <TableHead sx={{ background: "#E3F2FD" }}>
-              <TableRow>
-                <TableCell>Folio</TableCell>
-                <TableCell>Fecha</TableCell>
-                <TableCell>Área / Instalación</TableCell>
-                <TableCell>Fauna detectada</TableCell>
-                <TableCell>Evidencia</TableCell>
-                <TableCell>Estado trampa</TableCell>
-                <TableCell>Malla antipájaro</TableCell>
-                <TableCell>Acción correctiva</TableCell>
-                <TableCell>Responsable</TableCell>
-                <TableCell align="center" sx={{ minWidth: 260, whiteSpace: "nowrap" }}>
-                  Acciones
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filas.map((r) => (
-                <TableRow key={r.fi_id}>
-                  <TableCell>{r.codigo || r._num}</TableCell>
-                  <TableCell>{formatFecha(r.fd_fecha)}</TableCell>
-                  <TableCell>{r.area_instalacion_nombre}</TableCell>
-                  <TableCell>{r.fauna_detectada_nombre}</TableCell>
-                  <TableCell>{r.evidencia_fauna_nombre}</TableCell>
-                  <TableCell>{r.estado_trampa_nombre}</TableCell>
-                  <TableCell>{r.condicion_malla}</TableCell>
-                  <TableCell>{r.accion_correctiva_nombre}</TableCell>
-                  <TableCell>{r.responsable}</TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ minWidth: 260, verticalAlign: "middle", whiteSpace: "nowrap" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 1,
-                        flexWrap: "nowrap",
-                      }}
-                    >
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="info"
-                        onClick={() => setRegistroDetalle(r)}
-                      >
-                        Ver
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="warning"
-                        onClick={() => editar(r)}
-                      >
-                        Editar
-                      </Button>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-    );
-  };
+  const renderTabla = (rows) => (
+    <ListadoTabla
+      columnas={columnas}
+      filas={rows}
+      minWidth={1200}
+      numerar={false}
+      accionesMinWidth={260}
+      acciones={(r) => (
+        <>
+          <Button
+            size="small"
+            variant="outlined"
+            color="info"
+            onClick={() => setRegistroDetalle(r)}
+          >
+            Ver
+          </Button>
+          <Button
+            size="small"
+            variant="contained"
+            color="warning"
+            onClick={() => editar(r)}
+          >
+            Editar
+          </Button>
+        </>
+      )}
+    />
+  );
 
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
         Control de Fauna Nociva
       </Typography>
-
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 2 }}>
-        <TextField
-          label="Buscar registro"
-          variant="outlined"
-          size="small"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="primary" />
-                </InputAdornment>
-              ),
-            },
-          }}
-          sx={{ width: 280 }}
-        />
-      </Box>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
         <Card sx={{ mb: 4 }}>
@@ -571,15 +439,35 @@ function ControlFaunaNocivaContent() {
               <Button variant="contained" size="small" onClick={guardar}>
                 {editId ? "Actualizar" : "Guardar"}
               </Button>
-              <Button variant="outlined" size="small" onClick={exportarPDF}>
-                Exportar PDF
-              </Button>
             </Box>
           </CardContent>
         </Card>
       </FormularioRegistroPanel>
 
-      <TablasPorUbicacionGranja grupos={gruposUbicacion} renderTabla={renderTabla} />
+      <TablasPorUbicacionGranja
+        grupos={gruposUbicacion}
+        renderTabla={renderTabla}
+        buscar
+        searchKeys={[
+          "codigo",
+          "area_instalacion_nombre",
+          "fauna_detectada_nombre",
+          "evidencia_fauna_nombre",
+          "estado_trampa_nombre",
+          "accion_correctiva_nombre",
+          "responsable",
+          "condicion_malla",
+        ]}
+        placeholderBusqueda="Buscar folio, área, fauna o responsable"
+        exportar={{
+          columnas,
+          titulo: "Control de Fauna Nociva",
+          subtitulo: "Registro de hallazgos y acciones correctivas por área de instalación",
+          nombreArchivo: "Control_Fauna_Nociva",
+        }}
+        getLogo={getLogo}
+        getColor={getColor}
+      />
 
       <Dialog
         open={!!registroDetalle}

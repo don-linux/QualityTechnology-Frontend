@@ -9,17 +9,6 @@ import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { formatFecha } from "@shared/utils/formatters";
 import Alert from "@mui/material/Alert";
 import {
@@ -36,11 +25,8 @@ import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel"
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
-import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
-
-const TRUNCAR_MAX = 40;
-const truncar = (texto) =>
-  texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
+import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
+import ListadoTabla from "@shared/components/ListadoTabla";
 
 const MAX_FC_OBSERVACIONES = 500;
 
@@ -54,7 +40,7 @@ export default function BioBiometrias() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId || "";
   const showSnackbar = useSnackbar();
-  const { ubicacionesGranja, defaultUbicacion, getGroups, resolveFiltroUbicacion } =
+  const { ubicacionesGranja, defaultUbicacion, getGroups, getLogo, getColor, resolveFiltroUbicacion } =
     useUbicacionesGranja();
 
   const [data, setData] = useState([]);
@@ -244,6 +230,30 @@ export default function BioBiometrias() {
       maximumFractionDigits: 2,
     });
   };
+
+  const columnas = [
+    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Pileta", value: (r) => r.nombre_pileta || "", fallback: "—" },
+    { header: "Proceso (obs.)", value: (r) => r.fc_observacion_proceso || "", fallback: "—" },
+    { header: "Peso Total", value: (r) => formatNum(r.fn_peso_total_gramos) },
+    { header: "Organismos", value: (r) => r.fn_organismos_muestreados ?? "", fallback: "—" },
+    { header: "Peso Promedio", value: (r) => formatNum(r.fn_peso_promedio) },
+    { header: "Encargado", value: (r) => r.fc_encargado || "", truncate: true, maxWidth: 160, fallback: "—" },
+    { header: "Observaciones", value: (r) => r.fc_observaciones || "", truncate: true, maxWidth: 200, fallback: "—" },
+  ];
+
+  const renderTablaBiometrias = (rows) => (
+    <ListadoTabla
+      columnas={columnas}
+      filas={rows}
+      minWidth={1120}
+      acciones={(row) => (
+        <Button variant="contained" size="small" color="warning" onClick={() => editar(row)}>
+          Editar
+        </Button>
+      )}
+    />
+  );
 
   const piletaSeleccionada =
     form.pileta_id !== ""
@@ -499,83 +509,21 @@ export default function BioBiometrias() {
       </FormularioRegistroPanel>
 
       {/* TABLAS POR UBICACION */}
-      {getGroups(data).map(({ value, label, rows }) => (
-        <Accordion key={value}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography fontWeight="bold">
-              {label} ({rows.length})
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ p: 0 }}>
-            <Paper sx={{ width: "100%" }}>
-              <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-                <Table sx={{ minWidth: 1120 }}>
-                  <TableHead sx={{ background: "#E8F5E9" }}>
-                    <TableRow>
-                      <TableCell>ID</TableCell>
-                      <TableCell>Fecha</TableCell>
-                      <TableCell>Pileta</TableCell>
-                      <TableCell>Proceso (obs.)</TableCell>
-                      <TableCell>Peso Total</TableCell>
-                      <TableCell>Organismos</TableCell>
-                      <TableCell>Peso Promedio</TableCell>
-                      <TableCell>Encargado</TableCell>
-                      <TableCell>Observaciones</TableCell>
-                      <TableCell align="center" sx={{ minWidth: 180, whiteSpace: "nowrap" }}>
-                        Acciones
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {ordenarYNumerar(rows, ["fi_id"]).map((row) => (
-                      <TableRow key={row.fi_id}>
-                        <TableCell>{row._num}</TableCell>
-                        <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
-                        <TableCell>{row.nombre_pileta || "—"}</TableCell>
-                        <TableCell>{row.fc_observacion_proceso || "—"}</TableCell>
-                        <TableCell>{formatNum(row.fn_peso_total_gramos)}</TableCell>
-                        <TableCell>{row.fn_organismos_muestreados ?? "—"}</TableCell>
-                        <TableCell>{formatNum(row.fn_peso_promedio)}</TableCell>
-                        <TableCell sx={{ maxWidth: 160 }}>
-                          <span title={row.fc_encargado}>{truncar(row.fc_encargado)}</span>
-                        </TableCell>
-                        <TableCell sx={{ maxWidth: 200 }}>
-                          <span title={row.fc_observaciones || ""}>
-                            {row.fc_observaciones ? truncar(row.fc_observaciones) : "—"}
-                          </span>
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{ minWidth: 180, verticalAlign: "middle", whiteSpace: "nowrap" }}
-                        >
-                          <Box
-                            sx={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 1,
-                              flexWrap: "nowrap",
-                            }}
-                          >
-                            <Button
-                              variant="contained"
-                              size="small"
-                              color="warning"
-                              onClick={() => editar(row)}
-                            >
-                              Editar
-                            </Button>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+      <TablasPorUbicacionGranja
+        grupos={getGroups(data)}
+        renderTabla={renderTablaBiometrias}
+        buscar
+        searchKeys={["nombre_pileta", "fc_observacion_proceso", "fc_encargado", "fc_observaciones"]}
+        placeholderBusqueda="Buscar pileta, encargado u observación"
+        exportar={{
+          columnas,
+          titulo: "Bitácora de Biometrías",
+          subtitulo: "Pesos, organismos muestreados y observaciones",
+          nombreArchivo: "Bitacora_Biometrias",
+        }}
+        getLogo={getLogo}
+        getColor={getColor}
+      />
     </Box>
   );
 }
