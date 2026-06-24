@@ -7,8 +7,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import CloseIcon from "@mui/icons-material/Close";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
-import axiosInstance from "@shared/lib/axiosInstance";
-import { buildUploadUrl } from "@shared/lib/uploadUrl";
+import { fetchUploadBlob } from "@shared/lib/uploadUrl";
 
 const ACCENT = "#38BDF8";
 const MONO = '"DM Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
@@ -35,9 +34,8 @@ export default function FotoIdentificacionDialog({ open, onClose, path }) {
     setError("");
     setUrl("");
 
-    axiosInstance
-      .get(buildUploadUrl(path), { responseType: "blob" })
-      .then(({ data }) => {
+    fetchUploadBlob(path)
+      .then((data) => {
         if (!active) return;
         objectUrl = URL.createObjectURL(data);
         setUrl(objectUrl);

@@ -22,6 +22,17 @@ export function buildUploadUrl(path) {
 }
 
 /**
+ * Descarga un recurso subido como Blob usando Authorization en cabecera.
+ * Para rutas http(s) externas, el llamador debe tratarlas aparte.
+ */
+export async function fetchUploadBlob(path) {
+  const { data } = await axiosInstance.get(buildUploadUrl(path), {
+    responseType: "blob",
+  });
+  return data;
+}
+
+/**
  * Abre un recurso protegido en una pestaña nueva descargándolo primero con
  * la cabecera Authorization (vía axiosInstance) y mostrando el blob local.
  * Así el JWT viaja en la cabecera y no en la URL. Para recursos externos
@@ -35,9 +46,7 @@ export async function openUpload(path) {
     return;
   }
 
-  const { data } = await axiosInstance.get(buildUploadUrl(path), {
-    responseType: "blob",
-  });
+  const data = await fetchUploadBlob(path);
   const objectUrl = URL.createObjectURL(data);
   window.open(objectUrl, "_blank", "noopener,noreferrer");
   setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
