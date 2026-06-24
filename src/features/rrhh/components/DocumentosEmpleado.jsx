@@ -78,7 +78,7 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
 
     const formData = new FormData();
     formData.append("archivo", archivo);
-    formData.append("fi_tipo_documento_id", tipoSeleccionado);
+    formData.append("tipo_documento_id", tipoSeleccionado);
 
     try {
       await uploadDocumento(selfService ? null : empleadoId, formData);
@@ -93,7 +93,7 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
 
   const verDocumento = async (doc) => {
     try {
-      const { data } = await viewDocumento(doc.fi_documento_id, selfService);
+      const { data } = await viewDocumento(doc.documento_id, selfService);
       openBlobInNewTab(data);
     } catch (e) {
       console.error(e);
@@ -103,8 +103,8 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
 
   const descargarDocumento = async (doc) => {
     try {
-      const { data } = await downloadDocumento(doc.fi_documento_id, selfService);
-      downloadBlob(data, doc.fc_nombre_original);
+      const { data } = await downloadDocumento(doc.documento_id, selfService);
+      downloadBlob(data, doc.nombre_original);
     } catch (e) {
       console.error(e);
       showSnackbar("Error al descargar documento", "error");
@@ -112,9 +112,9 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
   };
 
   const eliminarDocumento = async (doc) => {
-    if (!await confirm(`¿Eliminar el documento "${doc.fc_nombre_original}"?`)) return;
+    if (!await confirm(`¿Eliminar el documento "${doc.nombre_original}"?`)) return;
     try {
-      await removeDocumento(doc.fi_documento_id, selfService);
+      await removeDocumento(doc.documento_id, selfService);
       await cargarDocumentos();
       showSnackbar("Documento eliminado correctamente", "success");
     } catch (e) {
@@ -137,8 +137,8 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
           size="small"
         >
           {tiposDocumento.map((t) => (
-            <MenuItem key={t.fi_tipo_documento_id} value={t.fi_tipo_documento_id}>
-              {t.fc_nombre} {t.fb_obligatorio ? "*" : ""}
+            <MenuItem key={t.tipo_documento_id} value={t.tipo_documento_id}>
+              {t.nombre} {t.obligatorio ? "*" : ""}
             </MenuItem>
           ))}
         </TextField>
@@ -164,23 +164,23 @@ export default function DocumentosEmpleado({ empleadoId, selfService = false }) 
           </TableHead>
           <TableBody>
             {tiposDocumento.map((tipo) => {
-              const doc = documentos.find((d) => d.fi_tipo_documento_id === tipo.fi_tipo_documento_id);
+              const doc = documentos.find((d) => d.tipo_documento_id === tipo.tipo_documento_id);
               return (
-                <TableRow key={tipo.fi_tipo_documento_id}>
-                  <TableCell>{tipo.fc_nombre}</TableCell>
+                <TableRow key={tipo.tipo_documento_id}>
+                  <TableCell>{tipo.nombre}</TableCell>
                   <TableCell>
                     {doc ? (
-                      <Chip label={doc.fc_nombre_original} color="success" size="small" variant="outlined" />
+                      <Chip label={doc.nombre_original} color="success" size="small" variant="outlined" />
                     ) : (
                       <Chip label="Pendiente" color="warning" size="small" variant="outlined" />
                     )}
                   </TableCell>
-                  <TableCell>{doc?.fd_fecha_carga || "-"}</TableCell>
-                  <TableCell>{tipo.fb_obligatorio ? "Si" : "No"}</TableCell>
+                  <TableCell>{doc?.fecha_carga || "-"}</TableCell>
+                  <TableCell>{tipo.obligatorio ? "Si" : "No"}</TableCell>
                   <TableCell align="center">
                     {doc ? (
                       <>
-                        {canPreviewFile(doc.fc_nombre_original) && (
+                        {canPreviewFile(doc.nombre_original) && (
                           <Button size="small" variant="outlined" sx={{ mr: 1 }} onClick={() => verDocumento(doc)}>
                             Ver
                           </Button>

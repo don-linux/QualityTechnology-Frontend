@@ -56,7 +56,7 @@ export default function useUbicacionesGranja() {
       unidadesGranjaOps.map((op) => {
         const raw = op.raw ?? {};
         const explicit =
-          raw.fi_ubicacion_id ?? raw.ubicacion_id ?? raw.ubicacionId ?? null;
+          raw.ubicacion_id ?? raw.ubicacionId ?? null;
         const mapped = matchUbicacionIdForGranjaLabel(op.value, ubicacionesActivasRows);
         const n =
           explicit != null && explicit !== "" ? Number(explicit) : NaN;

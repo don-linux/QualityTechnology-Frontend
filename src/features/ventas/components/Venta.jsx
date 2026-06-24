@@ -30,7 +30,7 @@ export default function Venta() {
   const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
   const [dialogoPagoAbierto, setDialogoPagoAbierto] = useState(false);
 
-  const filas = useMemo(() => ordenarYNumerar(ventas, ["fi_venta_id"]), [ventas]);
+  const filas = useMemo(() => ordenarYNumerar(ventas, ["venta_id"]), [ventas]);
 
   const obtenerVentas = useCallback(async () => {
     try {
@@ -101,25 +101,25 @@ export default function Venta() {
                 </TableRow>
               ) : (
                 filas.map((v) => (
-                  <TableRow key={v.fi_venta_id}>
+                  <TableRow key={v.venta_id}>
                     <TableCell>{v._num}</TableCell>
-                    <TableCell>{v.fc_locacion ?? v.fc_empresa}</TableCell>
-                    <TableCell>{formatFecha(v.fd_fecha_venta)}</TableCell>
-                    <TableCell>{v.fc_folio}</TableCell>
-                    <TableCell>{v.fc_cliente}</TableCell>
-                    <TableCell>{v.fc_tipo_venta}</TableCell>
-                    <TableCell>{v.fn_cantidad_vendida}</TableCell>
-                    <TableCell>{formatPrecio(v.fn_precio_venta)}</TableCell>
-                    <TableCell>{formatPrecio(v.fn_monto_total)}</TableCell>
-                    <TableCell>{formatPrecio(v.fn_abonado)}</TableCell>
-                    <TableCell>{formatPrecio(v.fn_adeudo)}</TableCell>
+                    <TableCell>{v.locacion}</TableCell>
+                    <TableCell>{formatFecha(v.fecha)}</TableCell>
+                    <TableCell>{v.folio}</TableCell>
+                    <TableCell>{v.cliente_nombre}</TableCell>
+                    <TableCell>{v.tipo_venta}</TableCell>
+                    <TableCell>{v.cantidad}</TableCell>
+                    <TableCell>{formatPrecio(v.precio_unitario)}</TableCell>
+                    <TableCell>{formatPrecio(v.monto_total)}</TableCell>
+                    <TableCell>{formatPrecio(v.monto_abonado)}</TableCell>
+                    <TableCell>{formatPrecio(v.monto_adeudo)}</TableCell>
                     <TableCell>
-                      <b style={{ color: colorEstado[v.fc_estado_pago] }}>
-                        {v.fc_estado_pago}
+                      <b style={{ color: colorEstado[v.estado_pago] }}>
+                        {v.estado_pago}
                       </b>
                     </TableCell>
-                    <TableCell>{v.fc_encargado_venta}</TableCell>
-                    <TableCell>{v.fc_observaciones || "-"}</TableCell>
+                    <TableCell>{v.vendedor_nombre}</TableCell>
+                    <TableCell>{v.observaciones || "-"}</TableCell>
                     <TableCell align="center">
                       <Button
                         size="small"
@@ -127,7 +127,7 @@ export default function Venta() {
                         color="success"
                         onClick={() => abrirDialogoPago(v)}
                       >
-                        {v.fc_estado_pago === "LIQUIDADO" ? "Ver pagos" : "Registrar pago"}
+                        {v.estado_pago === "LIQUIDADO" ? "Ver pagos" : "Registrar pago"}
                       </Button>
                     </TableCell>
                   </TableRow>

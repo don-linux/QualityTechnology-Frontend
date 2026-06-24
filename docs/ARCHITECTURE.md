@@ -93,7 +93,7 @@ All inter-module imports use these aliases instead of relative paths.
 
 - Page files in `src/pages/` are thin re-exports that serve as **lazy loading boundaries** (`React.lazy` in `router.jsx`).
 - **Protected shell:** Routes nest under **`PrivateRoute`** (with optional `modulo` prop), then under **`CorporateLayout`**, which provides the navigation drawer and renders child routes via **`Outlet`**.
-- **Module gates:** When `modulo` is set, access depends on `localStorage` key `modulos` (JSON array; matching uses `fc_nombre` with Unicode normalization).
+- **Module gates:** When `modulo` is set, access depends on `localStorage` key `modulos` (JSON array; matching uses `nombre` with Unicode normalization).
 - **Catch-all:** Unknown paths **`Navigate` to `/login`**.
 
 ## Authentication and session

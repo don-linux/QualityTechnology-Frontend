@@ -30,16 +30,16 @@ function BitacoraParametrosContent() {
   const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
-    fd_fecha: "",
-    fn_num_estanque: "",
-    fn_oxigeno: "",
-    fn_temperatura: "",
-    fn_ph: "",
-    fn_amonio: "",
-    fn_nitritos: "",
-    fn_nitratos: "",
-    fc_responsable: "",
-    fi_usuario_id: usuarioId,
+    fecha: "",
+    numero_estanque: "",
+    oxigeno: "",
+    temperatura: "",
+    ph: "",
+    amonio: "",
+    nitritos: "",
+    nitratos: "",
+    responsable: "",
+    usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
   const [empleados, setEmpleados] = useState([]);
@@ -48,8 +48,8 @@ function BitacoraParametrosContent() {
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
-    "ubicacion", "fd_fecha", "fn_num_estanque", "fn_oxigeno", "fn_temperatura",
-    "fn_ph", "fn_amonio", "fn_nitritos", "fn_nitratos", "fc_responsable",
+    "ubicacion", "fecha", "numero_estanque", "oxigeno", "temperatura",
+    "ph", "amonio", "nitritos", "nitratos", "responsable",
   ];
 
   const handleChange = (e) => {
@@ -97,16 +97,16 @@ function BitacoraParametrosContent() {
       cerrarFormulario();
       setForm({
         ubicacion: form.ubicacion,
-        fd_fecha: "",
-        fn_num_estanque: "",
-        fn_oxigeno: "",
-        fn_temperatura: "",
-        fn_ph: "",
-        fn_amonio: "",
-        fn_nitritos: "",
-        fn_nitratos: "",
-        fc_responsable: "",
-        fi_usuario_id: usuarioId,
+        fecha: "",
+        numero_estanque: "",
+        oxigeno: "",
+        temperatura: "",
+        ph: "",
+        amonio: "",
+        nitritos: "",
+        nitratos: "",
+        responsable: "",
+        usuario_id: usuarioId,
       });
       cargarDatos();
     } catch {
@@ -116,19 +116,19 @@ function BitacoraParametrosContent() {
 
   const editar = (r) => {
     clearErrors();
-    setEditId(r.fi_id);
+    setEditId(r.id);
     setForm({
       ubicacion: r.ubicacion || "",
-      fd_fecha: r.fd_fecha?.split("T")[0] || "",
-      fn_num_estanque: r.fn_num_estanque ?? "",
-      fn_oxigeno: r.fn_oxigeno ?? "",
-      fn_temperatura: r.fn_temperatura ?? "",
-      fn_ph: r.fn_ph ?? "",
-      fn_amonio: r.fn_amonio ?? "",
-      fn_nitritos: r.fn_nitritos ?? "",
-      fn_nitratos: r.fn_nitratos ?? "",
-      fc_responsable: r.fc_responsable || "",
-      fi_usuario_id: r.fi_usuario_id || usuarioId,
+      fecha: r.fecha?.split("T")[0] || "",
+      numero_estanque: r.numero_estanque ?? "",
+      oxigeno: r.oxigeno ?? "",
+      temperatura: r.temperatura ?? "",
+      ph: r.ph ?? "",
+      amonio: r.amonio ?? "",
+      nitritos: r.nitritos ?? "",
+      nitratos: r.nitratos ?? "",
+      responsable: r.responsable || "",
+      usuario_id: r.usuario_id || usuarioId,
     });
     
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -136,15 +136,15 @@ function BitacoraParametrosContent() {
   };
 
   const columnas = [
-    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
-    { header: "Estanque", value: (r) => r.fn_num_estanque },
-    { header: "Oxígeno", value: (r) => r.fn_oxigeno },
-    { header: "Temperatura", value: (r) => r.fn_temperatura },
-    { header: "pH", value: (r) => r.fn_ph },
-    { header: "Amonio", value: (r) => r.fn_amonio },
-    { header: "Nitritos", value: (r) => r.fn_nitritos },
-    { header: "Nitratos", value: (r) => r.fn_nitratos },
-    { header: "Responsable", value: (r) => r.fc_responsable },
+    { header: "Fecha", value: (r) => formatFecha(r.fecha) },
+    { header: "Estanque", value: (r) => r.numero_estanque },
+    { header: "Oxígeno", value: (r) => r.oxigeno },
+    { header: "Temperatura", value: (r) => r.temperatura },
+    { header: "pH", value: (r) => r.ph },
+    { header: "Amonio", value: (r) => r.amonio },
+    { header: "Nitritos", value: (r) => r.nitritos },
+    { header: "Nitratos", value: (r) => r.nitratos },
+    { header: "Responsable", value: (r) => r.responsable },
   ];
 
   const gruposUbicacion = getGroups(data);
@@ -194,119 +194,119 @@ function BitacoraParametrosContent() {
               <TextField
                 label="Fecha"
                 type="date"
-                name="fd_fecha"
+                name="fecha"
                 InputLabelProps={{ shrink: true }}
-                value={form.fd_fecha}
+                value={form.fecha}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fd_fecha}
-                helperText={errors.fd_fecha}
+                error={!!errors.fecha}
+                helperText={errors.fecha}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="Estanque"
-                name="fn_num_estanque"
+                name="numero_estanque"
                 decimalScale={0}
                 inputProps={{ min: 0, step: 1 }}
-                value={form.fn_num_estanque}
+                value={form.numero_estanque}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_num_estanque}
-                helperText={errors.fn_num_estanque}
+                error={!!errors.numero_estanque}
+                helperText={errors.numero_estanque}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="Oxígeno"
-                name="fn_oxigeno"
+                name="oxigeno"
                 inputProps={{ min: 0, step: "any" }}
-                value={form.fn_oxigeno}
+                value={form.oxigeno}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_oxigeno}
-                helperText={errors.fn_oxigeno}
+                error={!!errors.oxigeno}
+                helperText={errors.oxigeno}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="Temperatura"
-                name="fn_temperatura"
+                name="temperatura"
                 inputProps={{ step: "any" }}
-                value={form.fn_temperatura}
+                value={form.temperatura}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_temperatura}
-                helperText={errors.fn_temperatura}
+                error={!!errors.temperatura}
+                helperText={errors.temperatura}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="pH"
-                name="fn_ph"
+                name="ph"
                 inputProps={{ min: 0, max: 14, step: "any" }}
-                value={form.fn_ph}
+                value={form.ph}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_ph}
-                helperText={errors.fn_ph}
+                error={!!errors.ph}
+                helperText={errors.ph}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="Amonio"
-                name="fn_amonio"
+                name="amonio"
                 inputProps={{ min: 0, step: "any" }}
-                value={form.fn_amonio}
+                value={form.amonio}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_amonio}
-                helperText={errors.fn_amonio}
+                error={!!errors.amonio}
+                helperText={errors.amonio}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="Nitritos"
-                name="fn_nitritos"
+                name="nitritos"
                 inputProps={{ min: 0, step: "any" }}
-                value={form.fn_nitritos}
+                value={form.nitritos}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_nitritos}
-                helperText={errors.fn_nitritos}
+                error={!!errors.nitritos}
+                helperText={errors.nitritos}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="Nitratos"
-                name="fn_nitratos"
+                name="nitratos"
                 inputProps={{ min: 0, step: "any" }}
-                value={form.fn_nitratos}
+                value={form.nitratos}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_nitratos}
-                helperText={errors.fn_nitratos}
+                error={!!errors.nitratos}
+                helperText={errors.nitratos}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
                 label="Responsable"
-                name="fc_responsable"
-                value={form.fc_responsable}
+                name="responsable"
+                value={form.responsable}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_responsable}
-                helperText={errors.fc_responsable}
+                error={!!errors.responsable}
+                helperText={errors.responsable}
               >
                 <MenuItem value="">Selecciona un empleado</MenuItem>
                 {empleados.map((empleado) => (
-                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
-                    {empleado.fc_nombre_completo}
+                  <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
+                    {empleado.nombre_completo}
                   </MenuItem>
                 ))}
-                {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
-                  <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
+                {form.responsable && !empleados.some((e) => e.nombre_completo === form.responsable) && (
+                  <MenuItem value={form.responsable}>{form.responsable}</MenuItem>
                 )}
               </TextField>
             </Grid>
@@ -327,7 +327,7 @@ function BitacoraParametrosContent() {
         grupos={gruposUbicacion}
         renderTabla={renderTablaParametros}
         buscar
-        searchKeys={["fn_num_estanque", "fc_responsable"]}
+        searchKeys={["numero_estanque", "responsable"]}
         placeholderBusqueda="Buscar estanque o responsable"
         exportar={{
           columnas,

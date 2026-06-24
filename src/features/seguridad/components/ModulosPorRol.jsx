@@ -40,25 +40,25 @@ const MENUS_PRINCIPALES = new Set([
   "Seguridad",
 ]);
 
-/** API actual: rol_id / nombre / es_root (antes fi_rol_id / fc_nombre / fb_es_root). */
+/** API actual: rol_id / nombre / es_root. */
 function getRolId(rol) {
-  return rol?.rol_id ?? rol?.fi_rol_id ?? rol?.id ?? null;
+  return rol?.rol_id ?? rol?.id ?? null;
 }
 
 function getRolNombre(rol) {
-  return rol?.nombre ?? rol?.fc_nombre ?? "";
+  return rol?.nombre ?? "";
 }
 
 function rolEsRoot(rol) {
-  return Boolean(rol?.es_root ?? rol?.fb_es_root);
+  return Boolean(rol?.es_root);
 }
 
 function getModuloId(m) {
-  return m?.modulo_id ?? m?.fi_modulo_id ?? m?.id;
+  return m?.modulo_id ?? m?.id;
 }
 
 function getModuloNombre(m) {
-  return String(m?.nombre ?? m?.fc_nombre ?? "").trim();
+  return String(m?.nombre ?? "").trim();
 }
 
 export default function RolesModulos() {
@@ -212,7 +212,7 @@ export default function RolesModulos() {
           </TableHead>
 
           <TableBody>
-            {ordenarYNumerar(roles, ["rol_id", "fi_rol_id", "id"]).map((rol) => (
+            {ordenarYNumerar(roles, ["rol_id", "id"]).map((rol) => (
               <TableRow key={getRolId(rol) ?? String(getRolNombre(rol))} hover>
                 <TableCell>{rol._num}</TableCell>
                 <TableCell sx={{ fontWeight: 500 }}>

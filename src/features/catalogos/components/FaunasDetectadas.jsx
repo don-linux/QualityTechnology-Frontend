@@ -6,11 +6,6 @@ import {
   activateFaunaDetectada,
   deactivateFaunaDetectada,
 } from "@features/catalogos/services/faunasDetectadasService";
-import {
-  getFaunaDetectadaId,
-  getFaunaDetectadaNombre,
-  faunaDetectadaActivo,
-} from "@features/catalogos/utils/catalogEntityGetters";
 
 export default function FaunasDetectadas() {
   return (
@@ -27,9 +22,6 @@ export default function FaunasDetectadas() {
       updateFn={updateFaunaDetectada}
       activateFn={activateFaunaDetectada}
       deactivateFn={deactivateFaunaDetectada}
-      getId={getFaunaDetectadaId}
-      getNombre={getFaunaDetectadaNombre}
-      isActivo={faunaDetectadaActivo}
     />
   );
 }

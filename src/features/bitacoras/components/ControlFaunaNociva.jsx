@@ -23,18 +23,6 @@ import { listFaunasDetectadasActivos } from "@features/catalogos/services/faunas
 import { listEvidenciasFaunaActivos } from "@features/catalogos/services/evidenciasFaunaService";
 import { listEstadosTrampaActivos } from "@features/catalogos/services/estadosTrampaService";
 import { listAccionesCorrectivasActivos } from "@features/catalogos/services/accionesCorrectivasService";
-import {
-  getAreaInstalacionId,
-  getAreaInstalacionNombre,
-  getFaunaDetectadaId,
-  getFaunaDetectadaNombre,
-  getEvidenciaFaunaId,
-  getEvidenciaFaunaNombre,
-  getEstadoTrampaId,
-  getEstadoTrampaNombre,
-  getAccionCorrectivaId,
-  getAccionCorrectivaNombre,
-} from "@features/catalogos/utils/catalogEntityGetters";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
@@ -49,7 +37,7 @@ import { formatFecha } from "@shared/utils/formatters";
 const CONDICIONES_MALLA = ["Bueno", "Regular", "Malo"];
 
 const emptyForm = (usuarioId, ubicacion = "") => ({
-  fd_fecha: "",
+  fecha: "",
   ubicacion,
   area_instalacion_id: "",
   fauna_detectada_id: "",
@@ -58,7 +46,7 @@ const emptyForm = (usuarioId, ubicacion = "") => ({
   condicion_malla: "",
   accion_correctiva_id: "",
   responsable: "",
-  fi_usuario_id: usuarioId,
+  usuario_id: usuarioId,
 });
 
 function CatalogSelect({
@@ -127,7 +115,7 @@ function ControlFaunaNocivaContent() {
 
   const requiredFields = [
     "ubicacion",
-    "fd_fecha",
+    "fecha",
     "area_instalacion_id",
     "fauna_detectada_id",
     "evidencia_fauna_id",
@@ -220,9 +208,9 @@ function ControlFaunaNocivaContent() {
 
   const editar = (r) => {
     clearErrors();
-    setEditId(r.fi_id);
+    setEditId(r.id);
     setForm({
-      fd_fecha: r.fd_fecha?.split("T")[0] || "",
+      fecha: r.fecha?.split("T")[0] || "",
       ubicacion: r.ubicacion || defaultUbicacion,
       area_instalacion_id: r.area_instalacion_id != null ? String(r.area_instalacion_id) : "",
       fauna_detectada_id: r.fauna_detectada_id != null ? String(r.fauna_detectada_id) : "",
@@ -231,7 +219,7 @@ function ControlFaunaNocivaContent() {
       condicion_malla: r.condicion_malla || "",
       accion_correctiva_id: r.accion_correctiva_id != null ? String(r.accion_correctiva_id) : "",
       responsable: r.responsable || "",
-      fi_usuario_id: r.fi_usuario_id || usuarioId,
+      usuario_id: r.usuario_id || usuarioId,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
@@ -239,7 +227,7 @@ function ControlFaunaNocivaContent() {
 
   const columnas = [
     { header: "Folio", value: (r) => r.codigo || "", render: (r) => r.codigo || r._num },
-    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Fecha", value: (r) => formatFecha(r.fecha) },
     { header: "Área / Instalación", value: (r) => r.area_instalacion_nombre },
     { header: "Fauna detectada", value: (r) => r.fauna_detectada_nombre },
     { header: "Evidencia", value: (r) => r.evidencia_fauna_nombre },
@@ -314,14 +302,14 @@ function ControlFaunaNocivaContent() {
                 <TextField
                   label="Fecha"
                   type="date"
-                  name="fd_fecha"
-                  value={form.fd_fecha}
+                  name="fecha"
+                  value={form.fecha}
                   InputLabelProps={{ shrink: true }}
                   onChange={handleChange}
                   fullWidth
                   size="small"
-                  error={!!errors.fd_fecha}
-                  helperText={errors.fd_fecha}
+                  error={!!errors.fecha}
+                  helperText={errors.fecha}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
@@ -331,8 +319,8 @@ function ControlFaunaNocivaContent() {
                   value={form.area_instalacion_id}
                   onChange={handleChange}
                   items={areasInstalacion}
-                  getId={getAreaInstalacionId}
-                  getNombre={getAreaInstalacionNombre}
+                  getId={(item) => item.area_instalacion_id ?? item.id}
+                  getNombre={(item) => item.nombre}
                   error={errors.area_instalacion_id}
                   helperText={errors.area_instalacion_id}
                 />
@@ -344,8 +332,8 @@ function ControlFaunaNocivaContent() {
                   value={form.fauna_detectada_id}
                   onChange={handleChange}
                   items={faunasDetectadas}
-                  getId={getFaunaDetectadaId}
-                  getNombre={getFaunaDetectadaNombre}
+                  getId={(item) => item.fauna_detectada_id ?? item.id}
+                  getNombre={(item) => item.nombre}
                   error={errors.fauna_detectada_id}
                   helperText={errors.fauna_detectada_id}
                 />
@@ -357,8 +345,8 @@ function ControlFaunaNocivaContent() {
                   value={form.evidencia_fauna_id}
                   onChange={handleChange}
                   items={evidenciasFauna}
-                  getId={getEvidenciaFaunaId}
-                  getNombre={getEvidenciaFaunaNombre}
+                  getId={(item) => item.evidencia_fauna_id ?? item.id}
+                  getNombre={(item) => item.nombre}
                   error={errors.evidencia_fauna_id}
                   helperText={errors.evidencia_fauna_id}
                 />
@@ -370,8 +358,8 @@ function ControlFaunaNocivaContent() {
                   value={form.estado_trampa_id}
                   onChange={handleChange}
                   items={estadosTrampa}
-                  getId={getEstadoTrampaId}
-                  getNombre={getEstadoTrampaNombre}
+                  getId={(item) => item.estado_trampa_id ?? item.id}
+                  getNombre={(item) => item.nombre}
                   error={errors.estado_trampa_id}
                   helperText={errors.estado_trampa_id}
                 />
@@ -403,8 +391,8 @@ function ControlFaunaNocivaContent() {
                   value={form.accion_correctiva_id}
                   onChange={handleChange}
                   items={accionesCorrectivas}
-                  getId={getAccionCorrectivaId}
-                  getNombre={getAccionCorrectivaNombre}
+                  getId={(item) => item.accion_correctiva_id ?? item.id}
+                  getNombre={(item) => item.nombre}
                   error={errors.accion_correctiva_id}
                   helperText={errors.accion_correctiva_id}
                 />
@@ -423,12 +411,12 @@ function ControlFaunaNocivaContent() {
                 >
                   <MenuItem value="">Selecciona un empleado</MenuItem>
                   {empleados.map((empleado) => (
-                    <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
-                      {empleado.fc_nombre_completo}
+                    <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
+                      {empleado.nombre_completo}
                     </MenuItem>
                   ))}
                   {form.responsable &&
-                    !empleados.some((e) => e.fc_nombre_completo === form.responsable) && (
+                    !empleados.some((e) => e.nombre_completo === form.responsable) && (
                       <MenuItem value={form.responsable}>{form.responsable}</MenuItem>
                     )}
                 </TextField>
@@ -481,7 +469,7 @@ function ControlFaunaNocivaContent() {
             <Grid container spacing={1.5}>
               {[
                 { label: "Folio / ID", value: registroDetalle.codigo },
-                { label: "Fecha", value: formatFecha(registroDetalle.fd_fecha) },
+                { label: "Fecha", value: formatFecha(registroDetalle.fecha) },
                 { label: "Ubicación", value: registroDetalle.ubicacion },
                 { label: "Área / Instalación", value: registroDetalle.area_instalacion_nombre },
                 { label: "Fauna detectada", value: registroDetalle.fauna_detectada_nombre },

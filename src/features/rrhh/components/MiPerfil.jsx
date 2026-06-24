@@ -54,7 +54,7 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
 };
 
-const idTipo = (x) => x?.fi_tipo_documento_id ?? x?.tipo_documento_id ?? null;
+const idTipo = (x) => x?.tipo_documento_id ?? null;
 
 function fmtFecha(value) {
   if (!value) return "No registrada";
@@ -210,8 +210,8 @@ export default function MiPerfil() {
     );
   }
 
-  const nombreCompleto = [perfil.fc_nombre, perfil.fc_apellido_paterno].filter(Boolean).join(" ").trim() || "Sin nombre";
-  const inicial = (perfil.fc_nombre || "?").charAt(0).toUpperCase();
+  const nombreCompleto = [perfil.nombre, perfil.apellido_paterno].filter(Boolean).join(" ").trim() || "Sin nombre";
+  const inicial = (perfil.nombre || "?").charAt(0).toUpperCase();
   const puesto = perfil.puesto_nombre || "Puesto sin asignar";
   const estado = getEstado(resumen.ratio);
   const chartData = [
@@ -324,11 +324,11 @@ export default function MiPerfil() {
                   <Divider sx={{ mb: 1 }} />
                   <Stack divider={<Divider flexItem />}>
                     <InfoRow icon={<Badge />} label="Nombre completo" value={nombreCompleto} />
-                    <InfoRow icon={<Cake />} label="Fecha de nacimiento" value={fmtFecha(perfil.fd_fecha_nacimiento)} />
+                    <InfoRow icon={<Cake />} label="Fecha de nacimiento" value={fmtFecha(perfil.fecha_nacimiento)} />
                     <InfoRow icon={<Work />} label="Puesto" value={perfil.puesto_nombre || "No asignado"} />
                     <InfoRow icon={<CorporateFare />} label="Departamento" value={perfil.departamento_nombre || "No asignado"} />
                     <InfoRow icon={<Business />} label="Unidad de negocio" value={perfil.unidad_negocio_nombre || "No asignada"} />
-                    <InfoRow icon={<EventAvailable />} label="Fecha de contratacion" value={fmtFecha(perfil.fd_fecha_contratacion)} />
+                    <InfoRow icon={<EventAvailable />} label="Fecha de contratacion" value={fmtFecha(perfil.fecha_contratacion)} />
                   </Stack>
                 </CardContent>
               </Card>

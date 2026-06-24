@@ -34,22 +34,13 @@ import FormHelperText from "@mui/material/FormHelperText";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
-import {
-  getUnidadNegocioId,
-  getUnidadNegocioNombre,
-  unidadNegocioActivo,
-  getUbicacionId,
-  getUbicacionNombre,
-  getUnidadNegocioUbicacionId,
-  getUnidadNegocioUbicacionNombre,
-} from "@features/catalogos/utils/catalogEntityGetters";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const TRUNCAR_MAX = 40;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-const EMPTY_FORM = { fi_unidad_negocio_id: null, fc_nombre: "", fi_ubicacion_id: "" };
+const EMPTY_FORM = { unidad_negocio_id: null, nombre: "", ubicacion_id: "" };
 
 function apiErrMsg(e, fallback) {
   const data = e?.response?.data;
@@ -111,21 +102,21 @@ export default function UnidadesNegocio() {
   };
 
   const parseUbicacionId = () => {
-    const raw = String(form.fi_ubicacion_id ?? "").trim();
+    const raw = String(form.ubicacion_id ?? "").trim();
     if (raw === "") return null;
     const n = Number(raw);
     return Number.isInteger(n) && n > 0 ? n : null;
   };
 
   const registrar = async () => {
-    if (!validate(form, ["fc_nombre", "fi_ubicacion_id"])) return;
+    if (!validate(form, ["nombre", "ubicacion_id"])) return;
     const ubicacionId = parseUbicacionId();
     if (ubicacionId == null) {
       showSnackbar("Seleccione una ubicación física válida", "error");
       return;
     }
     try {
-      await createUnidadNegocio(form.fc_nombre.trim(), ubicacionId);
+      await createUnidadNegocio(form.nombre.trim(), ubicacionId);
       showSnackbar("Unidad de negocio registrada correctamente", "success");
       obtenerUnidades({ silent: true });
       limpiar();
@@ -136,15 +127,15 @@ export default function UnidadesNegocio() {
   };
 
   const actualizar = async () => {
-    if (!form.fi_unidad_negocio_id) return;
-    if (!validate(form, ["fc_nombre", "fi_ubicacion_id"])) return;
+    if (!form.unidad_negocio_id) return;
+    if (!validate(form, ["nombre", "ubicacion_id"])) return;
     const ubicacionId = parseUbicacionId();
     if (ubicacionId == null) {
       showSnackbar("Seleccione una ubicación física válida", "error");
       return;
     }
     try {
-      await updateUnidadNegocio(form.fi_unidad_negocio_id, form.fc_nombre.trim(), ubicacionId);
+      await updateUnidadNegocio(form.unidad_negocio_id, form.nombre.trim(), ubicacionId);
       showSnackbar("Unidad de negocio actualizada correctamente", "success");
       obtenerUnidades({ silent: true });
       limpiar();
@@ -180,9 +171,9 @@ export default function UnidadesNegocio() {
 
   const seleccionar = (u) => {
     setForm({
-      fi_unidad_negocio_id: getUnidadNegocioId(u),
-      fc_nombre: getUnidadNegocioNombre(u),
-      fi_ubicacion_id: getUnidadNegocioUbicacionId(u),
+      unidad_negocio_id: u.unidad_negocio_id ?? u.id,
+      nombre: u.nombre,
+      ubicacion_id: u.ubicacion_id != null && u.ubicacion_id !== "" ? String(u.ubicacion_id) : "",
     });
     clearErrors();
     abrirFormulario();
@@ -203,42 +194,42 @@ export default function UnidadesNegocio() {
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
-            {form.fi_unidad_negocio_id ? "Editando Unidad de Negocio" : "Nueva Unidad de Negocio"}
+            {form.unidad_negocio_id ? "Editando Unidad de Negocio" : "Nueva Unidad de Negocio"}
           </Typography>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                name="fc_nombre"
+                name="nombre"
                 label="Nombre de la Unidad de Negocio"
                 fullWidth
-                value={form.fc_nombre}
+                value={form.nombre}
                 onChange={handleChange}
-                error={!!errors.fc_nombre}
-                helperText={errors.fc_nombre}
+                error={!!errors.nombre}
+                helperText={errors.nombre}
                 inputProps={{ maxLength: 100 }}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <FormControl fullWidth required error={!!errors.fi_ubicacion_id}>
-                <InputLabel id="fi_ubicacion_id-label">Ubicación física</InputLabel>
+              <FormControl fullWidth required error={!!errors.ubicacion_id}>
+                <InputLabel id="ubicacion_id-label">Ubicación física</InputLabel>
                 <Select
-                  labelId="fi_ubicacion_id-label"
-                  name="fi_ubicacion_id"
+                  labelId="ubicacion_id-label"
+                  name="ubicacion_id"
                   label="Ubicación física"
-                  value={form.fi_ubicacion_id}
+                  value={form.ubicacion_id}
                   onChange={handleChange}
                 >
                   <MenuItem value="">
                     <em>Seleccionar ubicación…</em>
                   </MenuItem>
                   {ubicaciones.map((ub) => (
-                    <MenuItem key={getUbicacionId(ub)} value={String(getUbicacionId(ub))}>
-                      {getUbicacionNombre(ub)}
+                    <MenuItem key={ub.ubicacion_id ?? ub.id} value={String(ub.ubicacion_id ?? ub.id)}>
+                      {ub.nombre}
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.fi_ubicacion_id ? (
-                  <FormHelperText>{errors.fi_ubicacion_id}</FormHelperText>
+                {errors.ubicacion_id ? (
+                  <FormHelperText>{errors.ubicacion_id}</FormHelperText>
                 ) : null}
               </FormControl>
             </Grid>
@@ -250,7 +241,7 @@ export default function UnidadesNegocio() {
                 variant="contained"
                 color="success"
                 onClick={registrar}
-                disabled={!!form.fi_unidad_negocio_id}
+                disabled={!!form.unidad_negocio_id}
               >
                 Registrar
               </Button>
@@ -260,7 +251,7 @@ export default function UnidadesNegocio() {
                 fullWidth
                 variant="contained"
                 onClick={actualizar}
-                disabled={!form.fi_unidad_negocio_id}
+                disabled={!form.unidad_negocio_id}
               >
                 Actualizar
               </Button>
@@ -296,19 +287,19 @@ export default function UnidadesNegocio() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {ordenarYNumerar(unidades, ["fi_unidad_negocio_id", "unidad_negocio_id"]).map((u) => {
-                    const ubicNom = getUnidadNegocioUbicacionNombre(u);
+                  {ordenarYNumerar(unidades, ["unidad_negocio_id", "id"]).map((u) => {
+                    const ubicNom = u.ubicacion_nombre ?? u.ubicacion?.nombre ?? "";
                     return (
-                      <TableRow key={getUnidadNegocioId(u) ?? ""} hover>
+                      <TableRow key={(u.unidad_negocio_id ?? u.id) ?? ""} hover>
                         <TableCell>{u._num}</TableCell>
-                        <TableCell>{getUnidadNegocioNombre(u)}</TableCell>
+                        <TableCell>{u.nombre}</TableCell>
                         <TableCell sx={{ maxWidth: 220 }}>
                           <span title={ubicNom}>{truncar(ubicNom || "—")}</span>
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={unidadNegocioActivo(u) ? "Activo" : "Inactivo"}
-                            color={unidadNegocioActivo(u) ? "success" : "default"}
+                            label={u.activo ? "Activo" : "Inactivo"}
+                            color={u.activo ? "success" : "default"}
                             size="small"
                           />
                         </TableCell>
@@ -328,13 +319,13 @@ export default function UnidadesNegocio() {
                             <Button size="small" variant="outlined" onClick={() => seleccionar(u)}>
                               Editar
                             </Button>
-                            {unidadNegocioActivo(u) ? (
+                            {u.activo ? (
                               <Button
                                 size="small"
                                 variant="outlined"
                                 color="error"
                                 onClick={() =>
-                                  desactivar(getUnidadNegocioId(u), getUnidadNegocioNombre(u))
+                                  desactivar(u.unidad_negocio_id ?? u.id, u.nombre)
                                 }
                               >
                                 Desactivar
@@ -345,7 +336,7 @@ export default function UnidadesNegocio() {
                                 variant="outlined"
                                 color="success"
                                 onClick={() =>
-                                  activar(getUnidadNegocioId(u), getUnidadNegocioNombre(u))
+                                  activar(u.unidad_negocio_id ?? u.id, u.nombre)
                                 }
                               >
                                 Activar

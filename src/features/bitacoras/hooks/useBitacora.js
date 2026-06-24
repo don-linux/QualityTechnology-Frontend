@@ -10,9 +10,9 @@ import useAuth from "@app/providers/AuthProvider";
  * @param {Function} options.listFn        - Service fn to list records
  * @param {Function} options.createFn      - Service fn to create a record
  * @param {Function} options.updateFn      - Service fn to update a record (id, data)
- * @param {Object}   options.initialForm   - Default form state (without fi_usuario_id)
+ * @param {Object}   options.initialForm   - Default form state (without usuario_id)
  * @param {string[]} options.requiredFields
- * @param {string}   options.idField       - Primary key field name (default: "fi_id")
+ * @param {string}   options.idField       - Primary key field name (default: "id")
  * @param {Function} [options.listParams]  - Fn returning params for listFn (e.g. ubicacion)
  * @param {Function} [options.mapEditRow]  - Fn to transform a row into form values when editing
  */
@@ -22,7 +22,7 @@ export default function useBitacora({
   updateFn,
   initialForm,
   requiredFields,
-  idField = "fi_id",
+  idField = "id",
   listParams,
   mapEditRow,
 }) {
@@ -31,7 +31,7 @@ export default function useBitacora({
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
 
   const buildForm = useCallback(
-    (overrides = {}) => ({ ...initialForm, fi_usuario_id: usuarioId, ...overrides }),
+    (overrides = {}) => ({ ...initialForm, usuario_id: usuarioId, ...overrides }),
     [initialForm, usuarioId],
   );
 
@@ -90,7 +90,7 @@ export default function useBitacora({
     if (mapEditRow) {
       setForm(mapEditRow(row));
     } else {
-      const fd = row.fd_fecha ? { fd_fecha: row.fd_fecha.split("T")[0] } : {};
+      const fd = row.fecha ? { fecha: row.fecha.split("T")[0] } : {};
       setForm({ ...row, ...fd });
     }
     window.scrollTo({ top: 0, behavior: "smooth" });

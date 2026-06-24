@@ -39,24 +39,24 @@ import { formatPrecio, formatNumero } from "@shared/utils/formatters";
 const UNIDADES_MEDIDA = ["ml", "l", "mg", "g", "kg"];
 
 const EMPTY_FORM = {
-  fi_insumo_id: null,
-  fc_codigo: "",
-  fc_nombre: "",
-  fc_marca: "",
-  fc_unidad_medida: "",
-  fi_cliente_id: "",
-  fn_presentacion: "",
-  fn_precio_bulto: "",
-  fn_stock_minimo: "",
+  insumo_id: null,
+  codigo: "",
+  nombre: "",
+  marca: "",
+  unidad_medida: "",
+  cliente_id: "",
+  presentacion: "",
+  precio_bulto: "",
+  stock_minimo: "",
 };
 
 const REQUIRED_FIELDS = [
-  "fc_nombre",
-  "fc_unidad_medida",
-  "fi_cliente_id",
-  "fn_presentacion",
-  "fn_precio_bulto",
-  "fn_stock_minimo",
+  "nombre",
+  "unidad_medida",
+  "cliente_id",
+  "presentacion",
+  "precio_bulto",
+  "stock_minimo",
 ];
 
 function calcularPrecioUnitario(precioBulto, presentacion) {
@@ -88,8 +88,8 @@ export default function Insumos() {
   } = useFormularioVisible();
 
   const precioUnitarioPreview = useMemo(
-    () => calcularPrecioUnitario(form.fn_precio_bulto, form.fn_presentacion),
-    [form.fn_precio_bulto, form.fn_presentacion],
+    () => calcularPrecioUnitario(form.precio_bulto, form.presentacion),
+    [form.precio_bulto, form.presentacion],
   );
 
   useEffect(() => {
@@ -135,9 +135,9 @@ export default function Insumos() {
   };
 
   const validarFormato = () => {
-    const presentacion = Number(form.fn_presentacion);
-    const precioBulto = Number(form.fn_precio_bulto);
-    const stockMinimo = Number(form.fn_stock_minimo);
+    const presentacion = Number(form.presentacion);
+    const precioBulto = Number(form.precio_bulto);
+    const stockMinimo = Number(form.stock_minimo);
 
     if (!Number.isFinite(presentacion) || presentacion <= 0) {
       showSnackbar("La presentación debe ser un número mayor a 0", "error");
@@ -155,13 +155,13 @@ export default function Insumos() {
   };
 
   const construirPayload = () => ({
-    fc_nombre: form.fc_nombre.trim(),
-    fc_marca: form.fc_marca.trim() || null,
-    fc_unidad_medida: form.fc_unidad_medida,
-    fi_cliente_id: Number(form.fi_cliente_id),
-    fn_presentacion: Number(form.fn_presentacion),
-    fn_precio_bulto: Number(form.fn_precio_bulto),
-    fn_stock_minimo: Number(form.fn_stock_minimo),
+    nombre: form.nombre.trim(),
+    marca: form.marca.trim() || null,
+    unidad_medida: form.unidad_medida,
+    cliente_id: Number(form.cliente_id),
+    presentacion: Number(form.presentacion),
+    precio_bulto: Number(form.precio_bulto),
+    stock_minimo: Number(form.stock_minimo),
   });
 
   const guardarConValidacion = async (operacion) => {
@@ -185,9 +185,9 @@ export default function Insumos() {
   };
 
   const actualizarInsumo = async () => {
-    if (!form.fi_insumo_id) return showSnackbar("Selecciona un insumo para actualizar", "error");
+    if (!form.insumo_id) return showSnackbar("Selecciona un insumo para actualizar", "error");
     try {
-      if (await guardarConValidacion((payload) => updateInsumo(form.fi_insumo_id, payload))) {
+      if (await guardarConValidacion((payload) => updateInsumo(form.insumo_id, payload))) {
         showSnackbar("Insumo actualizado correctamente", "success");
       }
     } catch (error) {
@@ -225,21 +225,21 @@ export default function Insumos() {
   const seleccionarInsumo = (insumo) => {
     clearErrors();
     setForm({
-      fi_insumo_id: insumo.fi_insumo_id,
-      fc_codigo: insumo.fc_codigo || "",
-      fc_nombre: insumo.fc_nombre || "",
-      fc_marca: insumo.fc_marca || "",
-      fc_unidad_medida: insumo.fc_unidad_medida || "",
-      fi_cliente_id: insumo.fi_cliente_id ? String(insumo.fi_cliente_id) : "",
-      fn_presentacion: insumo.fn_presentacion != null ? String(insumo.fn_presentacion) : "",
-      fn_precio_bulto: insumo.fn_precio_bulto != null ? String(insumo.fn_precio_bulto) : "",
-      fn_stock_minimo: insumo.fn_stock_minimo != null ? String(insumo.fn_stock_minimo) : "",
+      insumo_id: insumo.insumo_id,
+      codigo: insumo.codigo || "",
+      nombre: insumo.nombre || "",
+      marca: insumo.marca || "",
+      unidad_medida: insumo.unidad_medida || "",
+      cliente_id: insumo.cliente_id ? String(insumo.cliente_id) : "",
+      presentacion: insumo.presentacion != null ? String(insumo.presentacion) : "",
+      precio_bulto: insumo.precio_bulto != null ? String(insumo.precio_bulto) : "",
+      stock_minimo: insumo.stock_minimo != null ? String(insumo.stock_minimo) : "",
     });
     abrirFormulario();
   };
 
-  const udmAdornment = form.fc_unidad_medida ? (
-    <InputAdornment position="end">{form.fc_unidad_medida}</InputAdornment>
+  const udmAdornment = form.unidad_medida ? (
+    <InputAdornment position="end">{form.unidad_medida}</InputAdornment>
   ) : null;
 
   return (
@@ -255,49 +255,49 @@ export default function Insumos() {
         <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 3 }}>
           <CardContent>
             <Typography variant="subtitle1" mb={2} fontWeight="bold">
-              {form.fi_insumo_id ? `Editando ${form.fc_codigo}` : "Nuevo Insumo"}
+              {form.insumo_id ? `Editando ${form.codigo}` : "Nuevo Insumo"}
             </Typography>
             <Grid container spacing={2}>
-              {form.fc_codigo && (
+              {form.codigo && (
                 <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     label="ID"
                     fullWidth
-                    value={form.fc_codigo}
+                    value={form.codigo}
                     slotProps={{ input: { readOnly: true } }}
                   />
                 </Grid>
               )}
-              <Grid size={{ xs: 12, md: form.fc_codigo ? 8 : 12 }}>
+              <Grid size={{ xs: 12, md: form.codigo ? 8 : 12 }}>
                 <TextField
-                  name="fc_nombre"
+                  name="nombre"
                   label="Nombre"
                   fullWidth
-                  value={form.fc_nombre}
+                  value={form.nombre}
                   onChange={handleChange}
-                  error={!!errors.fc_nombre}
-                  helperText={errors.fc_nombre}
+                  error={!!errors.nombre}
+                  helperText={errors.nombre}
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  name="fc_marca"
+                  name="marca"
                   label="Marca"
                   fullWidth
-                  value={form.fc_marca}
+                  value={form.marca}
                   onChange={handleChange}
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  name="fc_unidad_medida"
+                  name="unidad_medida"
                   label="UdM (Unidad de Medida)"
                   select
                   fullWidth
-                  value={form.fc_unidad_medida}
+                  value={form.unidad_medida}
                   onChange={handleChange}
-                  error={!!errors.fc_unidad_medida}
-                  helperText={errors.fc_unidad_medida}
+                  error={!!errors.unidad_medida}
+                  helperText={errors.unidad_medida}
                 >
                   <MenuItem value="">Selecciona UdM</MenuItem>
                   {UNIDADES_MEDIDA.map((udm) => (
@@ -309,33 +309,33 @@ export default function Insumos() {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  name="fi_cliente_id"
+                  name="cliente_id"
                   label="Razón Social"
                   select
                   fullWidth
-                  value={form.fi_cliente_id}
+                  value={form.cliente_id}
                   onChange={handleChange}
-                  error={!!errors.fi_cliente_id}
-                  helperText={errors.fi_cliente_id}
+                  error={!!errors.cliente_id}
+                  helperText={errors.cliente_id}
                 >
                   <MenuItem value="">Selecciona cliente</MenuItem>
                   {clientes.map((cliente) => (
-                    <MenuItem key={cliente.fi_cliente_id} value={cliente.fi_cliente_id}>
-                      {cliente.fc_razon_social || cliente.nombre}
+                    <MenuItem key={cliente.cliente_id} value={cliente.cliente_id}>
+                      {cliente.nombre}
                     </MenuItem>
                   ))}
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <CampoNumerico
-                  name="fn_presentacion"
+                  name="presentacion"
                   label="Presentación"
                   fullWidth
-                  value={form.fn_presentacion}
+                  value={form.presentacion}
                   onChange={handleChange}
                   decimalScale={3}
-                  error={!!errors.fn_presentacion}
-                  helperText={errors.fn_presentacion}
+                  error={!!errors.presentacion}
+                  helperText={errors.presentacion}
                   slotProps={{
                     input: {
                       endAdornment: udmAdornment,
@@ -345,15 +345,15 @@ export default function Insumos() {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <CampoNumerico
-                  name="fn_precio_bulto"
+                  name="precio_bulto"
                   label="Precio bulto"
                   fullWidth
-                  value={form.fn_precio_bulto}
+                  value={form.precio_bulto}
                   onChange={handleChange}
                   decimalScale={2}
                   prefix="$"
-                  error={!!errors.fn_precio_bulto}
-                  helperText={errors.fn_precio_bulto}
+                  error={!!errors.precio_bulto}
+                  helperText={errors.precio_bulto}
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
@@ -371,14 +371,14 @@ export default function Insumos() {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <CampoNumerico
-                  name="fn_stock_minimo"
+                  name="stock_minimo"
                   label="Stock mínimo"
                   fullWidth
-                  value={form.fn_stock_minimo}
+                  value={form.stock_minimo}
                   onChange={handleChange}
                   decimalScale={3}
-                  error={!!errors.fn_stock_minimo}
-                  helperText={errors.fn_stock_minimo}
+                  error={!!errors.stock_minimo}
+                  helperText={errors.stock_minimo}
                   slotProps={{
                     input: {
                       endAdornment: udmAdornment,
@@ -393,7 +393,7 @@ export default function Insumos() {
                 variant="contained"
                 color="success"
                 onClick={registrarInsumo}
-                disabled={!!form.fi_insumo_id}
+                disabled={!!form.insumo_id}
               >
                 Registrar
               </Button>
@@ -401,7 +401,7 @@ export default function Insumos() {
                 variant="contained"
                 color="primary"
                 onClick={actualizarInsumo}
-                disabled={!form.fi_insumo_id}
+                disabled={!form.insumo_id}
               >
                 Actualizar
               </Button>
@@ -437,20 +437,20 @@ export default function Insumos() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {ordenarYNumerar(insumos, ["fi_insumo_id", "insumo_id"]).map((insumo) => (
-                  <TableRow key={insumo.fi_insumo_id} hover>
-                    <TableCell>{insumo.fc_codigo}</TableCell>
-                    <TableCell>{insumo.fc_nombre}</TableCell>
-                    <TableCell>{insumo.fc_marca || "—"}</TableCell>
-                    <TableCell>{insumo.fc_unidad_medida}</TableCell>
-                    <TableCell>{insumo.fc_razon_social || "—"}</TableCell>
+                {ordenarYNumerar(insumos, ["insumo_id", "id"]).map((insumo) => (
+                  <TableRow key={insumo.insumo_id} hover>
+                    <TableCell>{insumo.codigo}</TableCell>
+                    <TableCell>{insumo.nombre}</TableCell>
+                    <TableCell>{insumo.marca || "—"}</TableCell>
+                    <TableCell>{insumo.unidad_medida}</TableCell>
+                    <TableCell>{insumo.razon_social || "—"}</TableCell>
                     <TableCell>
-                      {formatConUdm(insumo.fn_presentacion, insumo.fc_unidad_medida)}
+                      {formatConUdm(insumo.presentacion, insumo.unidad_medida)}
                     </TableCell>
-                    <TableCell>{formatPrecio(insumo.fn_precio_bulto)}</TableCell>
-                    <TableCell>{formatPrecio(insumo.fn_precio_unitario)}</TableCell>
+                    <TableCell>{formatPrecio(insumo.precio_bulto)}</TableCell>
+                    <TableCell>{formatPrecio(insumo.precio_unitario)}</TableCell>
                     <TableCell>
-                      {formatConUdm(insumo.fn_stock_minimo, insumo.fc_unidad_medida)}
+                      {formatConUdm(insumo.stock_minimo, insumo.unidad_medida)}
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -481,7 +481,7 @@ export default function Insumos() {
                             variant="outlined"
                             size="small"
                             color="error"
-                            onClick={() => desactivarInsumo(insumo.fi_insumo_id, insumo.fc_nombre)}
+                            onClick={() => desactivarInsumo(insumo.insumo_id, insumo.nombre)}
                           >
                             Desactivar
                           </Button>
@@ -490,7 +490,7 @@ export default function Insumos() {
                             variant="outlined"
                             size="small"
                             color="success"
-                            onClick={() => activarInsumoItem(insumo.fi_insumo_id, insumo.fc_nombre)}
+                            onClick={() => activarInsumoItem(insumo.insumo_id, insumo.nombre)}
                           >
                             Activar
                           </Button>

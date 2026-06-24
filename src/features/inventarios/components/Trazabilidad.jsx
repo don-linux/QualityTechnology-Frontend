@@ -104,7 +104,7 @@ function configTipoMovimiento(value) {
 
 function piletasPorEtapa(piletas, etapa, soloConStock = false) {
   return piletas.filter((p) => {
-    const tipo = String(p.tipo ?? p.fc_tipo ?? "").toLowerCase();
+    const tipo = String(p.tipo ?? "").toLowerCase();
     if (tipo !== etapa) return false;
     return soloConStock ? stockPileta(p) > 0 : true;
   });
@@ -120,7 +120,7 @@ function etapaPiletaParaTipo(tipo) {
 }
 
 function stockPileta(p) {
-  return Number(p?.cantidad ?? p?.fn_cantidad ?? 0);
+  return Number(p?.cantidad ?? 0);
 }
 
 function tipoVentaParaEtapa(etapa) {
@@ -134,12 +134,12 @@ function hoyISO() {
 }
 
 function idPileta(p) {
-  return p?.fi_pileta_id ?? p?.pileta_id ?? null;
+  return p?.pileta_id ?? null;
 }
 
 function piletaOrigenIdDePedido(pedido) {
   if (!pedido) return "";
-  const id = pedido.pileta_origen_id ?? pedido.fi_pileta_origen_id;
+  const id = pedido.pileta_origen_id;
   return id ? String(id) : "";
 }
 
@@ -188,7 +188,7 @@ export default function Trazabilidad() {
 
   const pedidoSeleccionado = useMemo(() => {
     if (!form.lista_espera_id) return null;
-    return pedidos.find((p) => String(p.fi_lista_id) === String(form.lista_espera_id)) ?? null;
+    return pedidos.find((p) => String(p.lista_id) === String(form.lista_espera_id)) ?? null;
   }, [form.lista_espera_id, pedidos]);
 
   const piletasOrigen = useMemo(
@@ -207,7 +207,7 @@ export default function Trazabilidad() {
     return piletasOrigen.find((p) => String(idPileta(p)) === String(id)) ?? null;
   }, [form.pileta_origen_id, pedidoSeleccionado, piletasOrigen]);
 
-  const cantidadVenta = Number(pedidoSeleccionado?.fn_cantidad ?? pedidoSeleccionado?.cantidad_peces ?? 0);
+  const cantidadVenta = Number(pedidoSeleccionado?.cantidad_peces ?? 0);
   const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
   const esVenta = tipoConfig.modo === "VENTA";
   const esMortalidad = tipoConfig.modo === "MORTALIDAD";
@@ -230,7 +230,7 @@ export default function Trazabilidad() {
   const pedidosVenta = useMemo(() => {
     if (!esVenta) return [];
     return pedidos.filter((p) => {
-      const etapa = etapaPiletaParaTipo(p.fc_uap_asignada ?? p.tipo_venta);
+      const etapa = etapaPiletaParaTipo(p.tipo_venta);
       return etapa === tipoConfig.etapaOrigen;
     });
   }, [pedidos, esVenta, tipoConfig.etapaOrigen]);
@@ -247,12 +247,12 @@ export default function Trazabilidad() {
     const stock = pileta ? stockPileta(pileta) : 0;
 
     return {
-      fd_fecha_entrega: form.fecha_movimiento || hoyISO(),
-      fc_uap_asignada: tipoVentaParaEtapa(tipoConfig.etapaOrigen),
-      fc_granja_asignada: granja,
+      fecha_entrega: form.fecha_movimiento || hoyISO(),
+      tipo_venta: tipoVentaParaEtapa(tipoConfig.etapaOrigen),
+      granja: granja,
       pileta_origen_id: piletaId,
-      fn_cantidad: stock > 0 ? String(stock) : "",
-      fc_unidad_produccion: granjaLabel,
+      cantidad_peces: stock > 0 ? String(stock) : "",
+      unidad_produccion: granjaLabel,
     };
   }, [
     granja,
@@ -306,14 +306,14 @@ export default function Trazabilidad() {
       const granjaOp = ubicacionesGranja.find((op) => op.value === granja) ?? null;
       setPedidos(
         rows.filter((p) => {
-          const tipo = String(p.fc_uap_asignada ?? p.tipo_venta ?? "").trim().toUpperCase();
-          if (!TIPOS_VENTA_TRAZABLES.has(tipo) || p.venta_id || p.fi_venta_id) return false;
+          const tipo = String(p.tipo_venta ?? "").trim().toUpperCase();
+          if (!TIPOS_VENTA_TRAZABLES.has(tipo) || p.venta_id) return false;
           if (!granja) return true;
           if (!granjaOp) {
-            const granjaPedido = p.fc_granja_asignada ?? p.granja ?? "";
+            const granjaPedido = p.granja ?? "";
             return granjaPedido === granja;
           }
-          return rowPerteneceAUbicacionGranja(p, granjaOp, "fc_granja_asignada");
+          return rowPerteneceAUbicacionGranja(p, granjaOp, "granja");
         }),
       );
     } catch (err) {
@@ -340,7 +340,7 @@ export default function Trazabilidad() {
         };
       }
       if (name === "lista_espera_id") {
-        const pedido = pedidos.find((p) => String(p.fi_lista_id) === String(value));
+        const pedido = pedidos.find((p) => String(p.lista_id) === String(value));
         next.pileta_origen_id = piletaOrigenIdDePedido(pedido);
       }
       return next;
@@ -469,38 +469,38 @@ export default function Trazabilidad() {
 
   const handleProximaVentaCreada = (pedido) => {
     setPedidos((prev) => {
-      const id = String(pedido.fi_lista_id);
-      if (prev.some((p) => String(p.fi_lista_id) === id)) return prev;
+      const id = String(pedido.lista_id);
+      if (prev.some((p) => String(p.lista_id) === id)) return prev;
       return [...prev, pedido];
     });
     setForm((prev) => ({
       ...prev,
-      lista_espera_id: String(pedido.fi_lista_id ?? pedido.lista_id),
+      lista_espera_id: String(pedido.lista_id),
       pileta_origen_id: piletaOrigenIdDePedido(pedido) || prev.pileta_origen_id,
     }));
     cargarPedidos();
   };
 
   const etiquetaPedido = (p) => {
-    const cliente = p.fc_cliente ?? p.cliente_nombre ?? "Cliente";
-    const cant = formatCantidad(p.fn_cantidad ?? p.cantidad_peces);
-    const fecha = formatFecha(p.fd_fecha_entrega ?? p.fecha_entrega);
-    return `#${p.fi_lista_id} · ${cliente} · ${cant} org. · ${fecha}`;
+    const cliente = p.cliente_nombre ?? "Cliente";
+    const cant = formatCantidad(p.cantidad_peces);
+    const fecha = formatFecha(p.fecha_entrega);
+    return `#${p.lista_id} · ${cliente} · ${cant} org. · ${fecha}`;
   };
 
   const etiquetaPileta = (p) => {
-    const tipo = String(p.tipo ?? p.fc_tipo ?? "").toLowerCase();
+    const tipo = String(p.tipo ?? "").toLowerCase();
     if (tipo === "incubacion") return `${p.nombre} (lote en eficiencia reproductiva)`;
     return `${p.nombre} — ${formatCantidad(stockPileta(p))} org.`;
   };
 
   const gruposMovimientos = useMemo(
-    () => getGroups(movimientos, "fc_granja"),
+    () => getGroups(movimientos, "granja"),
     [getGroups, movimientos],
   );
 
   const renderTablaMovimientos = (rows) => {
-    const filas = ordenarYNumerar(rows, ["fi_movimiento_id"]);
+    const filas = ordenarYNumerar(rows, ["movimiento_id"]);
     return (
     <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
       <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
@@ -528,14 +528,14 @@ export default function Trazabilidad() {
               </TableRow>
             ) : (
               filas.map((row) => (
-                <TableRow key={row.fi_movimiento_id}>
+                <TableRow key={row.movimiento_id}>
                   <TableCell>{row._num}</TableCell>
                   <TableCell>{formatFecha(row.fecha_movimiento)}</TableCell>
-                  <TableCell>{row.fc_etapa ?? "—"}</TableCell>
+                  <TableCell>{row.etapa ?? "—"}</TableCell>
                   <TableCell>{row.origen ?? "—"}</TableCell>
                   <TableCell>{row.destino ?? "—"}</TableCell>
                   <TableCell align="right">{formatCantidad(row.cantidad_trasladada)}</TableCell>
-                  <TableCell>{row.fc_usuario ?? row.usuario_nombre ?? "—"}</TableCell>
+                  <TableCell>{row.usuario_nombre ?? "—"}</TableCell>
                   <TableCell>{row.observacion ?? "—"}</TableCell>
                 </TableRow>
               ))
@@ -627,7 +627,7 @@ export default function Trazabilidad() {
                       >
                         <MenuItem value="">— Seleccionar pedido —</MenuItem>
                         {pedidosVenta.map((p) => (
-                          <MenuItem key={p.fi_lista_id} value={String(p.fi_lista_id)}>
+                          <MenuItem key={p.lista_id} value={String(p.lista_id)}>
                             {etiquetaPedido(p)}
                           </MenuItem>
                         ))}
@@ -648,11 +648,11 @@ export default function Trazabilidad() {
                   {pedidoSeleccionado && (
                     <Grid size={12}>
                       <Alert severity="info">
-                        Cliente: <strong>{pedidoSeleccionado.fc_cliente}</strong>
+                        Cliente: <strong>{pedidoSeleccionado.cliente_nombre}</strong>
                         {" · "}
                         Cantidad: {formatCantidad(cantidadVenta)} org.
                         {" · "}
-                        Tipo: {pedidoSeleccionado.fc_uap_asignada ?? pedidoSeleccionado.tipo_venta}
+                        Tipo: {pedidoSeleccionado.tipo_venta}
                       </Alert>
                     </Grid>
                   )}
@@ -676,7 +676,7 @@ export default function Trazabilidad() {
                     >
                       <MenuItem value="">— Seleccionar —</MenuItem>
                       {piletasOrigen.map((p) => (
-                        <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                        <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
                           {etiquetaPileta(p)}
                         </MenuItem>
                       ))}
@@ -706,7 +706,7 @@ export default function Trazabilidad() {
                     >
                       <MenuItem value="">— Seleccionar —</MenuItem>
                       {piletasOrigen.map((p) => (
-                        <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                        <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
                           {etiquetaPileta(p)}
                         </MenuItem>
                       ))}
@@ -739,7 +739,7 @@ export default function Trazabilidad() {
                     >
                       <MenuItem value="">— Seleccionar —</MenuItem>
                       {piletasOrigen.map((p) => (
-                        <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                        <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
                           {etiquetaPileta(p)}
                         </MenuItem>
                       ))}
@@ -756,7 +756,7 @@ export default function Trazabilidad() {
                     >
                       <MenuItem value="">— Seleccionar —</MenuItem>
                       {piletasDestino.map((p) => (
-                        <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                        <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
                           {etiquetaPileta(p)}
                         </MenuItem>
                       ))}

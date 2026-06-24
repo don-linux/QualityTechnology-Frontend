@@ -45,15 +45,15 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 const EMPTY_CLIENTE_RAPIDO = {
-  fc_razon_social: "",
-  fc_rfc: "",
-  fi_unidad_negocio_id: "",
-  fc_nombre_contacto: "",
-  fc_telefono: "",
-  fc_correo: "",
-  fc_localidad: "",
-  fc_estado: "",
-  fi_ejecutivo_empleado_id: "",
+  nombre: "",
+  rfc: "",
+  unidad_negocio_id: "",
+  empresa: "",
+  telefono: "",
+  email: "",
+  localidad: "",
+  estado: "",
+  ejecutivo_empleado_id: "",
 };
 
 const CLIENTE_RAPIDO_REQUIRED = Object.keys(EMPTY_CLIENTE_RAPIDO);
@@ -74,7 +74,7 @@ function etapaPiletaParaTipo(tipo) {
 }
 
 function stockPileta(p) {
-  return Number(p?.cantidad ?? p?.fn_cantidad ?? 0);
+  return Number(p?.cantidad ?? 0);
 }
 
 function formatStock(num) {
@@ -82,8 +82,8 @@ function formatStock(num) {
 }
 
 function etiquetaEstatus(item) {
-  if (item.venta_id ?? item.fi_venta_id) return "Trazabilidad registrada";
-  const tipo = String(item.fc_uap_asignada ?? item.tipo_venta ?? "").trim().toUpperCase();
+  if (item.venta_id) return "Trazabilidad registrada";
+  const tipo = String(item.tipo_venta ?? "").trim().toUpperCase();
   if (TIPOS_VENTA_TRAZABLES.has(tipo)) return "Pendiente trazabilidad";
   return "Pendiente";
 }
@@ -93,8 +93,8 @@ function soloDigitos(value) {
 }
 
 function nombreEmpleado(empleado) {
-  return empleado.fc_nombre_completo
-    || [empleado.fc_nombre, empleado.fc_apellido_paterno, empleado.fc_apellido_materno].filter(Boolean).join(" ");
+  return empleado.nombre_completo
+    || [empleado.nombre, empleado.apellido_paterno, empleado.apellido_materno].filter(Boolean).join(" ");
 }
 
 export default function ListaEspera() {
@@ -128,55 +128,55 @@ function ListaEsperaContent() {
   const [cargandoPiletas, setCargandoPiletas] = useState(false);
 
   const emptyForm = {
-    fd_fecha_entrega: "",
-    fc_uap_asignada: "",
-    fc_granja_asignada: granjaDefault,
+    fecha_entrega: "",
+    tipo_venta: "",
+    granja: granjaDefault,
     pileta_origen_id: "",
-    fn_cantidad: "",
-    fc_cliente: "",
-    fc_lugar_entrega: "",
-    fc_unidad_produccion: "",
-    fc_hora_embolsado: "",
-    fc_hora_entrega: "",
-    fn_precio_venta: "",
-    fc_encargado_venta: nombreUsuario,
+    cantidad_peces: "",
+    cliente_nombre: "",
+    lugar_entrega: "",
+    unidad_produccion: "",
+    hora_embolsado: "",
+    hora_entrega: "",
+    precio_unitario: "",
+    encargado_venta: nombreUsuario,
   };
 
   const [form, setForm] = useState(emptyForm);
   const [lista, setLista] = useState([]);
 
-  const filasPedidos = useMemo(() => ordenarYNumerar(lista, ["fi_lista_id"]), [lista]);
+  const filasPedidos = useMemo(() => ordenarYNumerar(lista, ["lista_id"]), [lista]);
 
   const unidadesDisponibles = useMemo(() => {
     if (puedeElegirUdN) return unidadesNegocio;
     if (auth.granja === "SIN_UNIDAD") return [];
     if (unidadNegocioIdUsuario) {
       return unidadesNegocio.filter(
-        (unidad) => String(unidad.fi_unidad_negocio_id) === unidadNegocioIdUsuario,
+        (unidad) => String(unidad.unidad_negocio_id) === unidadNegocioIdUsuario,
       );
     }
-    return unidadesNegocio.filter((unidad) => unidad.fc_nombre === auth.granja);
+    return unidadesNegocio.filter((unidad) => unidad.nombre === auth.granja);
   }, [auth.granja, puedeElegirUdN, unidadNegocioIdUsuario, unidadesNegocio]);
 
   const udnDefaultClienteRapido = useMemo(() => {
     if (puedeElegirUdN || auth.granja === "SIN_UNIDAD") return "";
-    return unidadNegocioIdUsuario || String(unidadesDisponibles[0]?.fi_unidad_negocio_id || "");
+    return unidadNegocioIdUsuario || String(unidadesDisponibles[0]?.unidad_negocio_id || "");
   }, [auth.granja, puedeElegirUdN, unidadNegocioIdUsuario, unidadesDisponibles]);
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { confirm, ConfirmModal } = useConfirm();
 
   const requiredFields = [
-    "fd_fecha_entrega",
-    "fc_uap_asignada",
-    "fc_granja_asignada",
-    "fn_cantidad",
-    "fc_cliente",
-    "fc_lugar_entrega",
-    "fc_unidad_produccion",
-    "fc_hora_embolsado",
-    "fc_hora_entrega",
-    "fn_precio_venta",
+    "fecha_entrega",
+    "tipo_venta",
+    "granja",
+    "cantidad_peces",
+    "cliente_nombre",
+    "lugar_entrega",
+    "unidad_produccion",
+    "hora_embolsado",
+    "hora_entrega",
+    "precio_unitario",
   ];
 
   const cargarLista = async () => {
@@ -218,10 +218,10 @@ function ListaEsperaContent() {
   }, []);
 
   useEffect(() => {
-    if (!form.fc_granja_asignada && granjaDefault) {
-      setForm((prev) => ({ ...prev, fc_granja_asignada: granjaDefault }));
+    if (!form.granja && granjaDefault) {
+      setForm((prev) => ({ ...prev, granja: granjaDefault }));
     }
-  }, [form.fc_granja_asignada, granjaDefault]);
+  }, [form.granja, granjaDefault]);
 
   const cargarPiletasForm = useCallback(async (granja, tipoVenta) => {
     const etapa = etapaPiletaParaTipo(tipoVenta);
@@ -233,7 +233,7 @@ function ListaEsperaContent() {
     try {
       const res = await listPiletas(granja, etapa);
       const rows = Array.isArray(res.data) ? res.data : [];
-      setPiletas(rows.filter((p) => Number(p.cantidad ?? p.fn_cantidad ?? 0) > 0));
+      setPiletas(rows.filter((p) => Number(p.cantidad ?? 0) > 0));
     } catch (err) {
       console.error("Error al cargar piletas:", err);
       setPiletas([]);
@@ -243,27 +243,27 @@ function ListaEsperaContent() {
   }, []);
 
   useEffect(() => {
-    if (ventaRequierePileta(form.fc_uap_asignada) && form.fc_granja_asignada) {
-      cargarPiletasForm(form.fc_granja_asignada, form.fc_uap_asignada);
+    if (ventaRequierePileta(form.tipo_venta) && form.granja) {
+      cargarPiletasForm(form.granja, form.tipo_venta);
     } else {
       setPiletas([]);
       setForm((prev) => (prev.pileta_origen_id ? { ...prev, pileta_origen_id: "" } : prev));
     }
-  }, [form.fc_uap_asignada, form.fc_granja_asignada, cargarPiletasForm]);
+  }, [form.tipo_venta, form.granja, cargarPiletasForm]);
 
   const piletaOrigenSeleccionada = useMemo(() => {
     if (!form.pileta_origen_id) return null;
     return (
       piletas.find(
-        (p) => String(p.fi_pileta_id ?? p.pileta_id) === form.pileta_origen_id,
+        (p) => String(p.pileta_id) === form.pileta_origen_id,
       ) ?? null
     );
   }, [form.pileta_origen_id, piletas]);
 
-  const cantidadPedido = Number(form.fn_cantidad ?? 0);
+  const cantidadPedido = Number(form.cantidad_peces ?? 0);
   const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
   const requiereValidacionStock =
-    ventaRequierePileta(form.fc_uap_asignada) && Boolean(form.pileta_origen_id);
+    ventaRequierePileta(form.tipo_venta) && Boolean(form.pileta_origen_id);
   const cantidadExcedeStock =
     requiereValidacionStock
     && stockOrigen != null
@@ -271,7 +271,7 @@ function ListaEsperaContent() {
     && cantidadPedido > stockOrigen;
 
   const validarPiletaYCantidad = () => {
-    if (ventaRequierePileta(form.fc_uap_asignada) && !form.pileta_origen_id) {
+    if (ventaRequierePileta(form.tipo_venta) && !form.pileta_origen_id) {
       showSnackbar("Seleccione la pileta de origen para ventas de alevines o mojarra.", "warning");
       return false;
     }
@@ -282,7 +282,7 @@ function ListaEsperaContent() {
     const { name, value } = e.target;
     setForm((prev) => {
       const next = { ...prev, [name]: value };
-      if (name === "fc_granja_asignada" || name === "fc_uap_asignada") {
+      if (name === "granja" || name === "tipo_venta") {
         next.pileta_origen_id = "";
       }
       return next;
@@ -294,36 +294,36 @@ function ListaEsperaContent() {
     const { name, value } = e.target;
     setNuevoCliente({
       ...nuevoCliente,
-      [name]: name === "fc_telefono" ? soloDigitos(value) : value,
+      [name]: name === "telefono" ? soloDigitos(value) : value,
     });
   };
 
   const abrirModalCliente = () => {
-    setNuevoCliente({ ...EMPTY_CLIENTE_RAPIDO, fi_unidad_negocio_id: udnDefaultClienteRapido });
+    setNuevoCliente({ ...EMPTY_CLIENTE_RAPIDO, unidad_negocio_id: udnDefaultClienteRapido });
     setOpenCliente(true);
   };
 
   const cerrarModalCliente = () => {
     setOpenCliente(false);
-    setNuevoCliente({ ...EMPTY_CLIENTE_RAPIDO, fi_unidad_negocio_id: udnDefaultClienteRapido });
+    setNuevoCliente({ ...EMPTY_CLIENTE_RAPIDO, unidad_negocio_id: udnDefaultClienteRapido });
   };
 
   const editar = (item) => {
     clearErrors();
-    setEditId(item.fi_lista_id);
+    setEditId(item.lista_id);
     setForm({
-      fd_fecha_entrega: item.fd_fecha_entrega?.split?.("T")?.[0] || item.fd_fecha_entrega || "",
-      fc_uap_asignada: item.fc_uap_asignada || item.tipo_venta || "",
-      fc_granja_asignada: item.fc_granja_asignada || item.granja || granjaDefault,
+      fecha_entrega: item.fecha_entrega?.split?.("T")?.[0] || item.fecha_entrega || "",
+      tipo_venta: item.tipo_venta || "",
+      granja: item.granja || granjaDefault,
       pileta_origen_id: item.pileta_origen_id ? String(item.pileta_origen_id) : "",
-      fn_cantidad: item.fn_cantidad || "",
-      fc_cliente: item.fc_cliente || "",
-      fc_lugar_entrega: item.fc_lugar_entrega || "",
-      fc_encargado_venta: item.fc_encargado_venta || nombreUsuario,
-      fc_unidad_produccion: item.fc_unidad_produccion || "",
-      fc_hora_embolsado: item.fc_hora_embolsado || "",
-      fc_hora_entrega: item.fc_hora_entrega || "",
-      fn_precio_venta: item.fn_precio_venta || "",
+      cantidad_peces: item.cantidad_peces || "",
+      cliente_nombre: item.cliente_nombre || "",
+      lugar_entrega: item.lugar_entrega || "",
+      encargado_venta: item.encargado_venta || nombreUsuario,
+      unidad_produccion: item.unidad_produccion || "",
+      hora_embolsado: item.hora_embolsado || "",
+      hora_entrega: item.hora_entrega || "",
+      precio_unitario: item.precio_unitario || "",
     });
   };
 
@@ -335,7 +335,7 @@ function ListaEsperaContent() {
       await updateRegistro(editId, form);
       showSnackbar("Actualizado correctamente", "success");
       setEditId(null);
-      setForm({ ...emptyForm, fc_granja_asignada: granjaDefault, fc_encargado_venta: nombreUsuario });
+      setForm({ ...emptyForm, granja: granjaDefault, encargado_venta: nombreUsuario });
       cargarLista();
     } catch (err) {
       console.error("Error al actualizar en lista de espera:", err);
@@ -344,8 +344,8 @@ function ListaEsperaContent() {
   };
 
   const cancelar = async (item) => {
-    const tieneTrazabilidad = Boolean(item.venta_id ?? item.fi_venta_id);
-    const esTrazable = ventaRequierePileta(item.fc_uap_asignada ?? item.tipo_venta);
+    const tieneTrazabilidad = Boolean(item.venta_id);
+    const esTrazable = ventaRequierePileta(item.tipo_venta);
     const mensaje = tieneTrazabilidad && esTrazable
       ? "¿Cancelar este pedido? Se registrará la devolución en trazabilidad y los organismos volverán a su pileta de origen."
       : "¿Cancelar este pedido?";
@@ -353,9 +353,9 @@ function ListaEsperaContent() {
     if (!await confirm(mensaje)) return;
 
     try {
-      const res = await cancelarRegistro(item.fi_lista_id);
+      const res = await cancelarRegistro(item.lista_id);
       showSnackbar(res.data?.mensaje || "Pedido cancelado", "success");
-      if (editId === item.fi_lista_id) {
+      if (editId === item.lista_id) {
         setEditId(null);
         setForm(emptyForm);
         clearErrors();
@@ -368,8 +368,8 @@ function ListaEsperaContent() {
   };
 
   const convertir = async (item) => {
-    const tipo = item.fc_uap_asignada ?? item.tipo_venta;
-    const tieneVenta = Boolean(item.venta_id ?? item.fi_venta_id);
+    const tipo = item.tipo_venta;
+    const tieneVenta = Boolean(item.venta_id);
 
     if (ventaRequierePileta(tipo) && !tieneVenta) {
       showSnackbar(
@@ -390,7 +390,7 @@ function ListaEsperaContent() {
       const payload = item.pileta_origen_id
         ? { pileta_origen_id: item.pileta_origen_id }
         : {};
-      await convertirAVenta(item.fi_lista_id, payload);
+      await convertirAVenta(item.lista_id, payload);
       showSnackbar("Convertido a venta correctamente", "success");
       cargarLista();
     } catch (err) {
@@ -407,15 +407,15 @@ function ListaEsperaContent() {
       showSnackbar("Completa todos los campos del cliente", "error");
       return;
     }
-    if (nuevoCliente.fc_rfc.length > 20) {
+    if (nuevoCliente.rfc.length > 20) {
       showSnackbar("El RFC debe tener máximo 20 caracteres", "error");
       return;
     }
-    if (!/^[0-9]{1,10}$/.test(nuevoCliente.fc_telefono)) {
+    if (!/^[0-9]{1,10}$/.test(nuevoCliente.telefono)) {
       showSnackbar("El teléfono debe contener solo números y máximo 10 dígitos", "error");
       return;
     }
-    if (!EMAIL_RE.test(nuevoCliente.fc_correo)) {
+    if (!EMAIL_RE.test(nuevoCliente.email)) {
       showSnackbar("Ingresa un correo electrónico válido", "error");
       return;
     }
@@ -423,13 +423,13 @@ function ListaEsperaContent() {
     try {
       await createClienteRapido({
         ...nuevoCliente,
-        fc_razon_social: nuevoCliente.fc_razon_social.trim(),
-        fc_rfc: nuevoCliente.fc_rfc.trim(),
-        fi_unidad_negocio_id: Number(nuevoCliente.fi_unidad_negocio_id),
-        fc_nombre_contacto: nuevoCliente.fc_nombre_contacto.trim(),
-        fc_correo: nuevoCliente.fc_correo.trim(),
-        fc_localidad: nuevoCliente.fc_localidad.trim(),
-        fi_ejecutivo_empleado_id: Number(nuevoCliente.fi_ejecutivo_empleado_id),
+        nombre: nuevoCliente.nombre.trim(),
+        rfc: nuevoCliente.rfc.trim(),
+        unidad_negocio_id: Number(nuevoCliente.unidad_negocio_id),
+        empresa: nuevoCliente.empresa.trim(),
+        email: nuevoCliente.email.trim(),
+        localidad: nuevoCliente.localidad.trim(),
+        ejecutivo_empleado_id: Number(nuevoCliente.ejecutivo_empleado_id),
       });
       await cargarClientes();
       cerrarModalCliente();
@@ -456,21 +456,21 @@ function ListaEsperaContent() {
               fullWidth
               type="date"
               label="Fecha de Entrega"
-              name="fd_fecha_entrega"
-              value={form.fd_fecha_entrega}
+              name="fecha_entrega"
+              value={form.fecha_entrega}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
-              error={!!errors.fd_fecha_entrega}
-              helperText={errors.fd_fecha_entrega}
+              error={!!errors.fecha_entrega}
+              helperText={errors.fecha_entrega}
             />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <FormControl fullWidth error={!!errors.fc_uap_asignada}>
+            <FormControl fullWidth error={!!errors.tipo_venta}>
               <InputLabel>Tipo de Venta</InputLabel>
               <Select
-                name="fc_uap_asignada"
-                value={form.fc_uap_asignada}
+                name="tipo_venta"
+                value={form.tipo_venta}
                 onChange={handleChange}
                 label="Tipo de Venta"
               >
@@ -479,13 +479,13 @@ function ListaEsperaContent() {
                 <MenuItem value="ALIMENTO">Alimento</MenuItem>
                 <MenuItem value="MEDICAMENTO">Medicamento</MenuItem>
               </Select>
-              {errors.fc_uap_asignada && <FormHelperText>{errors.fc_uap_asignada}</FormHelperText>}
+              {errors.tipo_venta && <FormHelperText>{errors.tipo_venta}</FormHelperText>}
             </FormControl>
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
             {puedeElegirGranja ? (
-              <TextField select fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} onChange={handleChange} error={!!errors.fc_granja_asignada} helperText={errors.fc_granja_asignada}>
+              <TextField select fullWidth label="Granja" name="granja" value={form.granja} onChange={handleChange} error={!!errors.granja} helperText={errors.granja}>
                 {ubicacionesGranja.map((op) => (
                   <MenuItem key={op.value} value={op.value}>
                     {op.label}
@@ -493,11 +493,11 @@ function ListaEsperaContent() {
                 ))}
               </TextField>
             ) : (
-              <TextField fullWidth label="Granja" name="fc_granja_asignada" value={form.fc_granja_asignada} slotProps={{ input: { readOnly: true } }} />
+              <TextField fullWidth label="Granja" name="granja" value={form.granja} slotProps={{ input: { readOnly: true } }} />
             )}
           </Grid>
 
-          {ventaRequierePileta(form.fc_uap_asignada) && form.fc_granja_asignada && (
+          {ventaRequierePileta(form.tipo_venta) && form.granja && (
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 select
@@ -520,7 +520,7 @@ function ListaEsperaContent() {
               >
                 <MenuItem value="">— Seleccionar —</MenuItem>
                 {piletas.map((p) => (
-                  <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                  <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
                     {etiquetaPileta(p)}
                   </MenuItem>
                 ))}
@@ -533,12 +533,12 @@ function ListaEsperaContent() {
               fullWidth
               decimalScale={0}
               label="Cantidad"
-              name="fn_cantidad"
-              value={form.fn_cantidad}
+              name="cantidad_peces"
+              value={form.cantidad_peces}
               onChange={handleChange}
-              error={!!errors.fn_cantidad || cantidadExcedeStock}
+              error={!!errors.cantidad_peces || cantidadExcedeStock}
               helperText={
-                errors.fn_cantidad
+                errors.cantidad_peces
                 || (cantidadExcedeStock
                   ? `Supera el stock (${formatStock(stockOrigen)} organismos)`
                   : requiereValidacionStock && stockOrigen != null
@@ -577,17 +577,17 @@ function ListaEsperaContent() {
                   freeSolo
                   fullWidth
                   options={clientes}
-                  getOptionLabel={(o) => (typeof o === "string" ? o : o.fc_razon_social || "")}
-                  value={form.fc_cliente}
+                  getOptionLabel={(o) => (typeof o === "string" ? o : o.nombre || "")}
+                  value={form.cliente_nombre}
                   onChange={(e, val) => {
                     setForm({
                       ...form,
-                      fc_cliente: typeof val === "string" ? val : val?.fc_razon_social || "",
+                      cliente_nombre: typeof val === "string" ? val : val?.nombre || "",
                     });
-                    clearFieldError("fc_cliente");
+                    clearFieldError("cliente_nombre");
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label="Cliente" error={!!errors.fc_cliente} helperText={errors.fc_cliente} />
+                    <TextField {...params} label="Cliente" error={!!errors.cliente_nombre} helperText={errors.cliente_nombre} />
                   )}
                 />
               </Grid>
@@ -605,11 +605,11 @@ function ListaEsperaContent() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Lugar" name="fc_lugar_entrega" value={form.fc_lugar_entrega} onChange={handleChange} error={!!errors.fc_lugar_entrega} helperText={errors.fc_lugar_entrega} />
+            <TextField fullWidth label="Lugar" name="lugar_entrega" value={form.lugar_entrega} onChange={handleChange} error={!!errors.lugar_entrega} helperText={errors.lugar_entrega} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Unidad Producción" name="fc_unidad_produccion" value={form.fc_unidad_produccion} onChange={handleChange} error={!!errors.fc_unidad_produccion} helperText={errors.fc_unidad_produccion} />
+            <TextField fullWidth label="Unidad Producción" name="unidad_produccion" value={form.unidad_produccion} onChange={handleChange} error={!!errors.unidad_produccion} helperText={errors.unidad_produccion} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
@@ -617,12 +617,12 @@ function ListaEsperaContent() {
               fullWidth
               type="time"
               label="Hora Embolsado"
-              name="fc_hora_embolsado"
-              value={form.fc_hora_embolsado}
+              name="hora_embolsado"
+              value={form.hora_embolsado}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
-              error={!!errors.fc_hora_embolsado}
-              helperText={errors.fc_hora_embolsado}
+              error={!!errors.hora_embolsado}
+              helperText={errors.hora_embolsado}
             />
           </Grid>
 
@@ -631,17 +631,17 @@ function ListaEsperaContent() {
               fullWidth
               type="time"
               label="Hora Entrega"
-              name="fc_hora_entrega"
-              value={form.fc_hora_entrega}
+              name="hora_entrega"
+              value={form.hora_entrega}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
-              error={!!errors.fc_hora_entrega}
-              helperText={errors.fc_hora_entrega}
+              error={!!errors.hora_entrega}
+              helperText={errors.hora_entrega}
             />
           </Grid>
 
           <Grid size={{ xs: 12, md: 3 }}>
-            <CampoNumerico fullWidth prefix="$" decimalScale={2} label="Precio Venta" name="fn_precio_venta" value={form.fn_precio_venta} onChange={handleChange} error={!!errors.fn_precio_venta} helperText={errors.fn_precio_venta} inputProps={{ min: 0, step: "0.01" }} />
+            <CampoNumerico fullWidth prefix="$" decimalScale={2} label="Precio Venta" name="precio_unitario" value={form.precio_unitario} onChange={handleChange} error={!!errors.precio_unitario} helperText={errors.precio_unitario} inputProps={{ min: 0, step: "0.01" }} />
           </Grid>
         </Grid>
 
@@ -704,16 +704,16 @@ function ListaEsperaContent() {
                 </TableRow>
               ) : (
                 filasPedidos.map((item) => (
-                  <TableRow key={item.fi_lista_id}>
+                  <TableRow key={item.lista_id}>
                     <TableCell>{item._num}</TableCell>
-                    <TableCell>{formatFecha(item.fd_fecha_entrega)}</TableCell>
-                    <TableCell>{item.fc_uap_asignada ?? item.tipo_venta ?? "—"}</TableCell>
-                    <TableCell>{item.fc_cliente}</TableCell>
-                    <TableCell>{item.fn_cantidad}</TableCell>
+                    <TableCell>{formatFecha(item.fecha_entrega)}</TableCell>
+                    <TableCell>{item.tipo_venta ?? "—"}</TableCell>
+                    <TableCell>{item.cliente_nombre}</TableCell>
+                    <TableCell>{item.cantidad_peces}</TableCell>
                     <TableCell>{item.nombre_pileta_origen ?? "—"}</TableCell>
-                    <TableCell>{item.fc_lugar_entrega}</TableCell>
-                    <TableCell>{item.fc_granja_asignada ?? item.granja ?? "—"}</TableCell>
-                    <TableCell>{formatPrecio(item.fn_precio_venta)}</TableCell>
+                    <TableCell>{item.lugar_entrega}</TableCell>
+                    <TableCell>{item.granja ?? "—"}</TableCell>
+                    <TableCell>{formatPrecio(item.precio_unitario)}</TableCell>
                     <TableCell>{etiquetaEstatus(item)}</TableCell>
                     <TableCell>
                       <Button
@@ -721,7 +721,7 @@ function ListaEsperaContent() {
                         color="warning"
                         sx={{ mr: 1 }}
                         onClick={() => editar(item)}
-                        disabled={Boolean(item.venta_id ?? item.fi_venta_id)}
+                        disabled={Boolean(item.venta_id)}
                       >
                         Editar
                       </Button>
@@ -746,42 +746,42 @@ function ListaEsperaContent() {
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={12}>
-              <TextField name="fc_razon_social" label="Razón Social" fullWidth value={nuevoCliente.fc_razon_social} onChange={handleNuevoClienteChange} />
+              <TextField name="nombre" label="Razón Social" fullWidth value={nuevoCliente.nombre} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_rfc" label="RFC" fullWidth value={nuevoCliente.fc_rfc} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 20 }} />
+              <TextField name="rfc" label="RFC" fullWidth value={nuevoCliente.rfc} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 20 }} />
             </Grid>
             <Grid size={6}>
               {puedeElegirUdN ? (
-                <TextField select name="fi_unidad_negocio_id" label="UdN" fullWidth value={nuevoCliente.fi_unidad_negocio_id} onChange={handleNuevoClienteChange}>
+                <TextField select name="unidad_negocio_id" label="UdN" fullWidth value={nuevoCliente.unidad_negocio_id} onChange={handleNuevoClienteChange}>
                   <MenuItem value="">Selecciona UdN</MenuItem>
                   {unidadesDisponibles.map((unidad) => (
-                    <MenuItem key={unidad.fi_unidad_negocio_id} value={unidad.fi_unidad_negocio_id}>{unidad.fc_nombre}</MenuItem>
+                    <MenuItem key={unidad.unidad_negocio_id} value={unidad.unidad_negocio_id}>{unidad.nombre}</MenuItem>
                   ))}
                 </TextField>
               ) : (
                 <TextField
                   label="UdN"
                   fullWidth
-                  value={unidadesDisponibles[0]?.fc_nombre || auth.granja || ""}
+                  value={unidadesDisponibles[0]?.nombre || auth.granja || ""}
                   slotProps={{ input: { readOnly: true } }}
                 />
               )}
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_nombre_contacto" label="Nombre del contacto" fullWidth value={nuevoCliente.fc_nombre_contacto} onChange={handleNuevoClienteChange} />
+              <TextField name="empresa" label="Nombre del contacto" fullWidth value={nuevoCliente.empresa} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_telefono" label="Teléfono" fullWidth value={nuevoCliente.fc_telefono} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 10, inputMode: "numeric" }} />
+              <TextField name="telefono" label="Teléfono" fullWidth value={nuevoCliente.telefono} onChange={handleNuevoClienteChange} inputProps={{ maxLength: 10, inputMode: "numeric" }} />
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_correo" type="email" label="Correo" fullWidth value={nuevoCliente.fc_correo} onChange={handleNuevoClienteChange} />
+              <TextField name="email" type="email" label="Correo" fullWidth value={nuevoCliente.email} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField name="fc_localidad" label="Localidad" fullWidth value={nuevoCliente.fc_localidad} onChange={handleNuevoClienteChange} />
+              <TextField name="localidad" label="Localidad" fullWidth value={nuevoCliente.localidad} onChange={handleNuevoClienteChange} />
             </Grid>
             <Grid size={6}>
-              <TextField select name="fc_estado" label="Estado" fullWidth value={nuevoCliente.fc_estado} onChange={handleNuevoClienteChange}>
+              <TextField select name="estado" label="Estado" fullWidth value={nuevoCliente.estado} onChange={handleNuevoClienteChange}>
                 <MenuItem value="">Selecciona Estado</MenuItem>
                 {ESTADOS_MX.map((estado) => (
                   <MenuItem key={estado} value={estado}>{estado}</MenuItem>
@@ -789,10 +789,10 @@ function ListaEsperaContent() {
               </TextField>
             </Grid>
             <Grid size={6}>
-              <TextField select name="fi_ejecutivo_empleado_id" label="Ejecutivo" fullWidth value={nuevoCliente.fi_ejecutivo_empleado_id} onChange={handleNuevoClienteChange}>
+              <TextField select name="ejecutivo_empleado_id" label="Ejecutivo" fullWidth value={nuevoCliente.ejecutivo_empleado_id} onChange={handleNuevoClienteChange}>
                 <MenuItem value="">Selecciona Ejecutivo</MenuItem>
                 {empleados.map((empleado) => (
-                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fi_empleado_id}>{nombreEmpleado(empleado)}</MenuItem>
+                  <MenuItem key={empleado.empleado_id} value={empleado.empleado_id}>{nombreEmpleado(empleado)}</MenuItem>
                 ))}
               </TextField>
             </Grid>

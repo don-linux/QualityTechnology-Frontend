@@ -57,7 +57,7 @@ const renderContenido = (col, row) => {
 export default function ListadoTabla({
   columnas,
   filas,
-  idKey = ["fi_id"],
+  idKey = ["id"],
   minWidth = 960,
   numerar = true,
   numeroHeader = "ID",
@@ -115,7 +115,7 @@ export default function ListadoTabla({
               </TableRow>
             ) : (
               data.map((row) => (
-                <TableRow key={row.fi_id ?? row.id ?? row._num} hover>
+                <TableRow key={row.id ?? row._num} hover>
                   {numerar && <TableCell>{row._num}</TableCell>}
                   {columnas.map((col) => (
                     <TableCell

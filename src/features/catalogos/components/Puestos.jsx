@@ -22,12 +22,11 @@ import CircularProgress from "@mui/material/CircularProgress";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
-import { getPuestoId, getPuestoNombre, puestoActivo } from "@features/catalogos/utils/catalogEntityGetters";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 export default function Puestos() {
   const showSnackbar = useSnackbar();
-  const [form, setForm] = useState({ fi_puesto_id: null, fc_nombre: "" });
+  const [form, setForm] = useState({ puesto_id: null, nombre: "" });
   const [puestos, setPuestos] = useState([]);
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -54,22 +53,22 @@ export default function Puestos() {
     clearFieldError(e.target.name);
   };
 
-  const limpiar = () => { setForm({ fi_puesto_id: null, fc_nombre: "" }); clearErrors(); cerrarFormulario(); };
+  const limpiar = () => { setForm({ puesto_id: null, nombre: "" }); clearErrors(); cerrarFormulario(); };
 
   const registrar = async () => {
-    if (!validate(form, ["fc_nombre"])) return;
+    if (!validate(form, ["nombre"])) return;
     try {
-      await createPuesto(form.fc_nombre);
+      await createPuesto(form.nombre);
       obtenerPuestos();
       limpiar();
     } catch (e) { console.error(e); showSnackbar("Error al registrar puesto", "error"); }
   };
 
   const actualizar = async () => {
-    if (!form.fi_puesto_id) return;
-    if (!validate(form, ["fc_nombre"])) return;
+    if (!form.puesto_id) return;
+    if (!validate(form, ["nombre"])) return;
     try {
-      await updatePuesto(form.fi_puesto_id, form.fc_nombre);
+      await updatePuesto(form.puesto_id, form.nombre);
       obtenerPuestos();
       limpiar();
     } catch (e) { console.error(e); showSnackbar("Error al actualizar puesto", "error"); }
@@ -94,7 +93,7 @@ export default function Puestos() {
   };
 
   const seleccionar = (p) => {
-    setForm({ fi_puesto_id: getPuestoId(p), fc_nombre: getPuestoNombre(p) });
+    setForm({ puesto_id: p.puesto_id ?? p.id, nombre: p.nombre });
     clearErrors();
     abrirFormulario();
   };
@@ -110,19 +109,19 @@ export default function Puestos() {
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
-            {form.fi_puesto_id ? "Editando Puesto" : "Nuevo Puesto"}
+            {form.puesto_id ? "Editando Puesto" : "Nuevo Puesto"}
           </Typography>
           <Grid container spacing={2}>
             <Grid size={12}>
-              <TextField name="fc_nombre" label="Nombre del Puesto" fullWidth value={form.fc_nombre} onChange={handleChange} error={!!errors.fc_nombre} helperText={errors.fc_nombre} />
+              <TextField name="nombre" label="Nombre del Puesto" fullWidth value={form.nombre} onChange={handleChange} error={!!errors.nombre} helperText={errors.nombre} />
             </Grid>
           </Grid>
           <Grid container spacing={2} mt={1}>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Button fullWidth variant="contained" color="success" onClick={registrar} disabled={!!form.fi_puesto_id}>Registrar</Button>
+              <Button fullWidth variant="contained" color="success" onClick={registrar} disabled={!!form.puesto_id}>Registrar</Button>
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Button fullWidth variant="contained" onClick={actualizar} disabled={!form.fi_puesto_id}>Actualizar</Button>
+              <Button fullWidth variant="contained" onClick={actualizar} disabled={!form.puesto_id}>Actualizar</Button>
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
               <Button fullWidth variant="outlined" onClick={limpiar}>Limpiar</Button>
@@ -147,24 +146,24 @@ export default function Puestos() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {ordenarYNumerar(puestos, ["puesto_id", "fi_puesto_id"]).map((p) => (
-                <TableRow key={getPuestoId(p) ?? ""} hover>
+              {ordenarYNumerar(puestos, ["puesto_id", "id"]).map((p) => (
+                <TableRow key={(p.puesto_id ?? p.id) ?? ""} hover>
                   <TableCell>{p._num}</TableCell>
-                  <TableCell>{getPuestoNombre(p)}</TableCell>
+                  <TableCell>{p.nombre}</TableCell>
                   <TableCell>
                     <Chip
-                      label={puestoActivo(p) ? "Activo" : "Inactivo"}
-                      color={puestoActivo(p) ? "success" : "default"}
+                      label={p.activo ? "Activo" : "Inactivo"}
+                      color={p.activo ? "success" : "default"}
                       size="small"
                     />
                   </TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
                       <Button size="small" variant="outlined" onClick={() => seleccionar(p)}>Editar</Button>
-                      {puestoActivo(p) ? (
-                        <Button size="small" variant="outlined" color="error" onClick={() => desactivar(getPuestoId(p), getPuestoNombre(p))}>Desactivar</Button>
+                      {p.activo ? (
+                        <Button size="small" variant="outlined" color="error" onClick={() => desactivar(p.puesto_id ?? p.id, p.nombre)}>Desactivar</Button>
                       ) : (
-                        <Button size="small" variant="outlined" color="success" onClick={() => activar(getPuestoId(p), getPuestoNombre(p))}>Activar</Button>
+                        <Button size="small" variant="outlined" color="success" onClick={() => activar(p.puesto_id ?? p.id, p.nombre)}>Activar</Button>
                       )}
                     </Box>
                   </TableCell>

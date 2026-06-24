@@ -25,43 +25,43 @@ import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import useUsuarios from "../hooks/useUsuarios";
 
 function uid(u) {
-  return u?.usuario_id ?? u?.fi_usuario_id ?? u?.id;
+  return u?.usuario_id ?? u?.id;
 }
 function unombre(u) {
-  return u?.nombre ?? u?.fc_nombre ?? "";
+  return u?.nombre ?? "";
 }
 function uactivo(u) {
-  return Boolean(u?.activo ?? u?.fb_activo);
+  return Boolean(u?.activo);
 }
 function rid(r) {
-  return r?.rol_id ?? r?.fi_rol_id ?? r?.id;
+  return r?.rol_id ?? r?.id;
 }
 function rnombre(r) {
-  return r?.nombre ?? r?.fc_nombre ?? "";
+  return r?.nombre ?? "";
 }
 function rroot(r) {
-  return Boolean(r?.es_root ?? r?.fb_es_root);
+  return Boolean(r?.es_root);
 }
 function deptKey(d) {
-  return d?.departamento_id ?? d?.fi_departamento_id;
+  return d?.departamento_id;
 }
 function deptLabel(d) {
-  return d?.nombre ?? d?.fc_nombre ?? "";
+  return d?.nombre ?? "";
 }
 function puestoKey(p) {
-  return p?.puesto_id ?? p?.fi_puesto_id;
+  return p?.puesto_id;
 }
 function puestoLabel(p) {
-  return p?.nombre ?? p?.fc_nombre ?? "";
+  return p?.nombre ?? "";
 }
 function udnKey(udn) {
-  return udn?.unidad_negocio_id ?? udn?.fi_unidad_negocio_id;
+  return udn?.unidad_negocio_id;
 }
 function udnLabel(udn) {
-  return udn?.nombre ?? udn?.fc_nombre ?? "";
+  return udn?.nombre ?? "";
 }
 function usuarioRolId(usuario) {
-  return usuario?.rol_id ?? usuario?.fi_rol_id;
+  return usuario?.rol_id;
 }
 
 export default function UsuariosRegistro() {
@@ -69,12 +69,12 @@ export default function UsuariosRegistro() {
     nombre: "",
     contraseña: "",
     rol_id: "",
-    fc_nombre_empleado: "",
-    fc_apellido_paterno: "",
-    fc_apellido_materno: "",
-    fi_departamento_id: "",
-    fi_puesto_id: "",
-    fi_unidad_negocio_id: "",
+    nombre_empleado: "",
+    apellido_paterno: "",
+    apellido_materno: "",
+    departamento_id: "",
+    puesto_id: "",
+    unidad_negocio_id: "",
   });
 
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
@@ -88,7 +88,7 @@ export default function UsuariosRegistro() {
 
   const requiredFields = esRoot || usuarioSeleccionado
     ? ["nombre", "contraseña", "rol_id"]
-    : ["nombre", "contraseña", "rol_id", "fc_nombre_empleado", "fc_apellido_paterno", "fc_apellido_materno", "fi_departamento_id"];
+    : ["nombre", "contraseña", "rol_id", "nombre_empleado", "apellido_paterno", "apellido_materno", "departamento_id"];
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -123,12 +123,12 @@ export default function UsuariosRegistro() {
       nombre: unombre(usuario),
       contraseña: "",
       rol_id: usuarioRolId(usuario) ?? "",
-      fc_nombre_empleado: "",
-      fc_apellido_paterno: "",
-      fc_apellido_materno: "",
-      fi_departamento_id: "",
-      fi_puesto_id: "",
-      fi_unidad_negocio_id: "",
+      nombre_empleado: "",
+      apellido_paterno: "",
+      apellido_materno: "",
+      departamento_id: "",
+      puesto_id: "",
+      unidad_negocio_id: "",
     });
     clearErrors();
     abrirFormulario();
@@ -137,8 +137,8 @@ export default function UsuariosRegistro() {
   const limpiarFormulario = () => {
     setForm({
       nombre: "", contraseña: "", rol_id: "",
-      fc_nombre_empleado: "", fc_apellido_paterno: "", fc_apellido_materno: "",
-      fi_departamento_id: "", fi_puesto_id: "", fi_unidad_negocio_id: "",
+      nombre_empleado: "", apellido_paterno: "", apellido_materno: "",
+      departamento_id: "", puesto_id: "", unidad_negocio_id: "",
     });
     setUsuarioSeleccionado(null);
     clearErrors();
@@ -193,23 +193,23 @@ export default function UsuariosRegistro() {
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField name="fc_nombre_empleado" label="Nombre" fullWidth value={form.fc_nombre_empleado} onChange={handleChange} error={!!errors.fc_nombre_empleado} helperText={errors.fc_nombre_empleado} />
+                  <TextField name="nombre_empleado" label="Nombre" fullWidth value={form.nombre_empleado} onChange={handleChange} error={!!errors.nombre_empleado} helperText={errors.nombre_empleado} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField name="fc_apellido_paterno" label="Apellido Paterno" fullWidth value={form.fc_apellido_paterno} onChange={handleChange} error={!!errors.fc_apellido_paterno} helperText={errors.fc_apellido_paterno} />
+                  <TextField name="apellido_paterno" label="Apellido Paterno" fullWidth value={form.apellido_paterno} onChange={handleChange} error={!!errors.apellido_paterno} helperText={errors.apellido_paterno} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField name="fc_apellido_materno" label="Apellido Materno" fullWidth value={form.fc_apellido_materno} onChange={handleChange} error={!!errors.fc_apellido_materno} helperText={errors.fc_apellido_materno} />
+                  <TextField name="apellido_materno" label="Apellido Materno" fullWidth value={form.apellido_materno} onChange={handleChange} error={!!errors.apellido_materno} helperText={errors.apellido_materno} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField select name="fi_departamento_id" label="Departamento" fullWidth value={form.fi_departamento_id} onChange={handleChange} error={!!errors.fi_departamento_id} helperText={errors.fi_departamento_id}>
+                  <TextField select name="departamento_id" label="Departamento" fullWidth value={form.departamento_id} onChange={handleChange} error={!!errors.departamento_id} helperText={errors.departamento_id}>
                     {departamentos.map((d) => (
                       <MenuItem key={deptKey(d)} value={deptKey(d)}>{deptLabel(d)}</MenuItem>
                     ))}
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField select name="fi_puesto_id" label="Puesto" fullWidth value={form.fi_puesto_id} onChange={handleChange}>
+                  <TextField select name="puesto_id" label="Puesto" fullWidth value={form.puesto_id} onChange={handleChange}>
                     <MenuItem value="">Sin asignar</MenuItem>
                     {puestos.map((p) => (
                       <MenuItem key={puestoKey(p)} value={puestoKey(p)}>{puestoLabel(p)}</MenuItem>
@@ -217,7 +217,7 @@ export default function UsuariosRegistro() {
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField select name="fi_unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.fi_unidad_negocio_id} onChange={handleChange}>
+                  <TextField select name="unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.unidad_negocio_id} onChange={handleChange}>
                     <MenuItem value="">Sin asignar</MenuItem>
                     {unidadesNegocio.map((u) => (
                       <MenuItem key={udnKey(u)} value={udnKey(u)}>{udnLabel(u)}</MenuItem>
@@ -255,7 +255,7 @@ export default function UsuariosRegistro() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {ordenarYNumerar(usuarios, ["usuario_id", "fi_usuario_id"]).map((usuario) => (
+            {ordenarYNumerar(usuarios, ["usuario_id", "id"]).map((usuario) => (
               <TableRow key={uid(usuario)} hover sx={{ opacity: uactivo(usuario) ? 1 : 0.5 }}>
                 <TableCell>{usuario._num}</TableCell>
                 <TableCell>{unombre(usuario)}</TableCell>

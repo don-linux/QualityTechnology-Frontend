@@ -6,11 +6,6 @@ import {
   activateEvidenciaFauna,
   deactivateEvidenciaFauna,
 } from "@features/catalogos/services/evidenciasFaunaService";
-import {
-  getEvidenciaFaunaId,
-  getEvidenciaFaunaNombre,
-  evidenciaFaunaActivo,
-} from "@features/catalogos/utils/catalogEntityGetters";
 
 export default function EvidenciasFauna() {
   return (
@@ -27,9 +22,6 @@ export default function EvidenciasFauna() {
       updateFn={updateEvidenciaFauna}
       activateFn={activateEvidenciaFauna}
       deactivateFn={deactivateEvidenciaFauna}
-      getId={getEvidenciaFaunaId}
-      getNombre={getEvidenciaFaunaNombre}
-      isActivo={evidenciaFaunaActivo}
     />
   );
 }

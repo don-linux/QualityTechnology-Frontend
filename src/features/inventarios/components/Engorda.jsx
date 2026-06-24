@@ -53,7 +53,7 @@ export default function Engorda() {
 
   const requiredFields = [
     "ubicacion",
-    "fi_pileta_destino_id",
+    "pileta_destino_id",
     "cantidad_total",
     "fecha_peso",
     "peso_gramos",
@@ -65,7 +65,7 @@ export default function Engorda() {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState({
     ubicacion: "",
-    fi_pileta_destino_id: "",
+    pileta_destino_id: "",
     cantidad_total: "",
     cantidad_alimento: "",
     peso_gramos: "",
@@ -81,13 +81,13 @@ export default function Engorda() {
   const registrosVista = useMemo(() => vistaActualPorPileta(registros), [registros]);
 
   const gruposRegistros = useMemo(
-    () => getGroups(registrosVista, "fc_granja"),
+    () => getGroups(registrosVista, "granja"),
     [getGroups, registrosVista],
   );
 
   const payloadComunBackend = () => ({
-    pileta_id: Number(formData.fi_pileta_destino_id),
-    pileta_destino_id: Number(formData.fi_pileta_destino_id),
+    pileta_id: Number(formData.pileta_destino_id),
+    pileta_destino_id: Number(formData.pileta_destino_id),
     cantidad_total: Number(formData.cantidad_total || 0),
     cantidad_alimento: Number(formData.cantidad_alimento || 0),
     peso_gramos: formData.peso_gramos === "" ? null : Number(formData.peso_gramos),
@@ -107,7 +107,7 @@ export default function Engorda() {
 
     setFormData((prev) => {
       if (name === "ubicacion") {
-        return { ...prev, ubicacion: value, fi_pileta_destino_id: "" };
+        return { ...prev, ubicacion: value, pileta_destino_id: "" };
       }
       return { ...prev, [name]: value };
     });
@@ -169,9 +169,9 @@ export default function Engorda() {
     if (!seleccionado) return;
     clearErrors();
     setFormData({
-      ubicacion: seleccionado.fc_granja || formData.ubicacion || defaultUbicacion || "",
-      fi_pileta_destino_id: String(
-        seleccionado.fi_pileta_destino_id ?? seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
+      ubicacion: seleccionado.granja || formData.ubicacion || defaultUbicacion || "",
+      pileta_destino_id: String(
+        seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
       ),
       cantidad_total: String(seleccionado.cantidad_total ?? seleccionado.cantidad ?? ""),
       cantidad_alimento: String(seleccionado.cantidad_alimento ?? ""),
@@ -184,7 +184,7 @@ export default function Engorda() {
       fecha_peso: seleccionado.fecha_peso
         ? String(seleccionado.fecha_peso).split("T")[0]
         : "",
-      observacion: seleccionado.observacion ?? seleccionado.fc_observacion ?? "",
+      observacion: seleccionado.observacion ?? "",
     });
     setModoEdicion(true);
     abrirFormulario();
@@ -198,7 +198,7 @@ export default function Engorda() {
     }
     try {
       await updateEngorda(
-        seleccionado.fi_engorda_id ?? seleccionado.fi_id ?? seleccionado.id,
+        seleccionado.engorda_id ?? seleccionado.id,
         payloadComunBackend(),
       );
       showSnackbar("Registro actualizado", "success");
@@ -218,7 +218,7 @@ export default function Engorda() {
   const resetFormulario = () => {
     setFormData({
       ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
-      fi_pileta_destino_id: "",
+      pileta_destino_id: "",
       cantidad_total: "",
       cantidad_alimento: "",
       peso_gramos: "",
@@ -290,16 +290,16 @@ export default function Engorda() {
                 <TextField
                   select
                   label="Pileta (engorda)"
-                  name="fi_pileta_destino_id"
-                  value={formData.fi_pileta_destino_id || ""}
+                  name="pileta_destino_id"
+                  value={formData.pileta_destino_id || ""}
                   onChange={handleChange}
                   fullWidth
                   sx={campoFormSx}
-                  error={!!errors.fi_pileta_destino_id}
-                  {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
+                  error={!!errors.pileta_destino_id}
+                  {...(errors.pileta_destino_id ? { helperText: errors.pileta_destino_id } : {})}
                 >
                   {piletasFiltradas.map((p) => {
-                    const pid = p.fi_pileta_id ?? p.pileta_id;
+                    const pid = p.pileta_id;
                     return (
                       <MenuItem key={pid} value={String(pid)}>
                         {p.nombre}
@@ -420,7 +420,7 @@ export default function Engorda() {
       <TablasPorUbicacionGranja
         grupos={gruposRegistros}
         renderTabla={(rows) => {
-          const filas = ordenarYNumerar(rows, ["fi_engorda_id", "fi_id", "id"]);
+          const filas = ordenarYNumerar(rows, ["engorda_id", "id"]);
           return (
           <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
@@ -446,13 +446,13 @@ export default function Engorda() {
                   ) : (
                     filas.map((l) => (
                       <TableRow
-                        key={l.fi_engorda_id ?? l.fi_id ?? l.id}
+                        key={l.engorda_id ?? l.id}
                         onClick={() => setSeleccionado(l)}
                         style={{
                           cursor: "pointer",
                           backgroundColor:
-                            (seleccionado?.fi_engorda_id ?? seleccionado?.fi_id ?? seleccionado?.id) ===
-                            (l.fi_engorda_id ?? l.fi_id ?? l.id)
+                            (seleccionado?.engorda_id ?? seleccionado?.id) ===
+                            (l.engorda_id ?? l.id)
                               ? "#e0f7fa"
                               : "transparent",
                         }}
@@ -467,9 +467,9 @@ export default function Engorda() {
                         <TableCell>{formatearFecha(l.fecha_peso)}</TableCell>
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                           <CeldaObservacionConHistorial
-                            texto={l.observacion ?? l.fc_observacion ?? ""}
+                            texto={l.observacion ?? ""}
                             piletaId={
-                              l.fi_pileta_destino_id ?? l.pileta_destino_id ?? l.pileta_id
+                              l.pileta_destino_id ?? l.pileta_id
                             }
                             piletaNombre={l.nombre_pileta_destino || l.nombre_pileta}
                             etapaLabel="Engorda"

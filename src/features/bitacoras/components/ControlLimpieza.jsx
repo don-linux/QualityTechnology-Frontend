@@ -23,7 +23,7 @@ import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranj
 import ListadoTabla from "@shared/components/ListadoTabla";
 import { formatFecha } from "@shared/utils/formatters";
 
-const MAX_FC_OBSERVACIONES = 500;
+const MAX_OBSERVACIONES = 500;
 
 const TIPOS_INSTALACION = [
   "Baño de Hombres",
@@ -32,7 +32,7 @@ const TIPOS_INSTALACION = [
 ];
 
 const getTipoInstalacion = (row) => {
-  return row.fc_tipo_instalacion || "";
+  return row.tipo_instalacion || "";
 };
 
 function ControlLimpiezaContent() {
@@ -41,11 +41,11 @@ function ControlLimpiezaContent() {
   const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } =
     useUbicacionesGranja();
   const [form, setForm] = useState({
-    fd_fecha: "",
-    fc_tipo_instalacion: "",
-    fc_realizo: "",
-    fc_observaciones: "",
-    fi_usuario_id: usuarioId,
+    fecha: "",
+    tipo_instalacion: "",
+    realizado_por: "",
+    observaciones: "",
+    usuario_id: usuarioId,
     ubicacion: "",
   });
 
@@ -56,8 +56,8 @@ function ControlLimpiezaContent() {
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
-    "fd_fecha", "fc_tipo_instalacion",
-    "fc_realizo", "fc_observaciones", "ubicacion",
+    "fecha", "tipo_instalacion",
+    "realizado_por", "observaciones", "ubicacion",
   ];
 
   const handleChange = (e) => {
@@ -106,11 +106,11 @@ function ControlLimpiezaContent() {
       }
 
       setForm({
-        fd_fecha: "",
-        fc_tipo_instalacion: "",
-        fc_realizo: "",
-        fc_observaciones: "",
-        fi_usuario_id: usuarioId,
+        fecha: "",
+        tipo_instalacion: "",
+        realizado_por: "",
+        observaciones: "",
+        usuario_id: usuarioId,
         ubicacion: form.ubicacion,
       });
       setEditId(null);
@@ -124,13 +124,13 @@ function ControlLimpiezaContent() {
 
   const editar = (row) => {
     clearErrors();
-    setEditId(row.fi_id);
+    setEditId(row.id);
     setForm({
-      fd_fecha: row.fd_fecha?.split("T")[0] || "",
-      fc_tipo_instalacion: getTipoInstalacion(row),
-      fc_realizo: row.fc_realizo,
-      fc_observaciones: row.fc_observaciones,
-      fi_usuario_id: row.fi_usuario_id,
+      fecha: row.fecha?.split("T")[0] || "",
+      tipo_instalacion: getTipoInstalacion(row),
+      realizado_por: row.realizado_por,
+      observaciones: row.observaciones,
+      usuario_id: row.usuario_id,
       ubicacion: row.ubicacion || "",
     });
 
@@ -139,10 +139,10 @@ function ControlLimpiezaContent() {
   };
 
   const columnas = [
-    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Fecha", value: (r) => formatFecha(r.fecha) },
     { header: "Tipo de Instalación", value: (r) => getTipoInstalacion(r), truncate: true, maxWidth: 160 },
-    { header: "Realizó", value: (r) => r.fc_realizo, truncate: true, maxWidth: 160 },
-    { header: "Observaciones", value: (r) => r.fc_observaciones, truncate: true, maxWidth: 160 },
+    { header: "Realizó", value: (r) => r.realizado_por, truncate: true, maxWidth: 160 },
+    { header: "Observaciones", value: (r) => r.observaciones, truncate: true, maxWidth: 160 },
   ];
 
   const gruposUbicacion = getGroups(data);
@@ -192,25 +192,25 @@ function ControlLimpiezaContent() {
               <TextField
                 label="Fecha"
                 type="date"
-                name="fd_fecha"
+                name="fecha"
                 InputLabelProps={{ shrink: true }}
-                value={form.fd_fecha}
+                value={form.fecha}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fd_fecha}
-                helperText={errors.fd_fecha}
+                error={!!errors.fecha}
+                helperText={errors.fecha}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 select
                 label="Tipo de Instalación"
-                name="fc_tipo_instalacion"
-                value={form.fc_tipo_instalacion}
+                name="tipo_instalacion"
+                value={form.tipo_instalacion}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_tipo_instalacion}
-                helperText={errors.fc_tipo_instalacion}
+                error={!!errors.tipo_instalacion}
+                helperText={errors.tipo_instalacion}
               >
                 <MenuItem value="">Selecciona un tipo</MenuItem>
                 {TIPOS_INSTALACION.map((tipo) => (
@@ -224,36 +224,36 @@ function ControlLimpiezaContent() {
               <TextField
                 select
                 label="Realizó"
-                name="fc_realizo"
-                value={form.fc_realizo}
+                name="realizado_por"
+                value={form.realizado_por}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_realizo}
-                helperText={errors.fc_realizo}
+                error={!!errors.realizado_por}
+                helperText={errors.realizado_por}
               >
                 <MenuItem value="">Selecciona un empleado</MenuItem>
                 {empleados.map((empleado) => (
-                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
-                    {empleado.fc_nombre_completo}
+                  <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
+                    {empleado.nombre_completo}
                   </MenuItem>
                 ))}
-                {form.fc_realizo && !empleados.some((e) => e.fc_nombre_completo === form.fc_realizo) && (
-                  <MenuItem value={form.fc_realizo}>{form.fc_realizo}</MenuItem>
+                {form.realizado_por && !empleados.some((e) => e.nombre_completo === form.realizado_por) && (
+                  <MenuItem value={form.realizado_por}>{form.realizado_por}</MenuItem>
                 )}
               </TextField>
             </Grid>
             <Grid size={12}>
               <TextField
                 label="Observaciones"
-                name="fc_observaciones"
+                name="observaciones"
                 multiline
                 rows={2}
                 fullWidth
-                value={form.fc_observaciones}
+                value={form.observaciones}
                 onChange={handleChange}
-                error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/${MAX_FC_OBSERVACIONES}`}
-                inputProps={{ maxLength: MAX_FC_OBSERVACIONES }}
+                error={!!errors.observaciones}
+                helperText={errors.observaciones || `${form.observaciones.length}/${MAX_OBSERVACIONES}`}
+                inputProps={{ maxLength: MAX_OBSERVACIONES }}
               />
             </Grid>
           </Grid>
@@ -271,7 +271,7 @@ function ControlLimpiezaContent() {
         grupos={gruposUbicacion}
         renderTabla={renderTablaControlLimpieza}
         buscar
-        searchKeys={["fc_tipo_instalacion", "fc_realizo", "fc_observaciones"]}
+        searchKeys={["tipo_instalacion", "realizado_por", "observaciones"]}
         placeholderBusqueda="Buscar tipo, responsable u observaciones"
         exportar={{
           columnas,

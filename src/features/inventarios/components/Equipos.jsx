@@ -49,17 +49,17 @@ function EquiposContent() {
   } = useUnidadesNegocioOptions();
 
   const [form, setForm] = useState({
-    fc_nombre: "",
-    fc_marca: "",
-    fc_modelo: "",
-    fc_tipo: "",
-    fd_fecha_compra: "",
-    fn_costo: "",
-    fc_estado: "Operativo",
-    fc_ubicacion: "",
-    fc_responsable: "",
-    fd_proximo_mantenimiento: "",
-    fc_notas: "",
+    nombre: "",
+    marca: "",
+    modelo: "",
+    tipo: "",
+    fecha_compra: "",
+    costo: "",
+    estado: "Operativo",
+    ubicacion: "",
+    responsable: "",
+    proximo_mantenimiento: "",
+    notas: "",
   });
 
   const [data, setData] = useState([]);
@@ -70,21 +70,21 @@ function EquiposContent() {
   const showSnackbar = useSnackbar();
 
   const [nuevoMantenimiento, setNuevoMantenimiento] = useState({
-    fd_fecha: "",
-    fc_tipo: "Preventivo",
-    fc_responsable: "",
-    fc_descripcion: "",
-    fn_costo: "",
-    fc_estado_post: "",
-    fd_proximo_mantenimiento: "",
+    fecha: "",
+    tipo: "Preventivo",
+    responsable: "",
+    descripcion: "",
+    costo: "",
+    estado_post: "",
+    proximo_mantenimiento: "",
   });
 
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
   const requiredFields = [
-    "fc_nombre", "fc_marca", "fc_modelo", "fc_tipo",
-    "fd_fecha_compra", "fn_costo", "fc_estado", "fc_ubicacion",
-    "fc_responsable", "fd_proximo_mantenimiento", "fc_notas",
+    "nombre", "marca", "modelo", "tipo",
+    "fecha_compra", "costo", "estado", "ubicacion",
+    "responsable", "proximo_mantenimiento", "notas",
   ];
 
   const {
@@ -94,8 +94,8 @@ function EquiposContent() {
     clearErrors: clearMantErrors,
   } = useFormValidation();
   const mantRequiredFields = [
-    "fd_fecha", "fc_tipo", "fc_responsable", "fc_descripcion",
-    "fn_costo", "fc_estado_post", "fd_proximo_mantenimiento",
+    "fecha", "tipo", "responsable", "descripcion",
+    "costo", "estado_post", "proximo_mantenimiento",
   ];
 
   const handleChange = (e) => {
@@ -104,7 +104,7 @@ function EquiposContent() {
   };
 
   const ubicacionEnCatalogo = ubicacionesGenericas.some(
-    (op) => op.value === form.fc_ubicacion
+    (op) => op.value === form.ubicacion
   );
 
   //  Cargar equipos
@@ -140,7 +140,7 @@ function EquiposContent() {
         await updateEquipo(editId, form);
         showSnackbar(" Equipo actualizado correctamente", "success");
       } else {
-        await createEquipo({ ...form, fi_usuario_id: usuario_id });
+        await createEquipo({ ...form, usuario_id });
         showSnackbar(" Equipo registrado correctamente", "success");
       }
       limpiar();
@@ -152,19 +152,19 @@ function EquiposContent() {
 
   const editar = (row) => {
     clearErrors();
-    setEditId(row.fi_equipo_id);
+    setEditId(row.equipo_id);
     setForm({
-      fc_nombre: row.fc_nombre,
-      fc_marca: row.fc_marca,
-      fc_modelo: row.fc_modelo,
-      fc_tipo: row.fc_tipo,
-      fd_fecha_compra: row.fd_fecha_compra?.split("T")[0],
-      fn_costo: row.fn_costo,
-      fc_estado: row.fc_estado,
-      fc_ubicacion: row.fc_ubicacion,
-      fc_responsable: row.fc_responsable,
-      fd_proximo_mantenimiento: row.fd_proximo_mantenimiento?.split("T")[0],
-      fc_notas: row.fc_notas,
+      nombre: row.nombre,
+      marca: row.marca,
+      modelo: row.modelo,
+      tipo: row.tipo,
+      fecha_compra: row.fecha_compra?.split("T")[0],
+      costo: row.costo,
+      estado: row.estado,
+      ubicacion: row.ubicacion,
+      responsable: row.responsable,
+      proximo_mantenimiento: row.proximo_mantenimiento?.split("T")[0],
+      notas: row.notas,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
@@ -172,17 +172,17 @@ function EquiposContent() {
 
   const limpiar = () => {
     setForm({
-      fc_nombre: "",
-      fc_marca: "",
-      fc_modelo: "",
-      fc_tipo: "",
-      fd_fecha_compra: "",
-      fn_costo: "",
-      fc_estado: "Operativo",
-      fc_ubicacion: "",
-      fc_responsable: "",
-      fd_proximo_mantenimiento: "",
-      fc_notas: "",
+      nombre: "",
+      marca: "",
+      modelo: "",
+      tipo: "",
+      fecha_compra: "",
+      costo: "",
+      estado: "Operativo",
+      ubicacion: "",
+      responsable: "",
+      proximo_mantenimiento: "",
+      notas: "",
     });
     setEditId(null);
     clearErrors();
@@ -207,13 +207,13 @@ function EquiposContent() {
       showSnackbar(" Mantenimiento registrado correctamente", "success");
       clearMantErrors();
       setNuevoMantenimiento({
-        fd_fecha: "",
-        fc_tipo: "Preventivo",
-        fc_responsable: "",
-        fc_descripcion: "",
-        fn_costo: "",
-        fc_estado_post: "",
-        fd_proximo_mantenimiento: "",
+        fecha: "",
+        tipo: "Preventivo",
+        responsable: "",
+        descripcion: "",
+        costo: "",
+        estado_post: "",
+        proximo_mantenimiento: "",
       });
     } catch {
       showSnackbar(" Error al guardar mantenimiento", "error");
@@ -254,13 +254,13 @@ function EquiposContent() {
     ];
 
     const filas = data.map((r) => [
-      r.fc_nombre,
-      r.fc_tipo,
-      r.fc_estado,
-      r.fc_responsable,
-      r.fc_ubicacion,
-      formatPrecio(r.fn_costo),
-      formatFecha(r.fd_proximo_mantenimiento),
+      r.nombre,
+      r.tipo,
+      r.estado,
+      r.responsable,
+      r.ubicacion,
+      formatPrecio(r.costo),
+      formatFecha(r.proximo_mantenimiento),
     ]);
 
     autoTable(doc, {
@@ -290,82 +290,82 @@ function EquiposContent() {
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Nombre"
-                name="fc_nombre"
-                value={form.fc_nombre}
+                name="nombre"
+                value={form.nombre}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_nombre}
-                helperText={errors.fc_nombre}
+                error={!!errors.nombre}
+                helperText={errors.nombre}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Marca"
-                name="fc_marca"
-                value={form.fc_marca}
+                name="marca"
+                value={form.marca}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_marca}
-                helperText={errors.fc_marca}
+                error={!!errors.marca}
+                helperText={errors.marca}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Modelo"
-                name="fc_modelo"
-                value={form.fc_modelo}
+                name="modelo"
+                value={form.modelo}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_modelo}
-                helperText={errors.fc_modelo}
+                error={!!errors.modelo}
+                helperText={errors.modelo}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Tipo"
-                name="fc_tipo"
-                value={form.fc_tipo}
+                name="tipo"
+                value={form.tipo}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_tipo}
-                helperText={errors.fc_tipo}
+                error={!!errors.tipo}
+                helperText={errors.tipo}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 type="date"
                 label="Fecha Compra"
-                name="fd_fecha_compra"
+                name="fecha_compra"
                 InputLabelProps={{ shrink: true }}
-                value={form.fd_fecha_compra}
+                value={form.fecha_compra}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fd_fecha_compra}
-                helperText={errors.fd_fecha_compra}
+                error={!!errors.fecha_compra}
+                helperText={errors.fecha_compra}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="Costo"
                 prefix="$" decimalScale={2}
-                name="fn_costo"
-                value={form.fn_costo}
+                name="costo"
+                value={form.costo}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_costo}
-                helperText={errors.fn_costo}
+                error={!!errors.costo}
+                helperText={errors.costo}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
                 label="Estado"
-                name="fc_estado"
-                value={form.fc_estado}
+                name="estado"
+                value={form.estado}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_estado}
-                helperText={errors.fc_estado}
+                error={!!errors.estado}
+                helperText={errors.estado}
               >
                 <MenuItem value="Operativo">Operativo</MenuItem>
                 <MenuItem value="En mantenimiento">En mantenimiento</MenuItem>
@@ -376,14 +376,14 @@ function EquiposContent() {
               <TextField
                 select
                 label="Ubicación"
-                name="fc_ubicacion"
-                value={form.fc_ubicacion}
+                name="ubicacion"
+                value={form.ubicacion}
                 onChange={handleChange}
                 fullWidth
                 disabled={ubicacionesLoading}
-                error={!!errors.fc_ubicacion}
+                error={!!errors.ubicacion}
                 helperText={
-                  errors.fc_ubicacion ||
+                  errors.ubicacion ||
                   (ubicacionesError ? "Error al cargar ubicaciones" : "")
                 }
               >
@@ -393,8 +393,8 @@ function EquiposContent() {
                     {op.label}
                   </MenuItem>
                 ))}
-                {form.fc_ubicacion && !ubicacionEnCatalogo && (
-                  <MenuItem value={form.fc_ubicacion}>{form.fc_ubicacion}</MenuItem>
+                {form.ubicacion && !ubicacionEnCatalogo && (
+                  <MenuItem value={form.ubicacion}>{form.ubicacion}</MenuItem>
                 )}
               </TextField>
             </Grid>
@@ -402,21 +402,21 @@ function EquiposContent() {
               <TextField
                 select
                 label="Responsable"
-                name="fc_responsable"
-                value={form.fc_responsable}
+                name="responsable"
+                value={form.responsable}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_responsable}
-                helperText={errors.fc_responsable}
+                error={!!errors.responsable}
+                helperText={errors.responsable}
               >
                 <MenuItem value="">Selecciona un empleado</MenuItem>
                 {empleados.map((emp) => (
-                  <MenuItem key={emp.fi_empleado_id} value={emp.fc_nombre_completo}>
-                    {emp.fc_nombre_completo}
+                  <MenuItem key={emp.empleado_id} value={emp.nombre_completo}>
+                    {emp.nombre_completo}
                   </MenuItem>
                 ))}
-                {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
-                  <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
+                {form.responsable && !empleados.some((e) => e.nombre_completo === form.responsable) && (
+                  <MenuItem value={form.responsable}>{form.responsable}</MenuItem>
                 )}
               </TextField>
             </Grid>
@@ -424,26 +424,26 @@ function EquiposContent() {
               <TextField
                 type="date"
                 label="Próximo Mantenimiento"
-                name="fd_proximo_mantenimiento"
+                name="proximo_mantenimiento"
                 InputLabelProps={{ shrink: true }}
-                value={form.fd_proximo_mantenimiento}
+                value={form.proximo_mantenimiento}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fd_proximo_mantenimiento}
-                helperText={errors.fd_proximo_mantenimiento}
+                error={!!errors.proximo_mantenimiento}
+                helperText={errors.proximo_mantenimiento}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Notas"
-                name="fc_notas"
-                value={form.fc_notas}
+                name="notas"
+                value={form.notas}
                 onChange={handleChange}
                 fullWidth
                 multiline
                 rows={2}
-                error={!!errors.fc_notas}
-                helperText={errors.fc_notas}
+                error={!!errors.notas}
+                helperText={errors.notas}
               />
             </Grid>
           </Grid>
@@ -489,16 +489,16 @@ function EquiposContent() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {ordenarYNumerar(data, ["fi_equipo_id"]).map((row) => (
-              <TableRow key={row.fi_equipo_id}>
+            {ordenarYNumerar(data, ["equipo_id"]).map((row) => (
+              <TableRow key={row.equipo_id}>
                 <TableCell>{row._num}</TableCell>
-                <TableCell>{row.fc_nombre}</TableCell>
-                <TableCell>{row.fc_tipo}</TableCell>
-                <TableCell>{row.fc_estado}</TableCell>
-                <TableCell>{row.fc_responsable}</TableCell>
-                <TableCell>{row.fc_ubicacion}</TableCell>
+                <TableCell>{row.nombre}</TableCell>
+                <TableCell>{row.tipo}</TableCell>
+                <TableCell>{row.estado}</TableCell>
+                <TableCell>{row.responsable}</TableCell>
+                <TableCell>{row.ubicacion}</TableCell>
                 <TableCell>
-                  {formatFecha(row.fd_proximo_mantenimiento)}
+                  {formatFecha(row.proximo_mantenimiento)}
                 </TableCell>
                 <TableCell>
                   <Button
@@ -514,7 +514,7 @@ function EquiposContent() {
                     variant="outlined"
                     color="info"
                     size="small"
-                    onClick={() => abrirMantenimientos(row.fi_equipo_id)}
+                    onClick={() => abrirMantenimientos(row.equipo_id)}
                   >
                     <Build />
                   </Button>
@@ -539,37 +539,37 @@ function EquiposContent() {
               <TextField
                 type="date"
                 label="Fecha"
-                name="fd_fecha"
+                name="fecha"
                 InputLabelProps={{ shrink: true }}
-                value={nuevoMantenimiento.fd_fecha}
+                value={nuevoMantenimiento.fecha}
                 onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
-                    fd_fecha: e.target.value,
+                    fecha: e.target.value,
                   });
-                  clearMantFieldError("fd_fecha");
+                  clearMantFieldError("fecha");
                 }}
                 fullWidth
-                error={!!mantErrors.fd_fecha}
-                helperText={mantErrors.fd_fecha}
+                error={!!mantErrors.fecha}
+                helperText={mantErrors.fecha}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
                 label="Tipo"
-                name="fc_tipo"
-                value={nuevoMantenimiento.fc_tipo}
+                name="tipo"
+                value={nuevoMantenimiento.tipo}
                 onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
-                    fc_tipo: e.target.value,
+                    tipo: e.target.value,
                   });
-                  clearMantFieldError("fc_tipo");
+                  clearMantFieldError("tipo");
                 }}
                 fullWidth
-                error={!!mantErrors.fc_tipo}
-                helperText={mantErrors.fc_tipo}
+                error={!!mantErrors.tipo}
+                helperText={mantErrors.tipo}
               >
                 <MenuItem value="Preventivo">Preventivo</MenuItem>
                 <MenuItem value="Correctivo">Correctivo</MenuItem>
@@ -579,101 +579,101 @@ function EquiposContent() {
               <TextField
                 select
                 label="Responsable"
-                name="fc_responsable"
-                value={nuevoMantenimiento.fc_responsable}
+                name="responsable"
+                value={nuevoMantenimiento.responsable}
                 onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
-                    fc_responsable: e.target.value,
+                    responsable: e.target.value,
                   });
-                  clearMantFieldError("fc_responsable");
+                  clearMantFieldError("responsable");
                 }}
                 fullWidth
-                error={!!mantErrors.fc_responsable}
-                helperText={mantErrors.fc_responsable}
+                error={!!mantErrors.responsable}
+                helperText={mantErrors.responsable}
               >
                 <MenuItem value="">Selecciona un empleado</MenuItem>
                 {empleados.map((emp) => (
-                  <MenuItem key={emp.fi_empleado_id} value={emp.fc_nombre_completo}>
-                    {emp.fc_nombre_completo}
+                  <MenuItem key={emp.empleado_id} value={emp.nombre_completo}>
+                    {emp.nombre_completo}
                   </MenuItem>
                 ))}
-                {nuevoMantenimiento.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === nuevoMantenimiento.fc_responsable) && (
-                  <MenuItem value={nuevoMantenimiento.fc_responsable}>{nuevoMantenimiento.fc_responsable}</MenuItem>
+                {nuevoMantenimiento.responsable && !empleados.some((e) => e.nombre_completo === nuevoMantenimiento.responsable) && (
+                  <MenuItem value={nuevoMantenimiento.responsable}>{nuevoMantenimiento.responsable}</MenuItem>
                 )}
               </TextField>
             </Grid>
             <Grid size={12}>
               <TextField
                 label="Descripción"
-                name="fc_descripcion"
-                value={nuevoMantenimiento.fc_descripcion}
+                name="descripcion"
+                value={nuevoMantenimiento.descripcion}
                 onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
-                    fc_descripcion: e.target.value,
+                    descripcion: e.target.value,
                   });
-                  clearMantFieldError("fc_descripcion");
+                  clearMantFieldError("descripcion");
                 }}
                 multiline
                 rows={2}
                 fullWidth
-                error={!!mantErrors.fc_descripcion}
-                helperText={mantErrors.fc_descripcion}
+                error={!!mantErrors.descripcion}
+                helperText={mantErrors.descripcion}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="Costo"
                 prefix="$" decimalScale={2}
-                name="fn_costo"
-                value={nuevoMantenimiento.fn_costo}
+                name="costo"
+                value={nuevoMantenimiento.costo}
                 onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
-                    fn_costo: e.target.value,
+                    costo: e.target.value,
                   });
-                  clearMantFieldError("fn_costo");
+                  clearMantFieldError("costo");
                 }}
                 fullWidth
-                error={!!mantErrors.fn_costo}
-                helperText={mantErrors.fn_costo}
+                error={!!mantErrors.costo}
+                helperText={mantErrors.costo}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Estado Posterior"
-                name="fc_estado_post"
-                value={nuevoMantenimiento.fc_estado_post}
+                name="estado_post"
+                value={nuevoMantenimiento.estado_post}
                 onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
-                    fc_estado_post: e.target.value,
+                    estado_post: e.target.value,
                   });
-                  clearMantFieldError("fc_estado_post");
+                  clearMantFieldError("estado_post");
                 }}
                 fullWidth
-                error={!!mantErrors.fc_estado_post}
-                helperText={mantErrors.fc_estado_post}
+                error={!!mantErrors.estado_post}
+                helperText={mantErrors.estado_post}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 type="date"
                 label="Próximo Mantenimiento"
-                name="fd_proximo_mantenimiento"
+                name="proximo_mantenimiento"
                 InputLabelProps={{ shrink: true }}
-                value={nuevoMantenimiento.fd_proximo_mantenimiento}
+                value={nuevoMantenimiento.proximo_mantenimiento}
                 onChange={(e) => {
                   setNuevoMantenimiento({
                     ...nuevoMantenimiento,
-                    fd_proximo_mantenimiento: e.target.value,
+                    proximo_mantenimiento: e.target.value,
                   });
-                  clearMantFieldError("fd_proximo_mantenimiento");
+                  clearMantFieldError("proximo_mantenimiento");
                 }}
                 fullWidth
-                error={!!mantErrors.fd_proximo_mantenimiento}
-                helperText={mantErrors.fd_proximo_mantenimiento}
+                error={!!mantErrors.proximo_mantenimiento}
+                helperText={mantErrors.proximo_mantenimiento}
               />
             </Grid>
           </Grid>
@@ -699,15 +699,15 @@ function EquiposContent() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {ordenarYNumerar(mantenimientos, ["fi_mantenimiento_id"]).map((m) => (
-                <TableRow key={m.fi_mantenimiento_id}>
+              {ordenarYNumerar(mantenimientos, ["mantenimiento_id"]).map((m) => (
+                <TableRow key={m.mantenimiento_id}>
                   <TableCell>{m._num}</TableCell>
-                  <TableCell>{formatFecha(m.fd_fecha)}</TableCell>
-                  <TableCell>{m.fc_tipo}</TableCell>
-                  <TableCell>{m.fc_responsable}</TableCell>
-                  <TableCell>{m.fc_descripcion}</TableCell>
-                  <TableCell>{formatPrecio(m.fn_costo)}</TableCell>
-                  <TableCell>{m.fc_estado_post}</TableCell>
+                  <TableCell>{formatFecha(m.fecha)}</TableCell>
+                  <TableCell>{m.tipo}</TableCell>
+                  <TableCell>{m.responsable}</TableCell>
+                  <TableCell>{m.descripcion}</TableCell>
+                  <TableCell>{formatPrecio(m.costo)}</TableCell>
+                  <TableCell>{m.estado_post}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

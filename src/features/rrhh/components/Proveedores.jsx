@@ -40,40 +40,40 @@ import useSnackbar from "@shared/hooks/useSnackbar";
 import { ESTADOS_MX } from "@shared/constants/estadosMx";
 
 const EMPTY_FORM = {
-  fi_proveedor_id: null,
-  fc_razon_social: "",
-  fc_rfc: "",
-  fc_producto_servicio: "",
-  fi_unidad_negocio_id: "",
-  fc_nombre_contacto: "",
-  fc_telefono: "",
-  fc_correo: "",
-  fc_localidad: "",
-  fc_estado: "",
+  proveedor_id: null,
+  nombre: "",
+  rfc: "",
+  producto_servicio: "",
+  unidad_negocio_id: "",
+  nombre_contacto: "",
+  telefono: "",
+  email: "",
+  localidad: "",
+  estado: "",
 };
 
 const REQUIRED_FIELDS = [
-  "fc_razon_social",
-  "fc_rfc",
-  "fc_producto_servicio",
-  "fi_unidad_negocio_id",
-  "fc_nombre_contacto",
-  "fc_telefono",
-  "fc_correo",
-  "fc_localidad",
-  "fc_estado",
+  "nombre",
+  "rfc",
+  "producto_servicio",
+  "unidad_negocio_id",
+  "nombre_contacto",
+  "telefono",
+  "email",
+  "localidad",
+  "estado",
 ];
 
 const CAMPOS_FORM = [
-  { label: "Razón Social", name: "fc_razon_social", size: 12 },
-  { label: "RFC", name: "fc_rfc", maxLength: 20 },
-  { label: "Producto/Servicio", name: "fc_producto_servicio", size: 12 },
-  { label: "UdN", name: "fi_unidad_negocio_id", select: "udn" },
-  { label: "Nombre del contacto", name: "fc_nombre_contacto" },
-  { label: "Teléfono", name: "fc_telefono", inputMode: "numeric", maxLength: 10 },
-  { label: "Correo Electrónico", name: "fc_correo", type: "email" },
-  { label: "Localidad", name: "fc_localidad" },
-  { label: "Estado", name: "fc_estado", select: "estado" },
+  { label: "Razón Social", name: "nombre", size: 12 },
+  { label: "RFC", name: "rfc", maxLength: 20 },
+  { label: "Producto/Servicio", name: "producto_servicio", size: 12 },
+  { label: "UdN", name: "unidad_negocio_id", select: "udn" },
+  { label: "Nombre del contacto", name: "nombre_contacto" },
+  { label: "Teléfono", name: "telefono", inputMode: "numeric", maxLength: 10 },
+  { label: "Correo Electrónico", name: "email", type: "email" },
+  { label: "Localidad", name: "localidad" },
+  { label: "Estado", name: "estado", select: "estado" },
 ];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -126,16 +126,16 @@ export default function Proveedores() {
     if (!q) return proveedores;
     return proveedores.filter((p) =>
       [
-        p.fi_proveedor_id,
-        p.fc_razon_social,
-        p.fc_rfc,
-        p.fc_producto_servicio,
+        p.proveedor_id,
+        p.nombre,
+        p.rfc,
+        p.producto_servicio,
         p.unidad_negocio_nombre,
-        p.fc_nombre_contacto,
-        p.fc_telefono,
-        p.fc_correo,
-        p.fc_localidad,
-        p.fc_estado,
+        p.nombre_contacto,
+        p.telefono,
+        p.email,
+        p.localidad,
+        p.estado,
       ].some((v) => String(v ?? "").toLowerCase().includes(q))
     );
   }, [proveedores, busqueda]);
@@ -149,30 +149,30 @@ export default function Proveedores() {
   const editar = (p) => {
     clearErrors();
     setFormData({
-      fi_proveedor_id: p.fi_proveedor_id,
-      fc_razon_social: p.fc_razon_social || "",
-      fc_rfc: p.fc_rfc || "",
-      fc_producto_servicio: p.fc_producto_servicio || "",
-      fi_unidad_negocio_id: p.fi_unidad_negocio_id ? String(p.fi_unidad_negocio_id) : "",
-      fc_nombre_contacto: p.fc_nombre_contacto || "",
-      fc_telefono: p.fc_telefono || "",
-      fc_correo: p.fc_correo || "",
-      fc_localidad: p.fc_localidad || "",
-      fc_estado: p.fc_estado || "",
+      proveedor_id: p.proveedor_id,
+      nombre: p.nombre || "",
+      rfc: p.rfc || "",
+      producto_servicio: p.producto_servicio || "",
+      unidad_negocio_id: p.unidad_negocio_id ? String(p.unidad_negocio_id) : "",
+      nombre_contacto: p.nombre_contacto || "",
+      telefono: p.telefono || "",
+      email: p.email || "",
+      localidad: p.localidad || "",
+      estado: p.estado || "",
     });
     setOpen(true);
   };
 
   const validarFormato = () => {
-    if (formData.fc_rfc.length > 20) {
+    if (formData.rfc.length > 20) {
       showSnackbar("El RFC debe tener máximo 20 caracteres.", "error");
       return false;
     }
-    if (!/^[0-9]{1,10}$/.test(formData.fc_telefono)) {
+    if (!/^[0-9]{1,10}$/.test(formData.telefono)) {
       showSnackbar("El teléfono debe contener solo números y máximo 10 dígitos.", "error");
       return false;
     }
-    if (!EMAIL_RE.test(formData.fc_correo)) {
+    if (!EMAIL_RE.test(formData.email)) {
       showSnackbar("El correo no tiene un formato válido.", "error");
       return false;
     }
@@ -180,15 +180,15 @@ export default function Proveedores() {
   };
 
   const construirPayload = () => ({
-    fc_razon_social: formData.fc_razon_social.trim(),
-    fc_rfc: formData.fc_rfc.trim(),
-    fc_producto_servicio: formData.fc_producto_servicio.trim(),
-    fi_unidad_negocio_id: Number(formData.fi_unidad_negocio_id),
-    fc_nombre_contacto: formData.fc_nombre_contacto.trim(),
-    fc_telefono: formData.fc_telefono,
-    fc_correo: formData.fc_correo.trim(),
-    fc_localidad: formData.fc_localidad.trim(),
-    fc_estado: formData.fc_estado,
+    nombre: formData.nombre.trim(),
+    rfc: formData.rfc.trim(),
+    producto_servicio: formData.producto_servicio.trim(),
+    unidad_negocio_id: Number(formData.unidad_negocio_id),
+    nombre_contacto: formData.nombre_contacto.trim(),
+    telefono: formData.telefono,
+    email: formData.email.trim(),
+    localidad: formData.localidad.trim(),
+    estado: formData.estado,
   });
 
   const guardar = async () => {
@@ -196,8 +196,8 @@ export default function Proveedores() {
 
     try {
       const payload = construirPayload();
-      if (formData.fi_proveedor_id) {
-        await updateProveedor(formData.fi_proveedor_id, payload);
+      if (formData.proveedor_id) {
+        await updateProveedor(formData.proveedor_id, payload);
       } else {
         await createProveedor(payload);
       }
@@ -213,8 +213,8 @@ export default function Proveedores() {
     const activo = p.activo !== false;
     if (!await confirm(activo ? "¿Desactivar proveedor?" : "¿Activar proveedor?")) return;
     try {
-      if (activo) await deactivateProveedor(p.fi_proveedor_id);
-      else await activateProveedor(p.fi_proveedor_id);
+      if (activo) await deactivateProveedor(p.proveedor_id);
+      else await activateProveedor(p.proveedor_id);
       obtenerDatos();
     } catch (err) {
       showSnackbar(err?.response?.data?.error || "Error al cambiar el estado del proveedor", "error");
@@ -247,16 +247,16 @@ export default function Proveedores() {
     ];
 
     const filas = proveedoresFiltrados.map((p) => [
-      p.fi_proveedor_id,
-      p.fc_razon_social || "-",
-      p.fc_rfc || "-",
-      p.fc_producto_servicio || "-",
+      p.proveedor_id,
+      p.nombre || "-",
+      p.rfc || "-",
+      p.producto_servicio || "-",
       p.unidad_negocio_nombre || "-",
-      p.fc_nombre_contacto || "-",
-      p.fc_telefono || "-",
-      p.fc_correo || "-",
-      p.fc_localidad || "-",
-      p.fc_estado || "-",
+      p.nombre_contacto || "-",
+      p.telefono || "-",
+      p.email || "-",
+      p.localidad || "-",
+      p.estado || "-",
     ]);
 
     autoTable(doc, {
@@ -279,7 +279,7 @@ export default function Proveedores() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const nextValue = name === "fc_telefono" ? soloDigitos(value) : value;
+    const nextValue = name === "telefono" ? soloDigitos(value) : value;
     setFormData((prev) => ({ ...prev, [name]: nextValue }));
     clearFieldError(name);
   };
@@ -295,8 +295,8 @@ export default function Proveedores() {
 
     if (campo.select === "udn") {
       return unidadesNegocio.map((unidad) => (
-        <MenuItem key={unidad.fi_unidad_negocio_id} value={String(unidad.fi_unidad_negocio_id)}>
-          {unidad.fc_nombre}
+        <MenuItem key={unidad.unidad_negocio_id} value={String(unidad.unidad_negocio_id)}>
+          {unidad.nombre}
         </MenuItem>
       ));
     }
@@ -401,9 +401,9 @@ export default function Proveedores() {
           </TableHead>
 
           <TableBody>
-            {ordenarYNumerar(proveedoresFiltrados, ["fi_proveedor_id"]).map((p, i) => (
+            {ordenarYNumerar(proveedoresFiltrados, ["proveedor_id", "id"]).map((p, i) => (
               <TableRow
-                key={p.fi_proveedor_id}
+                key={p.proveedor_id}
                 sx={{
                   backgroundColor: i % 2 === 0 ? "#f9f9f9" : "#ffffff",
                   opacity: p.activo !== false ? 1 : 0.5,
@@ -411,15 +411,15 @@ export default function Proveedores() {
                 }}
               >
                 <TableCell align="center">{p._num}</TableCell>
-                <TableCell>{p.fc_razon_social || "-"}</TableCell>
-                <TableCell>{p.fc_rfc || "-"}</TableCell>
-                <TableCell>{p.fc_producto_servicio || "-"}</TableCell>
+                <TableCell>{p.nombre || "-"}</TableCell>
+                <TableCell>{p.rfc || "-"}</TableCell>
+                <TableCell>{p.producto_servicio || "-"}</TableCell>
                 <TableCell>{p.unidad_negocio_nombre || "-"}</TableCell>
-                <TableCell>{p.fc_nombre_contacto || "-"}</TableCell>
-                <TableCell>{p.fc_telefono || "-"}</TableCell>
-                <TableCell>{p.fc_correo || "-"}</TableCell>
-                <TableCell>{p.fc_localidad || "-"}</TableCell>
-                <TableCell>{p.fc_estado || "-"}</TableCell>
+                <TableCell>{p.nombre_contacto || "-"}</TableCell>
+                <TableCell>{p.telefono || "-"}</TableCell>
+                <TableCell>{p.email || "-"}</TableCell>
+                <TableCell>{p.localidad || "-"}</TableCell>
+                <TableCell>{p.estado || "-"}</TableCell>
                 <TableCell align="center">
                   <Button
                     size="small"
@@ -448,7 +448,7 @@ export default function Proveedores() {
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontWeight: "bold", color: "#0d47a1" }}>
-          {formData.fi_proveedor_id ? "Editar Proveedor" : "Nuevo Proveedor"}
+          {formData.proveedor_id ? "Editar Proveedor" : "Nuevo Proveedor"}
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>

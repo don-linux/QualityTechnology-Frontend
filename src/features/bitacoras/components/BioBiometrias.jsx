@@ -28,7 +28,7 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import ListadoTabla from "@shared/components/ListadoTabla";
 
-const MAX_FC_OBSERVACIONES = 500;
+const MAX_OBSERVACIONES = 500;
 
 const tipoLabel = (t) => {
   if (!t) return "—";
@@ -53,23 +53,23 @@ export default function BioBiometrias() {
   const requiredFields = [
     "ubicacion",
     "pileta_id",
-    "fd_fecha",
-    "fn_peso_total_gramos",
-    "fn_organismos_muestreados",
-    "fc_encargado",
-    "fc_observaciones",
+    "fecha",
+    "peso_total_gramos",
+    "organismos_muestreados",
+    "encargado",
+    "observaciones",
   ];
 
   const [form, setForm] = useState({
     ubicacion: "",
     pileta_id: "",
-    fd_fecha: "",
-    fn_peso_total_gramos: "",
-    fn_organismos_muestreados: "",
-    fn_peso_promedio: "",
-    fc_observaciones: "",
-    fc_encargado: "",
-    fi_usuario_id: usuario_id,
+    fecha: "",
+    peso_total_gramos: "",
+    organismos_muestreados: "",
+    peso_promedio: "",
+    observaciones: "",
+    encargado: "",
+    usuario_id: usuario_id,
   });
 
   /* -----------------------------
@@ -134,12 +134,12 @@ export default function BioBiometrias() {
     const { name, value } = e.target;
     clearFieldError(name);
 
-    if (name === "fn_peso_total_gramos" || name === "fn_organismos_muestreados") {
-      const p = name === "fn_peso_total_gramos" ? value : form.fn_peso_total_gramos;
-      const o = name === "fn_organismos_muestreados" ? value : form.fn_organismos_muestreados;
+    if (name === "peso_total_gramos" || name === "organismos_muestreados") {
+      const p = name === "peso_total_gramos" ? value : form.peso_total_gramos;
+      const o = name === "organismos_muestreados" ? value : form.organismos_muestreados;
       const prom = p > 0 && o > 0 ? (parseFloat(p) / parseFloat(o)).toFixed(2) : "";
 
-      setForm({ ...form, [name]: value, fn_peso_promedio: prom });
+      setForm({ ...form, [name]: value, peso_promedio: prom });
       return;
     }
 
@@ -158,11 +158,11 @@ export default function BioBiometrias() {
     if (!validate(form, requiredFields)) return;
     try {
       const body = {
-        fd_fecha: form.fd_fecha,
-        fn_peso_total_gramos: form.fn_peso_total_gramos,
-        fn_organismos_muestreados: form.fn_organismos_muestreados,
-        fc_encargado: form.fc_encargado,
-        fc_observaciones: form.fc_observaciones,
+        fecha: form.fecha,
+        peso_total_gramos: form.peso_total_gramos,
+        organismos_muestreados: form.organismos_muestreados,
+        encargado: form.encargado,
+        observaciones: form.observaciones,
         pileta_id: Number(form.pileta_id),
       };
 
@@ -187,18 +187,18 @@ export default function BioBiometrias() {
   ------------------------------*/
   const editar = (row) => {
     clearErrors();
-    setEditId(row.fi_id);
+    setEditId(row.id);
 
     setForm({
       ubicacion: row.ubicacion || "",
       pileta_id: row.pileta_id != null ? String(row.pileta_id) : "",
-      fd_fecha: row.fd_fecha?.split("T")[0] || "",
-      fn_peso_total_gramos: row.fn_peso_total_gramos ?? "",
-      fn_organismos_muestreados: row.fn_organismos_muestreados ?? "",
-      fn_peso_promedio: row.fn_peso_promedio ?? "",
-      fc_observaciones: row.fc_observaciones ?? "",
-      fc_encargado: row.fc_encargado ?? "",
-      fi_usuario_id: usuario_id,
+      fecha: row.fecha?.split("T")[0] || "",
+      peso_total_gramos: row.peso_total_gramos ?? "",
+      organismos_muestreados: row.organismos_muestreados ?? "",
+      peso_promedio: row.peso_promedio ?? "",
+      observaciones: row.observaciones ?? "",
+      encargado: row.encargado ?? "",
+      usuario_id: usuario_id,
     });
     abrirFormulario();
   };
@@ -212,13 +212,13 @@ export default function BioBiometrias() {
     setForm((prev) => ({
       ubicacion: prev.ubicacion,
       pileta_id: "",
-      fd_fecha: "",
-      fn_peso_total_gramos: "",
-      fn_organismos_muestreados: "",
-      fn_peso_promedio: "",
-      fc_observaciones: "",
-      fc_encargado: "",
-      fi_usuario_id: usuario_id,
+      fecha: "",
+      peso_total_gramos: "",
+      organismos_muestreados: "",
+      peso_promedio: "",
+      observaciones: "",
+      encargado: "",
+      usuario_id: usuario_id,
     }));
     cerrarFormulario();
   };
@@ -232,14 +232,14 @@ export default function BioBiometrias() {
   };
 
   const columnas = [
-    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
+    { header: "Fecha", value: (r) => formatFecha(r.fecha) },
     { header: "Pileta", value: (r) => r.nombre_pileta || "", fallback: "—" },
-    { header: "Proceso (obs.)", value: (r) => r.fc_observacion_proceso || "", fallback: "—" },
-    { header: "Peso Total", value: (r) => formatNum(r.fn_peso_total_gramos) },
-    { header: "Organismos", value: (r) => r.fn_organismos_muestreados ?? "", fallback: "—" },
-    { header: "Peso Promedio", value: (r) => formatNum(r.fn_peso_promedio) },
-    { header: "Encargado", value: (r) => r.fc_encargado || "", truncate: true, maxWidth: 160, fallback: "—" },
-    { header: "Observaciones", value: (r) => r.fc_observaciones || "", truncate: true, maxWidth: 200, fallback: "—" },
+    { header: "Proceso (obs.)", value: (r) => r.observacion_proceso || "", fallback: "—" },
+    { header: "Peso Total", value: (r) => formatNum(r.peso_total_gramos) },
+    { header: "Organismos", value: (r) => r.organismos_muestreados ?? "", fallback: "—" },
+    { header: "Peso Promedio", value: (r) => formatNum(r.peso_promedio) },
+    { header: "Encargado", value: (r) => r.encargado || "", truncate: true, maxWidth: 160, fallback: "—" },
+    { header: "Observaciones", value: (r) => r.observaciones || "", truncate: true, maxWidth: 200, fallback: "—" },
   ];
 
   const renderTablaBiometrias = (rows) => (
@@ -257,7 +257,7 @@ export default function BioBiometrias() {
 
   const piletaSeleccionada =
     form.pileta_id !== ""
-      ? piletas.find((p) => String(p.fi_pileta_id) === String(form.pileta_id))
+      ? piletas.find((p) => String(p.pileta_id) === String(form.pileta_id))
       : null;
 
   /* -----------------------------
@@ -317,7 +317,7 @@ export default function BioBiometrias() {
                 slotProps={{
                   select: {
                     renderValue: (val) => {
-                      const p = piletas.find((x) => String(x.fi_pileta_id) === String(val));
+                      const p = piletas.find((x) => String(x.pileta_id) === String(val));
                       if (!p) return "";
                       return `${p.nombre} · ${tipoLabel(p.tipo)} · ${p.estado}`;
                     },
@@ -326,7 +326,7 @@ export default function BioBiometrias() {
               >
                 <MenuItem value="">Seleccione</MenuItem>
                 {piletas.map((p) => (
-                  <MenuItem key={p.fi_pileta_id} value={String(p.fi_pileta_id)}>
+                  <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
                     {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
                   </MenuItem>
                 ))}
@@ -338,13 +338,13 @@ export default function BioBiometrias() {
               <TextField
                 type="date"
                 label="Fecha"
-                name="fd_fecha"
-                value={form.fd_fecha}
+                name="fecha"
+                value={form.fecha}
                 onChange={handleChange}
                 InputLabelProps={{ shrink: true }}
                 fullWidth
-                error={!!errors.fd_fecha}
-                helperText={errors.fd_fecha}
+                error={!!errors.fecha}
+                helperText={errors.fecha}
               />
             </Grid>
 
@@ -376,8 +376,8 @@ export default function BioBiometrias() {
                       variant="outlined"
                       label={`Estado: ${piletaSeleccionada.estado}`}
                     />
-                    {piletaSeleccionada.fc_granja && (
-                      <Chip size="small" variant="outlined" label={piletaSeleccionada.fc_granja} />
+                    {piletaSeleccionada.granja && (
+                      <Chip size="small" variant="outlined" label={piletaSeleccionada.granja} />
                     )}
                   </Stack>
 
@@ -386,15 +386,15 @@ export default function BioBiometrias() {
                       <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
                         {piletaSeleccionada.ultima_observacion}
                       </Typography>
-                      {(piletaSeleccionada.fc_ultima_observacion_proceso ||
-                        piletaSeleccionada.fd_ultima_observacion) && (
+                      {(piletaSeleccionada.ultima_observacion_proceso ||
+                        piletaSeleccionada.fecha_ultima_observacion) && (
                         <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
                           {[
-                            piletaSeleccionada.fc_ultima_observacion_proceso
-                              ? `proceso: ${piletaSeleccionada.fc_ultima_observacion_proceso}`
+                            piletaSeleccionada.ultima_observacion_proceso
+                              ? `proceso: ${piletaSeleccionada.ultima_observacion_proceso}`
                               : null,
-                            piletaSeleccionada.fd_ultima_observacion
-                              ? `fecha: ${formatFecha(piletaSeleccionada.fd_ultima_observacion)}`
+                            piletaSeleccionada.fecha_ultima_observacion
+                              ? `fecha: ${formatFecha(piletaSeleccionada.fecha_ultima_observacion)}`
                               : null,
                           ]
                             .filter(Boolean)
@@ -415,12 +415,12 @@ export default function BioBiometrias() {
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="Peso Total (g)"
-                name="fn_peso_total_gramos"
-                value={form.fn_peso_total_gramos}
+                name="peso_total_gramos"
+                value={form.peso_total_gramos}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_peso_total_gramos}
-                helperText={errors.fn_peso_total_gramos}
+                error={!!errors.peso_total_gramos}
+                helperText={errors.peso_total_gramos}
               />
             </Grid>
 
@@ -428,13 +428,13 @@ export default function BioBiometrias() {
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="Organismos Muestreados"
-                name="fn_organismos_muestreados"
+                name="organismos_muestreados"
                 decimalScale={0}
-                value={form.fn_organismos_muestreados}
+                value={form.organismos_muestreados}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_organismos_muestreados}
-                helperText={errors.fn_organismos_muestreados}
+                error={!!errors.organismos_muestreados}
+                helperText={errors.organismos_muestreados}
               />
             </Grid>
 
@@ -442,8 +442,8 @@ export default function BioBiometrias() {
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="Peso Promedio (g)"
-                name="fn_peso_promedio"
-                value={form.fn_peso_promedio}
+                name="peso_promedio"
+                value={form.peso_promedio}
                 slotProps={{ input: { readOnly: true } }}
                 fullWidth
                 helperText="Calculado automáticamente"
@@ -455,22 +455,22 @@ export default function BioBiometrias() {
               <TextField
                 select
                 label="Encargado"
-                name="fc_encargado"
-                value={form.fc_encargado}
+                name="encargado"
+                value={form.encargado}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_encargado}
-                helperText={errors.fc_encargado}
+                error={!!errors.encargado}
+                helperText={errors.encargado}
               >
                 <MenuItem value="">Selecciona un empleado</MenuItem>
                 {empleados.map((empleado) => (
-                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
-                    {empleado.fc_nombre_completo}
+                  <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
+                    {empleado.nombre_completo}
                   </MenuItem>
                 ))}
-                {form.fc_encargado &&
-                  !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado) && (
-                    <MenuItem value={form.fc_encargado}>{form.fc_encargado}</MenuItem>
+                {form.encargado &&
+                  !empleados.some((e) => e.nombre_completo === form.encargado) && (
+                    <MenuItem value={form.encargado}>{form.encargado}</MenuItem>
                   )}
               </TextField>
             </Grid>
@@ -479,18 +479,18 @@ export default function BioBiometrias() {
             <Grid size={12}>
               <TextField
                 label="Observaciones"
-                name="fc_observaciones"
-                value={form.fc_observaciones}
+                name="observaciones"
+                value={form.observaciones}
                 onChange={handleChange}
                 fullWidth
                 multiline
                 rows={2}
-                error={!!errors.fc_observaciones}
+                error={!!errors.observaciones}
                 helperText={
-                  errors.fc_observaciones ||
-                  `Se guarda como observación de la pileta (proceso "biometria"). ${form.fc_observaciones.length}/${MAX_FC_OBSERVACIONES}`
+                  errors.observaciones ||
+                  `Se guarda como observación de la pileta (proceso "biometria"). ${form.observaciones.length}/${MAX_OBSERVACIONES}`
                 }
-                inputProps={{ maxLength: MAX_FC_OBSERVACIONES }}
+                inputProps={{ maxLength: MAX_OBSERVACIONES }}
               />
             </Grid>
           </Grid>
@@ -513,7 +513,7 @@ export default function BioBiometrias() {
         grupos={getGroups(data)}
         renderTabla={renderTablaBiometrias}
         buscar
-        searchKeys={["nombre_pileta", "fc_observacion_proceso", "fc_encargado", "fc_observaciones"]}
+        searchKeys={["nombre_pileta", "observacion_proceso", "encargado", "observaciones"]}
         placeholderBusqueda="Buscar pileta, encargado u observación"
         exportar={{
           columnas,

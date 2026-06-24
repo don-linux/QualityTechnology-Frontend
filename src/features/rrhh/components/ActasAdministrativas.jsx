@@ -79,8 +79,8 @@ export default function ActasAdministrativas({ empleadoId }) {
     }
 
     const formData = new FormData();
-    formData.append("fc_motivo", motivo);
-    formData.append("fd_fecha", fecha);
+    formData.append("motivo", motivo);
+    formData.append("fecha", fecha);
     formData.append("archivo", archivo);
 
     try {
@@ -96,7 +96,7 @@ export default function ActasAdministrativas({ empleadoId }) {
 
   const verActa = async (acta) => {
     try {
-      const { data } = await viewActaAdministrativa(acta.fi_acta_id);
+      const { data } = await viewActaAdministrativa(acta.acta_id);
       openBlobInNewTab(data);
     } catch (e) {
       console.error(e);
@@ -106,8 +106,8 @@ export default function ActasAdministrativas({ empleadoId }) {
 
   const descargarActa = async (acta) => {
     try {
-      const { data } = await downloadActaAdministrativa(acta.fi_acta_id);
-      downloadBlob(data, acta.fc_nombre_original);
+      const { data } = await downloadActaAdministrativa(acta.acta_id);
+      downloadBlob(data, acta.nombre_original);
     } catch (e) {
       console.error(e);
       showSnackbar("Error al descargar acta administrativa", "error");
@@ -115,9 +115,9 @@ export default function ActasAdministrativas({ empleadoId }) {
   };
 
   const eliminarActa = async (acta) => {
-    if (!await confirm(`¿Eliminar el acta "${acta.fc_nombre_original}"?`)) return;
+    if (!await confirm(`¿Eliminar el acta "${acta.nombre_original}"?`)) return;
     try {
-      await removeActaAdministrativa(acta.fi_acta_id);
+      await removeActaAdministrativa(acta.acta_id);
       await cargarActas();
       showSnackbar("Acta administrativa eliminada correctamente", "success");
     } catch (e) {
@@ -167,14 +167,14 @@ export default function ActasAdministrativas({ empleadoId }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {ordenarYNumerar(actas, ["fi_acta_id", "acta_id"]).map((acta) => (
-              <TableRow key={acta.fi_acta_id}>
+            {ordenarYNumerar(actas, ["acta_id", "id"]).map((acta) => (
+              <TableRow key={acta.acta_id}>
                 <TableCell>{acta._num}</TableCell>
-                <TableCell>{acta.fd_fecha ? acta.fd_fecha.substring(0, 10) : "-"}</TableCell>
-                <TableCell>{acta.fc_motivo}</TableCell>
-                <TableCell>{acta.fc_nombre_original}</TableCell>
+                <TableCell>{acta.fecha ? acta.fecha.substring(0, 10) : "-"}</TableCell>
+                <TableCell>{acta.motivo}</TableCell>
+                <TableCell>{acta.nombre_original}</TableCell>
                 <TableCell align="center">
-                  {canPreviewFile(acta.fc_nombre_original) && (
+                  {canPreviewFile(acta.nombre_original) && (
                     <Button size="small" variant="outlined" sx={{ mr: 1 }} onClick={() => verActa(acta)}>
                       Ver
                     </Button>

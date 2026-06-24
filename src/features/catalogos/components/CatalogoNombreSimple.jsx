@@ -36,9 +36,9 @@ export default function CatalogoNombreSimple({
   updateFn,
   activateFn,
   deactivateFn,
-  getId,
-  getNombre,
-  isActivo,
+  getId = (it) => it?.[idField] ?? it?.id,
+  getNombre = (it) => it?.nombre ?? "",
+  isActivo = (it) => it?.activo ?? it?.esta_activo ?? false,
 }) {
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState({ [idField]: null, nombre: "" });
