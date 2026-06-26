@@ -33,7 +33,7 @@ import {
 } from "../services/listaEsperaService";
 import { listUnidadesNegocioActivas } from "@features/catalogos/services/unidadesNegocioService";
 import { listEmpleadosActivosClientes } from "@features/catalogos/services/clientesService";
-import { listPiletas } from "@features/inventarios/services/piletasService";
+import { listInfraestructuraFisica } from "@features/inventarios/services/infraestructuraFisicaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import FormHelperText from "@mui/material/FormHelperText";
@@ -61,19 +61,19 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 const TIPOS_VENTA_TRAZABLES = new Set(["ALEVIN", "ALEVINES", "KG", "MOJARRA_KG"]);
 
-function ventaRequierePileta(tipo) {
+function ventaRequiereInfraestructuraFisica(tipo) {
   const t = String(tipo ?? "").trim().toUpperCase();
   return TIPOS_VENTA_TRAZABLES.has(t);
 }
 
-function etapaPiletaParaTipo(tipo) {
+function etapaInfraestructuraFisicaParaTipo(tipo) {
   const t = String(tipo ?? "").trim().toUpperCase();
   if (t === "ALEVIN" || t === "ALEVINES") return "alevinaje";
   if (t === "KG" || t === "MOJARRA_KG" || t === "MOJARRA") return "engorda";
   return null;
 }
 
-function stockPileta(p) {
+function stockInfraestructuraFisica(p) {
   return Number(p?.cantidad ?? 0);
 }
 
@@ -124,14 +124,14 @@ function ListaEsperaContent() {
   const [empleados, setEmpleados] = useState([]);
   const [openCliente, setOpenCliente] = useState(false);
   const [nuevoCliente, setNuevoCliente] = useState(EMPTY_CLIENTE_RAPIDO);
-  const [piletas, setPiletas] = useState([]);
-  const [cargandoPiletas, setCargandoPiletas] = useState(false);
+  const [infraestructurasFisicas, setInfraestructurasFisicas] = useState([]);
+  const [cargandoInfraestructuraFisica, setCargandoInfraestructuraFisica] = useState(false);
 
   const emptyForm = {
     fecha_entrega: "",
     tipo_venta: "",
     granja: granjaDefault,
-    pileta_origen_id: "",
+    infraestructura_fisica_origen_id: "",
     cantidad_peces: "",
     cliente_nombre: "",
     lugar_entrega: "",
@@ -223,56 +223,56 @@ function ListaEsperaContent() {
     }
   }, [form.granja, granjaDefault]);
 
-  const cargarPiletasForm = useCallback(async (granja, tipoVenta) => {
-    const etapa = etapaPiletaParaTipo(tipoVenta);
+  const cargarInfraestructuraFisicaForm = useCallback(async (granja, tipoVenta) => {
+    const etapa = etapaInfraestructuraFisicaParaTipo(tipoVenta);
     if (!etapa || !granja) {
-      setPiletas([]);
+      setInfraestructurasFisicas([]);
       return;
     }
-    setCargandoPiletas(true);
+    setCargandoInfraestructuraFisica(true);
     try {
-      const res = await listPiletas(granja, etapa);
+      const res = await listInfraestructuraFisica(granja, etapa);
       const rows = Array.isArray(res.data) ? res.data : [];
-      setPiletas(rows.filter((p) => Number(p.cantidad ?? 0) > 0));
+      setInfraestructurasFisicas(rows.filter((p) => Number(p.cantidad ?? 0) > 0));
     } catch (err) {
-      console.error("Error al cargar piletas:", err);
-      setPiletas([]);
+      console.error("Error al cargar infraestructuraFisica:", err);
+      setInfraestructurasFisicas([]);
     } finally {
-      setCargandoPiletas(false);
+      setCargandoInfraestructuraFisica(false);
     }
   }, []);
 
   useEffect(() => {
-    if (ventaRequierePileta(form.tipo_venta) && form.granja) {
-      cargarPiletasForm(form.granja, form.tipo_venta);
+    if (ventaRequiereInfraestructuraFisica(form.tipo_venta) && form.granja) {
+      cargarInfraestructuraFisicaForm(form.granja, form.tipo_venta);
     } else {
-      setPiletas([]);
-      setForm((prev) => (prev.pileta_origen_id ? { ...prev, pileta_origen_id: "" } : prev));
+      setInfraestructurasFisicas([]);
+      setForm((prev) => (prev.infraestructura_fisica_origen_id ? { ...prev, infraestructura_fisica_origen_id: "" } : prev));
     }
-  }, [form.tipo_venta, form.granja, cargarPiletasForm]);
+  }, [form.tipo_venta, form.granja, cargarInfraestructuraFisicaForm]);
 
-  const piletaOrigenSeleccionada = useMemo(() => {
-    if (!form.pileta_origen_id) return null;
+  const infraestructuraFisicaOrigenSeleccionada = useMemo(() => {
+    if (!form.infraestructura_fisica_origen_id) return null;
     return (
-      piletas.find(
-        (p) => String(p.pileta_id) === form.pileta_origen_id,
+      infraestructurasFisicas.find(
+        (p) => String(p.infraestructura_fisica_id) === form.infraestructura_fisica_origen_id,
       ) ?? null
     );
-  }, [form.pileta_origen_id, piletas]);
+  }, [form.infraestructura_fisica_origen_id, infraestructurasFisicas]);
 
   const cantidadPedido = Number(form.cantidad_peces ?? 0);
-  const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
+  const stockOrigen = infraestructuraFisicaOrigenSeleccionada != null ? stockInfraestructuraFisica(infraestructuraFisicaOrigenSeleccionada) : null;
   const requiereValidacionStock =
-    ventaRequierePileta(form.tipo_venta) && Boolean(form.pileta_origen_id);
+    ventaRequiereInfraestructuraFisica(form.tipo_venta) && Boolean(form.infraestructura_fisica_origen_id);
   const cantidadExcedeStock =
     requiereValidacionStock
     && stockOrigen != null
     && cantidadPedido > 0
     && cantidadPedido > stockOrigen;
 
-  const validarPiletaYCantidad = () => {
-    if (ventaRequierePileta(form.tipo_venta) && !form.pileta_origen_id) {
-      showSnackbar("Seleccione la pileta de origen para ventas de alevines o mojarra.", "warning");
+  const validarInfraestructuraFisicaYCantidad = () => {
+    if (ventaRequiereInfraestructuraFisica(form.tipo_venta) && !form.infraestructura_fisica_origen_id) {
+      showSnackbar("Seleccione la infraestructura física de origen para ventas de alevines o mojarra.", "warning");
       return false;
     }
     return true;
@@ -283,7 +283,7 @@ function ListaEsperaContent() {
     setForm((prev) => {
       const next = { ...prev, [name]: value };
       if (name === "granja" || name === "tipo_venta") {
-        next.pileta_origen_id = "";
+        next.infraestructura_fisica_origen_id = "";
       }
       return next;
     });
@@ -315,7 +315,7 @@ function ListaEsperaContent() {
       fecha_entrega: item.fecha_entrega?.split?.("T")?.[0] || item.fecha_entrega || "",
       tipo_venta: item.tipo_venta || "",
       granja: item.granja || granjaDefault,
-      pileta_origen_id: item.pileta_origen_id ? String(item.pileta_origen_id) : "",
+      infraestructura_fisica_origen_id: item.infraestructura_fisica_origen_id ? String(item.infraestructura_fisica_origen_id) : "",
       cantidad_peces: item.cantidad_peces || "",
       cliente_nombre: item.cliente_nombre || "",
       lugar_entrega: item.lugar_entrega || "",
@@ -329,7 +329,7 @@ function ListaEsperaContent() {
 
   const actualizar = async () => {
     if (!validate(form, requiredFields)) return;
-    if (!validarPiletaYCantidad()) return;
+    if (!validarInfraestructuraFisicaYCantidad()) return;
 
     try {
       await updateRegistro(editId, form);
@@ -345,9 +345,9 @@ function ListaEsperaContent() {
 
   const cancelar = async (item) => {
     const tieneTrazabilidad = Boolean(item.venta_id);
-    const esTrazable = ventaRequierePileta(item.tipo_venta);
+    const esTrazable = ventaRequiereInfraestructuraFisica(item.tipo_venta);
     const mensaje = tieneTrazabilidad && esTrazable
-      ? "¿Cancelar este pedido? Se registrará la devolución en trazabilidad y los organismos volverán a su pileta de origen."
+      ? "¿Cancelar este pedido? Se registrará la devolución en trazabilidad y los organismos volverán a su infraestructura física de origen."
       : "¿Cancelar este pedido?";
 
     if (!await confirm(mensaje)) return;
@@ -371,7 +371,7 @@ function ListaEsperaContent() {
     const tipo = item.tipo_venta;
     const tieneVenta = Boolean(item.venta_id);
 
-    if (ventaRequierePileta(tipo) && !tieneVenta) {
+    if (ventaRequiereInfraestructuraFisica(tipo) && !tieneVenta) {
       showSnackbar(
         "Registre primero la venta en el módulo de Trazabilidad (tipo Venta).",
         "warning",
@@ -379,16 +379,16 @@ function ListaEsperaContent() {
       return;
     }
 
-    if (ventaRequierePileta(tipo) && !item.pileta_origen_id) {
-      showSnackbar("El pedido debe tener pileta de origen. Edítelo antes de convertir.", "warning");
+    if (ventaRequiereInfraestructuraFisica(tipo) && !item.infraestructura_fisica_origen_id) {
+      showSnackbar("El pedido debe tener infraestructura física de origen. Edítelo antes de convertir.", "warning");
       return;
     }
 
     if (!await confirm("¿Convertir a venta real y retirar de la lista?")) return;
 
     try {
-      const payload = item.pileta_origen_id
-        ? { pileta_origen_id: item.pileta_origen_id }
+      const payload = item.infraestructura_fisica_origen_id
+        ? { infraestructura_fisica_origen_id: item.infraestructura_fisica_origen_id }
         : {};
       await convertirAVenta(item.lista_id, payload);
       showSnackbar("Convertido a venta correctamente", "success");
@@ -399,7 +399,7 @@ function ListaEsperaContent() {
     }
   };
 
-  const etiquetaPileta = (p) => `${p.nombre} — ${formatStock(stockPileta(p))} org.`;
+  const etiquetaInfraestructuraFisica = (p) => `${p.nombre} — ${formatStock(stockInfraestructuraFisica(p))} org.`;
 
   const registrarClienteRapido = async () => {
     const missingField = CLIENTE_RAPIDO_REQUIRED.find((field) => !nuevoCliente[field]);
@@ -497,31 +497,31 @@ function ListaEsperaContent() {
             )}
           </Grid>
 
-          {ventaRequierePileta(form.tipo_venta) && form.granja && (
+          {ventaRequiereInfraestructuraFisica(form.tipo_venta) && form.granja && (
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 select
                 fullWidth
-                label="Pileta origen"
-                name="pileta_origen_id"
-                value={form.pileta_origen_id}
+                label="Infraestructura física origen"
+                name="infraestructura_fisica_origen_id"
+                value={form.infraestructura_fisica_origen_id}
                 onChange={handleChange}
-                disabled={cargandoPiletas}
+                disabled={cargandoInfraestructuraFisica}
                 error={cantidadExcedeStock}
                 helperText={
                   cantidadExcedeStock
                     ? `Stock insuficiente: disponible ${formatStock(stockOrigen)}`
-                    : cargandoPiletas
-                      ? "Cargando piletas..."
-                        : piletas.length === 0
-                        ? "No hay piletas con stock en esta granja"
+                    : cargandoInfraestructuraFisica
+                      ? "Cargando infraestructurasFisicas..."
+                        : infraestructurasFisicas.length === 0
+                        ? "No hay infraestructurasFisicas con stock en esta granja"
                         : "Referencia para el egreso en Trazabilidad"
                 }
               >
                 <MenuItem value="">— Seleccionar —</MenuItem>
-                {piletas.map((p) => (
-                  <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
-                    {etiquetaPileta(p)}
+                {infraestructurasFisicas.map((p) => (
+                  <MenuItem key={p.infraestructura_fisica_id} value={String(p.infraestructura_fisica_id)}>
+                    {etiquetaInfraestructuraFisica(p)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -553,10 +553,10 @@ function ListaEsperaContent() {
             />
           </Grid>
 
-          {requiereValidacionStock && piletaOrigenSeleccionada && (
+          {requiereValidacionStock && infraestructuraFisicaOrigenSeleccionada && (
             <Grid size={12}>
               <Alert severity={cantidadExcedeStock ? "error" : "info"} sx={{ py: 0.5 }}>
-                Stock en <strong>{piletaOrigenSeleccionada.nombre}</strong>:{" "}
+                Stock en <strong>{infraestructuraFisicaOrigenSeleccionada.nombre}</strong>:{" "}
                 {formatStock(stockOrigen)} organismos
                 {cantidadPedido > 0 && (
                   <>
@@ -687,7 +687,7 @@ function ListaEsperaContent() {
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tipo</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cliente</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cantidad</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Infraestructura física</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Lugar</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Granja</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Precio</TableCell>
@@ -710,7 +710,7 @@ function ListaEsperaContent() {
                     <TableCell>{item.tipo_venta ?? "—"}</TableCell>
                     <TableCell>{item.cliente_nombre}</TableCell>
                     <TableCell>{item.cantidad_peces}</TableCell>
-                    <TableCell>{item.nombre_pileta_origen ?? "—"}</TableCell>
+                    <TableCell>{item.nombre_infraestructura_fisica_origen ?? "—"}</TableCell>
                     <TableCell>{item.lugar_entrega}</TableCell>
                     <TableCell>{item.granja ?? "—"}</TableCell>
                     <TableCell>{formatPrecio(item.precio_unitario)}</TableCell>

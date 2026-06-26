@@ -26,7 +26,7 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 ## MUI usage
 
 - **`sx`** prop is used for component-level styling (e.g. layout fallback in `App.jsx`; widespread in components).
-- **MUI Grid v2-style API** with the `size` prop is used in the codebase (example: `Grid size={{ xs: 12, md: 6 }}` in `src/components/Pileta.jsx`). Prefer matching this pattern in new code for consistency.
+- **MUI Grid v2-style API** with the `size` prop is used in the codebase (example: `Grid size={{ xs: 12, md: 6 }}` in `src/features/inventarios/components/InfraestructuraFisica.jsx`). Prefer matching this pattern in new code for consistency.
 
 ## Routing and URLs
 

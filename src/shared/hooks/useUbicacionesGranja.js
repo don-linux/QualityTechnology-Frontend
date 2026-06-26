@@ -14,9 +14,9 @@ import {
  * (IDs reales para el backend).
  *
  * - `granja`/nombre texto: compatibilidad y etiquetas UI.
- * - `ubicacion_id`: filtro principal en `/piletas`, `/alevinaje`, reproductores, etc.
+ * - `ubicacion_id`: filtro principal en `/infraestructura-fisica`, `/alevinaje`, reproductores, etc.
  *
- * Las piletas «origen» / `origen_pileta_id` no usan este filtro; siguen siendo FK a otra pileta.
+ * Las infraestructurasFisicas «origen» / `infraestructura_fisica_origen_id` no usan este filtro; siguen siendo FK a otra infraestructura física.
  */
 export default function useUbicacionesGranja() {
   const { ubicacionesGranja: unidadesGranjaOps, loading, error, resolveUnidadByRol } =

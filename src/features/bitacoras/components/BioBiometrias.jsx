@@ -17,7 +17,7 @@ import {
   createBiometria,
   updateBiometria,
 } from "../services/biometriasService";
-import { listPiletas } from "@features/inventarios/services/piletasService";
+import { listInfraestructuraFisica } from "@features/inventarios/services/infraestructuraFisicaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
@@ -45,14 +45,14 @@ export default function BioBiometrias() {
 
   const [data, setData] = useState([]);
   const [empleados, setEmpleados] = useState([]);
-  const [piletas, setPiletas] = useState([]);
+  const [infraestructurasFisicas, setInfraestructurasFisicas] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "ubicacion",
-    "pileta_id",
+    "infraestructura_fisica_id",
     "fecha",
     "peso_total_gramos",
     "organismos_muestreados",
@@ -62,7 +62,7 @@ export default function BioBiometrias() {
 
   const [form, setForm] = useState({
     ubicacion: "",
-    pileta_id: "",
+    infraestructura_fisica_id: "",
     fecha: "",
     peso_total_gramos: "",
     organismos_muestreados: "",
@@ -84,22 +84,22 @@ export default function BioBiometrias() {
     }
   };
 
-  const cargarPiletas = async (ubicacionSeleccionNombre) => {
+  const cargarInfraestructuraFisica = async (ubicacionSeleccionNombre) => {
     if (!ubicacionSeleccionNombre) {
-      setPiletas([]);
+      setInfraestructurasFisicas([]);
       return;
     }
     const filtro = resolveFiltroUbicacion(ubicacionSeleccionNombre);
     if (!filtro.granja && !filtro.ubicacion_id) {
-      setPiletas([]);
+      setInfraestructurasFisicas([]);
       return;
     }
     try {
-      const res = await listPiletas(filtro);
-      setPiletas(Array.isArray(res.data) ? res.data : []);
+      const res = await listInfraestructuraFisica(filtro);
+      setInfraestructurasFisicas(Array.isArray(res.data) ? res.data : []);
     } catch {
-      setPiletas([]);
-      showSnackbar("Error al cargar piletas", "error");
+      setInfraestructurasFisicas([]);
+      showSnackbar("Error al cargar infraestructurasFisicas", "error");
     }
   };
 
@@ -124,7 +124,7 @@ export default function BioBiometrias() {
   }, [defaultUbicacion, form.ubicacion]);
 
   useEffect(() => {
-    cargarPiletas(form.ubicacion);
+    cargarInfraestructuraFisica(form.ubicacion);
   }, [form.ubicacion]);
 
   /* -----------------------------
@@ -144,7 +144,7 @@ export default function BioBiometrias() {
     }
 
     if (name === "ubicacion") {
-      setForm({ ...form, ubicacion: value, pileta_id: "" });
+      setForm({ ...form, ubicacion: value, infraestructura_fisica_id: "" });
       return;
     }
 
@@ -163,7 +163,7 @@ export default function BioBiometrias() {
         organismos_muestreados: form.organismos_muestreados,
         encargado: form.encargado,
         observaciones: form.observaciones,
-        pileta_id: Number(form.pileta_id),
+        infraestructura_fisica_id: Number(form.infraestructura_fisica_id),
       };
 
       if (editId) {
@@ -191,7 +191,7 @@ export default function BioBiometrias() {
 
     setForm({
       ubicacion: row.ubicacion || "",
-      pileta_id: row.pileta_id != null ? String(row.pileta_id) : "",
+      infraestructura_fisica_id: row.infraestructura_fisica_id != null ? String(row.infraestructura_fisica_id) : "",
       fecha: row.fecha?.split("T")[0] || "",
       peso_total_gramos: row.peso_total_gramos ?? "",
       organismos_muestreados: row.organismos_muestreados ?? "",
@@ -211,7 +211,7 @@ export default function BioBiometrias() {
     setEditId(null);
     setForm((prev) => ({
       ubicacion: prev.ubicacion,
-      pileta_id: "",
+      infraestructura_fisica_id: "",
       fecha: "",
       peso_total_gramos: "",
       organismos_muestreados: "",
@@ -233,7 +233,7 @@ export default function BioBiometrias() {
 
   const columnas = [
     { header: "Fecha", value: (r) => formatFecha(r.fecha) },
-    { header: "Pileta", value: (r) => r.nombre_pileta || "", fallback: "—" },
+    { header: "Infraestructura física", value: (r) => r.nombre_infraestructura_fisica || "", fallback: "—" },
     { header: "Proceso (obs.)", value: (r) => r.observacion_proceso || "", fallback: "—" },
     { header: "Peso Total", value: (r) => formatNum(r.peso_total_gramos) },
     { header: "Organismos", value: (r) => r.organismos_muestreados ?? "", fallback: "—" },
@@ -255,9 +255,9 @@ export default function BioBiometrias() {
     />
   );
 
-  const piletaSeleccionada =
-    form.pileta_id !== ""
-      ? piletas.find((p) => String(p.pileta_id) === String(form.pileta_id))
+  const infraestructuraFisicaSeleccionada =
+    form.infraestructura_fisica_id !== ""
+      ? infraestructurasFisicas.find((p) => String(p.infraestructura_fisica_id) === String(form.infraestructura_fisica_id))
       : null;
 
   /* -----------------------------
@@ -285,7 +285,7 @@ export default function BioBiometrias() {
                 error={!!errors.ubicacion}
                 helperText={
                   errors.ubicacion ||
-                  "Sede física (tabla ubicaciones): filtra piletas por `ubicacion_id` en el servidor."
+                  "Sede física (tabla ubicaciones): filtra infraestructurasFisicas por `ubicacion_id` en el servidor."
                 }
               >
                 <MenuItem value="">Seleccione</MenuItem>
@@ -297,27 +297,27 @@ export default function BioBiometrias() {
               </TextField>
             </Grid>
 
-            {/* PILETA */}
+            {/* INFRAESTRUCTURA FÍSICA */}
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 select
-                label="Pileta"
-                name="pileta_id"
-                value={form.pileta_id}
+                label="Infraestructura física"
+                name="infraestructura_fisica_id"
+                value={form.infraestructura_fisica_id}
                 onChange={handleChange}
                 fullWidth
                 disabled={!form.ubicacion}
-                error={!!errors.pileta_id}
+                error={!!errors.infraestructura_fisica_id}
                 helperText={
-                  errors.pileta_id ||
+                  errors.infraestructura_fisica_id ||
                   (form.ubicacion
-                    ? "Define la etapa (alevinaje / reproductores / engorda) y vincula la observación a esa pileta."
+                    ? "Define la etapa (alevinaje / reproductores / engorda) y vincula la observación a esa infraestructura física."
                     : "Seleccione primero la ubicación")
                 }
                 slotProps={{
                   select: {
                     renderValue: (val) => {
-                      const p = piletas.find((x) => String(x.pileta_id) === String(val));
+                      const p = infraestructurasFisicas.find((x) => String(x.infraestructura_fisica_id) === String(val));
                       if (!p) return "";
                       return `${p.nombre} · ${tipoLabel(p.tipo)} · ${p.estado}`;
                     },
@@ -325,8 +325,8 @@ export default function BioBiometrias() {
                 }}
               >
                 <MenuItem value="">Seleccione</MenuItem>
-                {piletas.map((p) => (
-                  <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
+                {infraestructurasFisicas.map((p) => (
+                  <MenuItem key={p.infraestructura_fisica_id} value={String(p.infraestructura_fisica_id)}>
                     {p.nombre} · {tipoLabel(p.tipo)} · {p.estado}
                   </MenuItem>
                 ))}
@@ -348,53 +348,53 @@ export default function BioBiometrias() {
               />
             </Grid>
 
-            {/* RESUMEN PILETA + ÚLTIMA OBSERVACIÓN */}
-            {piletaSeleccionada && (
+            {/* RESUMEN INFRAESTRUCTURA FÍSICA + ÚLTIMA OBSERVACIÓN */}
+            {infraestructuraFisicaSeleccionada && (
               <Grid size={12}>
                 <Alert
-                  severity={piletaSeleccionada.ultima_observacion ? "info" : "success"}
+                  severity={infraestructuraFisicaSeleccionada.ultima_observacion ? "info" : "success"}
                   sx={{ "& .MuiAlert-message": { width: "100%" } }}
                 >
                   <Stack
                     direction={{ xs: "column", sm: "row" }}
                     spacing={1}
                     alignItems={{ xs: "flex-start", sm: "center" }}
-                    sx={{ mb: piletaSeleccionada.ultima_observacion ? 1 : 0 }}
+                    sx={{ mb: infraestructuraFisicaSeleccionada.ultima_observacion ? 1 : 0 }}
                   >
                     <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                      {piletaSeleccionada.nombre}
+                      {infraestructuraFisicaSeleccionada.nombre}
                     </Typography>
                     <Chip
                       size="small"
                       color="primary"
                       variant="outlined"
-                      label={`Etapa: ${tipoLabel(piletaSeleccionada.tipo)}`}
+                      label={`Etapa: ${tipoLabel(infraestructuraFisicaSeleccionada.tipo)}`}
                     />
                     <Chip
                       size="small"
-                      color={piletaSeleccionada.estado === "ocupada" ? "warning" : "default"}
+                      color={infraestructuraFisicaSeleccionada.estado === "ocupada" ? "warning" : "default"}
                       variant="outlined"
-                      label={`Estado: ${piletaSeleccionada.estado}`}
+                      label={`Estado: ${infraestructuraFisicaSeleccionada.estado}`}
                     />
-                    {piletaSeleccionada.granja && (
-                      <Chip size="small" variant="outlined" label={piletaSeleccionada.granja} />
+                    {infraestructuraFisicaSeleccionada.granja && (
+                      <Chip size="small" variant="outlined" label={infraestructuraFisicaSeleccionada.granja} />
                     )}
                   </Stack>
 
-                  {piletaSeleccionada.ultima_observacion ? (
+                  {infraestructuraFisicaSeleccionada.ultima_observacion ? (
                     <>
                       <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
-                        {piletaSeleccionada.ultima_observacion}
+                        {infraestructuraFisicaSeleccionada.ultima_observacion}
                       </Typography>
-                      {(piletaSeleccionada.ultima_observacion_proceso ||
-                        piletaSeleccionada.fecha_ultima_observacion) && (
+                      {(infraestructuraFisicaSeleccionada.ultima_observacion_proceso ||
+                        infraestructuraFisicaSeleccionada.fecha_ultima_observacion) && (
                         <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
                           {[
-                            piletaSeleccionada.ultima_observacion_proceso
-                              ? `proceso: ${piletaSeleccionada.ultima_observacion_proceso}`
+                            infraestructuraFisicaSeleccionada.ultima_observacion_proceso
+                              ? `proceso: ${infraestructuraFisicaSeleccionada.ultima_observacion_proceso}`
                               : null,
-                            piletaSeleccionada.fecha_ultima_observacion
-                              ? `fecha: ${formatFecha(piletaSeleccionada.fecha_ultima_observacion)}`
+                            infraestructuraFisicaSeleccionada.fecha_ultima_observacion
+                              ? `fecha: ${formatFecha(infraestructuraFisicaSeleccionada.fecha_ultima_observacion)}`
                               : null,
                           ]
                             .filter(Boolean)
@@ -404,7 +404,7 @@ export default function BioBiometrias() {
                     </>
                   ) : (
                     <Typography variant="caption" color="text.secondary">
-                      Sin observaciones previas para esta pileta.
+                      Sin observaciones previas para esta infraestructura física.
                     </Typography>
                   )}
                 </Alert>
@@ -488,7 +488,7 @@ export default function BioBiometrias() {
                 error={!!errors.observaciones}
                 helperText={
                   errors.observaciones ||
-                  `Se guarda como observación de la pileta (proceso "biometria"). ${form.observaciones.length}/${MAX_OBSERVACIONES}`
+                  `Se guarda como observación de la infraestructura física (proceso "biometria"). ${form.observaciones.length}/${MAX_OBSERVACIONES}`
                 }
                 inputProps={{ maxLength: MAX_OBSERVACIONES }}
               />
@@ -513,8 +513,8 @@ export default function BioBiometrias() {
         grupos={getGroups(data)}
         renderTabla={renderTablaBiometrias}
         buscar
-        searchKeys={["nombre_pileta", "observacion_proceso", "encargado", "observaciones"]}
-        placeholderBusqueda="Buscar pileta, encargado u observación"
+        searchKeys={["nombre_infraestructura_fisica", "observacion_proceso", "encargado", "observaciones"]}
+        placeholderBusqueda="Buscar infraestructura física, encargado u observación"
         exportar={{
           columnas,
           titulo: "Bitácora de Biometrías",

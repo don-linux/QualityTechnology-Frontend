@@ -18,7 +18,7 @@ import {
   createParametrosFisicoQuimico,
   updateParametrosFisicoQuimico,
 } from "../services/bitacorasService";
-import { listPiletas } from "@features/inventarios/services/piletasService";
+import { listInfraestructuraFisica } from "@features/inventarios/services/infraestructuraFisicaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
@@ -53,7 +53,7 @@ const emptyForm = (usuarioId, ubicacion = "") => ({
   fecha: "",
   hora: "",
   turno_muestreo: "",
-  pileta_id: "",
+  infraestructura_fisica_id: "",
   oxigeno: "",
   temperatura_agua: "",
   temperatura_ambiente: "",
@@ -105,7 +105,7 @@ export default function ParametrosFisicoQuimicos() {
   const [form, setForm] = useState(emptyForm(usuarioId));
   const [data, setData] = useState([]);
   const [empleados, setEmpleados] = useState([]);
-  const [piletas, setPiletas] = useState([]);
+  const [infraestructurasFisicas, setInfraestructurasFisicas] = useState([]);
   const [editId, setEditId] = useState(null);
   const [registroDetalle, setRegistroDetalle] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -120,7 +120,7 @@ export default function ParametrosFisicoQuimicos() {
     "ubicacion",
     "fecha",
     "hora",
-    "pileta_id",
+    "infraestructura_fisica_id",
     "oxigeno",
     "temperatura_agua",
     "temperatura_ambiente",
@@ -133,7 +133,7 @@ export default function ParametrosFisicoQuimicos() {
     clearFieldError(name);
 
     if (name === "ubicacion") {
-      setForm((prev) => ({ ...prev, ubicacion: value, pileta_id: "" }));
+      setForm((prev) => ({ ...prev, ubicacion: value, infraestructura_fisica_id: "" }));
       return;
     }
 
@@ -199,12 +199,12 @@ export default function ParametrosFisicoQuimicos() {
   useEffect(() => {
     const filtro = resolveFiltroUbicacion(form.ubicacion);
     if (!filtro) {
-      setPiletas([]);
+      setInfraestructurasFisicas([]);
       return;
     }
-    listPiletas(filtro)
-      .then((res) => setPiletas(res.data ?? []))
-      .catch(() => setPiletas([]));
+    listInfraestructuraFisica(filtro)
+      .then((res) => setInfraestructurasFisicas(res.data ?? []))
+      .catch(() => setInfraestructurasFisicas([]));
   }, [form.ubicacion, resolveFiltroUbicacion]);
 
   const buildPayload = () => ({
@@ -212,7 +212,7 @@ export default function ParametrosFisicoQuimicos() {
     fecha: form.fecha,
     hora: form.hora,
     turno_muestreo: form.turno_muestreo || inferirTurnoMuestreo(form.hora),
-    pileta_id: Number(form.pileta_id),
+    infraestructura_fisica_id: Number(form.infraestructura_fisica_id),
     oxigeno: Number(form.oxigeno),
     temperatura_agua: Number(form.temperatura_agua),
     temperatura_ambiente: Number(form.temperatura_ambiente),
@@ -265,7 +265,7 @@ export default function ParametrosFisicoQuimicos() {
       fecha: r.fecha?.split("T")[0] || "",
       hora: r.hora || "",
       turno_muestreo: r.turno_muestreo || inferirTurnoMuestreo(r.hora),
-      pileta_id: r.pileta_id != null ? String(r.pileta_id) : "",
+      infraestructura_fisica_id: r.infraestructura_fisica_id != null ? String(r.infraestructura_fisica_id) : "",
       oxigeno: r.oxigeno ?? "",
       temperatura_agua: r.temperatura_agua ?? "",
       temperatura_ambiente: r.temperatura_ambiente ?? "",
@@ -295,7 +295,7 @@ export default function ParametrosFisicoQuimicos() {
     { header: "Turno", value: (r) => r.turno_muestreo || "—" },
     {
       header: "Instalación",
-      value: (r) => r.pileta_nombre || r.pileta_id || "—",
+      value: (r) => r.nombre_infraestructura_fisica || r.infraestructura_fisica_id || "—",
     },
     { header: "Oxígeno", value: (r) => r.oxigeno },
     { header: "Temp. agua", value: (r) => r.temperatura_agua },
@@ -334,7 +334,7 @@ export default function ParametrosFisicoQuimicos() {
     />
   );
 
-  const piletaSeleccionada = piletas.find((p) => String(p.pileta_id ?? p.id) === String(form.pileta_id));
+  const infraestructuraFisicaSeleccionada = infraestructurasFisicas.find((p) => String(p.infraestructura_fisica_id ?? p.id) === String(form.infraestructura_fisica_id));
 
   return (
     <Box>
@@ -414,24 +414,24 @@ export default function ParametrosFisicoQuimicos() {
                 <TextField
                   select
                   label="Instalación"
-                  name="pileta_id"
-                  value={form.pileta_id}
+                  name="infraestructura_fisica_id"
+                  value={form.infraestructura_fisica_id}
                   onChange={handleChange}
                   fullWidth
                   size="small"
-                  error={!!errors.pileta_id}
-                  helperText={errors.pileta_id}
+                  error={!!errors.infraestructura_fisica_id}
+                  helperText={errors.infraestructura_fisica_id}
                   SelectProps={{
                     renderValue: (selected) => {
-                      const p = piletas.find((x) => String(x.pileta_id ?? x.id) === String(selected));
+                      const p = infraestructurasFisicas.find((x) => String(x.infraestructura_fisica_id ?? x.id) === String(selected));
                       if (!p) return selected ? `#${selected}` : "";
                       return `${p.nombre} · ${tipoLabel(p.tipo)} · ${p.estado || "—"}`;
                     },
                   }}
                 >
                   <MenuItem value="">Selecciona instalación</MenuItem>
-                  {piletas.map((p) => (
-                    <MenuItem key={p.pileta_id ?? p.id} value={String(p.pileta_id ?? p.id)}>
+                  {infraestructurasFisicas.map((p) => (
+                    <MenuItem key={p.infraestructura_fisica_id ?? p.id} value={String(p.infraestructura_fisica_id ?? p.id)}>
                       {p.nombre} · {tipoLabel(p.tipo)} · {p.estado || "—"}
                     </MenuItem>
                   ))}
@@ -596,10 +596,10 @@ export default function ParametrosFisicoQuimicos() {
               </Grid>
             </Grid>
 
-            {piletaSeleccionada && (
+            {infraestructuraFisicaSeleccionada && (
               <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                Instalación: {piletaSeleccionada.nombre} · {tipoLabel(piletaSeleccionada.tipo)} ·{" "}
-                {piletaSeleccionada.estado || "—"}
+                Instalación: {infraestructuraFisicaSeleccionada.nombre} · {tipoLabel(infraestructuraFisicaSeleccionada.tipo)} ·{" "}
+                {infraestructuraFisicaSeleccionada.estado || "—"}
               </Typography>
             )}
 
@@ -616,7 +616,7 @@ export default function ParametrosFisicoQuimicos() {
         grupos={gruposUbicacion}
         renderTabla={renderTabla}
         buscar
-        searchKeys={["codigo", "pileta_nombre", "responsable", "turno_muestreo"]}
+        searchKeys={["codigo", "nombre_infraestructura_fisica", "responsable", "turno_muestreo"]}
         placeholderBusqueda="Buscar folio, instalación o responsable"
         exportar={{
           columnas,
@@ -640,7 +640,7 @@ export default function ParametrosFisicoQuimicos() {
                 { label: "Turno", value: registroDetalle.turno_muestreo },
                 {
                   label: "Instalación",
-                  value: registroDetalle.pileta_nombre || registroDetalle.pileta_id,
+                  value: registroDetalle.nombre_infraestructura_fisica || registroDetalle.infraestructura_fisica_id,
                 },
                 { label: "Oxígeno", value: registroDetalle.oxigeno },
                 { label: "Temperatura agua", value: registroDetalle.temperatura_agua },

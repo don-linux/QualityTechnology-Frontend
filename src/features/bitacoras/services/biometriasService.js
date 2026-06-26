@@ -1,6 +1,6 @@
 import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
-import { filtrosUbicacionAParams } from "@features/inventarios/services/piletasService";
+import { filtrosUbicacionAParams } from "@features/inventarios/services/infraestructuraFisicaService";
 
 /* ============================================================================
    Biometrías

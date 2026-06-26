@@ -4,7 +4,7 @@ import {
   createEficienciaReproductiva,
   updateEficienciaReproductiva,
 } from "../services/eficienciaReproductivaService";
-import { listObservacionesPileta, listPiletas } from "../services/piletasService";
+import { listObservacionesInfraestructuraFisica, listInfraestructuraFisica } from "../services/infraestructuraFisicaService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
 import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import {
@@ -77,23 +77,23 @@ const mapaVolumenDesdeEvento = (ev) => {
 
 const requiredFieldsCosecha = [
   "ubicacion",
-  "pileta_origen_id",
+  "infraestructura_fisica_origen_id",
   "fecha_cosecha",
   "tipo_cosecha",
   "hembras_ovadas",
-  "pileta_destino_id",
+  "infraestructura_fisica_destino_id",
 ];
 
 const formularioVacio = (ubicacionDefault = "") => ({
   ubicacion: ubicacionDefault,
-  pileta_origen_id: "",
+  infraestructura_fisica_origen_id: "",
   fecha_cosecha: hoyISO(),
   tipo_cosecha: ["huevo"],
   volumen_por_tipo: { huevo: "" },
   estadio_desarrollo: "",
   hembras_ovadas: "",
   marcar_agotado: false,
-  pileta_destino_id: "",
+  infraestructura_fisica_destino_id: "",
   fecha_ingreso: hoyISO(),
   fecha_egreso: "",
   observacion: "",
@@ -110,21 +110,21 @@ const EficienciaReproductiva = () => {
   } = useFormularioVisible();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
-  const [piletasReproductoras, setPiletasReproductoras] = useState([]);
-  const [piletasDestinoIncubacion, setPiletasDestinoIncubacion] = useState([]);
+  const [infraestructurasFisicasReproductoras, setInfraestructurasFisicasReproductoras] = useState([]);
+  const [infraestructurasFisicasDestinoIncubacion, setInfraestructurasFisicasDestinoIncubacion] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionadoEvento, setSeleccionadoEvento] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState(formularioVacio());
 
-  const piletasOrigenFiltradas = useMemo(
-    () => filtrarPorUbicacion(piletasReproductoras, formData.ubicacion, ubicacionesGranja),
-    [piletasReproductoras, formData.ubicacion, ubicacionesGranja],
+  const infraestructurasFisicasOrigenFiltradas = useMemo(
+    () => filtrarPorUbicacion(infraestructurasFisicasReproductoras, formData.ubicacion, ubicacionesGranja),
+    [infraestructurasFisicasReproductoras, formData.ubicacion, ubicacionesGranja],
   );
 
-  const piletasDestinoFiltradas = useMemo(
-    () => filtrarPorUbicacion(piletasDestinoIncubacion, formData.ubicacion, ubicacionesGranja),
-    [piletasDestinoIncubacion, formData.ubicacion, ubicacionesGranja],
+  const infraestructurasFisicasDestinoFiltradas = useMemo(
+    () => filtrarPorUbicacion(infraestructurasFisicasDestinoIncubacion, formData.ubicacion, ubicacionesGranja),
+    [infraestructurasFisicasDestinoIncubacion, formData.ubicacion, ubicacionesGranja],
   );
 
   const gruposRegistros = useMemo(
@@ -142,9 +142,9 @@ const EficienciaReproductiva = () => {
   };
 
   const payloadBackend = () => ({
-    pileta_id: Number(formData.pileta_destino_id),
-    pileta_destino_id: Number(formData.pileta_destino_id),
-    pileta_origen_id: Number(formData.pileta_origen_id),
+    infraestructura_fisica_id: Number(formData.infraestructura_fisica_destino_id),
+    infraestructura_fisica_destino_id: Number(formData.infraestructura_fisica_destino_id),
+    infraestructura_fisica_origen_id: Number(formData.infraestructura_fisica_origen_id),
     fecha_cosecha: formData.fecha_cosecha || null,
     tipo_cosecha: formData.tipo_cosecha,
     volumen_por_tipo: construirVolumenPorTipo(),
@@ -164,8 +164,8 @@ const EficienciaReproductiva = () => {
         return {
           ...prev,
           ubicacion: value,
-          pileta_origen_id: "",
-          pileta_destino_id: "",
+          infraestructura_fisica_origen_id: "",
+          infraestructura_fisica_destino_id: "",
         };
       }
       if (type === "checkbox") {
@@ -219,16 +219,16 @@ const EficienciaReproductiva = () => {
     return validate(formParaValidar, [...requiredFieldsCosecha, ...volKeys]);
   };
 
-  const cargarPiletas = useCallback(async () => {
+  const cargarInfraestructuraFisica = useCallback(async () => {
     try {
       const [rep, inc] = await Promise.all([
-        listPiletas(null, "reproductores"),
-        listPiletas(null, "incubacion"),
+        listInfraestructuraFisica(null, "reproductores"),
+        listInfraestructuraFisica(null, "incubacion"),
       ]);
-      setPiletasReproductoras(Array.isArray(rep.data) ? rep.data : []);
-      setPiletasDestinoIncubacion(Array.isArray(inc.data) ? inc.data : []);
+      setInfraestructurasFisicasReproductoras(Array.isArray(rep.data) ? rep.data : []);
+      setInfraestructurasFisicasDestinoIncubacion(Array.isArray(inc.data) ? inc.data : []);
     } catch (err) {
-      console.error("Error cargando piletas:", err);
+      console.error("Error cargando infraestructuraFisica:", err);
     }
   }, []);
 
@@ -242,9 +242,9 @@ const EficienciaReproductiva = () => {
   }, []);
 
   useEffect(() => {
-    cargarPiletas();
+    cargarInfraestructuraFisica();
     cargarRegistros();
-  }, [cargarPiletas, cargarRegistros]);
+  }, [cargarInfraestructuraFisica, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
@@ -275,7 +275,7 @@ const EficienciaReproductiva = () => {
     const ev = seleccionadoEvento;
     setFormData({
       ubicacion: ev.granja || defaultUbicacion || "",
-      pileta_origen_id: String(ev.pileta_origen_id ?? ""),
+      infraestructura_fisica_origen_id: String(ev.infraestructura_fisica_origen_id ?? ""),
       fecha_cosecha: ev.fecha_cosecha
         ? String(ev.fecha_cosecha).split("T")[0]
         : hoyISO(),
@@ -289,7 +289,7 @@ const EficienciaReproductiva = () => {
       hembras_ovadas:
         ev.hembras_ovadas != null ? String(ev.hembras_ovadas) : "",
       marcar_agotado: false,
-      pileta_destino_id: String(ev.pileta_destino_id ?? ev.pileta_id ?? ""),
+      infraestructura_fisica_destino_id: String(ev.infraestructura_fisica_destino_id ?? ev.infraestructura_fisica_id ?? ""),
       fecha_ingreso: ev.fecha_ingreso
         ? String(ev.fecha_ingreso).split("T")[0]
         : ev.fecha_cosecha
@@ -336,7 +336,7 @@ const EficienciaReproductiva = () => {
   const formatearFecha = (fechaISO) => formatFecha(fechaISO, "");
 
   const cargarHistorialObservaciones = useCallback(
-    (piletaId) => listObservacionesPileta(piletaId),
+    (infraestructuraFisicaId) => listObservacionesInfraestructuraFisica(infraestructuraFisicaId),
     [],
   );
 
@@ -351,7 +351,7 @@ const EficienciaReproductiva = () => {
         Eficiencia reproductiva
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Registre el desove y el ingreso a la pileta de incubación en un solo paso. El historial
+        Registre el desove y el ingreso a la infraestructura física de incubación en un solo paso. El historial
         muestra ambos en la misma fila. Para modificar un registro, selecciónelo y use Editar.
       </Typography>
 
@@ -387,18 +387,18 @@ const EficienciaReproductiva = () => {
                 <TextField
                   select
                   label="Estanque origen (TR)"
-                  name="pileta_origen_id"
-                  value={formData.pileta_origen_id || ""}
+                  name="infraestructura_fisica_origen_id"
+                  value={formData.infraestructura_fisica_origen_id || ""}
                   onChange={handleChange}
                   fullWidth
                   sx={campoFormSx}
-                  error={!!errors.pileta_origen_id}
-                  {...(errors.pileta_origen_id
-                    ? { helperText: errors.pileta_origen_id }
+                  error={!!errors.infraestructura_fisica_origen_id}
+                  {...(errors.infraestructura_fisica_origen_id
+                    ? { helperText: errors.infraestructura_fisica_origen_id }
                     : {})}
                 >
-                  {piletasOrigenFiltradas.map((p) => {
-                    const pid = p.pileta_id;
+                  {infraestructurasFisicasOrigenFiltradas.map((p) => {
+                    const pid = p.infraestructura_fisica_id;
                     return (
                       <MenuItem key={pid} value={String(pid)}>
                         {p.nombre}
@@ -553,24 +553,24 @@ const EficienciaReproductiva = () => {
               </Grid>
 
               <Grid size={12}>
-                <TituloSeccionFormulario titulo="Destino en pileta de incubación" mt={1} />
+                <TituloSeccionFormulario titulo="Destino en infraestructura física de incubación" mt={1} />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
                       select
-                      label="Pileta de incubación"
-                      name="pileta_destino_id"
-                      value={formData.pileta_destino_id || ""}
+                      label="Infraestructura física de incubación"
+                      name="infraestructura_fisica_destino_id"
+                      value={formData.infraestructura_fisica_destino_id || ""}
                       onChange={handleChange}
                       fullWidth
                       sx={campoFormSx}
-                      error={!!errors.pileta_destino_id}
-                      {...(errors.pileta_destino_id
-                        ? { helperText: errors.pileta_destino_id }
+                      error={!!errors.infraestructura_fisica_destino_id}
+                      {...(errors.infraestructura_fisica_destino_id
+                        ? { helperText: errors.infraestructura_fisica_destino_id }
                         : {})}
                     >
-                      {piletasDestinoFiltradas.map((p) => {
-                        const pid = p.pileta_id;
+                      {infraestructurasFisicasDestinoFiltradas.map((p) => {
+                        const pid = p.infraestructura_fisica_id;
                         return (
                           <MenuItem key={pid} value={String(pid)}>
                             {p.nombre}
@@ -653,7 +653,7 @@ const EficienciaReproductiva = () => {
         Historial de eficiencia reproductiva
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Cada fila incluye el desove y su ingreso a la pileta de incubación. Seleccione un registro para
+        Cada fila incluye el desove y su ingreso a la infraestructura física de incubación. Seleccione un registro para
         editarlo.
       </Typography>
 
@@ -672,10 +672,10 @@ const EficienciaReproductiva = () => {
                   <TableCell>Lote genético</TableCell>
                   <TableCell>Fecha cosecha</TableCell>
                   <TableCell>Tipo</TableCell>
-                  <TableCell>Pileta destino</TableCell>
+                  <TableCell>Infraestructura física destino</TableCell>
                   <TableCell>Huevos/ml</TableCell>
                   <TableCell>F. ingreso</TableCell>
-                  <TableCell>Días en pileta</TableCell>
+                  <TableCell>Días en infraestructura física</TableCell>
                   <TableCell>F. egreso</TableCell>
                   <TableCell>Observación</TableCell>
                   <TableCell align="center">Acciones</TableCell>
@@ -698,7 +698,7 @@ const EficienciaReproductiva = () => {
                     >
                       <TableCell>{row._num}</TableCell>
                       <TableCell>{row.codigo}</TableCell>
-                      <TableCell>{row.nombre_pileta_origen}</TableCell>
+                      <TableCell>{row.nombre_infraestructura_fisica_origen}</TableCell>
                       <TableCell>{row.lote_genetico}</TableCell>
                       <TableCell>{formatearFecha(row.fecha_cosecha)}</TableCell>
                       <TableCell>
@@ -708,14 +708,14 @@ const EficienciaReproductiva = () => {
                             : row.tipo_cosecha)}
                       </TableCell>
                       <TableCell>
-                        {row.eficiencia_reproductiva_pileta_nombre ??
-                          row.incubacion_pileta_nombre ??
-                          row.nombre_pileta_destino ??
+                        {row.eficiencia_reproductiva_nombre_infraestructura_fisica ??
+                          row.incubacion_nombre_infraestructura_fisica ??
+                          row.nombre_infraestructura_fisica_destino ??
                           "—"}
                       </TableCell>
                       <TableCell align="right">{formatCantidad(row.huevos_ml)}</TableCell>
                       <TableCell>{formatearFecha(row.fecha_ingreso)}</TableCell>
-                      <TableCell align="right">{formatCantidad(row.dias_en_pileta)}</TableCell>
+                      <TableCell align="right">{formatCantidad(row.dias_en_infraestructura_fisica)}</TableCell>
                       <TableCell>{formatearFecha(row.fecha_egreso)}</TableCell>
                       <TableCell>
                         <CeldaObservacionConHistorial
@@ -724,16 +724,16 @@ const EficienciaReproductiva = () => {
                             row.observacion_eficiencia_reproductiva ??
                             row.observacion_incubacion
                           }
-                          piletaId={
-                            row.pileta_destino_id ??
-                            row.pileta_id ??
-                            row.pileta_origen_id
+                          infraestructuraFisicaId={
+                            row.infraestructura_fisica_destino_id ??
+                            row.infraestructura_fisica_id ??
+                            row.infraestructura_fisica_origen_id
                           }
-                          piletaNombre={
-                            row.eficiencia_reproductiva_pileta_nombre ??
-                            row.incubacion_pileta_nombre ??
-                            row.nombre_pileta_destino ??
-                            row.nombre_pileta_origen
+                          infraestructuraFisicaNombre={
+                            row.eficiencia_reproductiva_nombre_infraestructura_fisica ??
+                            row.incubacion_nombre_infraestructura_fisica ??
+                            row.nombre_infraestructura_fisica_destino ??
+                            row.nombre_infraestructura_fisica_origen
                           }
                           etapaLabel="Eficiencia reproductiva"
                           cargarHistorial={cargarHistorialObservaciones}

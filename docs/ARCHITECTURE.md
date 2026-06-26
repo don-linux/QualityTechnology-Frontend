@@ -37,7 +37,7 @@ src/
 │   ├── inicio/InicioPage.jsx
 │   ├── perfil/MiPerfilPage.jsx
 │   ├── catalogos/                # UsuariosPage, RolesPage, PuestosPage, DepartamentosPage, ClientePage
-│   ├── inventarios/              # PiletaPage, InstalacionesPage, ReproductoresPage, ...
+│   ├── inventarios/              # InfraestructuraFisicaPage, AlevinajePage, ReproductoresPage, EngordaPage, ...
 │   ├── ventas/                   # VentaPage, ListaEsperaPage, FlujoCajaPage, TesoreriaGeneralPage
 │   ├── rrhh/                     # EmpleadosPage, NominaPage, VacacionesPage, CajaAhorroPage, ProveedoresPage
 │   ├── registro-operativo/       # ControlFaunaNocivaPage, BioBiometriasPage, ...
@@ -50,8 +50,8 @@ src/
 │   │   ├── components/           # Usuarios, Roles, Puestos, Departamentos, Cliente
 │   │   └── services/             # usuariosService, rolesService, puestosService, ...
 │   ├── inventarios/
-│   │   ├── components/           # Pileta, Instalaciones, Reproductores, Engorda, Equipos, Lotes, Alevines
-│   │   └── services/             # piletasService, instalacionesService, ...
+│   │   ├── components/           # InfraestructuraFisica, Alevinaje, Reproductores, Engorda, Equipos, EficienciaReproductiva, CiclosEngorda, Trazabilidad
+│   │   └── services/             # infraestructuraFisicaService, alevinajeService, reproductoresService, engordaService, eficienciaReproductivaService, trazabilidadService, equiposService
 │   ├── ventas/
 │   │   ├── components/           # Venta, ListaEspera, FlujoCaja, TesoreriaGeneral, CuentasDialog
 │   │   └── services/             # ventasService, listaEsperaService, flujoCajaService, tesoreriaService

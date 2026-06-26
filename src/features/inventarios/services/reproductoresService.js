@@ -1,17 +1,17 @@
 import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
-import { filtrosUbicacionAParams } from "./piletasService";
+import { filtrosUbicacionAParams } from "./infraestructuraFisicaService";
 
 /**
  * Registros periódicos del modelo `reproductores` (historial en BD).
- * GET devuelve por defecto la vista actual (último registro por pileta);
+ * GET devuelve por defecto la vista actual (último registro por infraestructura física);
  * use `?historial=true` para todos los registros.
  */
 
-export function listReproductores(filtroUbicacion, piletaId, opciones = {}) {
+export function listReproductores(filtroUbicacion, infraestructuraFisicaId, opciones = {}) {
   const params = {};
   filtrosUbicacionAParams(params, filtroUbicacion);
-  if (piletaId) params.pileta_id = piletaId;
+  if (infraestructuraFisicaId) params.infraestructura_fisica_id = infraestructuraFisicaId;
   if (opciones.historial) params.historial = true;
   const nombre =
     filtroUbicacion && typeof filtroUbicacion === "object"

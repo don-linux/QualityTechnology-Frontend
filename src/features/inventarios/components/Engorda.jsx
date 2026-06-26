@@ -4,7 +4,7 @@ import {
   createEngorda,
   updateEngorda,
 } from "../services/engordaService";
-import { listObservacionesPileta } from "../services/piletasService";
+import { listObservacionesInfraestructuraFisica } from "../services/infraestructuraFisicaService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
 import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import {
@@ -36,9 +36,9 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
-import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
+import { vistaActualPorInfraestructuraFisica } from "@shared/utils/inventarioVigente";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
-import { listPiletas } from "../services/piletasService";
+import { listInfraestructuraFisica } from "../services/infraestructuraFisicaService";
 
 const MAX_OBSERVACION = 500;
 
@@ -53,19 +53,19 @@ export default function Engorda() {
 
   const requiredFields = [
     "ubicacion",
-    "pileta_destino_id",
+    "infraestructura_fisica_destino_id",
     "cantidad_total",
     "fecha_peso",
     "peso_gramos",
   ];
 
-  const [piletasDestinoEngorda, setPiletasDestinoEngorda] = useState([]);
+  const [infraestructurasFisicasDestinoEngorda, setInfraestructurasFisicasDestinoEngorda] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState({
     ubicacion: "",
-    pileta_destino_id: "",
+    infraestructura_fisica_destino_id: "",
     cantidad_total: "",
     cantidad_alimento: "",
     peso_gramos: "",
@@ -73,12 +73,12 @@ export default function Engorda() {
     observacion: "",
   });
 
-  const piletasFiltradas = useMemo(
-    () => filtrarPorUbicacion(piletasDestinoEngorda, formData.ubicacion, ubicacionesGranja),
-    [piletasDestinoEngorda, formData.ubicacion, ubicacionesGranja],
+  const infraestructurasFisicasFiltradas = useMemo(
+    () => filtrarPorUbicacion(infraestructurasFisicasDestinoEngorda, formData.ubicacion, ubicacionesGranja),
+    [infraestructurasFisicasDestinoEngorda, formData.ubicacion, ubicacionesGranja],
   );
 
-  const registrosVista = useMemo(() => vistaActualPorPileta(registros), [registros]);
+  const registrosVista = useMemo(() => vistaActualPorInfraestructuraFisica(registros), [registros]);
 
   const gruposRegistros = useMemo(
     () => getGroups(registrosVista, "granja"),
@@ -86,8 +86,8 @@ export default function Engorda() {
   );
 
   const payloadComunBackend = () => ({
-    pileta_id: Number(formData.pileta_destino_id),
-    pileta_destino_id: Number(formData.pileta_destino_id),
+    infraestructura_fisica_id: Number(formData.infraestructura_fisica_destino_id),
+    infraestructura_fisica_destino_id: Number(formData.infraestructura_fisica_destino_id),
     cantidad_total: Number(formData.cantidad_total || 0),
     cantidad_alimento: Number(formData.cantidad_alimento || 0),
     peso_gramos: formData.peso_gramos === "" ? null : Number(formData.peso_gramos),
@@ -107,19 +107,19 @@ export default function Engorda() {
 
     setFormData((prev) => {
       if (name === "ubicacion") {
-        return { ...prev, ubicacion: value, pileta_destino_id: "" };
+        return { ...prev, ubicacion: value, infraestructura_fisica_destino_id: "" };
       }
       return { ...prev, [name]: value };
     });
     clearFieldError(name);
   };
 
-  const cargarPiletasDestinoEngorda = useCallback(async () => {
+  const cargarInfraestructuraFisicaDestinoEngorda = useCallback(async () => {
     try {
-      const res = await listPiletas(null, "engorda");
-      setPiletasDestinoEngorda(Array.isArray(res.data) ? res.data : []);
+      const res = await listInfraestructuraFisica(null, "engorda");
+      setInfraestructurasFisicasDestinoEngorda(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error cargando piletas engorda:", err);
+      console.error("Error cargando infraestructurasFisicas engorda:", err);
     }
   }, []);
 
@@ -133,9 +133,9 @@ export default function Engorda() {
   }, []);
 
   useEffect(() => {
-    cargarPiletasDestinoEngorda();
+    cargarInfraestructuraFisicaDestinoEngorda();
     cargarRegistros();
-  }, [cargarPiletasDestinoEngorda, cargarRegistros]);
+  }, [cargarInfraestructuraFisicaDestinoEngorda, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
@@ -170,8 +170,8 @@ export default function Engorda() {
     clearErrors();
     setFormData({
       ubicacion: seleccionado.granja || formData.ubicacion || defaultUbicacion || "",
-      pileta_destino_id: String(
-        seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
+      infraestructura_fisica_destino_id: String(
+        seleccionado.infraestructura_fisica_destino_id ?? seleccionado.infraestructura_fisica_id ?? "",
       ),
       cantidad_total: String(seleccionado.cantidad_total ?? seleccionado.cantidad ?? ""),
       cantidad_alimento: String(seleccionado.cantidad_alimento ?? ""),
@@ -218,7 +218,7 @@ export default function Engorda() {
   const resetFormulario = () => {
     setFormData({
       ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
-      pileta_destino_id: "",
+      infraestructura_fisica_destino_id: "",
       cantidad_total: "",
       cantidad_alimento: "",
       peso_gramos: "",
@@ -243,7 +243,7 @@ export default function Engorda() {
   );
 
   const cargarHistorialObservaciones = useCallback(
-    (piletaId) => listObservacionesPileta(piletaId),
+    (infraestructuraFisicaId) => listObservacionesInfraestructuraFisica(infraestructuraFisicaId),
     [],
   );
 
@@ -289,17 +289,17 @@ export default function Engorda() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
-                  label="Pileta (engorda)"
-                  name="pileta_destino_id"
-                  value={formData.pileta_destino_id || ""}
+                  label="Infraestructura física (engorda)"
+                  name="infraestructura_fisica_destino_id"
+                  value={formData.infraestructura_fisica_destino_id || ""}
                   onChange={handleChange}
                   fullWidth
                   sx={campoFormSx}
-                  error={!!errors.pileta_destino_id}
-                  {...(errors.pileta_destino_id ? { helperText: errors.pileta_destino_id } : {})}
+                  error={!!errors.infraestructura_fisica_destino_id}
+                  {...(errors.infraestructura_fisica_destino_id ? { helperText: errors.infraestructura_fisica_destino_id } : {})}
                 >
-                  {piletasFiltradas.map((p) => {
-                    const pid = p.pileta_id;
+                  {infraestructurasFisicasFiltradas.map((p) => {
+                    const pid = p.infraestructura_fisica_id;
                     return (
                       <MenuItem key={pid} value={String(pid)}>
                         {p.nombre}
@@ -411,10 +411,10 @@ export default function Engorda() {
       </FormularioRegistroPanel>
 
       <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
-        Estado actual por pileta
+        Estado actual por infraestructura física
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Muestra el último registro periódico de cada pileta. El historial de movimientos está en Trazabilidad.
+        Muestra el último registro periódico de cada infraestructura física. El historial de movimientos está en Trazabilidad.
       </Typography>
 
       <TablasPorUbicacionGranja
@@ -428,7 +428,7 @@ export default function Engorda() {
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Pileta</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Infraestructura física</TableCell>
                     <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cantidad total</TableCell>
                     <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Cant. alimento</TableCell>
                     <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Peso (g)</TableCell>
@@ -459,7 +459,7 @@ export default function Engorda() {
                       >
                         <TableCell>{l._num}</TableCell>
                         <TableCell>
-                          {l.nombre_pileta_destino || l.nombre_pileta || "—"}
+                          {l.nombre_infraestructura_fisica_destino || l.nombre_infraestructura_fisica || "—"}
                         </TableCell>
                         <TableCell align="right">{formatCantidad(l.cantidad_total ?? l.cantidad)}</TableCell>
                         <TableCell align="right">{formatCantidad(l.cantidad_alimento)}</TableCell>
@@ -468,10 +468,10 @@ export default function Engorda() {
                         <TableCell sx={{ maxWidth: 220, verticalAlign: "top" }}>
                           <CeldaObservacionConHistorial
                             texto={l.observacion ?? ""}
-                            piletaId={
-                              l.pileta_destino_id ?? l.pileta_id
+                            infraestructuraFisicaId={
+                              l.infraestructura_fisica_destino_id ?? l.infraestructura_fisica_id
                             }
-                            piletaNombre={l.nombre_pileta_destino || l.nombre_pileta}
+                            infraestructuraFisicaNombre={l.nombre_infraestructura_fisica_destino || l.nombre_infraestructura_fisica}
                             etapaLabel="Engorda"
                             cargarHistorial={cargarHistorialObservaciones}
                           />

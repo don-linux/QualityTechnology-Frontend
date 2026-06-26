@@ -1,9 +1,9 @@
 import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
 
-export function listHistorialPeso(piletaId) {
+export function listHistorialPeso(infraestructuraFisicaId) {
   const params = {};
-  if (piletaId) params.pileta_id = piletaId;
+  if (infraestructuraFisicaId) params.infraestructura_fisica_id = infraestructuraFisicaId;
   return axios.get(ENDPOINTS.historialPeso.base, { params });
 }
 

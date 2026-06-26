@@ -31,7 +31,7 @@ function BitacoraRecambiosContent() {
   const [form, setForm] = useState({
     ubicacion: "",
     mes_periodo: "",
-    pileta_id: "",
+    infraestructura_fisica_id: "",
     fecha_1: "",
     tipo_1: "",
     fecha_2: "",
@@ -55,7 +55,7 @@ function BitacoraRecambiosContent() {
 
   const requiredFields = [
     "ubicacion",
-    "mes_periodo", "pileta_id",
+    "mes_periodo", "infraestructura_fisica_id",
     "fecha_1", "tipo_1", "fecha_2", "tipo_2",
     "fecha_3", "tipo_3", "fecha_4", "tipo_4",
     "fecha_5", "tipo_5", "fecha_6", "tipo_6",
@@ -108,7 +108,7 @@ function BitacoraRecambiosContent() {
       setForm({
         ubicacion: form.ubicacion,
         mes_periodo: "",
-        pileta_id: "",
+        infraestructura_fisica_id: "",
         fecha_1: "",
         tipo_1: "",
         fecha_2: "",
@@ -136,7 +136,7 @@ function BitacoraRecambiosContent() {
     setForm({
       ubicacion: r.ubicacion || "",
       mes_periodo: r.mes_periodo || "",
-      pileta_id: r.pileta_id || "",
+      infraestructura_fisica_id: r.infraestructura_fisica_id || "",
       fecha_1: r.fecha_1?.split("T")[0],
       tipo_1: r.tipo_1 || "",
       fecha_2: r.fecha_2?.split("T")[0],
@@ -159,7 +159,7 @@ function BitacoraRecambiosContent() {
 
   const columnasExport = [
     { header: "Mes", value: (r) => r.mes_periodo || "" },
-    { header: "No. Instalación", value: (r) => r.pileta_id || "" },
+    { header: "No. Instalación", value: (r) => r.infraestructura_fisica_id || "" },
     { header: "Fecha 1", value: (r) => formatFecha(r.fecha_1, "") },
     { header: "Tipo 1", value: (r) => r.tipo_1 || "" },
     { header: "Fecha 2", value: (r) => formatFecha(r.fecha_2, "") },
@@ -177,7 +177,7 @@ function BitacoraRecambiosContent() {
 
   const columnas = [
     { header: "Mes", value: (r) => r.mes_periodo },
-    { header: "Instalación", value: (r) => r.pileta_id },
+    { header: "Instalación", value: (r) => r.infraestructura_fisica_id },
     {
       header: "Fechas y Tipos",
       value: (r) =>
@@ -250,13 +250,13 @@ function BitacoraRecambiosContent() {
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="No. Instalación"
-                name="pileta_id"
+                name="infraestructura_fisica_id"
                 decimalScale={0}
-                value={form.pileta_id}
+                value={form.infraestructura_fisica_id}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.pileta_id}
-                helperText={errors.pileta_id}
+                error={!!errors.infraestructura_fisica_id}
+                helperText={errors.infraestructura_fisica_id}
               />
             </Grid>
 
@@ -327,7 +327,7 @@ function BitacoraRecambiosContent() {
         grupos={gruposUbicacion}
         renderTabla={renderTablaRecambios}
         buscar
-        searchKeys={["mes_periodo", "pileta_id", "responsable"]}
+        searchKeys={["mes_periodo", "infraestructura_fisica_id", "responsable"]}
         placeholderBusqueda="Buscar mes, instalación o responsable"
         exportar={{
           columnas: columnasExport,

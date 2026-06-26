@@ -64,7 +64,7 @@ function nombresGranjaCoinciden(a, b) {
 }
 
 /**
- * Indica si un registro (pileta, inventario, bitácora…) pertenece a la opción de sede/granja.
+ * Indica si un registro (infraestructura física, inventario, bitácora…) pertenece a la opción de sede/granja.
  * Prioriza `ubicacion_id`; si no hay FK, compara nombres con normalización y alias cortos.
  */
 export function rowPerteneceAUbicacionGranja(row, op, field = "granja") {

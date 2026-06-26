@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
-  listTiposPileta,
-  createTipoPileta,
-  updateTipoPileta,
-  activateTipoPileta,
-  deactivateTipoPileta,
-} from "@features/catalogos/services/tiposPiletaService";
+  listTiposInfraestructuraFisica,
+  createTipoInfraestructuraFisica,
+  updateTipoInfraestructuraFisica,
+  activateTipoInfraestructuraFisica,
+  deactivateTipoInfraestructuraFisica,
+} from "@features/catalogos/services/tiposInfraestructuraFisicaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useConfirm from "@shared/hooks/useConfirm";
 import Container from "@mui/material/Container";
@@ -30,9 +30,13 @@ import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
-export default function TiposPileta() {
+function tipoInfraestructuraFisicaActivo(item) {
+  return Boolean(item?.activo);
+}
+
+export default function TiposInfraestructuraFisica() {
   const showSnackbar = useSnackbar();
-  const [form, setForm] = useState({ tipo_pileta_id: null, nombre: "" });
+  const [form, setForm] = useState({ tipo_infraestructura_fisica_id: null, nombre: "" });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -46,11 +50,11 @@ export default function TiposPileta() {
   const cargar = async () => {
     setLoading(true);
     try {
-      const { data } = await listTiposPileta();
+      const { data } = await listTiposInfraestructuraFisica();
       setItems(data);
     } catch (e) {
       console.error(e);
-      showSnackbar("Error al cargar tipos de pileta", "error");
+      showSnackbar("Error al cargar tipos de infraestructura física", "error");
     } finally {
       setLoading(false);
     }
@@ -62,7 +66,7 @@ export default function TiposPileta() {
   };
 
   const limpiar = () => {
-    setForm({ tipo_pileta_id: null, nombre: "" });
+    setForm({ tipo_infraestructura_fisica_id: null, nombre: "" });
     clearErrors();
     cerrarFormulario();
   };
@@ -70,8 +74,8 @@ export default function TiposPileta() {
   const registrar = async () => {
     if (!validate(form, ["nombre"])) return;
     try {
-      await createTipoPileta(form.nombre);
-      showSnackbar("Tipo de pileta registrado", "success");
+      await createTipoInfraestructuraFisica(form.nombre);
+      showSnackbar("Tipo de infraestructura física registrado", "success");
       cargar();
       limpiar();
     } catch (e) {
@@ -81,11 +85,11 @@ export default function TiposPileta() {
   };
 
   const actualizar = async () => {
-    if (!form.tipo_pileta_id) return;
+    if (!form.tipo_infraestructura_fisica_id) return;
     if (!validate(form, ["nombre"])) return;
     try {
-      await updateTipoPileta(form.tipo_pileta_id, form.nombre);
-      showSnackbar("Tipo de pileta actualizado", "success");
+      await updateTipoInfraestructuraFisica(form.tipo_infraestructura_fisica_id, form.nombre);
+      showSnackbar("Tipo de infraestructura física actualizado", "success");
       cargar();
       limpiar();
     } catch (e) {
@@ -97,7 +101,7 @@ export default function TiposPileta() {
   const desactivar = async (id, nombre) => {
     if (!(await confirm(`¿Desactivar el tipo "${nombre}"?`))) return;
     try {
-      await deactivateTipoPileta(id);
+      await deactivateTipoInfraestructuraFisica(id);
       cargar();
       limpiar();
     } catch (e) {
@@ -109,7 +113,7 @@ export default function TiposPileta() {
   const activar = async (id, nombre) => {
     if (!(await confirm(`¿Activar el tipo "${nombre}"?`))) return;
     try {
-      await activateTipoPileta(id);
+      await activateTipoInfraestructuraFisica(id);
       cargar();
       limpiar();
     } catch (e) {
@@ -120,7 +124,7 @@ export default function TiposPileta() {
 
   const seleccionar = (item) => {
     setForm({
-      tipo_pileta_id: item.tipo_pileta_id ?? item.id,
+      tipo_infraestructura_fisica_id: item.tipo_infraestructura_fisica_id ?? item.id,
       nombre: item.nombre,
     });
     clearErrors();
@@ -131,7 +135,7 @@ export default function TiposPileta() {
     <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
       <Box textAlign="center" mb={3}>
         <Typography variant="h4" fontWeight="bold">
-          Tipos de pileta
+          Tipos de infraestructura física
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Catálogo de formatos físicos: piscina, estanque, sanja, cubeta, etc.
@@ -142,7 +146,7 @@ export default function TiposPileta() {
       <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
         <CardContent>
           <Typography variant="subtitle1" mb={2} fontWeight="bold">
-            {form.tipo_pileta_id ? "Editando tipo" : "Nuevo tipo"}
+            {form.tipo_infraestructura_fisica_id ? "Editando tipo" : "Nuevo tipo"}
           </Typography>
           <Grid container spacing={2}>
             <Grid size={12}>
@@ -164,7 +168,7 @@ export default function TiposPileta() {
                 variant="contained"
                 color="success"
                 onClick={registrar}
-                disabled={!!form.tipo_pileta_id}
+                disabled={!!form.tipo_infraestructura_fisica_id}
               >
                 Registrar
               </Button>
@@ -174,7 +178,7 @@ export default function TiposPileta() {
                 fullWidth
                 variant="contained"
                 onClick={actualizar}
-                disabled={!form.tipo_pileta_id}
+                disabled={!form.tipo_infraestructura_fisica_id}
               >
                 Actualizar
               </Button>
@@ -206,8 +210,8 @@ export default function TiposPileta() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {ordenarYNumerar(items, ["tipo_pileta_id", "id"]).map((item) => (
-                  <TableRow key={(item.tipo_pileta_id ?? item.id) ?? ""} hover>
+                {ordenarYNumerar(items, ["tipo_infraestructura_fisica_id", "id"]).map((item) => (
+                  <TableRow key={(item.tipo_infraestructura_fisica_id ?? item.id) ?? ""} hover>
                     <TableCell>{item._num}</TableCell>
                     <TableCell>{item.nombre}</TableCell>
                     <TableCell>
@@ -230,14 +234,14 @@ export default function TiposPileta() {
                         <Button size="small" variant="outlined" onClick={() => seleccionar(item)}>
                           Editar
                         </Button>
-                        {tipoPiletaActivo(item) ? (
+                        {tipoInfraestructuraFisicaActivo(item) ? (
                           <Button
                             size="small"
                             variant="outlined"
                             color="error"
                             onClick={() =>
                               desactivar(
-                                item.tipo_pileta_id ?? item.id,
+                                item.tipo_infraestructura_fisica_id ?? item.id,
                                 item.nombre,
                               )
                             }
@@ -251,7 +255,7 @@ export default function TiposPileta() {
                             color="success"
                             onClick={() =>
                               activar(
-                                item.tipo_pileta_id ?? item.id,
+                                item.tipo_infraestructura_fisica_id ?? item.id,
                                 item.nombre,
                               )
                             }

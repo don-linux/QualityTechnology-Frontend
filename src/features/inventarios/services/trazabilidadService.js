@@ -1,10 +1,10 @@
 import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
-import { filtrosUbicacionAParams } from "./piletasService";
+import { filtrosUbicacionAParams } from "./infraestructuraFisicaService";
 
 /**
  * `@param filtros` objeto `{ granja?, ubicacion_id? }`, o legado: string nombre sede.
- * El backend filtra por `ubicacion_id` cuando existe (mismo criterio que piletas).
+ * El backend filtra por `ubicacion_id` cuando existe (mismo criterio que infraestructurasFisicas).
  */
 export function listMovimientos(filtroUbicacion) {
   const params = {};

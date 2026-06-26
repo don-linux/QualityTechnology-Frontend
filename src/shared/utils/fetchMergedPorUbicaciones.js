@@ -35,25 +35,25 @@ export async function fetchMergedPorUbicaciones(filtros, fetchFn) {
   });
 }
 
-/** Resuelve el slug/nombre de sede a partir de una pileta del listado. */
-export function resolveGranjaDesdePileta(pileta, ubicacionesGranja) {
-  const match = ubicacionesGranja.find((op) => rowPerteneceAUbicacionGranja(pileta, op));
+/** Resuelve el slug/nombre de sede a partir de una infraestructura física del listado. */
+export function resolveGranjaDesdeInfraestructuraFisica(infraestructuraFisica, ubicacionesGranja) {
+  const match = ubicacionesGranja.find((op) => rowPerteneceAUbicacionGranja(infraestructuraFisica, op));
   if (match) return match.value;
   const nombre =
-    pileta?.granja ?? pileta?.ubicacion?.nombre ?? pileta?.ubicacion ?? "";
+    infraestructuraFisica?.granja ?? infraestructuraFisica?.ubicacion?.nombre ?? infraestructuraFisica?.ubicacion ?? "";
   return nombre || ubicacionesGranja[0]?.value || "";
 }
 
-export function resolveGranjaDesdePiletaId(piletaId, piletas, ubicacionesGranja) {
-  const p = piletas.find(
-    (x) => String(x.pileta_id) === String(piletaId),
+export function resolveGranjaDesdeInfraestructuraFisicaId(infraestructuraFisicaId, infraestructurasFisicas, ubicacionesGranja) {
+  const p = infraestructurasFisicas.find(
+    (x) => String(x.infraestructura_fisica_id) === String(infraestructuraFisicaId),
   );
   return p
-    ? resolveGranjaDesdePileta(p, ubicacionesGranja)
+    ? resolveGranjaDesdeInfraestructuraFisica(p, ubicacionesGranja)
     : ubicacionesGranja[0]?.value ?? "";
 }
 
-/** Filtra piletas/registros por sede seleccionada en el formulario. */
+/** Filtra infraestructurasFisicas/registros por sede seleccionada en el formulario. */
 export function filtrarPorUbicacion(items, ubicacion, ubicacionesGranja = []) {
   if (!ubicacion) return items;
   const op = ubicacionesGranja.find((u) => u.value === ubicacion);
