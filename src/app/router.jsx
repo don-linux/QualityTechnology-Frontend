@@ -4,7 +4,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 
 import Login from "@features/auth/components/Login";
-import CorporateLayout from "@shared/layout/CorporateLayout";
+import AppLayout from "@shared/layout/AppLayout";
 import PrivateRoute from "@shared/guards/PrivateRoute";
 
 const Inicio = lazy(() => import("@pages/inicio/InicioPage"));
@@ -86,7 +86,7 @@ export default function AppRouter() {
         <Route path="/login" element={<Login />} />
 
         <Route element={<PrivateRoute />}>
-          <Route element={<CorporateLayout />}>
+          <Route element={<AppLayout />}>
             <Route index element={<Inicio />} />
             <Route path="mi-perfil" element={<MiPerfil />} />
             <Route path="mi-expediente" element={<MiExpediente />} />
@@ -95,7 +95,7 @@ export default function AppRouter() {
         </Route>
 
         <Route element={<PrivateRoute modulo="Bitacoras" />}>
-          <Route element={<CorporateLayout />}>
+          <Route element={<AppLayout />}>
             <Route path="bitacoras">
               <Route path="control-fauna-nociva" element={<ControlFaunaNociva />} />
               <Route path="recepcion-insumos" element={<BitacoraRecepcionInsumos />} />
@@ -113,7 +113,7 @@ export default function AppRouter() {
         </Route>
 
         <Route element={<PrivateRoute modulo="Finanzas" />}>
-          <Route element={<CorporateLayout />}>
+          <Route element={<AppLayout />}>
             <Route path="ventas/tesoreria" element={<TesoreriaGeneral />} />
             <Route path="ventas/flujo-caja" element={<FlujoCaja />} />
             <Route path="proveedores" element={<Proveedores />} />
@@ -122,7 +122,7 @@ export default function AppRouter() {
         </Route>
 
         <Route element={<PrivateRoute modulo="RRHH" />}>
-          <Route element={<CorporateLayout />}>
+          <Route element={<AppLayout />}>
             <Route path="empleados" element={<Empleados />} />
             <Route path="nomina" element={<Nomina />} />
             <Route path="vacaciones" element={<Vacaciones />} />
@@ -131,7 +131,7 @@ export default function AppRouter() {
         </Route>
 
         <Route element={<PrivateRoute modulo="Catálogos" />}>
-          <Route element={<CorporateLayout />}>
+          <Route element={<AppLayout />}>
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="roles" element={<Roles />} />
             <Route path="puestos" element={<Puestos />} />
@@ -149,7 +149,7 @@ export default function AppRouter() {
         </Route>
 
         <Route element={<PrivateRoute modulo="Inventarios" />}>
-          <Route element={<CorporateLayout />}>
+          <Route element={<AppLayout />}>
             <Route path="inventarios/piletas" element={<Navigate to="/inventarios/piletas-fisicas" replace />} />
             <Route path="inventarios/piletas-fisicas" element={<PiletasFisicas />} />
             <Route path="inventarios/reproductores" element={<Reproductores />} />
@@ -167,7 +167,7 @@ export default function AppRouter() {
         </Route>
 
         <Route element={<PrivateRoute modulo="Ventas" />}>
-          <Route element={<CorporateLayout />}>
+          <Route element={<AppLayout />}>
             <Route path="ventas/registro" element={<Venta />} />
             <Route path="registro/cliente" element={<Cliente />} />
             <Route path="ventas/lista-espera" element={<ListaEspera />} />
@@ -175,7 +175,7 @@ export default function AppRouter() {
         </Route>
 
         <Route element={<PrivateRoute modulo="Seguridad" />}>
-          <Route element={<CorporateLayout />}>
+          <Route element={<AppLayout />}>
             <Route path="seguridad/roles-modulos" element={<RolesModulos />} />
           </Route>
         </Route>

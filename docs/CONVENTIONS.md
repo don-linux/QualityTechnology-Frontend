@@ -6,7 +6,7 @@ This file records conventions that are **evident from repository configuration a
 
 - **Language:** JavaScript with **JSX** (`.jsx` files). There is no TypeScript configuration in the project root **verified** from the inspected manifests.
 - **Module system:** ESM via Vite (`import` / `export`).
-- **Component files:** React screens and shared UI use **PascalCase** filenames (e.g. `Usuarios.jsx`, `CorporateLayout.jsx`). Service and utility modules use **camelCase** (e.g. `axiosInstance.js`, `useFormValidation.js`, `usuariosService.js`). Page wrappers use **PascalCase** with a `Page` suffix (e.g. `UsuariosPage.jsx`).
+- **Component files:** React screens and shared UI use **PascalCase** filenames (e.g. `Usuarios.jsx`, `AppLayout.jsx`). Service and utility modules use **camelCase** (e.g. `axiosInstance.js`, `useFormValidation.js`, `usuariosService.js`). Page wrappers use **PascalCase** with a `Page` suffix (e.g. `UsuariosPage.jsx`).
 
 ## Formatting (observed in source, not enforced by repo config)
 
@@ -30,7 +30,7 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 
 ## Routing and URLs
 
-- Route path segments use **kebab-case** (e.g. `registro-operativo/recepcion-insumos`, `ventas/flujo-caja`). New routes should follow existing naming in `src/app/router.jsx` and navigation links in `CorporateLayout.jsx`.
+- Route path segments use **kebab-case** (e.g. `registro-operativo/recepcion-insumos`, `ventas/flujo-caja`). New routes should follow existing naming in `src/app/router.jsx` and navigation links in `AppLayout.jsx`.
 
 ## API and configuration
 

@@ -7,7 +7,7 @@ import TopBar from "./TopBar";
 import Sidebar from "./Sidebar";
 import { HeaderInfoProvider } from "./HeaderInfoContext";
 
-export default function CorporateLayout() {
+export default function AppLayout() {
   const { esAdministrador, logout, hasModulo } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(true);
   const headerInfo = useMiPerfilHeader(esAdministrador);
