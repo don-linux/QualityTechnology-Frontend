@@ -57,7 +57,7 @@ export default function MiExpediente() {
 
   const guardar = async () => {
     if (!form.nombre || !form.apellido_paterno || !form.apellido_materno) {
-      return showSnackbar("Nombre y apellidos son obligatorios", "success");
+      return showSnackbar("Nombre y apellidos son obligatorios", "error");
     }
     try {
       await updatePerfil(form);
