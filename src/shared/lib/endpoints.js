@@ -314,7 +314,6 @@ export const ENDPOINTS = {
     },
     medicamentos: {
       base: "/medicamentos",
-      empleados: "/medicamentos/empleados",
       byId: (id) => `/medicamentos/${id}`,
     },
     recambios: {

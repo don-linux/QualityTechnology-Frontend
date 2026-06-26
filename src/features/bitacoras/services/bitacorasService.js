@@ -84,9 +84,6 @@ export function updateParametrosFisicoQuimico(id, data) {
 /* =====================================================
    Medicamentos
 ===================================================== */
-export function listEmpleadosMedicamentos() {
-  return axios.get(B.medicamentos.empleados);
-}
 export function listMedicamentos() {
   return axios.get(B.medicamentos.base);
 }

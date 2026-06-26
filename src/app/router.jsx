@@ -48,7 +48,7 @@ const BitacoraRecepcionInsumos = lazy(() => import("@pages/bitacoras/BitacoraRec
 const ControlVisitas = lazy(() => import("@pages/bitacoras/ControlVisitasPage"));
 const ControlLimpieza = lazy(() => import("@pages/bitacoras/ControlLimpiezaPage"));
 const ParametrosFisicoQuimicos = lazy(() => import("@pages/bitacoras/ParametrosFisicoQuimicosPage"));
-const BitacoraMedicamentos = lazy(() => import("@pages/bitacoras/BitacoraMedicamentosPage"));
+const Medicamentos = lazy(() => import("@pages/bitacoras/MedicamentosPage"));
 const BitacoraRecambios = lazy(() => import("@pages/bitacoras/BitacoraRecambiosPage"));
 const BitacoraInventario = lazy(() => import("@pages/bitacoras/BitacoraInventarioPage"));
 const BioBiometrias = lazy(() => import("@pages/bitacoras/BioBiometriasPage"));
@@ -102,7 +102,7 @@ export default function AppRouter() {
               <Route path="control-visitas" element={<ControlVisitas />} />
               <Route path="control-limpieza" element={<ControlLimpieza />} />
               <Route path="parametros-fisico-quimicos" element={<ParametrosFisicoQuimicos />} />
-              <Route path="medicamentos" element={<BitacoraMedicamentos />} />
+              <Route path="medicamentos" element={<Medicamentos />} />
               <Route path="recambios" element={<BitacoraRecambios />} />
               <Route path="inventario" element={<BitacoraInventario />} />
               <Route path="biometrias" element={<BioBiometrias />} />
