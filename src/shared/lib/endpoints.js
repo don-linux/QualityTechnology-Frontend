@@ -316,10 +316,10 @@ export const ENDPOINTS = {
       base: "/medicamentos",
       byId: (id) => `/medicamentos/${id}`,
     },
-    recambios: {
-      base: "/recambios",
-      empleados: "/recambios/empleados",
-      byId: (id) => `/recambios/${id}`,
+    limpiezaInstalaciones: {
+      base: "/limpieza-instalaciones",
+      empleados: "/limpieza-instalaciones/empleados",
+      byId: (id) => `/limpieza-instalaciones/${id}`,
     },
     inventario: {
       base: "/inventario",

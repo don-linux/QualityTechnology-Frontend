@@ -81,7 +81,7 @@ export const MENU_SECTIONS = [
       { to: "/bitacoras/control-limpieza", icon: <CleaningServices />, label: "Control de Limpieza" },
       { to: "/bitacoras/parametros-fisico-quimicos", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
       { to: "/bitacoras/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
-      { to: "/bitacoras/recambios", icon: <ScienceOutlined />, label: "Recambios" },
+      { to: "/bitacoras/limpieza-instalaciones", icon: <ScienceOutlined />, label: "Limpieza y desinfección de instalaciones" },
       { to: "/bitacoras/biometrias", icon: <Science />, label: "Biometrías" },
       { to: "/bitacoras/alimentacion", icon: <Grass />, label: "Alimentación" },
     ],

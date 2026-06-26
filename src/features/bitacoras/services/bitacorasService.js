@@ -95,19 +95,19 @@ export function updateMedicamento(id, data) {
 }
 
 /* =====================================================
-   Recambios
+   Limpieza y desinfección de instalaciones
 ===================================================== */
-export function listEmpleadosRecambios() {
-  return axios.get(B.recambios.empleados);
+export function listEmpleadosLimpiezaInstalaciones() {
+  return axios.get(B.limpiezaInstalaciones.empleados);
 }
-export function listRecambios() {
-  return axios.get(B.recambios.base);
+export function listLimpiezaInstalaciones() {
+  return axios.get(B.limpiezaInstalaciones.base);
 }
-export function createRecambio(data) {
-  return axios.post(B.recambios.base, data);
+export function createLimpiezaInstalacion(data) {
+  return axios.post(B.limpiezaInstalaciones.base, data);
 }
-export function updateRecambio(id, data) {
-  return axios.put(B.recambios.byId(id), data);
+export function updateLimpiezaInstalacion(id, data) {
+  return axios.put(B.limpiezaInstalaciones.byId(id), data);
 }
 
 /* =====================================================
