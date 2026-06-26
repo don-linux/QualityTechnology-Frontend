@@ -42,7 +42,7 @@ const ETIQUETA_PROCESO = {
   alimentacion: "Alimentación",
   recambio: "Recambio de agua",
   inventario_alevines: "Inventario alevines",
-  parametros: "Parámetros de agua",
+  parametros_fisico_quimicos: "Parámetros físico-químicos",
   medicamentos: "Medicamentos",
   controlFaunaNociva: "Control de Fauna Nociva",
   controlVisitas: "Control de Visitas",

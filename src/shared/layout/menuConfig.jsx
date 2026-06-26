@@ -79,7 +79,7 @@ export const MENU_SECTIONS = [
       { to: "/bitacoras/recepcion-insumos", icon: <ReceiptLong />, label: "Recepción de Insumos" },
       { to: "/bitacoras/control-visitas", icon: <People />, label: "Control de Visitas" },
       { to: "/bitacoras/control-limpieza", icon: <CleaningServices />, label: "Control de Limpieza" },
-      { to: "/bitacoras/parametros", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
+      { to: "/bitacoras/parametros-fisico-quimicos", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
       { to: "/bitacoras/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
       { to: "/bitacoras/recambios", icon: <ScienceOutlined />, label: "Recambios" },
       { to: "/bitacoras/biometrias", icon: <Science />, label: "Biometrías" },

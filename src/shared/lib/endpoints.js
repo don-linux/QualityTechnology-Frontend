@@ -307,10 +307,10 @@ export const ENDPOINTS = {
       empleados: "/control-limpieza/empleados",
       byId: (id) => `/control-limpieza/${id}`,
     },
-    parametros: {
-      base: "/parametros",
-      empleados: "/parametros/empleados",
-      byId: (id) => `/parametros/${id}`,
+    parametrosFisicoQuimicos: {
+      base: "/parametros-fisico-quimicos",
+      empleados: "/parametros-fisico-quimicos/empleados",
+      byId: (id) => `/parametros-fisico-quimicos/${id}`,
     },
     medicamentos: {
       base: "/medicamentos",

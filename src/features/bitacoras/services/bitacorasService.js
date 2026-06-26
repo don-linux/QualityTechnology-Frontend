@@ -65,19 +65,20 @@ export function updateControlLimpieza(id, data) {
 }
 
 /* =====================================================
-   Parámetros
+   Parámetros Físico-Químicos
 ===================================================== */
-export function listEmpleadosParametros() {
-  return axios.get(B.parametros.empleados);
+export function listEmpleadosParametrosFisicoQuimicos() {
+  return axios.get(B.parametrosFisicoQuimicos.empleados);
 }
-export function listParametros() {
-  return axios.get(B.parametros.base);
+export function listParametrosFisicoQuimicos(ubicacion) {
+  const params = ubicacion ? { ubicacion } : undefined;
+  return axios.get(B.parametrosFisicoQuimicos.base, { params });
 }
-export function createParametro(data) {
-  return axios.post(B.parametros.base, data);
+export function createParametrosFisicoQuimico(data) {
+  return axios.post(B.parametrosFisicoQuimicos.base, data);
 }
-export function updateParametro(id, data) {
-  return axios.put(B.parametros.byId(id), data);
+export function updateParametrosFisicoQuimico(id, data) {
+  return axios.put(B.parametrosFisicoQuimicos.byId(id), data);
 }
 
 /* =====================================================
