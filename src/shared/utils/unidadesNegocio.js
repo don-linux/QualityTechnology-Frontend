@@ -7,15 +7,15 @@ export function normalizarTexto(value) {
 }
 
 export function isUnidadGranja(unidad) {
-  const nombre = normalizarTexto(unidad?.fc_nombre || unidad?.label || unidad?.value);
+  const nombre = normalizarTexto(unidad?.nombre || unidad?.label || unidad?.value);
   return nombre.includes("granja");
 }
 
 export function toUnidadNegocioOption(unidad) {
   return {
-    id: unidad.fi_unidad_negocio_id,
-    value: unidad.fc_nombre,
-    label: unidad.fc_nombre,
+    id: unidad.unidad_negocio_id,
+    value: unidad.nombre,
+    label: unidad.nombre,
     raw: unidad,
   };
 }
@@ -25,24 +25,24 @@ export function resolveUnidadByRol(unidades, rol) {
   const opciones = unidades.filter(isUnidadGranja);
 
   if (rolNorm.includes("gam")) {
-    return opciones.find((unidad) => normalizarTexto(unidad.fc_nombre).includes("medellin")) || null;
+    return opciones.find((unidad) => normalizarTexto(unidad.nombre).includes("medellin")) || null;
   }
 
   if (rolNorm.includes("gac")) {
-    return opciones.find((unidad) => normalizarTexto(unidad.fc_nombre).includes("ceiba")) || null;
+    return opciones.find((unidad) => normalizarTexto(unidad.nombre).includes("ceiba")) || null;
   }
 
   return null;
 }
 
 export function getNombreUnidad(unidad) {
-  return unidad?.fc_nombre || unidad?.label || unidad?.value || "";
+  return unidad?.nombre || unidad?.label || unidad?.value || "";
 }
 
 /**
- * Cruzar texto de granja/unidad ({@link fc_nombre}) con filas de `listUbicacionesActivas()`
+ * Cruzar texto de granja/unidad ({@link nombre}) con filas de `listUbicacionesActivas()`
  * cuando el nombre literal no coincide. Mejora `?granja=` y `ubicacion_id` en inventarios.
- * @param {string} label — ej. `fc_nombre` de la unidad de negocio
+ * @param {string} label — ej. `nombre` de la unidad de negocio
  * @param {Array<{ ubicacion_id?: number, nombre: string }>} ubicacionesRows
  * @returns {number|null}
  */
@@ -67,7 +67,7 @@ function nombresGranjaCoinciden(a, b) {
  * Indica si un registro (pileta, inventario, bitácora…) pertenece a la opción de sede/granja.
  * Prioriza `ubicacion_id`; si no hay FK, compara nombres con normalización y alias cortos.
  */
-export function rowPerteneceAUbicacionGranja(row, op, field = "fc_granja") {
+export function rowPerteneceAUbicacionGranja(row, op, field = "granja") {
   if (!row || !op) return false;
 
   const rowUbicId = row.ubicacion_id ?? row.ubicacionId ?? null;
@@ -81,10 +81,9 @@ export function rowPerteneceAUbicacionGranja(row, op, field = "fc_granja") {
 
   const raw =
     row[field] ??
-    row.fc_granja ??
+    row.granja ??
     row.ubicacion?.nombre ??
     row.ubicacion ??
-    row.fc_granja_asignada ??
     "";
   if (!raw) return false;
   if (raw === op.value || raw === op.label) return true;

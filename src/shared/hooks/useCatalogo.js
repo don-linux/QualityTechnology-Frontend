@@ -11,8 +11,8 @@ import useSnackbar from "@shared/hooks/useSnackbar";
  * @param {Function} options.createFn     - Create a new item (name)
  * @param {Function} options.updateFn     - Update an item (id, name)
  * @param {Function} options.deactivateFn - Deactivate an item (id)
- * @param {string}   options.idField      - Primary key field (e.g. "fi_departamento_id")
- * @param {string}   options.nameField    - Name field (e.g. "fc_nombre")
+ * @param {string}   options.idField      - Primary key field (e.g. "departamento_id")
+ * @param {string}   options.nameField    - Name field (e.g. "nombre")
  * @param {string}   options.entityLabel  - Human label (e.g. "departamento")
  */
 export default function useCatalogo({
@@ -21,7 +21,7 @@ export default function useCatalogo({
   updateFn,
   deactivateFn,
   idField,
-  nameField = "fc_nombre",
+  nameField = "nombre",
   entityLabel,
 }) {
   const showSnackbar = useSnackbar();

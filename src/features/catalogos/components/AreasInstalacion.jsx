@@ -6,11 +6,6 @@ import {
   activateAreaInstalacion,
   deactivateAreaInstalacion,
 } from "@features/catalogos/services/areasInstalacionService";
-import {
-  getAreaInstalacionId,
-  getAreaInstalacionNombre,
-  areaInstalacionActivo,
-} from "@features/catalogos/utils/catalogEntityGetters";
 
 export default function AreasInstalacion() {
   return (
@@ -27,9 +22,6 @@ export default function AreasInstalacion() {
       updateFn={updateAreaInstalacion}
       activateFn={activateAreaInstalacion}
       deactivateFn={deactivateAreaInstalacion}
-      getId={getAreaInstalacionId}
-      getNombre={getAreaInstalacionNombre}
-      isActivo={areaInstalacionActivo}
     />
   );
 }

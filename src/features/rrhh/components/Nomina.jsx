@@ -33,15 +33,15 @@ export default function Nomina() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
   const [form, setForm] = useState({
-    fc_nombre_empleado: "",
-    fi_empleado_id: "",
-    fd_fecha_pago: "",
-    fn_total: "",
-    fn_bono: "",
-    fn_deuda: "",
-    fn_descuento: "",
-    fn_anticipo: "",
-    fi_usuario_id: usuarioId,
+    nombre_empleado: "",
+    empleado_id: "",
+    fecha_pago: "",
+    total: "",
+    bono: "",
+    deuda: "",
+    descuento: "",
+    anticipo: "",
+    usuario_id: usuarioId,
   });
 
   const [data, setData] = useState([]);
@@ -52,14 +52,14 @@ export default function Nomina() {
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
-    "fc_nombre_empleado",
-    "fi_empleado_id",
-    "fd_fecha_pago",
-    "fn_total",
-    "fn_bono",
-    "fn_deuda",
-    "fn_descuento",
-    "fn_anticipo",
+    "nombre_empleado",
+    "empleado_id",
+    "fecha_pago",
+    "total",
+    "bono",
+    "deuda",
+    "descuento",
+    "anticipo",
   ];
 
   const handleChange = (e) => {
@@ -75,8 +75,8 @@ export default function Nomina() {
   useEffect(() => { cargarDatos(); }, []);
 
   const prepararPayload = () => {
-    const empleadoId = form.fi_empleado_id ? Number(form.fi_empleado_id) : null;
-    if (form.fi_empleado_id && Number.isNaN(empleadoId)) {
+    const empleadoId = form.empleado_id ? Number(form.empleado_id) : null;
+    if (form.empleado_id && Number.isNaN(empleadoId)) {
       showSnackbar("El ID del empleado debe ser numérico.", "success");
       return null;
     }
@@ -84,15 +84,15 @@ export default function Nomina() {
     const aNumero = (valor) => (valor === "" || valor === null ? 0 : Number(valor));
 
     return {
-      fc_nombre_empleado: form.fc_nombre_empleado.trim(),
-      fi_empleado_id: empleadoId,
-      fd_fecha_pago: form.fd_fecha_pago,
-      fn_total: aNumero(form.fn_total),
-      fn_bono: aNumero(form.fn_bono),
-      fn_deuda: aNumero(form.fn_deuda),
-      fn_descuento: aNumero(form.fn_descuento),
-      fn_anticipo: aNumero(form.fn_anticipo),
-      fi_usuario_id: Number(form.fi_usuario_id) || 1,
+      nombre_empleado: form.nombre_empleado.trim(),
+      empleado_id: empleadoId,
+      fecha_pago: form.fecha_pago,
+      total: aNumero(form.total),
+      bono: aNumero(form.bono),
+      deuda: aNumero(form.deuda),
+      descuento: aNumero(form.descuento),
+      anticipo: aNumero(form.anticipo),
+      usuario_id: Number(form.usuario_id) || 1,
     };
   };
 
@@ -112,15 +112,15 @@ export default function Nomina() {
 
   const limpiar = () => {
     setForm({
-      fc_nombre_empleado: "",
-      fi_empleado_id: "",
-      fd_fecha_pago: "",
-      fn_total: "",
-      fn_bono: "",
-      fn_deuda: "",
-      fn_descuento: "",
-      fn_anticipo: "",
-      fi_usuario_id: usuarioId,
+      nombre_empleado: "",
+      empleado_id: "",
+      fecha_pago: "",
+      total: "",
+      bono: "",
+      deuda: "",
+      descuento: "",
+      anticipo: "",
+      usuario_id: usuarioId,
     });
     setEditId(null);
     clearErrors();
@@ -129,17 +129,17 @@ export default function Nomina() {
 
   const editarNomina = (r) => {
     clearErrors();
-    setEditId(r.fi_nomina_id);
+    setEditId(r.nomina_id);
     setForm({
-      fc_nombre_empleado: r.fc_nombre_empleado ?? "",
-      fi_empleado_id: r.fi_empleado_id ?? "",
-      fd_fecha_pago: r.fd_fecha_pago?.split("T")[0] ?? "",
-      fn_total: r.fn_total ?? "",
-      fn_bono: r.fn_bono ?? "",
-      fn_deuda: r.fn_deuda ?? "",
-      fn_descuento: r.fn_descuento ?? "",
-      fn_anticipo: r.fn_anticipo ?? "",
-      fi_usuario_id: usuarioId,
+      nombre_empleado: r.nombre_empleado ?? "",
+      empleado_id: r.empleado_id ?? "",
+      fecha_pago: r.fecha_pago?.split("T")[0] ?? "",
+      total: r.total ?? "",
+      bono: r.bono ?? "",
+      deuda: r.deuda ?? "",
+      descuento: r.descuento ?? "",
+      anticipo: r.anticipo ?? "",
+      usuario_id: usuarioId,
     });
     abrirFormulario();
   };
@@ -158,12 +158,12 @@ export default function Nomina() {
       startY: 20,
       head: [["Empleado", "Total", "Bono", "Deuda", "Descuento", "Anticipo"]],
       body: data.map((r) => [
-        r.fc_nombre_empleado,
-        formatPrecio(r.fn_total),
-        formatPrecio(r.fn_bono),
-        formatPrecio(r.fn_deuda),
-        formatPrecio(r.fn_descuento),
-        formatPrecio(r.fn_anticipo),
+        r.nombre_empleado,
+        formatPrecio(r.total),
+        formatPrecio(r.bono),
+        formatPrecio(r.deuda),
+        formatPrecio(r.descuento),
+        formatPrecio(r.anticipo),
       ]),
     });
     doc.save("Nomina.pdf");
@@ -178,28 +178,28 @@ export default function Nomina() {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField label="Nombre del empleado" name="fc_nombre_empleado" value={form.fc_nombre_empleado} onChange={handleChange} fullWidth error={!!errors.fc_nombre_empleado} helperText={errors.fc_nombre_empleado} />
+              <TextField label="Nombre del empleado" name="nombre_empleado" value={form.nombre_empleado} onChange={handleChange} fullWidth error={!!errors.nombre_empleado} helperText={errors.nombre_empleado} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <CampoNumerico label="ID" decimalScale={0} name="fi_empleado_id" value={form.fi_empleado_id} onChange={handleChange} fullWidth error={!!errors.fi_empleado_id} helperText={errors.fi_empleado_id} />
+              <CampoNumerico label="ID" decimalScale={0} name="empleado_id" value={form.empleado_id} onChange={handleChange} fullWidth error={!!errors.empleado_id} helperText={errors.empleado_id} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField label="Fecha de Pago" type="date" name="fd_fecha_pago" InputLabelProps={{ shrink: true }} value={form.fd_fecha_pago} onChange={handleChange} fullWidth error={!!errors.fd_fecha_pago} helperText={errors.fd_fecha_pago} />
+              <TextField label="Fecha de Pago" type="date" name="fecha_pago" InputLabelProps={{ shrink: true }} value={form.fecha_pago} onChange={handleChange} fullWidth error={!!errors.fecha_pago} helperText={errors.fecha_pago} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <CampoNumerico label="Total" prefix="$" decimalScale={2} name="fn_total" value={form.fn_total} onChange={handleChange} fullWidth error={!!errors.fn_total} helperText={errors.fn_total} />
+              <CampoNumerico label="Total" prefix="$" decimalScale={2} name="total" value={form.total} onChange={handleChange} fullWidth error={!!errors.total} helperText={errors.total} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <CampoNumerico label="Bono" prefix="$" decimalScale={2} name="fn_bono" value={form.fn_bono} onChange={handleChange} fullWidth error={!!errors.fn_bono} helperText={errors.fn_bono} />
+              <CampoNumerico label="Bono" prefix="$" decimalScale={2} name="bono" value={form.bono} onChange={handleChange} fullWidth error={!!errors.bono} helperText={errors.bono} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <CampoNumerico label="Deuda" prefix="$" decimalScale={2} name="fn_deuda" value={form.fn_deuda} onChange={handleChange} fullWidth error={!!errors.fn_deuda} helperText={errors.fn_deuda} />
+              <CampoNumerico label="Deuda" prefix="$" decimalScale={2} name="deuda" value={form.deuda} onChange={handleChange} fullWidth error={!!errors.deuda} helperText={errors.deuda} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <CampoNumerico label="Descuento" prefix="$" decimalScale={2} name="fn_descuento" value={form.fn_descuento} onChange={handleChange} fullWidth error={!!errors.fn_descuento} helperText={errors.fn_descuento} />
+              <CampoNumerico label="Descuento" prefix="$" decimalScale={2} name="descuento" value={form.descuento} onChange={handleChange} fullWidth error={!!errors.descuento} helperText={errors.descuento} />
             </Grid>
             <Grid size={{ xs: 12, md: 2 }}>
-              <CampoNumerico label="Anticipo" prefix="$" decimalScale={2} name="fn_anticipo" value={form.fn_anticipo} onChange={handleChange} fullWidth error={!!errors.fn_anticipo} helperText={errors.fn_anticipo} />
+              <CampoNumerico label="Anticipo" prefix="$" decimalScale={2} name="anticipo" value={form.anticipo} onChange={handleChange} fullWidth error={!!errors.anticipo} helperText={errors.anticipo} />
             </Grid>
           </Grid>
 
@@ -246,16 +246,16 @@ export default function Nomina() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {ordenarYNumerar(data, ["fi_nomina_id", "nomina_id"]).map((r) => (
-              <TableRow key={r.fi_nomina_id}>
+            {ordenarYNumerar(data, ["nomina_id", "id"]).map((r) => (
+              <TableRow key={r.nomina_id}>
                 <TableCell>{r._num}</TableCell>
-                <TableCell>{r.fc_nombre_empleado}</TableCell>
-                <TableCell>{formatPrecio(r.fn_total)}</TableCell>
-                <TableCell>{formatPrecio(r.fn_bono)}</TableCell>
-                <TableCell>{formatPrecio(r.fn_deuda)}</TableCell>
-                <TableCell>{formatPrecio(r.fn_descuento)}</TableCell>
-                <TableCell>{formatPrecio(r.fn_anticipo)}</TableCell>
-                <TableCell>{formatFecha(r.fd_fecha_pago)}</TableCell>
+                <TableCell>{r.nombre_empleado}</TableCell>
+                <TableCell>{formatPrecio(r.total)}</TableCell>
+                <TableCell>{formatPrecio(r.bono)}</TableCell>
+                <TableCell>{formatPrecio(r.deuda)}</TableCell>
+                <TableCell>{formatPrecio(r.descuento)}</TableCell>
+                <TableCell>{formatPrecio(r.anticipo)}</TableCell>
+                <TableCell>{formatFecha(r.fecha_pago)}</TableCell>
                 <TableCell>
                   <Button size="small" color="warning" variant="contained" onClick={() => editarNomina(r)}>
                     <Edit fontSize="small" />

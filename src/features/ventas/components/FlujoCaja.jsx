@@ -30,7 +30,7 @@ function TablaMovimientos({ movimientos }) {
       showSnackbar("No se pudo abrir la factura", "error");
     }
   };
-  const filas = ordenarYNumerar(movimientos, ["fi_movimiento_id"]);
+  const filas = ordenarYNumerar(movimientos, ["movimiento_id"]);
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -53,28 +53,28 @@ function TablaMovimientos({ movimientos }) {
         </TableHead>
         <TableBody>
           {filas.map((row) => (
-            <TableRow key={row.fi_movimiento_id}>
+            <TableRow key={row.movimiento_id}>
               <TableCell>{row._num}</TableCell>
-              <TableCell>{formatFecha(row.fd_fecha)}</TableCell>
-              <TableCell align="right">{formatPrecio(row.fn_ingreso)}</TableCell>
-              <TableCell align="right">{formatPrecio(row.fn_egreso)}</TableCell>
-              <TableCell>{row.fc_beneficiario}</TableCell>
+              <TableCell>{formatFecha(row.fecha)}</TableCell>
+              <TableCell align="right">{formatPrecio(row.ingreso)}</TableCell>
+              <TableCell align="right">{formatPrecio(row.egreso)}</TableCell>
+              <TableCell>{row.beneficiario}</TableCell>
               <TableCell sx={{ maxWidth: 160 }}>
-                <span title={row.fc_concepto}>{truncar(row.fc_concepto)}</span>
+                <span title={row.concepto}>{truncar(row.concepto)}</span>
               </TableCell>
               <TableCell sx={{ maxWidth: 200 }}>
-                <span title={row.fc_observaciones}>{truncar(row.fc_observaciones)}</span>
+                <span title={row.observaciones}>{truncar(row.observaciones)}</span>
               </TableCell>
-              <TableCell>{row.fc_cuenta}</TableCell>
-              <TableCell>{row.fc_categoria}</TableCell>
-              <TableCell>{row.fc_subcategoria}</TableCell>
-              <TableCell>{row.fc_noproyecto}</TableCell>
+              <TableCell>{row.cuenta_nombre}</TableCell>
+              <TableCell>{row.categoria}</TableCell>
+              <TableCell>{row.subcategoria}</TableCell>
+              <TableCell>{row.noproyecto}</TableCell>
               <TableCell>
-                {row.fc_factura && row.fc_factura !== "NO" ? (
+                {row.factura && row.factura !== "NO" ? (
                   <Link
                     component="button"
                     type="button"
-                    onClick={() => verFactura(row.fc_factura)}
+                    onClick={() => verFactura(row.factura)}
                     sx={{
                       color: "#1D5C42",
                       fontWeight: "bold",
@@ -83,13 +83,13 @@ function TablaMovimientos({ movimientos }) {
                   >
                      Ver factura
                   </Link>
-                ) : row.fc_factura === "NO" ? (
+                ) : row.factura === "NO" ? (
                   "No aplica"
                 ) : (
                   "Pendiente"
                 )}
               </TableCell>
-              <TableCell>{row.fc_estatus}</TableCell>
+              <TableCell>{row.estatus}</TableCell>
             </TableRow>
           ))}
           {filas.length === 0 && (

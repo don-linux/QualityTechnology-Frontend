@@ -49,12 +49,12 @@ export default function Empleados() {
   const { confirm, ConfirmModal } = useConfirm();
 
   const [form, setForm] = useState({
-    fc_nombre: "", fc_apellido_paterno: "", fc_apellido_materno: "",
-    fc_genero: "", fd_fecha_nacimiento: "", fc_estado: "",
-    fc_ciudad: "", fc_calle: "", fc_codigo_postal: "",
-    fc_referencias: "", ft_comentarios_adicionales: "",
-    fi_departamento_id: "", fi_puesto_id: "", fi_unidad_negocio_id: "",
-    fd_fecha_contratacion: "", fd_fecha_baja: "", fn_uniformes: 0,
+    nombre: "", apellido_paterno: "", apellido_materno: "",
+    genero: "", fecha_nacimiento: "", estado: "",
+    ciudad: "", calle: "", codigo_postal: "",
+    referencias: "", comentarios_adicionales: "",
+    departamento_id: "", puesto_id: "", unidad_negocio_id: "",
+    fecha_contratacion: "", fecha_baja: "", uniformes: 0,
   });
 
   useEffect(() => { cargarDatos(); }, []);
@@ -81,66 +81,66 @@ export default function Empleados() {
   const seleccionarEmpleado = (e) => {
     setSeleccionado(e);
     setForm({
-      fc_nombre: e.fc_nombre || "",
-      fc_apellido_paterno: e.fc_apellido_paterno || "",
-      fc_apellido_materno: e.fc_apellido_materno || "",
-      fc_genero: e.fc_genero || "",
-      fd_fecha_nacimiento: e.fd_fecha_nacimiento ? e.fd_fecha_nacimiento.substring(0, 10) : "",
-      fc_estado: e.fc_estado || "",
-      fc_ciudad: e.fc_ciudad || "",
-      fc_calle: e.fc_calle || "",
-      fc_codigo_postal: e.fc_codigo_postal || "",
-      fc_referencias: e.fc_referencias || "",
-      ft_comentarios_adicionales: e.ft_comentarios_adicionales || "",
-      fi_departamento_id: e.fi_departamento_id || "",
-      fi_puesto_id: e.fi_puesto_id || "",
-      fi_unidad_negocio_id: e.fi_unidad_negocio_id || "",
-      fd_fecha_contratacion: e.fd_fecha_contratacion ? e.fd_fecha_contratacion.substring(0, 10) : "",
-      fd_fecha_baja: e.fd_fecha_baja ? e.fd_fecha_baja.substring(0, 10) : "",
-      fn_uniformes: e.fn_uniformes ?? 0,
+      nombre: e.nombre || "",
+      apellido_paterno: e.apellido_paterno || "",
+      apellido_materno: e.apellido_materno || "",
+      genero: e.genero || "",
+      fecha_nacimiento: e.fecha_nacimiento ? e.fecha_nacimiento.substring(0, 10) : "",
+      estado: e.estado || "",
+      ciudad: e.ciudad || "",
+      calle: e.calle || "",
+      codigo_postal: e.codigo_postal || "",
+      referencias: e.referencias || "",
+      comentarios_adicionales: e.comentarios_adicionales || "",
+      departamento_id: e.departamento_id || "",
+      puesto_id: e.puesto_id || "",
+      unidad_negocio_id: e.unidad_negocio_id || "",
+      fecha_contratacion: e.fecha_contratacion ? e.fecha_contratacion.substring(0, 10) : "",
+      fecha_baja: e.fecha_baja ? e.fecha_baja.substring(0, 10) : "",
+      uniformes: e.uniformes ?? 0,
     });
   };
 
   const limpiar = () => {
     setSeleccionado(null);
     setForm({
-      fc_nombre: "", fc_apellido_paterno: "", fc_apellido_materno: "",
-      fc_genero: "", fd_fecha_nacimiento: "", fc_estado: "",
-      fc_ciudad: "", fc_calle: "", fc_codigo_postal: "",
-      fc_referencias: "", ft_comentarios_adicionales: "",
-      fi_departamento_id: "", fi_puesto_id: "", fi_unidad_negocio_id: "",
-      fd_fecha_contratacion: "", fd_fecha_baja: "", fn_uniformes: 0,
+      nombre: "", apellido_paterno: "", apellido_materno: "",
+      genero: "", fecha_nacimiento: "", estado: "",
+      ciudad: "", calle: "", codigo_postal: "",
+      referencias: "", comentarios_adicionales: "",
+      departamento_id: "", puesto_id: "", unidad_negocio_id: "",
+      fecha_contratacion: "", fecha_baja: "", uniformes: 0,
     });
   };
 
   const actualizarEmpleado = async () => {
     if (!seleccionado) return;
     try {
-      await updateEmpleado(seleccionado.fi_empleado_id, form);
+      await updateEmpleado(seleccionado.empleado_id, form);
       await cargarDatos();
       limpiar();
     } catch (e) { console.error(e); showSnackbar("Error al actualizar", "error"); }
   };
 
   const toggleActivo = async (emp) => {
-    const accion = emp.fb_activo ? "desactivar" : "activar";
-    if (!await confirm(`¿Seguro que deseas ${accion} a ${emp.fc_nombre} ${emp.fc_apellido_paterno}?`)) return;
+    const accion = emp.activo ? "desactivar" : "activar";
+    if (!await confirm(`¿Seguro que deseas ${accion} a ${emp.nombre} ${emp.apellido_paterno}?`)) return;
     try {
-      if (emp.fb_activo) {
+      if (emp.activo) {
         const fechaBaja = window.prompt("Fecha de baja (YYYY-MM-DD)", todayString());
         if (fechaBaja === null) return;
         if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaBaja)) {
           return showSnackbar("Fecha de baja invalida", "error");
         }
-        await toggleEmpleadoActivo(emp.fi_empleado_id, false, { fd_fecha_baja: fechaBaja });
+        await toggleEmpleadoActivo(emp.empleado_id, false, { fecha_baja: fechaBaja });
       } else {
-        await toggleEmpleadoActivo(emp.fi_empleado_id, true);
+        await toggleEmpleadoActivo(emp.empleado_id, true);
       }
       await cargarDatos();
     } catch (e) { console.error(e); }
   };
 
-  const perfilIncompleto = (e) => !e.fd_fecha_nacimiento || !e.fc_calle || !e.fc_estado;
+  const perfilIncompleto = (e) => !e.fecha_nacimiento || !e.calle || !e.estado;
 
   return (
     <Container maxWidth="lg" sx={{ pt: 2, pb: 4 }}>
@@ -161,81 +161,81 @@ export default function Empleados() {
                 </IconButton>
               </Tooltip>
               <Typography variant="subtitle1" fontWeight="bold">
-                Editando: {seleccionado.fc_nombre} {seleccionado.fc_apellido_paterno}
+                Editando: {seleccionado.nombre} {seleccionado.apellido_paterno}
               </Typography>
             </Box>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_nombre" label="Nombre" fullWidth value={form.fc_nombre} onChange={handleChange} />
+                <TextField name="nombre" label="Nombre" fullWidth value={form.nombre} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_apellido_paterno" label="Apellido Paterno" fullWidth value={form.fc_apellido_paterno} onChange={handleChange} />
+                <TextField name="apellido_paterno" label="Apellido Paterno" fullWidth value={form.apellido_paterno} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_apellido_materno" label="Apellido Materno" fullWidth value={form.fc_apellido_materno} onChange={handleChange} />
+                <TextField name="apellido_materno" label="Apellido Materno" fullWidth value={form.apellido_materno} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fc_genero" label="Genero" fullWidth value={form.fc_genero} onChange={handleChange}>
+                <TextField select name="genero" label="Genero" fullWidth value={form.genero} onChange={handleChange}>
                   <MenuItem value="">Sin especificar</MenuItem>
                   <MenuItem value="Masculino">Masculino</MenuItem>
                   <MenuItem value="Femenino">Femenino</MenuItem>
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fd_fecha_nacimiento" label="Fecha Nacimiento" type="date" fullWidth value={form.fd_fecha_nacimiento} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+                <TextField name="fecha_nacimiento" label="Fecha Nacimiento" type="date" fullWidth value={form.fecha_nacimiento} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fd_fecha_contratacion" label="Fecha Contratacion" type="date" fullWidth value={form.fd_fecha_contratacion} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+                <TextField name="fecha_contratacion" label="Fecha Contratacion" type="date" fullWidth value={form.fecha_contratacion} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fd_fecha_baja" label="Fecha Baja" type="date" fullWidth value={form.fd_fecha_baja} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
+                <TextField name="fecha_baja" label="Fecha Baja" type="date" fullWidth value={form.fecha_baja} onChange={handleChange} slotProps={{ inputLabel: { shrink: true } }} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fi_departamento_id" label="Departamento" fullWidth value={form.fi_departamento_id} onChange={handleChange}>
+                <TextField select name="departamento_id" label="Departamento" fullWidth value={form.departamento_id} onChange={handleChange}>
                   {departamentos.map((d) => (
-                    <MenuItem key={d.fi_departamento_id} value={d.fi_departamento_id}>{d.fc_nombre}</MenuItem>
+                    <MenuItem key={d.departamento_id} value={d.departamento_id}>{d.nombre}</MenuItem>
                   ))}
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fi_puesto_id" label="Puesto" fullWidth value={form.fi_puesto_id} onChange={handleChange}>
+                <TextField select name="puesto_id" label="Puesto" fullWidth value={form.puesto_id} onChange={handleChange}>
                   <MenuItem value="">Sin asignar</MenuItem>
                   {puestos.map((p) => (
-                    <MenuItem key={p.fi_puesto_id} value={p.fi_puesto_id}>{p.fc_nombre}</MenuItem>
+                    <MenuItem key={p.puesto_id} value={p.puesto_id}>{p.nombre}</MenuItem>
                   ))}
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fi_unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.fi_unidad_negocio_id} onChange={handleChange}>
+                <TextField select name="unidad_negocio_id" label="Unidad de Negocio" fullWidth value={form.unidad_negocio_id} onChange={handleChange}>
                   <MenuItem value="">Sin asignar</MenuItem>
                   {unidadesNegocio.map((u) => (
-                    <MenuItem key={u.fi_unidad_negocio_id} value={u.fi_unidad_negocio_id}>{u.fc_nombre}</MenuItem>
+                    <MenuItem key={u.unidad_negocio_id} value={u.unidad_negocio_id}>{u.nombre}</MenuItem>
                   ))}
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField select name="fn_uniformes" label="Uniformes" fullWidth value={form.fn_uniformes} onChange={handleChange}>
+                <TextField select name="uniformes" label="Uniformes" fullWidth value={form.uniformes} onChange={handleChange}>
                   <MenuItem value={0}>Sin uniforme</MenuItem>
                   <MenuItem value={1}>Entregado</MenuItem>
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_estado" label="Estado" fullWidth value={form.fc_estado} onChange={handleChange} />
+                <TextField name="estado" label="Estado" fullWidth value={form.estado} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_ciudad" label="Ciudad" fullWidth value={form.fc_ciudad} onChange={handleChange} />
+                <TextField name="ciudad" label="Ciudad" fullWidth value={form.ciudad} onChange={handleChange} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField name="fc_codigo_postal" label="Codigo Postal" fullWidth value={form.fc_codigo_postal} onChange={handleChange} />
+                <TextField name="codigo_postal" label="Codigo Postal" fullWidth value={form.codigo_postal} onChange={handleChange} />
               </Grid>
               <Grid size={12}>
-                <TextField name="fc_calle" label="Calle / Direccion" fullWidth value={form.fc_calle} onChange={handleChange} />
+                <TextField name="calle" label="Calle / Direccion" fullWidth value={form.calle} onChange={handleChange} />
               </Grid>
               <Grid size={12}>
-                <TextField name="fc_referencias" label="Referencias" fullWidth value={form.fc_referencias} onChange={handleChange} />
+                <TextField name="referencias" label="Referencias" fullWidth value={form.referencias} onChange={handleChange} />
               </Grid>
               <Grid size={12}>
-                <TextField name="ft_comentarios_adicionales" label="Comentarios" fullWidth multiline rows={2} value={form.ft_comentarios_adicionales} onChange={handleChange} />
+                <TextField name="comentarios_adicionales" label="Comentarios" fullWidth multiline rows={2} value={form.comentarios_adicionales} onChange={handleChange} />
               </Grid>
               <Grid size={12}>
                 <Button variant="contained" color="primary" sx={{ mr: 1 }} onClick={actualizarEmpleado}>Guardar</Button>
@@ -245,9 +245,9 @@ export default function Empleados() {
 
             {seleccionado && (
               <Box sx={{ mt: 3 }}>
-                <DocumentosEmpleado empleadoId={seleccionado.fi_empleado_id} />
+                <DocumentosEmpleado empleadoId={seleccionado.empleado_id} />
                 <Divider sx={{ my: 3 }} />
-                <ActasAdministrativas empleadoId={seleccionado.fi_empleado_id} />
+                <ActasAdministrativas empleadoId={seleccionado.empleado_id} />
               </Box>
             )}
           </CardContent>
@@ -273,21 +273,21 @@ export default function Empleados() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {ordenarYNumerar(empleados, ["fi_empleado_id"]).map((e) => (
-                <TableRow key={e.fi_empleado_id} hover sx={{ opacity: e.fb_activo ? 1 : 0.5 }}>
+              {ordenarYNumerar(empleados, ["empleado_id", "id"]).map((e) => (
+                <TableRow key={e.empleado_id} hover sx={{ opacity: e.activo ? 1 : 0.5 }}>
                   <TableCell>{e._num}</TableCell>
-                  <TableCell>{e.fc_nombre} {e.fc_apellido_paterno} {e.fc_apellido_materno}</TableCell>
+                  <TableCell>{e.nombre} {e.apellido_paterno} {e.apellido_materno}</TableCell>
                   <TableCell>{e.puesto_nombre || "-"}</TableCell>
                   <TableCell>{e.departamento_nombre || "-"}</TableCell>
                   <TableCell>{e.unidad_negocio_nombre || "-"}</TableCell>
                   <TableCell>
                     <Chip
-                      label={e.fb_activo ? "Activo" : "Inactivo"}
-                      color={e.fb_activo ? "success" : "default"}
+                      label={e.activo ? "Activo" : "Inactivo"}
+                      color={e.activo ? "success" : "default"}
                       size="small"
                     />
                   </TableCell>
-                  <TableCell>{formatDate(e.fd_fecha_baja)}</TableCell>
+                  <TableCell>{formatDate(e.fecha_baja)}</TableCell>
                   <TableCell>
                     {perfilIncompleto(e) && (
                       <Chip label="Incompleto" color="warning" size="small" variant="outlined" />
@@ -300,10 +300,10 @@ export default function Empleados() {
                     <Button
                       variant="outlined"
                       size="small"
-                      color={e.fb_activo ? "error" : "success"}
+                      color={e.activo ? "error" : "success"}
                       onClick={() => toggleActivo(e)}
                     >
-                      {e.fb_activo ? "Desactivar" : "Activar"}
+                      {e.activo ? "Desactivar" : "Activar"}
                     </Button>
                   </TableCell>
                 </TableRow>

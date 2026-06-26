@@ -4,10 +4,10 @@
  * el registro más antiguo es 1 y el más reciente es el número mayor.
  *
  * El orden se calcula con el id autoincremental de la base de datos que cada
- * serializador del backend expone (p. ej. `fi_id`, `fi_<entidad>_id` o `id`).
+ * serializador del backend expone (p. ej. `id` o `<entidad>_id`).
  */
 
-const CLAVES_ID_COMUNES = ["id", "fi_id"];
+const CLAVES_ID_COMUNES = ["id"];
 
 /** Obtiene el id de base de datos de una fila probando las claves indicadas. */
 export function obtenerIdRegistro(row, idKeys) {

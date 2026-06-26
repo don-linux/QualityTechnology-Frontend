@@ -11,7 +11,7 @@ export function filtrosUbicacionAParams(params, filtros) {
     if (filtros.ubicacion_id != null && filtros.ubicacion_id !== "") {
       params.ubicacion_id = filtros.ubicacion_id;
     }
-    const g = filtros.granja ?? filtros.nombre ?? filtros.fc_granja;
+    const g = filtros.granja ?? filtros.nombre;
     if (g) params.granja = g;
     return;
   }

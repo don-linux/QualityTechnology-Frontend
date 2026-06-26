@@ -65,7 +65,7 @@ export default function Vacaciones() {
     if (busqueda.trim() === "") obtenerDatos();
     else {
       const filtrado = vacaciones.filter((v) =>
-        v.fc_nombre_empleado.toLowerCase().includes(busqueda.toLowerCase())
+        v.nombre_empleado.toLowerCase().includes(busqueda.toLowerCase())
       );
       setVacaciones(filtrado);
     }
@@ -93,11 +93,11 @@ export default function Vacaciones() {
 
     try {
       await createVacaciones({
-        fc_nombre_empleado: nuevoForm.nombre.trim(),
-        fi_empleado_id: idEmpleado,
-        fc_departamento: nuevoForm.departamento || "General",
-        fd_inicio_periodo: nuevoForm.inicio,
-        fd_fin_periodo: nuevoForm.fin,
+        nombre_empleado: nuevoForm.nombre.trim(),
+        empleado_id: idEmpleado,
+        departamento: nuevoForm.departamento || "General",
+        fecha_inicio: nuevoForm.inicio,
+        fecha_fin: nuevoForm.fin,
       });
       setOpenNuevo(false);
       obtenerDatos();
@@ -321,18 +321,18 @@ export default function Vacaciones() {
           </TableHead>
 
           <TableBody>
-            {ordenarYNumerar(vacaciones, ["fi_vacacion_id", "vacacion_id"]).map((v, i) => {
-              const isEditing = editandoId === v.fi_vacacion_id;
+            {ordenarYNumerar(vacaciones, ["vacacion_id", "id"]).map((v, i) => {
+              const isEditing = editandoId === v.vacacion_id;
               const data = isEditing ? tempData : v;
 
               const disponibles =
-                (data.fn_vacaciones_anio || 0) +
-                (data.fn_dias_previos || 0) -
-                (data.fn_vacaciones_disfrutadas || 0);
+                (data.vacaciones_anio || 0) +
+                (data.dias_previos || 0) -
+                (data.vacaciones_disfrutadas || 0);
 
               return (
                 <TableRow
-                  key={v.fi_vacacion_id}
+                  key={v.vacacion_id}
                   sx={{
                     backgroundColor: isEditing
                       ? "#fff9c4"
@@ -345,37 +345,37 @@ export default function Vacaciones() {
                   {/* DATOS DEL EMPLEADO */}
                   <TableCell align="center">{v._num}</TableCell>
                   <TableCell sx={{ maxWidth: 180, whiteSpace: "normal" }}>
-                    {v.fc_nombre_empleado}
+                    {v.nombre_empleado}
                   </TableCell>
-                  <TableCell align="center">{v.fi_empleado_id}</TableCell>
+                  <TableCell align="center">{v.empleado_id}</TableCell>
                   <TableCell align="center">
-                    {v.fd_inicio_periodo?.slice(0, 10)}
+                    {v.fecha_inicio?.slice(0, 10)}
                   </TableCell>
                   <TableCell align="center">
-                    {v.fd_fin_periodo?.slice(0, 10)}
+                    {v.fecha_fin?.slice(0, 10)}
                   </TableCell>
-                  <TableCell align="center">{v.fc_departamento}</TableCell>
+                  <TableCell align="center">{v.departamento}</TableCell>
 
                   {/* CAMPOS EDITABLES */}
                   {[
-                    "fn_dias_trabajados",
-                    "fn_vacaciones_v",
-                    "fn_enfermedad_e",
-                    "fn_maternidad_m",
-                    "fn_permiso_parcial_pp",
-                    "fn_permiso_total_pt",
-                    "fn_inasistencias_i",
-                    "fn_vacaciones_anio",
-                    "fn_dias_previos",
-                    "fn_vacaciones_disfrutadas",
+                    "dias_trabajados",
+                    "vacaciones_v",
+                    "enfermedad_e",
+                    "maternidad_m",
+                    "permiso_parcial_pp",
+                    "permiso_total_pt",
+                    "inasistencias_i",
+                    "vacaciones_anio",
+                    "dias_previos",
+                    "vacaciones_disfrutadas",
                   ].map((campo) => (
                     <TableCell
                       key={campo}
                       align="center"
                       sx={
-                        ["fn_vacaciones_anio", "fn_dias_previos"].includes(campo)
+                        ["vacaciones_anio", "dias_previos"].includes(campo)
                           ? { background: "#e8f0fe", fontWeight: "bold" }
-                          : ["fn_vacaciones_disfrutadas"].includes(campo)
+                          : ["vacaciones_disfrutadas"].includes(campo)
                           ? {
                               background: "#ffcdd2",
                               color: "#b71c1c",
@@ -445,7 +445,7 @@ export default function Vacaciones() {
                           variant="outlined"
                           startIcon={<Edit />}
                           onClick={() => {
-                            setEditandoId(v.fi_vacacion_id);
+                            setEditandoId(v.vacacion_id);
                             setTempData({ ...v });
                           }}
                           sx={{ mr: 1 }}

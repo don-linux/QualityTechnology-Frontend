@@ -18,7 +18,7 @@ export async function fetchMergedPorUbicaciones(filtros, fetchFn) {
           return rows.map((row) => ({
             ...row,
             ubicacion: row.ubicacion ?? granjaKey,
-            fc_granja: row.fc_granja ?? granjaKey,
+            granja: row.granja ?? granjaKey,
           }));
         })
         .catch(() => []);
@@ -27,7 +27,7 @@ export async function fetchMergedPorUbicaciones(filtros, fetchFn) {
   const merged = results.flat();
   const vistos = new Set();
   return merged.filter((row) => {
-    const id = row?.fi_movimiento_id ?? row?.id;
+    const id = row?.movimiento_id ?? row?.id;
     if (id == null) return true;
     if (vistos.has(id)) return false;
     vistos.add(id);
@@ -40,13 +40,13 @@ export function resolveGranjaDesdePileta(pileta, ubicacionesGranja) {
   const match = ubicacionesGranja.find((op) => rowPerteneceAUbicacionGranja(pileta, op));
   if (match) return match.value;
   const nombre =
-    pileta?.fc_granja ?? pileta?.ubicacion?.nombre ?? pileta?.ubicacion ?? "";
+    pileta?.granja ?? pileta?.ubicacion?.nombre ?? pileta?.ubicacion ?? "";
   return nombre || ubicacionesGranja[0]?.value || "";
 }
 
 export function resolveGranjaDesdePiletaId(piletaId, piletas, ubicacionesGranja) {
   const p = piletas.find(
-    (x) => String(x.fi_pileta_id ?? x.pileta_id) === String(piletaId),
+    (x) => String(x.pileta_id) === String(piletaId),
   );
   return p
     ? resolveGranjaDesdePileta(p, ubicacionesGranja)

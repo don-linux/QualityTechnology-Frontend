@@ -116,7 +116,7 @@ Al menos una **pileta etapa `reproductores`** en la sede activa (paso 1).
 4. Click en **REGISTRAR**.
 
 ### Qué habilita
-- El vínculo reproductor–pileta deja constancia de **familia** para el flujo de **Lotes** (`GET /lotes/instalaciones/:granja` lista orígenes con reproductores; el formulario de lotes aún puede mostrar el campo como *Instalación* por compatibilidad con el payload `fc_instalacion_id`).
+- El vínculo reproductor–pileta deja constancia de **familia** para el flujo de **Lotes** (`GET /lotes/instalaciones/:granja` lista orígenes con reproductores; el formulario de lotes aún puede mostrar el campo como *Instalación* por compatibilidad con el payload `instalacion_id`).
 
 ### Errores frecuentes
 - Dejar `Origen = Interno` sin elegir **Pileta origen**: validación en cliente.
@@ -273,12 +273,12 @@ Para llenar los inventarios **desde cero en una granja nueva**, sigue este check
 
 ## 11. Punto clave sobre granjas
 
-Todos los módulos filtran por `fc_granja` usando los textos exactos:
+Todos los módulos filtran por `granja` usando los textos exactos:
 
 - `Granja Acuícola Medellin`
 - `Granja Acuícola La Ceiba`
 
-Si no ves datos que sabes que existen, lo primero a revisar es que el botón de granja activa del componente coincida con el `fc_granja` de la tabla en la BD. Algunos componentes normalizan el texto (quitando acentos/minúsculas) antes de mandarlo al backend; otros lo mandan tal cual. Verificar ambos lados ante cualquier inconsistencia.
+Si no ves datos que sabes que existen, lo primero a revisar es que el botón de granja activa del componente coincida con el `granja` de la tabla en la BD. Algunos componentes normalizan el texto (quitando acentos/minúsculas) antes de mandarlo al backend; otros lo mandan tal cual. Verificar ambos lados ante cualquier inconsistencia.
 
 ## 12. Archivos de referencia rápida
 

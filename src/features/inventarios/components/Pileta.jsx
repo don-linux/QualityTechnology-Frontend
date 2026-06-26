@@ -30,10 +30,6 @@ import {
   updatePileta,
 } from "../services/piletasService";
 import { listTiposPiletaActivos } from "@features/catalogos/services/tiposPiletaService";
-import {
-  getTipoPiletaId,
-  getTipoPiletaNombre,
-} from "@features/catalogos/utils/catalogEntityGetters";
 import { ESTADOS_CONSERVACION_PILETA } from "@shared/constants/estadosConservacionPileta";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
@@ -151,7 +147,7 @@ function PiletasTab({
   );
 
   const gruposPiletas = useMemo(
-    () => getGroups(piletas, "fc_granja"),
+    () => getGroups(piletas, "granja"),
     [getGroups, piletas],
   );
 
@@ -252,9 +248,9 @@ function PiletasTab({
 
   const editar = (p) => {
     clearErrors();
-    setEditId(p.fi_pileta_id);
+    setEditId(p.pileta_id);
     const matchUbicacion = ubicacionesGranja.find(
-      (u) => u.value === p.fc_granja || u.label === p.fc_granja,
+      (u) => u.value === p.granja || u.label === p.granja,
     );
     setUbicacionForm(matchUbicacion?.value || defaultUbicacion || "");
     setForm({
@@ -265,7 +261,7 @@ function PiletasTab({
       material: p.material || "",
       estado: p.estado || "vacia",
       tipo: p.tipo || "",
-      estado_conservacion: p.fc_estado_conservacion || p.estado_conservacion || "",
+      estado_conservacion: p.estado_conservacion || "",
       tipo_pileta_id: p.tipo_pileta_id != null ? String(p.tipo_pileta_id) : "",
     });
     setMostrarFormulario(true);
@@ -486,10 +482,10 @@ function PiletasTab({
                   <MenuItem value="">Seleccione</MenuItem>
                   {tiposPileta.map((ti) => (
                     <MenuItem
-                      key={getTipoPiletaId(ti)}
-                      value={String(getTipoPiletaId(ti))}
+                      key={ti.tipo_pileta_id ?? ti.id}
+                      value={String(ti.tipo_pileta_id ?? ti.id)}
                     >
-                      {getTipoPiletaNombre(ti)}
+                      {ti.nombre}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -514,7 +510,7 @@ function PiletasTab({
       <TablasPorUbicacionGranja
         grupos={gruposPiletas}
         renderTabla={(rows) => {
-          const filas = ordenarYNumerar(rows, ["fi_pileta_id"]);
+          const filas = ordenarYNumerar(rows, ["pileta_id"]);
           return (
           <Paper>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
@@ -545,13 +541,13 @@ function PiletasTab({
                     </TableRow>
                   )}
                   {filas.map((p) => (
-                    <TableRow key={p.fi_pileta_id} hover>
+                    <TableRow key={p.pileta_id} hover>
                       <TableCell>{p._num}</TableCell>
                       <TableCell>{p.nombre}</TableCell>
                       <TableCell>
                         <Chip size="small" variant="outlined" label={tipoLabel(p.tipo)} />
                       </TableCell>
-                      <TableCell>{p.fc_tipo_pileta || "—"}</TableCell>
+                      <TableCell>{p.tipo_pileta_nombre || "—"}</TableCell>
                       <TableCell>
                         <Chip
                           size="small"
@@ -560,8 +556,8 @@ function PiletasTab({
                           label={p.estado}
                         />
                       </TableCell>
-                      <TableCell>{p.fc_estado_conservacion || "—"}</TableCell>
-                      <TableCell align="right">{formatCantidad(p.cantidad ?? p.fn_cantidad)}</TableCell>
+                      <TableCell>{p.estado_conservacion || "—"}</TableCell>
+                      <TableCell align="right">{formatCantidad(p.cantidad)}</TableCell>
                       <TableCell align="right">
                         {formatCantidad(p.metros_cubicos)}
                       </TableCell>
@@ -572,16 +568,16 @@ function PiletasTab({
                             <span title={p.ultima_observacion}>
                               {truncar(p.ultima_observacion)}
                             </span>
-                            {(p.fc_ultima_observacion_proceso || p.fd_ultima_observacion) && (
+                            {(p.ultima_observacion_proceso || p.fecha_ultima_observacion) && (
                               <Typography
                                 variant="caption"
                                 color="text.secondary"
                                 display="block"
                               >
                                 {[
-                                  p.fc_ultima_observacion_proceso,
-                                  p.fd_ultima_observacion
-                                    ? formatFecha(p.fd_ultima_observacion)
+                                  p.ultima_observacion_proceso,
+                                  p.fecha_ultima_observacion
+                                    ? formatFecha(p.fecha_ultima_observacion)
                                     : null,
                                 ]
                                   .filter(Boolean)

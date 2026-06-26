@@ -37,15 +37,15 @@ function ControlVisitasContent() {
   const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor, getGroups } =
     useUbicacionesGranja();
   const [form, setForm] = useState({
-    fd_fecha: "",
-    fc_nombre_completo: "",
-    fc_origen: "",
-    fc_motivo: "",
-    fc_observaciones: "",
-    fc_foto_identificacion: "",
-    fd_entrada: "",
-    fd_salida: "",
-    fi_usuario_id: usuarioId,
+    fecha: "",
+    nombre_completo: "",
+    procedencia: "",
+    motivo: "",
+    observaciones: "",
+    foto_identificacion: "",
+    hora_entrada: "",
+    hora_salida: "",
+    usuario_id: usuarioId,
     ubicacion: "",
   });
 
@@ -60,9 +60,9 @@ function ControlVisitasContent() {
 
   const requiredFields = [
     "ubicacion",
-    "fd_fecha", "fc_nombre_completo", "fc_origen", "fc_motivo",
-    "fc_observaciones", "fd_entrada",
-    ...(editId ? [] : ["fc_foto_identificacion"]),
+    "fecha", "nombre_completo", "procedencia", "motivo",
+    "observaciones", "hora_entrada",
+    ...(editId ? [] : ["foto_identificacion"]),
   ];
 
   const handleChange = (e) => {
@@ -71,8 +71,8 @@ function ControlVisitasContent() {
   };
 
   const handleCapturaFoto = (file) => {
-    clearFieldError("fc_foto_identificacion");
-    setForm((prev) => ({ ...prev, fc_foto_identificacion: file }));
+    clearFieldError("foto_identificacion");
+    setForm((prev) => ({ ...prev, foto_identificacion: file }));
   };
 
   const cargarDatos = useCallback(async () => {
@@ -103,7 +103,7 @@ function ControlVisitasContent() {
   }, [defaultUbicacion, form.ubicacion]);
 
   useEffect(() => {
-    const foto = form.fc_foto_identificacion;
+    const foto = form.foto_identificacion;
     if (foto instanceof File) {
       const url = URL.createObjectURL(foto);
       setFotoPreview(url);
@@ -111,7 +111,7 @@ function ControlVisitasContent() {
     }
     setFotoPreview("");
     return undefined;
-  }, [form.fc_foto_identificacion]);
+  }, [form.foto_identificacion]);
 
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
@@ -123,17 +123,17 @@ function ControlVisitasContent() {
         }
       };
 
-      appendIfValue("fd_fecha", form.fd_fecha);
-      appendIfValue("fc_nombre_completo", form.fc_nombre_completo);
-      appendIfValue("fc_origen", form.fc_origen);
-      appendIfValue("fc_motivo", form.fc_motivo);
-      appendIfValue("fc_observaciones", form.fc_observaciones);
-      if (form.fc_foto_identificacion instanceof File) {
-        formData.append("fc_foto_identificacion", form.fc_foto_identificacion);
+      appendIfValue("fecha", form.fecha);
+      appendIfValue("nombre_completo", form.nombre_completo);
+      appendIfValue("procedencia", form.procedencia);
+      appendIfValue("motivo", form.motivo);
+      appendIfValue("observaciones", form.observaciones);
+      if (form.foto_identificacion instanceof File) {
+        formData.append("foto_identificacion", form.foto_identificacion);
       }
-      appendIfValue("fd_entrada", form.fd_entrada);
-      appendIfValue("fd_salida", form.fd_salida);
-      appendIfValue("fi_usuario_id", form.fi_usuario_id);
+      appendIfValue("hora_entrada", form.hora_entrada);
+      appendIfValue("hora_salida", form.hora_salida);
+      appendIfValue("usuario_id", form.usuario_id);
       appendIfValue("ubicacion", form.ubicacion);
 
       if (editId) {
@@ -144,15 +144,15 @@ function ControlVisitasContent() {
       setEditId(null);
       cerrarFormulario();
       setForm({
-        fd_fecha: "",
-        fc_nombre_completo: "",
-        fc_origen: "",
-        fc_motivo: "",
-        fc_observaciones: "",
-        fc_foto_identificacion: "",
-        fd_entrada: "",
-        fd_salida: "",
-        fi_usuario_id: usuarioId,
+        fecha: "",
+        nombre_completo: "",
+        procedencia: "",
+        motivo: "",
+        observaciones: "",
+        foto_identificacion: "",
+        hora_entrada: "",
+        hora_salida: "",
+        usuario_id: usuarioId,
         ubicacion: form.ubicacion,
       });
       cargarDatos();
@@ -163,17 +163,17 @@ function ControlVisitasContent() {
 
   const editar = (r) => {
     clearErrors();
-    setEditId(r.fi_id);
+    setEditId(r.id);
     setForm({
-      fd_fecha: r.fd_fecha?.split("T")[0] || "",
-      fc_nombre_completo: r.fc_nombre_completo || "",
-      fc_origen: r.fc_origen || "",
-      fc_motivo: r.fc_motivo || "",
-      fc_observaciones: r.fc_observaciones || "",
-      fc_foto_identificacion: r.fc_foto_identificacion || "",
-      fd_entrada: r.fd_entrada || "",
-      fd_salida: r.fd_salida || "",
-      fi_usuario_id: r.fi_usuario_id || usuarioId,
+      fecha: r.fecha?.split("T")[0] || "",
+      nombre_completo: r.nombre_completo || "",
+      procedencia: r.procedencia || "",
+      motivo: r.motivo || "",
+      observaciones: r.observaciones || "",
+      foto_identificacion: r.foto_identificacion || "",
+      hora_entrada: r.hora_entrada || "",
+      hora_salida: r.hora_salida || "",
+      usuario_id: r.usuario_id || usuarioId,
       ubicacion: r.ubicacion || defaultUbicacion,
     });
     
@@ -182,19 +182,19 @@ function ControlVisitasContent() {
   };
 
   const columnas = [
-    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
-    { header: "Nombre", value: (r) => r.fc_nombre_completo },
-    { header: "Origen", value: (r) => r.fc_origen },
-    { header: "Motivo", value: (r) => r.fc_motivo, truncate: true, maxWidth: 160 },
+    { header: "Fecha", value: (r) => formatFecha(r.fecha) },
+    { header: "Nombre", value: (r) => r.nombre_completo },
+    { header: "Origen", value: (r) => r.procedencia },
+    { header: "Motivo", value: (r) => r.motivo, truncate: true, maxWidth: 160 },
     {
       header: "Foto ID",
-      value: (r) => (r.fc_foto_identificacion ? "Sí" : "No"),
+      value: (r) => (r.foto_identificacion ? "Sí" : "No"),
       render: (r) =>
-        r.fc_foto_identificacion ? (
+        r.foto_identificacion ? (
           <Link
             component="button"
             type="button"
-            onClick={() => setFotoVer({ open: true, path: r.fc_foto_identificacion })}
+            onClick={() => setFotoVer({ open: true, path: r.foto_identificacion })}
             sx={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}
           >
             Ver foto
@@ -203,9 +203,9 @@ function ControlVisitasContent() {
           "—"
         ),
     },
-    { header: "Entrada", value: (r) => r.fd_entrada },
-    { header: "Salida", value: (r) => r.fd_salida },
-    { header: "Observaciones", value: (r) => r.fc_observaciones, truncate: true, maxWidth: 160 },
+    { header: "Entrada", value: (r) => r.hora_entrada },
+    { header: "Salida", value: (r) => r.hora_salida },
+    { header: "Observaciones", value: (r) => r.observaciones, truncate: true, maxWidth: 160 },
   ];
 
   const gruposUbicacion = getGroups(data);
@@ -257,69 +257,69 @@ function ControlVisitasContent() {
               <TextField
                 label="Fecha"
                 type="date"
-                name="fd_fecha"
-                value={form.fd_fecha}
+                name="fecha"
+                value={form.fecha}
                 InputLabelProps={{ shrink: true }}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fd_fecha}
-                helperText={errors.fd_fecha}
+                error={!!errors.fecha}
+                helperText={errors.fecha}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 5 }}>
               <TextField
                 label="Nombre Completo"
-                name="fc_nombre_completo"
-                value={form.fc_nombre_completo}
+                name="nombre_completo"
+                value={form.nombre_completo}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fc_nombre_completo}
-                helperText={errors.fc_nombre_completo}
+                error={!!errors.nombre_completo}
+                helperText={errors.nombre_completo}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Origen"
-                name="fc_origen"
-                value={form.fc_origen}
+                name="procedencia"
+                value={form.procedencia}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fc_origen}
-                helperText={errors.fc_origen}
+                error={!!errors.procedencia}
+                helperText={errors.procedencia}
               />
             </Grid>
 
             <Grid size={12}>
               <TextField
                 label="Motivo"
-                name="fc_motivo"
-                value={form.fc_motivo}
+                name="motivo"
+                value={form.motivo}
                 onChange={handleChange}
                 fullWidth
                 multiline
                 inputProps={{ maxLength: 300 }}
-                error={!!errors.fc_motivo}
-                helperText={errors.fc_motivo || `${form.fc_motivo.length}/300`}
+                error={!!errors.motivo}
+                helperText={errors.motivo || `${form.motivo.length}/300`}
               />
             </Grid>
 
             <Grid size={12}>
               <TextField
                 label="Observaciones"
-                name="fc_observaciones"
-                value={form.fc_observaciones}
+                name="observaciones"
+                value={form.observaciones}
                 onChange={handleChange}
                 fullWidth
                 multiline
                 rows={2}
                 inputProps={{ maxLength: 500 }}
-                error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/500`}
+                error={!!errors.observaciones}
+                helperText={errors.observaciones || `${form.observaciones.length}/500`}
               />
             </Grid>
 
@@ -335,7 +335,7 @@ function ControlVisitasContent() {
                       p: 1,
                       borderRadius: 1.5,
                       border: "1px solid",
-                      borderColor: errors.fc_foto_identificacion ? "error.main" : "divider",
+                      borderColor: errors.foto_identificacion ? "error.main" : "divider",
                     }}
                   >
                     {fotoPreview ? (
@@ -386,17 +386,17 @@ function ControlVisitasContent() {
                             "&:hover": { backgroundColor: "rgba(25,118,210,0.08)" },
                           }}
                         >
-                          {form.fc_foto_identificacion ? "Volver a tomar" : "Tomar fotografía"}
+                          {form.foto_identificacion ? "Volver a tomar" : "Tomar fotografía"}
                         </Button>
                         {editId &&
-                          typeof form.fc_foto_identificacion === "string" &&
-                          form.fc_foto_identificacion && (
+                          typeof form.foto_identificacion === "string" &&
+                          form.foto_identificacion && (
                             <Button
                               variant="text"
                               size="small"
                               startIcon={<VisibilityRoundedIcon />}
                               onClick={() =>
-                                setFotoVer({ open: true, path: form.fc_foto_identificacion })
+                                setFotoVer({ open: true, path: form.foto_identificacion })
                               }
                               sx={{ textTransform: "none" }}
                             >
@@ -407,12 +407,12 @@ function ControlVisitasContent() {
                       <Typography
                         variant="caption"
                         sx={{
-                          color: errors.fc_foto_identificacion ? "error.main" : "text.secondary",
+                          color: errors.foto_identificacion ? "error.main" : "text.secondary",
                         }}
                       >
-                        {errors.fc_foto_identificacion
-                          ? errors.fc_foto_identificacion
-                          : form.fc_foto_identificacion
+                        {errors.foto_identificacion
+                          ? errors.foto_identificacion
+                          : form.foto_identificacion
                             ? fotoPreview
                               ? "Fotografía lista"
                               : "Identificación registrada"
@@ -428,14 +428,14 @@ function ControlVisitasContent() {
                   <TextField
                     label="Hora de Entrada"
                     type="time"
-                    name="fd_entrada"
-                    value={form.fd_entrada}
+                    name="hora_entrada"
+                    value={form.hora_entrada}
                     onChange={handleChange}
                     fullWidth
                     size="small"
                     InputLabelProps={{ shrink: true }}
-                    error={!!errors.fd_entrada}
-                    helperText={errors.fd_entrada}
+                    error={!!errors.hora_entrada}
+                    helperText={errors.hora_entrada}
                   />
                 </Grid>
 
@@ -444,14 +444,14 @@ function ControlVisitasContent() {
                     <TextField
                       label="Hora de Salida (opcional)"
                       type="time"
-                      name="fd_salida"
-                      value={form.fd_salida}
+                      name="hora_salida"
+                      value={form.hora_salida}
                       onChange={handleChange}
                       fullWidth
                       size="small"
                       InputLabelProps={{ shrink: true }}
-                      error={!!errors.fd_salida}
-                      helperText={errors.fd_salida}
+                      error={!!errors.hora_salida}
+                      helperText={errors.hora_salida}
                     />
                   </Grid>
                 )}
@@ -473,7 +473,7 @@ function ControlVisitasContent() {
         grupos={gruposUbicacion}
         renderTabla={renderTablaVisitas}
         buscar
-        searchKeys={["fc_nombre_completo", "fc_origen", "fc_motivo", "fc_observaciones"]}
+        searchKeys={["nombre_completo", "procedencia", "motivo", "observaciones"]}
         placeholderBusqueda="Buscar nombre, origen o motivo"
         exportar={{
           columnas,

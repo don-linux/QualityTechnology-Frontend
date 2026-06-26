@@ -30,22 +30,22 @@ function BitacoraRecambiosContent() {
   const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
-    fc_mes: "",
-    fn_num_instalacion: "",
-    fd_fecha1: "",
-    fc_tipo1: "",
-    fd_fecha2: "",
-    fc_tipo2: "",
-    fd_fecha3: "",
-    fc_tipo3: "",
-    fd_fecha4: "",
-    fc_tipo4: "",
-    fd_fecha5: "",
-    fc_tipo5: "",
-    fd_fecha6: "",
-    fc_tipo6: "",
-    fc_responsable: "",
-    fi_usuario_id: usuarioId,
+    mes_periodo: "",
+    pileta_id: "",
+    fecha_1: "",
+    tipo_1: "",
+    fecha_2: "",
+    tipo_2: "",
+    fecha_3: "",
+    tipo_3: "",
+    fecha_4: "",
+    tipo_4: "",
+    fecha_5: "",
+    tipo_5: "",
+    fecha_6: "",
+    tipo_6: "",
+    responsable: "",
+    usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
   const [empleados, setEmpleados] = useState([]);
@@ -55,11 +55,11 @@ function BitacoraRecambiosContent() {
 
   const requiredFields = [
     "ubicacion",
-    "fc_mes", "fn_num_instalacion",
-    "fd_fecha1", "fc_tipo1", "fd_fecha2", "fc_tipo2",
-    "fd_fecha3", "fc_tipo3", "fd_fecha4", "fc_tipo4",
-    "fd_fecha5", "fc_tipo5", "fd_fecha6", "fc_tipo6",
-    "fc_responsable",
+    "mes_periodo", "pileta_id",
+    "fecha_1", "tipo_1", "fecha_2", "tipo_2",
+    "fecha_3", "tipo_3", "fecha_4", "tipo_4",
+    "fecha_5", "tipo_5", "fecha_6", "tipo_6",
+    "responsable",
   ];
 
   const handleChange = (e) => {
@@ -107,22 +107,22 @@ function BitacoraRecambiosContent() {
       cerrarFormulario();
       setForm({
         ubicacion: form.ubicacion,
-        fc_mes: "",
-        fn_num_instalacion: "",
-        fd_fecha1: "",
-        fc_tipo1: "",
-        fd_fecha2: "",
-        fc_tipo2: "",
-        fd_fecha3: "",
-        fc_tipo3: "",
-        fd_fecha4: "",
-        fc_tipo4: "",
-        fd_fecha5: "",
-        fc_tipo5: "",
-        fd_fecha6: "",
-        fc_tipo6: "",
-        fc_responsable: "",
-        fi_usuario_id: usuarioId,
+        mes_periodo: "",
+        pileta_id: "",
+        fecha_1: "",
+        tipo_1: "",
+        fecha_2: "",
+        tipo_2: "",
+        fecha_3: "",
+        tipo_3: "",
+        fecha_4: "",
+        tipo_4: "",
+        fecha_5: "",
+        tipo_5: "",
+        fecha_6: "",
+        tipo_6: "",
+        responsable: "",
+        usuario_id: usuarioId,
       });
       cargarDatos();
     } catch (err) {
@@ -132,25 +132,25 @@ function BitacoraRecambiosContent() {
 
   const editar = (r) => {
     clearErrors();
-    setEditId(r.fi_id);
+    setEditId(r.id);
     setForm({
       ubicacion: r.ubicacion || "",
-      fc_mes: r.fc_mes || "",
-      fn_num_instalacion: r.fn_num_instalacion || "",
-      fd_fecha1: r.fd_fecha1?.split("T")[0],
-      fc_tipo1: r.fc_tipo1 || "",
-      fd_fecha2: r.fd_fecha2?.split("T")[0],
-      fc_tipo2: r.fc_tipo2 || "",
-      fd_fecha3: r.fd_fecha3?.split("T")[0],
-      fc_tipo3: r.fc_tipo3 || "",
-      fd_fecha4: r.fd_fecha4?.split("T")[0],
-      fc_tipo4: r.fc_tipo4 || "",
-      fd_fecha5: r.fd_fecha5?.split("T")[0],
-      fc_tipo5: r.fc_tipo5 || "",
-      fd_fecha6: r.fd_fecha6?.split("T")[0],
-      fc_tipo6: r.fc_tipo6 || "",
-      fc_responsable: r.fc_responsable || "",
-      fi_usuario_id: r.fi_usuario_id || usuarioId,
+      mes_periodo: r.mes_periodo || "",
+      pileta_id: r.pileta_id || "",
+      fecha_1: r.fecha_1?.split("T")[0],
+      tipo_1: r.tipo_1 || "",
+      fecha_2: r.fecha_2?.split("T")[0],
+      tipo_2: r.tipo_2 || "",
+      fecha_3: r.fecha_3?.split("T")[0],
+      tipo_3: r.tipo_3 || "",
+      fecha_4: r.fecha_4?.split("T")[0],
+      tipo_4: r.tipo_4 || "",
+      fecha_5: r.fecha_5?.split("T")[0],
+      tipo_5: r.tipo_5 || "",
+      fecha_6: r.fecha_6?.split("T")[0],
+      tipo_6: r.tipo_6 || "",
+      responsable: r.responsable || "",
+      usuario_id: r.usuario_id || usuarioId,
     });
     
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -158,37 +158,37 @@ function BitacoraRecambiosContent() {
   };
 
   const columnasExport = [
-    { header: "Mes", value: (r) => r.fc_mes || "" },
-    { header: "No. Instalación", value: (r) => r.fn_num_instalacion || "" },
-    { header: "Fecha 1", value: (r) => formatFecha(r.fd_fecha1, "") },
-    { header: "Tipo 1", value: (r) => r.fc_tipo1 || "" },
-    { header: "Fecha 2", value: (r) => formatFecha(r.fd_fecha2, "") },
-    { header: "Tipo 2", value: (r) => r.fc_tipo2 || "" },
-    { header: "Fecha 3", value: (r) => formatFecha(r.fd_fecha3, "") },
-    { header: "Tipo 3", value: (r) => r.fc_tipo3 || "" },
-    { header: "Fecha 4", value: (r) => formatFecha(r.fd_fecha4, "") },
-    { header: "Tipo 4", value: (r) => r.fc_tipo4 || "" },
-    { header: "Fecha 5", value: (r) => formatFecha(r.fd_fecha5, "") },
-    { header: "Tipo 5", value: (r) => r.fc_tipo5 || "" },
-    { header: "Fecha 6", value: (r) => formatFecha(r.fd_fecha6, "") },
-    { header: "Tipo 6", value: (r) => r.fc_tipo6 || "" },
-    { header: "Responsable", value: (r) => r.fc_responsable || "" },
+    { header: "Mes", value: (r) => r.mes_periodo || "" },
+    { header: "No. Instalación", value: (r) => r.pileta_id || "" },
+    { header: "Fecha 1", value: (r) => formatFecha(r.fecha_1, "") },
+    { header: "Tipo 1", value: (r) => r.tipo_1 || "" },
+    { header: "Fecha 2", value: (r) => formatFecha(r.fecha_2, "") },
+    { header: "Tipo 2", value: (r) => r.tipo_2 || "" },
+    { header: "Fecha 3", value: (r) => formatFecha(r.fecha_3, "") },
+    { header: "Tipo 3", value: (r) => r.tipo_3 || "" },
+    { header: "Fecha 4", value: (r) => formatFecha(r.fecha_4, "") },
+    { header: "Tipo 4", value: (r) => r.tipo_4 || "" },
+    { header: "Fecha 5", value: (r) => formatFecha(r.fecha_5, "") },
+    { header: "Tipo 5", value: (r) => r.tipo_5 || "" },
+    { header: "Fecha 6", value: (r) => formatFecha(r.fecha_6, "") },
+    { header: "Tipo 6", value: (r) => r.tipo_6 || "" },
+    { header: "Responsable", value: (r) => r.responsable || "" },
   ];
 
   const columnas = [
-    { header: "Mes", value: (r) => r.fc_mes },
-    { header: "Instalación", value: (r) => r.fn_num_instalacion },
+    { header: "Mes", value: (r) => r.mes_periodo },
+    { header: "Instalación", value: (r) => r.pileta_id },
     {
       header: "Fechas y Tipos",
       value: (r) =>
         [1, 2, 3, 4, 5, 6]
           .map((n) =>
-            r[`fd_fecha${n}`] ? `${formatFecha(r[`fd_fecha${n}`])} (${r[`fc_tipo${n}`]})` : null,
+            r[`fecha_${n}`] ? `${formatFecha(r[`fecha_${n}`])} (${r[`tipo_${n}`]})` : null,
           )
           .filter(Boolean)
           .join(", "),
     },
-    { header: "Responsable", value: (r) => r.fc_responsable },
+    { header: "Responsable", value: (r) => r.responsable },
   ];
 
   const gruposUbicacion = getGroups(data);
@@ -238,25 +238,25 @@ function BitacoraRecambiosContent() {
               <TextField
                 label="Mes"
                 type="month"
-                name="fc_mes"
+                name="mes_periodo"
                 InputLabelProps={{ shrink: true }}
-                value={form.fc_mes}
+                value={form.mes_periodo}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_mes}
-                helperText={errors.fc_mes}
+                error={!!errors.mes_periodo}
+                helperText={errors.mes_periodo}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="No. Instalación"
-                name="fn_num_instalacion"
+                name="pileta_id"
                 decimalScale={0}
-                value={form.fn_num_instalacion}
+                value={form.pileta_id}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_num_instalacion}
-                helperText={errors.fn_num_instalacion}
+                error={!!errors.pileta_id}
+                helperText={errors.pileta_id}
               />
             </Grid>
 
@@ -266,24 +266,24 @@ function BitacoraRecambiosContent() {
                   <TextField
                     label={`Fecha ${n}`}
                     type="date"
-                    name={`fd_fecha${n}`}
+                    name={`fecha_${n}`}
                     InputLabelProps={{ shrink: true }}
-                    value={form[`fd_fecha${n}`] || ""}
+                    value={form[`fecha_${n}`] || ""}
                     onChange={handleChange}
                     fullWidth
-                    error={!!errors[`fd_fecha${n}`]}
-                    helperText={errors[`fd_fecha${n}`]}
+                    error={!!errors[`fecha_${n}`]}
+                    helperText={errors[`fecha_${n}`]}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 3 }}>
                   <TextField
                     label={`Tipo ${n}`}
-                    name={`fc_tipo${n}`}
-                    value={form[`fc_tipo${n}`] || ""}
+                    name={`tipo_${n}`}
+                    value={form[`tipo_${n}`] || ""}
                     onChange={handleChange}
                     fullWidth
-                    error={!!errors[`fc_tipo${n}`]}
-                    helperText={errors[`fc_tipo${n}`]}
+                    error={!!errors[`tipo_${n}`]}
+                    helperText={errors[`tipo_${n}`]}
                   />
                 </Grid>
               </React.Fragment>
@@ -293,21 +293,21 @@ function BitacoraRecambiosContent() {
               <TextField
                 select
                 label="Responsable"
-                name="fc_responsable"
-                value={form.fc_responsable}
+                name="responsable"
+                value={form.responsable}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_responsable}
-                helperText={errors.fc_responsable}
+                error={!!errors.responsable}
+                helperText={errors.responsable}
               >
                 <MenuItem value="">Selecciona un empleado</MenuItem>
                 {empleados.map((empleado) => (
-                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
-                    {empleado.fc_nombre_completo}
+                  <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
+                    {empleado.nombre_completo}
                   </MenuItem>
                 ))}
-                {form.fc_responsable && !empleados.some((e) => e.fc_nombre_completo === form.fc_responsable) && (
-                  <MenuItem value={form.fc_responsable}>{form.fc_responsable}</MenuItem>
+                {form.responsable && !empleados.some((e) => e.nombre_completo === form.responsable) && (
+                  <MenuItem value={form.responsable}>{form.responsable}</MenuItem>
                 )}
               </TextField>
             </Grid>
@@ -327,7 +327,7 @@ function BitacoraRecambiosContent() {
         grupos={gruposUbicacion}
         renderTabla={renderTablaRecambios}
         buscar
-        searchKeys={["fc_mes", "fn_num_instalacion", "fc_responsable"]}
+        searchKeys={["mes_periodo", "pileta_id", "responsable"]}
         placeholderBusqueda="Buscar mes, instalación o responsable"
         exportar={{
           columnas: columnasExport,

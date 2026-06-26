@@ -11,7 +11,6 @@ import useConfirm from "@shared/hooks/useConfirm";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
-import { getRolId, getRolNombre, rolEsRoot, rolActivo } from "@features/catalogos/utils/catalogEntityGetters";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -33,7 +32,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 export default function Roles() {
   const showSnackbar = useSnackbar();
-  const [form, setForm] = useState({ fi_rol_id: null, fc_nombre: "" });
+  const [form, setForm] = useState({ rol_id: null, nombre: "" });
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -69,15 +68,15 @@ export default function Roles() {
   };
 
   const limpiar = () => {
-    setForm({ fi_rol_id: null, fc_nombre: "" });
+    setForm({ rol_id: null, nombre: "" });
     clearErrors();
     cerrarFormulario();
   };
 
   const registrar = async () => {
-    if (!validate(form, ["fc_nombre"])) return;
+    if (!validate(form, ["nombre"])) return;
     try {
-      await createRol(form.fc_nombre.trim());
+      await createRol(form.nombre.trim());
       showSnackbar("Rol registrado correctamente", "success");
       obtenerRoles();
       limpiar();
@@ -88,10 +87,10 @@ export default function Roles() {
   };
 
   const actualizar = async () => {
-    if (!form.fi_rol_id) return;
-    if (!validate(form, ["fc_nombre"])) return;
+    if (!form.rol_id) return;
+    if (!validate(form, ["nombre"])) return;
     try {
-      await updateRol(form.fi_rol_id, form.fc_nombre.trim());
+      await updateRol(form.rol_id, form.nombre.trim());
       showSnackbar("Rol actualizado correctamente", "success");
       obtenerRoles();
       limpiar();
@@ -103,23 +102,24 @@ export default function Roles() {
 
   const seleccionar = (rol) => {
     setForm({
-      fi_rol_id: getRolId(rol),
-      fc_nombre: getRolNombre(rol),
+      rol_id: rol.rol_id ?? rol.id,
+      nombre: rol.nombre,
     });
     clearErrors();
     abrirFormulario();
   };
 
   const toggleActivo = async (rol) => {
-    const activo = rolActivo(rol);
-    const nombre = getRolNombre(rol);
+    const activo = rol.activo;
+    const nombre = rol.nombre;
     if (!await confirm(activo ? `¿Desactivar el rol "${nombre}"?` : `¿Activar el rol "${nombre}"?`)) return;
     try {
-      if (activo) await deactivateRol(getRolId(rol));
-      else await activateRol(getRolId(rol));
+      const rolId = rol.rol_id ?? rol.id;
+      if (activo) await deactivateRol(rolId);
+      else await activateRol(rolId);
       showSnackbar(activo ? "Rol desactivado correctamente" : "Rol activado correctamente", "success");
       obtenerRoles();
-      if (form.fi_rol_id === getRolId(rol)) limpiar();
+      if (form.rol_id === rolId) limpiar();
     } catch (error) {
       console.error("Error al cambiar el estado del rol", error);
       showSnackbar(error?.response?.data?.error || "Error al cambiar el estado del rol", "error");
@@ -141,18 +141,18 @@ export default function Roles() {
         <Card sx={{ mb: 4, borderRadius: 4, boxShadow: 4, border: "1px solid #eee" }}>
           <CardContent>
             <Typography variant="subtitle1" mb={2} fontWeight="bold">
-              {form.fi_rol_id ? "Editando Rol" : "Nuevo Rol"}
+              {form.rol_id ? "Editando Rol" : "Nuevo Rol"}
             </Typography>
             <Grid container spacing={2}>
               <Grid size={12}>
                 <TextField
-                  name="fc_nombre"
+                  name="nombre"
                   label="Nombre del Rol"
                   fullWidth
-                  value={form.fc_nombre}
+                  value={form.nombre}
                   onChange={handleChange}
-                  error={!!errors.fc_nombre}
-                  helperText={errors.fc_nombre}
+                  error={!!errors.nombre}
+                  helperText={errors.nombre}
                 />
               </Grid>
             </Grid>
@@ -163,7 +163,7 @@ export default function Roles() {
                   variant="contained"
                   color="success"
                   onClick={registrar}
-                  disabled={!!form.fi_rol_id}
+                  disabled={!!form.rol_id}
                 >
                   Registrar
                 </Button>
@@ -173,7 +173,7 @@ export default function Roles() {
                   fullWidth
                   variant="contained"
                   onClick={actualizar}
-                  disabled={!form.fi_rol_id}
+                  disabled={!form.rol_id}
                 >
                   Actualizar
                 </Button>
@@ -206,16 +206,16 @@ export default function Roles() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {ordenarYNumerar(roles, ["fi_rol_id", "rol_id"]).map((rol) => {
-                  const activo = rolActivo(rol);
+                {ordenarYNumerar(roles, ["rol_id", "id"]).map((rol) => {
+                  const activo = rol.activo;
                   return (
-                  <TableRow key={getRolId(rol) ?? ""} hover sx={{ opacity: activo ? 1 : 0.5 }}>
+                  <TableRow key={(rol.rol_id ?? rol.id) ?? ""} hover sx={{ opacity: activo ? 1 : 0.5 }}>
                     <TableCell>{rol._num}</TableCell>
-                    <TableCell>{getRolNombre(rol)}</TableCell>
+                    <TableCell>{rol.nombre}</TableCell>
                     <TableCell>
                       <Chip
-                        label={rolEsRoot(rol) ? "Root" : "Estándar"}
-                        color={rolEsRoot(rol) ? "warning" : "default"}
+                        label={rol.es_root ? "Root" : "Estándar"}
+                        color={rol.es_root ? "warning" : "default"}
                         size="small"
                       />
                     </TableCell>
@@ -244,7 +244,7 @@ export default function Roles() {
                           variant="outlined"
                           color={activo ? "warning" : "success"}
                           onClick={() => toggleActivo(rol)}
-                          disabled={rolEsRoot(rol)}
+                          disabled={rol.es_root}
                         >
                           {activo ? "Desactivar" : "Activar"}
                         </Button>

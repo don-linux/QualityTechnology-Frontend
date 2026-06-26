@@ -24,7 +24,7 @@ import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranj
 import ListadoTabla from "@shared/components/ListadoTabla";
 import { formatFecha } from "@shared/utils/formatters";
 
-const MAX_FC_OBSERVACIONES = 500;
+const MAX_OBSERVACIONES = 500;
 
 const MESES = [
   "", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -43,19 +43,19 @@ export default function BioAlimentacion() {
   const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
-    fn_num_instalacion: "",
-    fn_peso_promedio_entrada: "",
-    fd_fecha_siembra: "",
-    fc_origen_alevines: "",
-    fd_fecha: "",
-    fn_total_alimento_gramos: "",
-    fn_mortalidad: "",
-    fc_recambio_agua: "",
-    fn_temp_agua: "",
-    fn_amonio: "",
-    fn_ph: "",
-    fc_observaciones: "",
-    fi_usuario_id: usuarioId,
+    pileta_id: "",
+    peso_promedio_entrada: "",
+    fecha_siembra: "",
+    origen_alevines: "",
+    fecha: "",
+    total_alimento_gramos: "",
+    mortalidad: "",
+    recambio_agua: "",
+    temperatura_agua: "",
+    amonio: "",
+    ph: "",
+    observaciones: "",
+    usuario_id: usuarioId,
   });
 
   const [data, setData] = useState([]);
@@ -66,10 +66,10 @@ export default function BioAlimentacion() {
 
   const requiredFields = [
     "ubicacion",
-    "fn_num_instalacion", "fn_peso_promedio_entrada",
-    "fd_fecha_siembra", "fc_origen_alevines", "fd_fecha",
-    "fn_total_alimento_gramos", "fn_mortalidad", "fc_recambio_agua",
-    "fn_temp_agua", "fn_amonio", "fn_ph", "fc_observaciones",
+    "pileta_id", "peso_promedio_entrada",
+    "fecha_siembra", "origen_alevines", "fecha",
+    "total_alimento_gramos", "mortalidad", "recambio_agua",
+    "temperatura_agua", "amonio", "ph", "observaciones",
   ];
 
   const handleChange = (e) => {
@@ -91,8 +91,8 @@ export default function BioAlimentacion() {
     try {
       const res = await listPiletas(form.ubicacion, "alevinaje");
       const rows = (res.data || []).map((p) => ({
-        fi_instalacion_id: p.id ?? p.fi_pileta_id,
-        nombre_instalacion: p.nombre ?? p.fc_nombre ?? p.nombre_pileta,
+        pileta_id: p.id ?? p.pileta_id,
+        nombre_instalacion: p.nombre ?? p.nombre_pileta,
       }));
       setOrigenes(rows);
     } catch {
@@ -102,16 +102,16 @@ export default function BioAlimentacion() {
 
   const handleOrigenChange = (e) => {
     const origenSeleccionado = origenes.find(
-      (origen) => String(origen.fi_instalacion_id) === String(e.target.value)
+      (origen) => String(origen.pileta_id) === String(e.target.value)
     );
 
-    clearFieldError("fc_origen_alevines");
-    clearFieldError("fn_num_instalacion");
+    clearFieldError("origen_alevines");
+    clearFieldError("pileta_id");
 
     setForm({
       ...form,
-      fn_num_instalacion: origenSeleccionado?.fi_instalacion_id || "",
-      fc_origen_alevines: origenSeleccionado?.nombre_instalacion || "",
+      pileta_id: origenSeleccionado?.pileta_id || "",
+      origen_alevines: origenSeleccionado?.nombre_instalacion || "",
     });
   };
 
@@ -132,7 +132,7 @@ export default function BioAlimentacion() {
   const guardar = async () => {
     if (!validate(form, requiredFields)) return;
     try {
-      const body = { ...form, fc_mes: mesDesdefecha(form.fd_fecha) };
+      const body = { ...form, mes: mesDesdefecha(form.fecha) };
       if (editId) {
         await updateAlimentacion(editId, body);
         showSnackbar("Registro actualizado", "success");
@@ -143,19 +143,19 @@ export default function BioAlimentacion() {
 
       setForm({
         ubicacion: form.ubicacion,
-        fn_num_instalacion: "",
-        fn_peso_promedio_entrada: "",
-        fd_fecha_siembra: "",
-        fc_origen_alevines: "",
-        fd_fecha: "",
-        fn_total_alimento_gramos: "",
-        fn_mortalidad: "",
-        fc_recambio_agua: "",
-        fn_temp_agua: "",
-        fn_amonio: "",
-        fn_ph: "",
-        fc_observaciones: "",
-        fi_usuario_id: usuarioId,
+        pileta_id: "",
+        peso_promedio_entrada: "",
+        fecha_siembra: "",
+        origen_alevines: "",
+        fecha: "",
+        total_alimento_gramos: "",
+        mortalidad: "",
+        recambio_agua: "",
+        temperatura_agua: "",
+        amonio: "",
+        ph: "",
+        observaciones: "",
+        usuario_id: usuarioId,
       });
 
       setEditId(null);
@@ -169,22 +169,22 @@ export default function BioAlimentacion() {
 
   const editar = (row) => {
     clearErrors();
-    setEditId(row.fi_id);
+    setEditId(row.id);
     setForm({
       ubicacion: row.ubicacion || "",
-      fn_num_instalacion: row.fn_num_instalacion,
-      fn_peso_promedio_entrada: row.fn_peso_promedio_entrada,
-      fd_fecha_siembra: row.fd_fecha_siembra?.split("T")[0],
-      fc_origen_alevines: row.fc_origen_alevines,
-      fd_fecha: row.fd_fecha?.split("T")[0],
-      fn_total_alimento_gramos: row.fn_total_alimento_gramos,
-      fn_mortalidad: row.fn_mortalidad,
-      fc_recambio_agua: row.fc_recambio_agua,
-      fn_temp_agua: row.fn_temp_agua,
-      fn_amonio: row.fn_amonio,
-      fn_ph: row.fn_ph,
-      fc_observaciones: row.fc_observaciones,
-      fi_usuario_id: row.fi_usuario_id,
+      pileta_id: row.pileta_id,
+      peso_promedio_entrada: row.peso_promedio_entrada,
+      fecha_siembra: row.fecha_siembra?.split("T")[0],
+      origen_alevines: row.origen_alevines,
+      fecha: row.fecha?.split("T")[0],
+      total_alimento_gramos: row.total_alimento_gramos,
+      mortalidad: row.mortalidad,
+      recambio_agua: row.recambio_agua,
+      temperatura_agua: row.temperatura_agua,
+      amonio: row.amonio,
+      ph: row.ph,
+      observaciones: row.observaciones,
+      usuario_id: row.usuario_id,
     });
     
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -192,19 +192,19 @@ export default function BioAlimentacion() {
   };
 
   const columnas = [
-    { header: "Mes", value: (r) => r.fc_mes },
-    { header: "Instalación", value: (r) => r.fn_num_instalacion },
-    { header: "Peso Entrada", value: (r) => r.fn_peso_promedio_entrada },
-    { header: "Siembra", value: (r) => formatFecha(r.fd_fecha_siembra) },
-    { header: "Origen", value: (r) => r.fc_origen_alevines },
-    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
-    { header: "Alimento (g)", value: (r) => r.fn_total_alimento_gramos },
-    { header: "Mortalidad", value: (r) => r.fn_mortalidad },
-    { header: "Recambio", value: (r) => r.fc_recambio_agua },
-    { header: "Temp", value: (r) => r.fn_temp_agua },
-    { header: "Amonio", value: (r) => r.fn_amonio },
-    { header: "pH", value: (r) => r.fn_ph },
-    { header: "Observaciones", value: (r) => r.fc_observaciones, truncate: true, maxWidth: 160 },
+    { header: "Mes", value: (r) => r.mes },
+    { header: "Instalación", value: (r) => r.pileta_id },
+    { header: "Peso Entrada", value: (r) => r.peso_promedio_entrada },
+    { header: "Siembra", value: (r) => formatFecha(r.fecha_siembra) },
+    { header: "Origen", value: (r) => r.origen_alevines },
+    { header: "Fecha", value: (r) => formatFecha(r.fecha) },
+    { header: "Alimento (g)", value: (r) => r.total_alimento_gramos },
+    { header: "Mortalidad", value: (r) => r.mortalidad },
+    { header: "Recambio", value: (r) => r.recambio_agua },
+    { header: "Temp", value: (r) => r.temperatura_agua },
+    { header: "Amonio", value: (r) => r.amonio },
+    { header: "pH", value: (r) => r.ph },
+    { header: "Observaciones", value: (r) => r.observaciones, truncate: true, maxWidth: 160 },
   ];
 
   const gruposUbicacion = getGroups(data);
@@ -240,7 +240,7 @@ export default function BioAlimentacion() {
                 value={form.ubicacion}
                 onChange={(e) => {
                   handleChange(e);
-                  setForm(prev => ({ ...prev, ubicacion: e.target.value, fn_num_instalacion: "", fc_origen_alevines: "" }));
+                  setForm(prev => ({ ...prev, ubicacion: e.target.value, pileta_id: "", origen_alevines: "" }));
                 }}
                 fullWidth
                 error={!!errors.ubicacion}
@@ -257,24 +257,24 @@ export default function BioAlimentacion() {
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Instalación"
-                name="fn_num_instalacion"
-                value={form.fn_num_instalacion}
+                name="pileta_id"
+                value={form.pileta_id}
                 fullWidth
                 InputProps={{ readOnly: true }}
-                error={!!errors.fn_num_instalacion}
-                helperText={errors.fn_num_instalacion}
+                error={!!errors.pileta_id}
+                helperText={errors.pileta_id}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="Peso Promedio Entrada"
-                name="fn_peso_promedio_entrada"
-                value={form.fn_peso_promedio_entrada}
+                name="peso_promedio_entrada"
+                value={form.peso_promedio_entrada}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_peso_promedio_entrada}
-                helperText={errors.fn_peso_promedio_entrada}
+                error={!!errors.peso_promedio_entrada}
+                helperText={errors.peso_promedio_entrada}
               />
             </Grid>
 
@@ -282,13 +282,13 @@ export default function BioAlimentacion() {
               <TextField
                 label="Fecha Siembra"
                 type="date"
-                name="fd_fecha_siembra"
+                name="fecha_siembra"
                 InputLabelProps={{ shrink: true }}
-                value={form.fd_fecha_siembra}
+                value={form.fecha_siembra}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fd_fecha_siembra}
-                helperText={errors.fd_fecha_siembra}
+                error={!!errors.fecha_siembra}
+                helperText={errors.fecha_siembra}
               />
             </Grid>
 
@@ -296,24 +296,24 @@ export default function BioAlimentacion() {
               <TextField
                 select
                 label="Origen Alevines"
-                name="fc_origen_alevines"
-                value={form.fn_num_instalacion || ""}
+                name="origen_alevines"
+                value={form.pileta_id || ""}
                 onChange={handleOrigenChange}
                 fullWidth
-                error={!!errors.fc_origen_alevines}
-                helperText={errors.fc_origen_alevines}
+                error={!!errors.origen_alevines}
+                helperText={errors.origen_alevines}
               >
                 <MenuItem value="">Selecciona un origen</MenuItem>
                 {origenes.map((origen) => (
                   <MenuItem
-                    key={`${origen.fi_instalacion_id}-${origen.fi_lote_id || "sin-lote"}`}
-                    value={origen.fi_instalacion_id}
+                    key={origen.pileta_id}
+                    value={origen.pileta_id}
                   >
-                    {`${origen.nombre_instalacion} (Inst. ${origen.fi_instalacion_id})`}
+                    {`${origen.nombre_instalacion} (Inst. ${origen.pileta_id})`}
                   </MenuItem>
                 ))}
-                {form.fc_origen_alevines && !origenes.some((origen) => origen.nombre_instalacion === form.fc_origen_alevines) && (
-                  <MenuItem value={form.fn_num_instalacion}>{form.fc_origen_alevines}</MenuItem>
+                {form.origen_alevines && !origenes.some((origen) => origen.nombre_instalacion === form.origen_alevines) && (
+                  <MenuItem value={form.pileta_id}>{form.origen_alevines}</MenuItem>
                 )}
               </TextField>
             </Grid>
@@ -322,101 +322,101 @@ export default function BioAlimentacion() {
               <TextField
                 label="Fecha"
                 type="date"
-                name="fd_fecha"
+                name="fecha"
                 InputLabelProps={{ shrink: true }}
-                value={form.fd_fecha}
+                value={form.fecha}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fd_fecha}
-                helperText={errors.fd_fecha}
+                error={!!errors.fecha}
+                helperText={errors.fecha}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="Total Alimento (g)"
-                name="fn_total_alimento_gramos"
-                value={form.fn_total_alimento_gramos}
+                name="total_alimento_gramos"
+                value={form.total_alimento_gramos}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_total_alimento_gramos}
-                helperText={errors.fn_total_alimento_gramos}
+                error={!!errors.total_alimento_gramos}
+                helperText={errors.total_alimento_gramos}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="Mortalidad"
-                name="fn_mortalidad"
+                name="mortalidad"
                 decimalScale={0}
-                value={form.fn_mortalidad}
+                value={form.mortalidad}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_mortalidad}
-                helperText={errors.fn_mortalidad}
+                error={!!errors.mortalidad}
+                helperText={errors.mortalidad}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Recambio Agua"
-                name="fc_recambio_agua"
-                value={form.fc_recambio_agua}
+                name="recambio_agua"
+                value={form.recambio_agua}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_recambio_agua}
-                helperText={errors.fc_recambio_agua}
+                error={!!errors.recambio_agua}
+                helperText={errors.recambio_agua}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="Temp. Agua"
-                name="fn_temp_agua"
-                value={form.fn_temp_agua}
+                name="temperatura_agua"
+                value={form.temperatura_agua}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_temp_agua}
-                helperText={errors.fn_temp_agua}
+                error={!!errors.temperatura_agua}
+                helperText={errors.temperatura_agua}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="Amonio"
-                name="fn_amonio"
-                value={form.fn_amonio}
+                name="amonio"
+                value={form.amonio}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_amonio}
-                helperText={errors.fn_amonio}
+                error={!!errors.amonio}
+                helperText={errors.amonio}
               />
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <CampoNumerico
                 label="pH"
-                name="fn_ph"
-                value={form.fn_ph}
+                name="ph"
+                value={form.ph}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_ph}
-                helperText={errors.fn_ph}
+                error={!!errors.ph}
+                helperText={errors.ph}
               />
             </Grid>
 
             <Grid size={12}>
               <TextField
                 label="Observaciones"
-                name="fc_observaciones"
+                name="observaciones"
                 multiline
                 rows={2}
                 fullWidth
-                value={form.fc_observaciones}
+                value={form.observaciones}
                 onChange={handleChange}
-                error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/${MAX_FC_OBSERVACIONES}`}
-                inputProps={{ maxLength: MAX_FC_OBSERVACIONES }}
+                error={!!errors.observaciones}
+                helperText={errors.observaciones || `${form.observaciones.length}/${MAX_OBSERVACIONES}`}
+                inputProps={{ maxLength: MAX_OBSERVACIONES }}
               />
             </Grid>
           </Grid>
@@ -434,7 +434,7 @@ export default function BioAlimentacion() {
         grupos={gruposUbicacion}
         renderTabla={tablaAlimentacion}
         buscar
-        searchKeys={["fc_mes", "fn_num_instalacion", "fc_origen_alevines", "fc_observaciones"]}
+        searchKeys={["mes", "pileta_id", "origen_alevines", "observaciones"]}
         placeholderBusqueda="Buscar mes, instalación u origen"
         exportar={{
           columnas,
@@ -448,4 +448,3 @@ export default function BioAlimentacion() {
     </Box>
   );
 }
-

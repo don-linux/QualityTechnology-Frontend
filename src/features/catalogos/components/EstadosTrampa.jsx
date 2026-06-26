@@ -6,11 +6,6 @@ import {
   activateEstadoTrampa,
   deactivateEstadoTrampa,
 } from "@features/catalogos/services/estadosTrampaService";
-import {
-  getEstadoTrampaId,
-  getEstadoTrampaNombre,
-  estadoTrampaActivo,
-} from "@features/catalogos/utils/catalogEntityGetters";
 
 export default function EstadosTrampa() {
   return (
@@ -27,9 +22,6 @@ export default function EstadosTrampa() {
       updateFn={updateEstadoTrampa}
       activateFn={activateEstadoTrampa}
       deactivateFn={deactivateEstadoTrampa}
-      getId={getEstadoTrampaId}
-      getNombre={getEstadoTrampaNombre}
-      isActivo={estadoTrampaActivo}
     />
   );
 }

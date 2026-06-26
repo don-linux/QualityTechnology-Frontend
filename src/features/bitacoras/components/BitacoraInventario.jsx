@@ -29,14 +29,14 @@ function BitacoraInventarioContent() {
   const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
-    fn_num_instalacion: "",
-    fn_cantidad: "",
-    fn_talla: "",
-    fc_lote: "",
-    fc_observacion: "",
-    fd_fecha_siembra: "",
-    fd_fecha_salida_hormonado: "",
-    fi_usuario_id: usuarioId,
+    pileta_id: "",
+    cantidad: "",
+    talla: "",
+    lote_nombre: "",
+    observacion: "",
+    fecha_siembra: "",
+    fecha_salida_hormonado: "",
+    usuario_id: usuarioId,
   });
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState(null);
@@ -45,8 +45,8 @@ function BitacoraInventarioContent() {
 
   const requiredFields = [
     "ubicacion",
-    "fn_num_instalacion", "fn_cantidad", "fn_talla", "fc_lote",
-    "fd_fecha_siembra", "fd_fecha_salida_hormonado", "fc_observacion",
+    "pileta_id", "cantidad", "talla", "lote_nombre",
+    "fecha_siembra", "fecha_salida_hormonado", "observacion",
   ];
 
   const handleChange = (e) => {
@@ -85,14 +85,14 @@ function BitacoraInventarioContent() {
       cerrarFormulario();
       setForm({
         ubicacion: form.ubicacion,
-        fn_num_instalacion: "",
-        fn_cantidad: "",
-        fn_talla: "",
-        fc_lote: "",
-        fc_observacion: "",
-        fd_fecha_siembra: "",
-        fd_fecha_salida_hormonado: "",
-        fi_usuario_id: usuarioId,
+        pileta_id: "",
+        cantidad: "",
+        talla: "",
+        lote_nombre: "",
+        observacion: "",
+        fecha_siembra: "",
+        fecha_salida_hormonado: "",
+        usuario_id: usuarioId,
       });
       cargarDatos();
     } catch (err) {
@@ -102,17 +102,17 @@ function BitacoraInventarioContent() {
 
   const editar = (r) => {
     clearErrors();
-    setEditId(r.fi_id);
+    setEditId(r.id);
     setForm({
       ubicacion: r.ubicacion || "",
-      fn_num_instalacion: r.fn_num_instalacion ?? "",
-      fn_cantidad: r.fn_cantidad ?? "",
-      fn_talla: r.fn_talla ?? "",
-      fc_lote: r.fc_lote || "",
-      fc_observacion: r.fc_observacion || "",
-      fd_fecha_siembra: r.fd_fecha_siembra?.split("T")[0],
-      fd_fecha_salida_hormonado: r.fd_fecha_salida_hormonado?.split("T")[0],
-      fi_usuario_id: r.fi_usuario_id || usuarioId,
+      pileta_id: r.pileta_id ?? "",
+      cantidad: r.cantidad ?? "",
+      talla: r.talla ?? "",
+      lote_nombre: r.lote_nombre || "",
+      observacion: r.observacion || "",
+      fecha_siembra: r.fecha_siembra?.split("T")[0],
+      fecha_salida_hormonado: r.fecha_salida_hormonado?.split("T")[0],
+      usuario_id: r.usuario_id || usuarioId,
     });
     
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -120,13 +120,13 @@ function BitacoraInventarioContent() {
   };
 
   const columnas = [
-    { header: "Instalación", value: (r) => r.fn_num_instalacion },
-    { header: "Cantidad", value: (r) => r.fn_cantidad },
-    { header: "Talla", value: (r) => r.fn_talla },
-    { header: "Lote", value: (r) => r.fc_lote },
-    { header: "Siembra", value: (r) => formatFecha(r.fd_fecha_siembra) },
-    { header: "Salida Hormonado", value: (r) => formatFecha(r.fd_fecha_salida_hormonado) },
-    { header: "Observación", value: (r) => r.fc_observacion, truncate: true, maxWidth: 200 },
+    { header: "Instalación", value: (r) => r.pileta_id },
+    { header: "Cantidad", value: (r) => r.cantidad },
+    { header: "Talla", value: (r) => r.talla },
+    { header: "Lote", value: (r) => r.lote_nombre },
+    { header: "Siembra", value: (r) => formatFecha(r.fecha_siembra) },
+    { header: "Salida Hormonado", value: (r) => formatFecha(r.fecha_salida_hormonado) },
+    { header: "Observación", value: (r) => r.observacion, truncate: true, maxWidth: 200 },
   ];
 
   const gruposUbicacion = getGroups(data);
@@ -175,85 +175,85 @@ function BitacoraInventarioContent() {
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Instalación"
-                name="fn_num_instalacion"
-                value={form.fn_num_instalacion}
+                name="pileta_id"
+                value={form.pileta_id}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_num_instalacion}
-                helperText={errors.fn_num_instalacion}
+                error={!!errors.pileta_id}
+                helperText={errors.pileta_id}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="Cantidad"
-                name="fn_cantidad"
+                name="cantidad"
                 decimalScale={0}
-                value={form.fn_cantidad}
+                value={form.cantidad}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_cantidad}
-                helperText={errors.fn_cantidad}
+                error={!!errors.cantidad}
+                helperText={errors.cantidad}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <CampoNumerico
                 label="Talla"
-                name="fn_talla"
-                value={form.fn_talla}
+                name="talla"
+                value={form.talla}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fn_talla}
-                helperText={errors.fn_talla}
+                error={!!errors.talla}
+                helperText={errors.talla}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="Lote"
-                name="fc_lote"
-                value={form.fc_lote}
+                name="lote_nombre"
+                value={form.lote_nombre}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fc_lote}
-                helperText={errors.fc_lote}
+                error={!!errors.lote_nombre}
+                helperText={errors.lote_nombre}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Fecha Siembra"
                 type="date"
-                name="fd_fecha_siembra"
+                name="fecha_siembra"
                 InputLabelProps={{ shrink: true }}
-                value={form.fd_fecha_siembra}
+                value={form.fecha_siembra}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fd_fecha_siembra}
-                helperText={errors.fd_fecha_siembra}
+                error={!!errors.fecha_siembra}
+                helperText={errors.fecha_siembra}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 label="Fecha Salida Hormonado"
                 type="date"
-                name="fd_fecha_salida_hormonado"
+                name="fecha_salida_hormonado"
                 InputLabelProps={{ shrink: true }}
-                value={form.fd_fecha_salida_hormonado}
+                value={form.fecha_salida_hormonado}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.fd_fecha_salida_hormonado}
-                helperText={errors.fd_fecha_salida_hormonado}
+                error={!!errors.fecha_salida_hormonado}
+                helperText={errors.fecha_salida_hormonado}
               />
             </Grid>
             <Grid size={12}>
               <TextField
                 label="Observación"
-                name="fc_observacion"
+                name="observacion"
                 multiline
                 rows={2}
                 fullWidth
-                value={form.fc_observacion}
+                value={form.observacion}
                 onChange={handleChange}
-                error={!!errors.fc_observacion}
-                helperText={errors.fc_observacion}
+                error={!!errors.observacion}
+                helperText={errors.observacion}
               />
             </Grid>
           </Grid>
@@ -272,7 +272,7 @@ function BitacoraInventarioContent() {
         grupos={gruposUbicacion}
         renderTabla={renderTablaInventario}
         buscar
-        searchKeys={["fn_num_instalacion", "fc_lote", "fc_observacion"]}
+        searchKeys={["pileta_id", "lote_nombre", "observacion"]}
         placeholderBusqueda="Buscar instalación, lote u observación"
         exportar={{
           columnas,

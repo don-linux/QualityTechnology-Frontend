@@ -35,12 +35,12 @@ import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 
 const EMPTY_FORM = {
-  fi_cuenta_id: null,
-  fc_udn: "",
-  fc_nombre: "",
-  fc_numero_cuenta: "",
-  fc_banco: "",
-  fc_tipo: "",
+  cuenta_id: null,
+  unidad_negocio: "",
+  nombre: "",
+  numero_cuenta: "",
+  banco: "",
+  tipo_cuenta: "",
 };
 
 export default function Cuentas() {
@@ -53,9 +53,9 @@ export default function Cuentas() {
   const { confirm, ConfirmModal } = useConfirm();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
-  const esEdicion = !!form.fi_cuenta_id;
+  const esEdicion = !!form.cuenta_id;
 
-  const requiredFields = ["fc_udn", "fc_nombre", "fc_tipo"];
+  const requiredFields = ["unidad_negocio", "nombre", "tipo_cuenta"];
 
   useEffect(() => {
     obtenerCuentas();
@@ -97,11 +97,11 @@ export default function Cuentas() {
   };
 
   const construirPayload = () => ({
-    fc_udn: form.fc_udn,
-    fc_nombre: form.fc_nombre.trim(),
-    fc_numero_cuenta: form.fc_numero_cuenta?.trim() || null,
-    fc_banco: form.fc_banco?.trim() || null,
-    fc_tipo: form.fc_tipo,
+    unidad_negocio: form.unidad_negocio,
+    nombre: form.nombre.trim(),
+    numero_cuenta: form.numero_cuenta?.trim() || null,
+    banco: form.banco?.trim() || null,
+    tipo_cuenta: form.tipo_cuenta,
   });
 
   const registrar = async () => {
@@ -122,7 +122,7 @@ export default function Cuentas() {
     if (!esEdicion) return;
     if (!validate(form, requiredFields)) return;
     try {
-      await updateCuenta(form.fi_cuenta_id, construirPayload());
+      await updateCuenta(form.cuenta_id, construirPayload());
       await obtenerCuentas();
       limpiar();
       showSnackbar("Cuenta actualizada correctamente", "success");
@@ -134,11 +134,11 @@ export default function Cuentas() {
   };
 
   const desactivar = async (cuenta) => {
-    if (!(await confirm(`¿Desactivar la cuenta "${cuenta.fc_nombre}"?`))) return;
+    if (!(await confirm(`¿Desactivar la cuenta "${cuenta.nombre}"?`))) return;
     try {
-      await deactivateCuenta(cuenta.fi_cuenta_id);
+      await deactivateCuenta(cuenta.cuenta_id);
       await obtenerCuentas();
-      if (form.fi_cuenta_id === cuenta.fi_cuenta_id) limpiar();
+      if (form.cuenta_id === cuenta.cuenta_id) limpiar();
     } catch (e) {
       console.error(e);
       showSnackbar("Error al desactivar cuenta", "error");
@@ -146,11 +146,11 @@ export default function Cuentas() {
   };
 
   const activar = async (cuenta) => {
-    if (!(await confirm(`¿Activar la cuenta "${cuenta.fc_nombre}"?`))) return;
+    if (!(await confirm(`¿Activar la cuenta "${cuenta.nombre}"?`))) return;
     try {
-      await activateCuenta(cuenta.fi_cuenta_id);
+      await activateCuenta(cuenta.cuenta_id);
       await obtenerCuentas();
-      if (form.fi_cuenta_id === cuenta.fi_cuenta_id) limpiar();
+      if (form.cuenta_id === cuenta.cuenta_id) limpiar();
     } catch (e) {
       console.error(e);
       showSnackbar("Error al activar cuenta", "error");
@@ -159,12 +159,12 @@ export default function Cuentas() {
 
   const seleccionar = (cuenta) => {
     setForm({
-      fi_cuenta_id: cuenta.fi_cuenta_id,
-      fc_udn: cuenta.fc_udn || "",
-      fc_nombre: cuenta.fc_nombre || "",
-      fc_numero_cuenta: cuenta.fc_numero_cuenta || "",
-      fc_banco: cuenta.fc_banco || "",
-      fc_tipo: cuenta.fc_tipo || "",
+      cuenta_id: cuenta.cuenta_id,
+      unidad_negocio: cuenta.unidad_negocio || "",
+      nombre: cuenta.nombre || "",
+      numero_cuenta: cuenta.numero_cuenta || "",
+      banco: cuenta.banco || "",
+      tipo_cuenta: cuenta.tipo_cuenta || "",
     });
     clearErrors();
     abrirFormulario();
@@ -190,17 +190,17 @@ export default function Cuentas() {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 select
-                name="fc_udn"
+                name="unidad_negocio"
                 label="UdN"
                 fullWidth
-                value={form.fc_udn}
+                value={form.unidad_negocio}
                 onChange={handleChange}
-                error={!!errors.fc_udn}
-                helperText={errors.fc_udn}
+                error={!!errors.unidad_negocio}
+                helperText={errors.unidad_negocio}
               >
                 {unidadesNegocio.map((u) => (
-                  <MenuItem key={u.fi_unidad_negocio_id} value={u.fc_nombre}>
-                    {u.fc_nombre}
+                  <MenuItem key={u.unidad_negocio_id} value={u.nombre}>
+                    {u.nombre}
                   </MenuItem>
                 ))}
               </TextField>
@@ -209,13 +209,13 @@ export default function Cuentas() {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 select
-                name="fc_tipo"
+                name="tipo_cuenta"
                 label="Tipo de cuenta"
                 fullWidth
-                value={form.fc_tipo}
+                value={form.tipo_cuenta}
                 onChange={handleChange}
-                error={!!errors.fc_tipo}
-                helperText={errors.fc_tipo}
+                error={!!errors.tipo_cuenta}
+                helperText={errors.tipo_cuenta}
               >
                 {TIPO_CUENTA_OPTIONS.map((opt) => (
                   <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
@@ -225,35 +225,35 @@ export default function Cuentas() {
 
             <Grid size={12}>
               <TextField
-                name="fc_nombre"
+                name="nombre"
                 label="Nombre de la cuenta"
                 fullWidth
-                value={form.fc_nombre}
+                value={form.nombre}
                 onChange={handleChange}
-                error={!!errors.fc_nombre}
-                helperText={errors.fc_nombre}
+                error={!!errors.nombre}
+                helperText={errors.nombre}
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                name="fc_numero_cuenta"
+                name="numero_cuenta"
                 label="Número de cuenta"
                 fullWidth
-                value={form.fc_numero_cuenta}
+                value={form.numero_cuenta}
                 onChange={handleChange}
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
-                name="fc_banco"
+                name="banco"
                 label="Nombre del banco"
                 fullWidth
-                value={form.fc_banco}
+                value={form.banco}
                 onChange={handleChange}
-                error={!!errors.fc_banco}
-                helperText={errors.fc_banco || "Opcional. Máximo 150 caracteres."}
+                error={!!errors.banco}
+                helperText={errors.banco || "Opcional. Máximo 150 caracteres."}
                 inputProps={{ maxLength: 150 }}
               />
             </Grid>
@@ -298,26 +298,26 @@ export default function Cuentas() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {ordenarYNumerar(cuentas, ["fi_cuenta_id", "cuenta_id"]).map((cuenta) => (
-                  <TableRow key={cuenta.fi_cuenta_id} hover>
+                {ordenarYNumerar(cuentas, ["cuenta_id", "id"]).map((cuenta) => (
+                  <TableRow key={cuenta.cuenta_id} hover>
                     <TableCell>{cuenta._num}</TableCell>
-                    <TableCell>{cuenta.fc_udn}</TableCell>
-                    <TableCell>{cuenta.fc_nombre}</TableCell>
-                    <TableCell>{cuenta.fc_numero_cuenta || "—"}</TableCell>
-                    <TableCell>{cuenta.fc_banco || "—"}</TableCell>
-                    <TableCell>{cuenta.fc_tipo}</TableCell>
-                    <TableCell align="right">{formatPrecio(cuenta.fn_saldo_actual)}</TableCell>
+                    <TableCell>{cuenta.unidad_negocio}</TableCell>
+                    <TableCell>{cuenta.nombre}</TableCell>
+                    <TableCell>{cuenta.numero_cuenta || "—"}</TableCell>
+                    <TableCell>{cuenta.banco || "—"}</TableCell>
+                    <TableCell>{cuenta.tipo_cuenta}</TableCell>
+                    <TableCell align="right">{formatPrecio(cuenta.saldo_actual)}</TableCell>
                     <TableCell>
                       <Chip
-                        label={cuenta.fb_activo ? "Activa" : "Inactiva"}
-                        color={cuenta.fb_activo ? "success" : "default"}
+                        label={cuenta.activo ? "Activa" : "Inactiva"}
+                        color={cuenta.activo ? "success" : "default"}
                         size="small"
                       />
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, flexWrap: "nowrap" }}>
                         <Button size="small" variant="outlined" onClick={() => seleccionar(cuenta)}>Editar</Button>
-                        {cuenta.fb_activo ? (
+                        {cuenta.activo ? (
                           <Button size="small" variant="outlined" color="error" onClick={() => desactivar(cuenta)}>
                             Desactivar
                           </Button>

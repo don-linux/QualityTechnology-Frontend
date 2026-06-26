@@ -6,11 +6,6 @@ import {
   activateAccionCorrectiva,
   deactivateAccionCorrectiva,
 } from "@features/catalogos/services/accionesCorrectivasService";
-import {
-  getAccionCorrectivaId,
-  getAccionCorrectivaNombre,
-  accionCorrectivaActivo,
-} from "@features/catalogos/utils/catalogEntityGetters";
 
 export default function AccionesCorrectivas() {
   return (
@@ -27,9 +22,6 @@ export default function AccionesCorrectivas() {
       updateFn={updateAccionCorrectiva}
       activateFn={activateAccionCorrectiva}
       deactivateFn={deactivateAccionCorrectiva}
-      getId={getAccionCorrectivaId}
-      getNombre={getAccionCorrectivaNombre}
-      isActivo={accionCorrectivaActivo}
     />
   );
 }

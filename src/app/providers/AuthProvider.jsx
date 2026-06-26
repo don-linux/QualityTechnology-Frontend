@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
   const login = useCallback((data) => {
     const usuario = data.usuario;
     const usuarioId =
-      usuario.fi_usuario_id || usuario.usuario_id || usuario.id_usuario || usuario.id || null;
+      usuario.usuario_id || usuario.id_usuario || usuario.id || null;
 
     const rolTexto = (usuario.rol || usuario.rol_nombre || "")
       .normalize("NFD")
@@ -86,10 +86,8 @@ export function AuthProvider({ children }) {
       return session.modulos.some(
         (m) =>
           m &&
-          (
-            (typeof m.nombre === "string" && normalizeRol(m.nombre) === target) ||
-            (typeof m.fc_nombre === "string" && normalizeRol(m.fc_nombre) === target)
-          )
+          typeof m.nombre === "string" &&
+          normalizeRol(m.nombre) === target
       );
     },
     [session?.modulos]

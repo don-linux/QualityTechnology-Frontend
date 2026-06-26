@@ -47,7 +47,7 @@ const Alevinaje = () => {
 
   const requiredFields = [
     "ubicacion",
-    "fi_pileta_destino_id",
+    "pileta_destino_id",
     "cantidad_total",
     "peso_gramos",
   ];
@@ -58,8 +58,8 @@ const Alevinaje = () => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState({
     ubicacion: "",
-    fi_pileta_destino_id: "",
-    fc_lote: "",
+    pileta_destino_id: "",
+    lote: "",
     cantidad_total: "",
     peso_gramos: "",
   });
@@ -72,15 +72,14 @@ const Alevinaje = () => {
   const registrosVista = useMemo(() => vistaActualPorPileta(registros), [registros]);
 
   const gruposRegistros = useMemo(
-    () => getGroups(registrosVista, "fc_granja"),
+    () => getGroups(registrosVista, "granja"),
     [getGroups, registrosVista],
   );
 
   const payloadComunBackend = () => ({
-    pileta_id: Number(formData.fi_pileta_destino_id),
-    pileta_destino_id: Number(formData.fi_pileta_destino_id),
-    lote: formData.fc_lote?.trim() || null,
-    fc_lote: formData.fc_lote?.trim() || null,
+    pileta_id: Number(formData.pileta_destino_id),
+    pileta_destino_id: Number(formData.pileta_destino_id),
+    lote: formData.lote?.trim() || null,
     cantidad_total: Number(formData.cantidad_total || 0),
     peso_gramos: formData.peso_gramos === "" ? null : Number(formData.peso_gramos),
   });
@@ -97,7 +96,7 @@ const Alevinaje = () => {
 
     setFormData((prev) => {
       if (name === "ubicacion") {
-        return { ...prev, ubicacion: value, fi_pileta_destino_id: "" };
+        return { ...prev, ubicacion: value, pileta_destino_id: "" };
       }
       return { ...prev, [name]: value };
     });
@@ -159,16 +158,11 @@ const Alevinaje = () => {
     if (!seleccionado) return;
     clearErrors();
     setFormData({
-      ubicacion: seleccionado.fc_granja || formData.ubicacion || defaultUbicacion || "",
-      fi_pileta_destino_id: String(
-        seleccionado.fi_pileta_destino_id ?? seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
+      ubicacion: seleccionado.granja || formData.ubicacion || defaultUbicacion || "",
+      pileta_destino_id: String(
+        seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
       ),
-      fc_lote:
-        seleccionado.lote ??
-        seleccionado.fc_lote ??
-        seleccionado.lote_genetico ??
-        seleccionado.fc_lote_genetico ??
-        "",
+      lote: seleccionado.lote ?? seleccionado.lote_genetico ?? "",
       cantidad_total: String(seleccionado.cantidad_total ?? ""),
       peso_gramos:
         seleccionado.peso_gramos != null
@@ -189,7 +183,7 @@ const Alevinaje = () => {
     }
     try {
       await updateAlevinaje(
-        seleccionado.fi_id ?? seleccionado.id,
+        seleccionado.id,
         payloadComunBackend(),
       );
       showSnackbar("Registro actualizado", "success");
@@ -209,8 +203,8 @@ const Alevinaje = () => {
   const resetFormulario = () => {
     setFormData({
       ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
-      fi_pileta_destino_id: "",
-      fc_lote: "",
+      pileta_destino_id: "",
+      lote: "",
       cantidad_total: "",
       peso_gramos: "",
     });
@@ -262,16 +256,16 @@ const Alevinaje = () => {
                 <TextField
                   select
                   label="Instalación"
-                  name="fi_pileta_destino_id"
-                  value={formData.fi_pileta_destino_id || ""}
+                  name="pileta_destino_id"
+                  value={formData.pileta_destino_id || ""}
                   onChange={handleChange}
                   fullWidth
                   sx={campoFormSx}
-                  error={!!errors.fi_pileta_destino_id}
-                  {...(errors.fi_pileta_destino_id ? { helperText: errors.fi_pileta_destino_id } : {})}
+                  error={!!errors.pileta_destino_id}
+                  {...(errors.pileta_destino_id ? { helperText: errors.pileta_destino_id } : {})}
                 >
                   {piletasFiltradas.map((p) => {
-                    const pid = p.fi_pileta_id ?? p.pileta_id;
+                    const pid = p.pileta_id;
                     return (
                       <MenuItem key={pid} value={String(pid)}>
                         {p.nombre}
@@ -315,8 +309,8 @@ const Alevinaje = () => {
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="No. de lote"
-                  name="fc_lote"
-                  value={formData.fc_lote}
+                  name="lote"
+                  value={formData.lote}
                   onChange={handleChange}
                   fullWidth
                   placeholder="Lote heredado de eficiencia reproductiva o captura manual"
@@ -351,7 +345,7 @@ const Alevinaje = () => {
       <TablasPorUbicacionGranja
         grupos={gruposRegistros}
         renderTabla={(rows) => {
-          const filas = ordenarYNumerar(rows, ["fi_id", "id"]);
+          const filas = ordenarYNumerar(rows, ["id"]);
           return (
           <Paper sx={{ width: "100%", borderRadius: 2, boxShadow: 3 }}>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
@@ -375,12 +369,12 @@ const Alevinaje = () => {
                   ) : (
                     filas.map((l) => (
                       <TableRow
-                        key={l.fi_id ?? l.id}
+                        key={l.id}
                         onClick={() => setSeleccionado(l)}
                         style={{
                           cursor: "pointer",
                           backgroundColor:
-                            (seleccionado?.fi_id ?? seleccionado?.id) === (l.fi_id ?? l.id)
+                            seleccionado?.id === l.id
                               ? "#e0f7fa"
                               : "transparent",
                         }}
@@ -392,7 +386,7 @@ const Alevinaje = () => {
                         <TableCell align="right">{formatCantidad(l.cantidad_total)}</TableCell>
                         <TableCell align="right">{formatCantidad(l.peso_gramos ?? l.peso)}</TableCell>
                         <TableCell>
-                          {l.lote ?? l.fc_lote ?? l.lote_genetico ?? l.fc_lote_genetico ?? ""}
+                          {l.lote ?? l.lote_genetico ?? ""}
                         </TableCell>
                       </TableRow>
                     ))

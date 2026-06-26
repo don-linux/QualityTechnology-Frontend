@@ -70,24 +70,21 @@ function etiquetaRol(rol) {
 function normalizarHistorialObservaciones(rows) {
   return (Array.isArray(rows) ? rows : [])
     .map((r) => {
-      const comentario = (r.comentario ?? r.observacion ?? r.fc_observacion ?? "").trim();
+      const comentario = (r.comentario ?? r.observacion ?? "").trim();
       if (!comentario) return null;
       const fecha =
         r.created_at ??
-        r.fd_fecha ??
         r.fecha ??
         r.fecha_peso ??
-        r.fd_fecha_peso ??
-        r.fd_ultima_observacion_pileta ??
         null;
       return {
         fecha,
         comentario,
-        proceso: etiquetaProceso(r.proceso ?? r.fc_proceso),
-        usuarioNombre: r.usuario_nombre ?? r.fc_usuario ?? null,
-        rolNombre: etiquetaRol(r.rol_nombre ?? r.fc_rol),
+        proceso: etiquetaProceso(r.proceso),
+        usuarioNombre: r.usuario_nombre ?? null,
+        rolNombre: etiquetaRol(r.rol_nombre),
         hora: formatearHora(fecha),
-        registroId: r.fi_observacion_id ?? r.observacion_id ?? r.fi_id ?? r.fi_engorda_id ?? r.id ?? null,
+        registroId: r.observacion_id ?? r.id ?? null,
       };
     })
     .filter(Boolean)

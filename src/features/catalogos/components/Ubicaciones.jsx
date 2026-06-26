@@ -186,7 +186,7 @@ export default function Ubicaciones({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {ordenarYNumerar(ubicaciones, ["ubicacion_id", "fi_ubicacion_id"]).map((u) => (
+                {ordenarYNumerar(ubicaciones, ["ubicacion_id", "id"]).map((u) => (
                   <TableRow key={u.ubicacion_id} hover>
                     <TableCell>{u._num}</TableCell>
                     <TableCell>{u.nombre}</TableCell>

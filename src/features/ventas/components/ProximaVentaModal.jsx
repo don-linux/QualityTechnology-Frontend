@@ -20,20 +20,20 @@ import useAuth from "@app/providers/AuthProvider";
 import { createRegistro, listClientes } from "../services/listaEsperaService";
 
 const REQUIRED_FIELDS = [
-  "fd_fecha_entrega",
-  "fc_uap_asignada",
-  "fc_granja_asignada",
-  "fn_cantidad",
-  "fc_cliente",
-  "fc_lugar_entrega",
-  "fc_unidad_produccion",
-  "fc_hora_embolsado",
-  "fc_hora_entrega",
-  "fn_precio_venta",
+  "fecha_entrega",
+  "tipo_venta",
+  "granja",
+  "cantidad_peces",
+  "cliente_nombre",
+  "lugar_entrega",
+  "unidad_produccion",
+  "hora_embolsado",
+  "hora_entrega",
+  "precio_unitario",
 ];
 
 function stockPileta(p) {
-  return Number(p?.cantidad ?? p?.fn_cantidad ?? 0);
+  return Number(p?.cantidad ?? 0);
 }
 
 function formatStock(num) {
@@ -51,23 +51,23 @@ function hoyISO() {
 
 function buildEmptyForm(defaults = {}, nombreUsuario = "") {
   return {
-    fd_fecha_entrega: defaults.fd_fecha_entrega ?? hoyISO(),
-    fc_uap_asignada: defaults.fc_uap_asignada ?? "",
-    fc_granja_asignada: defaults.fc_granja_asignada ?? "",
+    fecha_entrega: defaults.fecha_entrega ?? hoyISO(),
+    tipo_venta: defaults.tipo_venta ?? "",
+    granja: defaults.granja ?? "",
     pileta_origen_id: defaults.pileta_origen_id ? String(defaults.pileta_origen_id) : "",
-    fn_cantidad: defaults.fn_cantidad ?? "",
-    fc_cliente: defaults.fc_cliente ?? "",
-    fc_lugar_entrega: defaults.fc_lugar_entrega ?? "",
-    fc_unidad_produccion: defaults.fc_unidad_produccion ?? "",
-    fc_hora_embolsado: defaults.fc_hora_embolsado ?? "",
-    fc_hora_entrega: defaults.fc_hora_entrega ?? "",
-    fn_precio_venta: defaults.fn_precio_venta ?? "",
-    fc_encargado_venta: defaults.fc_encargado_venta ?? nombreUsuario,
+    cantidad_peces: defaults.cantidad_peces ?? "",
+    cliente_nombre: defaults.cliente_nombre ?? "",
+    lugar_entrega: defaults.lugar_entrega ?? "",
+    unidad_produccion: defaults.unidad_produccion ?? "",
+    hora_embolsado: defaults.hora_embolsado ?? "",
+    hora_entrega: defaults.hora_entrega ?? "",
+    precio_unitario: defaults.precio_unitario ?? "",
+    encargado_venta: defaults.encargado_venta ?? nombreUsuario,
   };
 }
 
 function idPileta(p) {
-  return p?.fi_pileta_id ?? p?.pileta_id ?? null;
+  return p?.pileta_id ?? null;
 }
 
 export default function ProximaVentaModal({
@@ -108,7 +108,7 @@ export default function ProximaVentaModal({
   }, [open, defaults, nombreUsuario, clearErrors, cargarClientes]);
 
   useEffect(() => {
-    if (!open || !ventaRequierePileta(form.fc_uap_asignada)) return;
+    if (!open || !ventaRequierePileta(form.tipo_venta)) return;
     if (form.pileta_origen_id) return;
 
     const fromDefaults = defaults.pileta_origen_id ? String(defaults.pileta_origen_id) : "";
@@ -124,24 +124,24 @@ export default function ProximaVentaModal({
       return {
         ...prev,
         pileta_origen_id: piletaId,
-        fn_cantidad: prev.fn_cantidad || (stock > 0 ? String(stock) : ""),
+        cantidad_peces: prev.cantidad_peces || (stock > 0 ? String(stock) : ""),
       };
     });
-  }, [open, defaults.pileta_origen_id, piletas, form.pileta_origen_id, form.fc_uap_asignada]);
+  }, [open, defaults.pileta_origen_id, piletas, form.pileta_origen_id, form.tipo_venta]);
 
   const piletaOrigenSeleccionada = useMemo(() => {
     if (!form.pileta_origen_id) return null;
     return (
       piletas.find(
-        (p) => String(p.fi_pileta_id ?? p.pileta_id) === String(form.pileta_origen_id),
+        (p) => String(p.pileta_id) === String(form.pileta_origen_id),
       ) ?? null
     );
   }, [form.pileta_origen_id, piletas]);
 
-  const cantidadPedido = Number(form.fn_cantidad ?? 0);
+  const cantidadPedido = Number(form.cantidad_peces ?? 0);
   const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
   const requiereValidacionStock =
-    ventaRequierePileta(form.fc_uap_asignada) && Boolean(form.pileta_origen_id);
+    ventaRequierePileta(form.tipo_venta) && Boolean(form.pileta_origen_id);
   const cantidadExcedeStock =
     requiereValidacionStock
     && stockOrigen != null
@@ -155,7 +155,7 @@ export default function ProximaVentaModal({
   };
 
   const validarPiletaYCantidad = () => {
-    if (ventaRequierePileta(form.fc_uap_asignada) && !form.pileta_origen_id) {
+    if (ventaRequierePileta(form.tipo_venta) && !form.pileta_origen_id) {
       showSnackbar("Seleccione la pileta de origen para ventas de alevines o mojarra.", "warning");
       return false;
     }
@@ -202,21 +202,21 @@ export default function ProximaVentaModal({
               fullWidth
               type="date"
               label="Fecha de entrega"
-              name="fd_fecha_entrega"
-              value={form.fd_fecha_entrega}
+              name="fecha_entrega"
+              value={form.fecha_entrega}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
-              error={!!errors.fd_fecha_entrega}
-              helperText={errors.fd_fecha_entrega}
+              error={!!errors.fecha_entrega}
+              helperText={errors.fecha_entrega}
             />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <FormControl fullWidth error={!!errors.fc_uap_asignada}>
+            <FormControl fullWidth error={!!errors.tipo_venta}>
               <InputLabel>Tipo de venta</InputLabel>
               <Select
-                name="fc_uap_asignada"
-                value={form.fc_uap_asignada}
+                name="tipo_venta"
+                value={form.tipo_venta}
                 onChange={handleChange}
                 label="Tipo de venta"
                 disabled={lockTipoVenta}
@@ -224,7 +224,7 @@ export default function ProximaVentaModal({
                 <MenuItem value="ALEVIN">Alevines (por pieza)</MenuItem>
                 <MenuItem value="KG">Mojarra (por Kg)</MenuItem>
               </Select>
-              {errors.fc_uap_asignada && <FormHelperText>{errors.fc_uap_asignada}</FormHelperText>}
+              {errors.tipo_venta && <FormHelperText>{errors.tipo_venta}</FormHelperText>}
             </FormControl>
           </Grid>
 
@@ -232,16 +232,16 @@ export default function ProximaVentaModal({
             <TextField
               fullWidth
               label="Granja"
-              name="fc_granja_asignada"
-              value={form.fc_granja_asignada}
+              name="granja"
+              value={form.granja}
               onChange={handleChange}
               slotProps={{ input: { readOnly: lockGranja } }}
-              error={!!errors.fc_granja_asignada}
-              helperText={errors.fc_granja_asignada}
+              error={!!errors.granja}
+              helperText={errors.granja}
             />
           </Grid>
 
-          {ventaRequierePileta(form.fc_uap_asignada) && (
+          {ventaRequierePileta(form.tipo_venta) && (
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <TextField
                 select
@@ -261,7 +261,7 @@ export default function ProximaVentaModal({
               >
                 <MenuItem value="">— Seleccionar —</MenuItem>
                 {piletas.map((p) => (
-                  <MenuItem key={p.fi_pileta_id ?? p.pileta_id} value={String(p.fi_pileta_id ?? p.pileta_id)}>
+                  <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
                     {etiquetaPileta(p)}
                   </MenuItem>
                 ))}
@@ -274,12 +274,12 @@ export default function ProximaVentaModal({
               fullWidth
               decimalScale={0}
               label="Cantidad"
-              name="fn_cantidad"
-              value={form.fn_cantidad}
+              name="cantidad_peces"
+              value={form.cantidad_peces}
               onChange={handleChange}
-              error={!!errors.fn_cantidad || cantidadExcedeStock}
+              error={!!errors.cantidad_peces || cantidadExcedeStock}
               helperText={
-                errors.fn_cantidad
+                errors.cantidad_peces
                 || (requiereValidacionStock && stockOrigen != null
                   ? `Máximo disponible: ${formatStock(stockOrigen)} organismos`
                   : undefined)
@@ -297,21 +297,21 @@ export default function ProximaVentaModal({
               freeSolo
               fullWidth
               options={clientes}
-              getOptionLabel={(o) => (typeof o === "string" ? o : o.fc_razon_social || "")}
-              value={form.fc_cliente}
+              getOptionLabel={(o) => (typeof o === "string" ? o : o.nombre || "")}
+              value={form.cliente_nombre}
               onChange={(e, val) => {
                 setForm((prev) => ({
                   ...prev,
-                  fc_cliente: typeof val === "string" ? val : val?.fc_razon_social || "",
+                  cliente_nombre: typeof val === "string" ? val : val?.nombre || "",
                 }));
-                clearFieldError("fc_cliente");
+                clearFieldError("cliente_nombre");
               }}
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Cliente"
-                  error={!!errors.fc_cliente}
-                  helperText={errors.fc_cliente}
+                  error={!!errors.cliente_nombre}
+                  helperText={errors.cliente_nombre}
                 />
               )}
             />
@@ -321,11 +321,11 @@ export default function ProximaVentaModal({
             <TextField
               fullWidth
               label="Lugar de entrega"
-              name="fc_lugar_entrega"
-              value={form.fc_lugar_entrega}
+              name="lugar_entrega"
+              value={form.lugar_entrega}
               onChange={handleChange}
-              error={!!errors.fc_lugar_entrega}
-              helperText={errors.fc_lugar_entrega}
+              error={!!errors.lugar_entrega}
+              helperText={errors.lugar_entrega}
             />
           </Grid>
 
@@ -333,11 +333,11 @@ export default function ProximaVentaModal({
             <TextField
               fullWidth
               label="Unidad de producción"
-              name="fc_unidad_produccion"
-              value={form.fc_unidad_produccion}
+              name="unidad_produccion"
+              value={form.unidad_produccion}
               onChange={handleChange}
-              error={!!errors.fc_unidad_produccion}
-              helperText={errors.fc_unidad_produccion}
+              error={!!errors.unidad_produccion}
+              helperText={errors.unidad_produccion}
             />
           </Grid>
 
@@ -346,12 +346,12 @@ export default function ProximaVentaModal({
               fullWidth
               type="time"
               label="Hora embolsado"
-              name="fc_hora_embolsado"
-              value={form.fc_hora_embolsado}
+              name="hora_embolsado"
+              value={form.hora_embolsado}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
-              error={!!errors.fc_hora_embolsado}
-              helperText={errors.fc_hora_embolsado}
+              error={!!errors.hora_embolsado}
+              helperText={errors.hora_embolsado}
             />
           </Grid>
 
@@ -360,12 +360,12 @@ export default function ProximaVentaModal({
               fullWidth
               type="time"
               label="Hora entrega"
-              name="fc_hora_entrega"
-              value={form.fc_hora_entrega}
+              name="hora_entrega"
+              value={form.hora_entrega}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
-              error={!!errors.fc_hora_entrega}
-              helperText={errors.fc_hora_entrega}
+              error={!!errors.hora_entrega}
+              helperText={errors.hora_entrega}
             />
           </Grid>
 
@@ -374,11 +374,11 @@ export default function ProximaVentaModal({
               fullWidth
               prefix="$" decimalScale={2}
               label="Precio unitario"
-              name="fn_precio_venta"
-              value={form.fn_precio_venta}
+              name="precio_unitario"
+              value={form.precio_unitario}
               onChange={handleChange}
-              error={!!errors.fn_precio_venta}
-              helperText={errors.fn_precio_venta}
+              error={!!errors.precio_unitario}
+              helperText={errors.precio_unitario}
               inputProps={{ min: 0, step: "0.01" }}
             />
           </Grid>

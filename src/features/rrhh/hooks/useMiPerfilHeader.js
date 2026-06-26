@@ -30,11 +30,11 @@ export default function useMiPerfilHeader(esAdministrador) {
       try {
         const { data } = await getPerfil();
         if (!activo) return;
-        const nombre = (data.fc_nombre || "").trim();
+        const nombre = (data.nombre || "").trim();
         setHeaderInfo({
           mode: "empleado",
           nombre,
-          apellidoPaterno: (data.fc_apellido_paterno || "").trim(),
+          apellidoPaterno: (data.apellido_paterno || "").trim(),
           unidadNegocio: data.unidad_negocio_nombre || "",
           puesto: data.puesto_nombre || "",
           avatarInitial: (nombre.charAt(0) || "U").toUpperCase(),

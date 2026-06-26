@@ -37,7 +37,6 @@ const Login = () => {
       if (!data.usuario) throw new Error("Respuesta inválida del servidor");
 
       const usuarioId =
-        data.usuario.fi_usuario_id ||
         data.usuario.usuario_id ||
         data.usuario.id_usuario ||
         data.usuario.id ||

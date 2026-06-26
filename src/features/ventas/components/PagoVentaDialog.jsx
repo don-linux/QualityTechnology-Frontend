@@ -44,22 +44,22 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
   const [cuentas, setCuentas] = useState([]);
   const [pagos, setPagos] = useState([]);
   const [formData, setFormData] = useState({
-    fd_fecha: hoyISO(),
-    fc_cuenta: "",
-    fn_monto: "",
-    fc_observaciones: "",
+    fecha: hoyISO(),
+    cuenta_nombre: "",
+    monto: "",
+    observaciones: "",
   });
 
-  const requiredFields = ["fd_fecha", "fc_cuenta", "fn_monto"];
-  const adeudo = Number(venta?.fn_adeudo ?? venta?.monto_adeudo ?? 0);
-  const liquidada = venta?.fc_estado_pago === "LIQUIDADO";
+  const requiredFields = ["fecha", "cuenta_nombre", "monto"];
+  const adeudo = Number(venta?.monto_adeudo ?? 0);
+  const liquidada = venta?.estado_pago === "LIQUIDADO";
 
   const cargarDatos = useCallback(async () => {
-    if (!venta?.fi_venta_id) return;
+    if (!venta?.venta_id) return;
     try {
       const [resCuentas, resPagos] = await Promise.all([
         listCuentasActivas(),
-        listPagosVenta(venta.fi_venta_id),
+        listPagosVenta(venta.venta_id),
       ]);
       setCuentas(resCuentas.data ?? []);
       setPagos(resPagos.data ?? []);
@@ -67,16 +67,16 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
       console.error(err);
       showSnackbar("Error al cargar datos del pago", "error");
     }
-  }, [venta?.fi_venta_id, showSnackbar]);
+  }, [venta?.venta_id, showSnackbar]);
 
   useEffect(() => {
     if (!open) return;
     clearErrors();
     setFormData({
-      fd_fecha: hoyISO(),
-      fc_cuenta: "",
-      fn_monto: adeudo > 0 ? String(adeudo) : "",
-      fc_observaciones: "",
+      fecha: hoyISO(),
+      cuenta_nombre: "",
+      monto: adeudo > 0 ? String(adeudo) : "",
+      observaciones: "",
     });
     cargarDatos();
   }, [open, venta, adeudo, cargarDatos, clearErrors]);
@@ -89,7 +89,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
   const handleSubmit = async () => {
     if (!validate(formData, requiredFields)) return;
 
-    const monto = Number(formData.fn_monto);
+    const monto = Number(formData.monto);
     if (!Number.isFinite(monto) || monto <= 0) {
       showSnackbar("El monto debe ser mayor a cero", "error");
       return;
@@ -100,7 +100,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
     }
 
     try {
-      await registrarPagoVenta(venta.fi_venta_id, formData);
+      await registrarPagoVenta(venta.venta_id, formData);
       showSnackbar("Pago registrado correctamente", "success");
       onPagoRegistrado?.();
       onClose();
@@ -114,7 +114,7 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
   const handleAnular = async (movId) => {
     if (!await confirm("¿Anular este pago? Se revertirá el abono y el saldo de la cuenta.")) return;
     try {
-      await anularPagoVenta(venta.fi_venta_id, movId);
+      await anularPagoVenta(venta.venta_id, movId);
       showSnackbar("Pago anulado correctamente", "success");
       onPagoRegistrado?.();
       await cargarDatos();
@@ -127,18 +127,18 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
 
   if (!venta) return null;
 
-  const pagosOrdenados = ordenarYNumerar(pagos, ["fi_movimiento_id"]);
+  const pagosOrdenados = ordenarYNumerar(pagos, ["movimiento_id"]);
 
   return (
     <>
       <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
         <DialogTitle>
-          Registrar pago — {venta.fc_folio || `Venta #${venta.fi_venta_id}`}
+          Registrar pago — {venta.folio || `Venta #${venta.venta_id}`}
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Cliente: {venta.fc_cliente} · Total: {formatPrecio(venta.fn_monto_total)} ·
-            Abonado: {formatPrecio(venta.fn_abonado)} · Adeudo: {formatPrecio(adeudo)}
+            Cliente: {venta.cliente_nombre} · Total: {formatPrecio(venta.monto_total)} ·
+            Abonado: {formatPrecio(venta.monto_abonado)} · Adeudo: {formatPrecio(adeudo)}
           </Typography>
 
           {!liquidada && (
@@ -147,29 +147,29 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 <TextField
                   label="Fecha"
                   type="date"
-                  name="fd_fecha"
-                  value={formData.fd_fecha}
+                  name="fecha"
+                  value={formData.fecha}
                   onChange={handleChange}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
-                  error={!!errors.fd_fecha}
-                  helperText={errors.fd_fecha}
+                  error={!!errors.fecha}
+                  helperText={errors.fecha}
                 />
               </Grid>
               <Grid size={6}>
                 <TextField
                   select
                   label="Cuenta"
-                  name="fc_cuenta"
-                  value={formData.fc_cuenta}
+                  name="cuenta_nombre"
+                  value={formData.cuenta_nombre}
                   onChange={handleChange}
                   fullWidth
-                  error={!!errors.fc_cuenta}
-                  helperText={errors.fc_cuenta}
+                  error={!!errors.cuenta_nombre}
+                  helperText={errors.cuenta_nombre}
                 >
                   {cuentas.map((cuenta) => (
-                    <MenuItem key={cuenta.fi_cuenta_id} value={cuenta.fc_nombre}>
-                      {cuenta.fc_nombre} — {formatPrecio(cuenta.fn_saldo_actual)}
+                    <MenuItem key={cuenta.cuenta_id} value={cuenta.nombre}>
+                      {cuenta.nombre} — {formatPrecio(cuenta.saldo_actual)}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -178,26 +178,26 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 <CampoNumerico
                   label="Monto"
                   prefix="$" decimalScale={2}
-                  name="fn_monto"
-                  value={formData.fn_monto}
+                  name="monto"
+                  value={formData.monto}
                   onChange={handleChange}
                   fullWidth
                   inputProps={{ min: 0.01, max: adeudo, step: 0.01 }}
-                  error={!!errors.fn_monto}
-                  helperText={errors.fn_monto || `Máximo: ${formatPrecio(adeudo)}`}
+                  error={!!errors.monto}
+                  helperText={errors.monto || `Máximo: ${formatPrecio(adeudo)}`}
                 />
               </Grid>
               <Grid size={12}>
                 <TextField
                   label="Observaciones"
-                  name="fc_observaciones"
-                  value={formData.fc_observaciones}
+                  name="observaciones"
+                  value={formData.observaciones}
                   onChange={handleChange}
                   fullWidth
                   multiline
                   minRows={2}
                   inputProps={{ maxLength: 500 }}
-                  helperText={`${(formData.fc_observaciones || "").length}/500`}
+                  helperText={`${(formData.observaciones || "").length}/500`}
                 />
               </Grid>
             </Grid>
@@ -226,20 +226,20 @@ export default function PagoVentaDialog({ open, venta, onClose, onPagoRegistrado
                 </TableRow>
               ) : (
                 pagosOrdenados.map((p) => (
-                  <TableRow key={p.fi_movimiento_id}>
+                  <TableRow key={p.movimiento_id}>
                     <TableCell>{p._num}</TableCell>
-                    <TableCell>{String(p.fd_fecha).slice(0, 10)}</TableCell>
-                    <TableCell align="right">{formatPrecio(p.fn_ingreso)}</TableCell>
-                    <TableCell>{p.fc_cuenta}</TableCell>
+                    <TableCell>{String(p.fecha).slice(0, 10)}</TableCell>
+                    <TableCell align="right">{formatPrecio(p.ingreso)}</TableCell>
+                    <TableCell>{p.cuenta_nombre}</TableCell>
                     <TableCell sx={{ maxWidth: 200 }}>
-                      <span title={p.fc_observaciones}>{truncar(p.fc_observaciones)}</span>
+                      <span title={p.observaciones}>{truncar(p.observaciones)}</span>
                     </TableCell>
                     <TableCell align="center">
                       <IconButton
                         size="small"
                         color="error"
                         aria-label="Anular pago"
-                        onClick={() => handleAnular(p.fi_movimiento_id)}
+                        onClick={() => handleAnular(p.movimiento_id)}
                       >
                         <DeleteIcon fontSize="small" />
                       </IconButton>

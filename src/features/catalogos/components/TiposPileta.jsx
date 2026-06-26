@@ -28,11 +28,6 @@ import CircularProgress from "@mui/material/CircularProgress";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
-import {
-  getTipoPiletaId,
-  getTipoPiletaNombre,
-  tipoPiletaActivo,
-} from "@features/catalogos/utils/catalogEntityGetters";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 
 export default function TiposPileta() {
@@ -125,8 +120,8 @@ export default function TiposPileta() {
 
   const seleccionar = (item) => {
     setForm({
-      tipo_pileta_id: getTipoPiletaId(item),
-      nombre: getTipoPiletaNombre(item),
+      tipo_pileta_id: item.tipo_pileta_id ?? item.id,
+      nombre: item.nombre,
     });
     clearErrors();
     abrirFormulario();
@@ -212,13 +207,13 @@ export default function TiposPileta() {
               </TableHead>
               <TableBody>
                 {ordenarYNumerar(items, ["tipo_pileta_id", "id"]).map((item) => (
-                  <TableRow key={getTipoPiletaId(item) ?? ""} hover>
+                  <TableRow key={(item.tipo_pileta_id ?? item.id) ?? ""} hover>
                     <TableCell>{item._num}</TableCell>
-                    <TableCell>{getTipoPiletaNombre(item)}</TableCell>
+                    <TableCell>{item.nombre}</TableCell>
                     <TableCell>
                       <Chip
-                        label={tipoPiletaActivo(item) ? "Activo" : "Inactivo"}
-                        color={tipoPiletaActivo(item) ? "success" : "default"}
+                        label={item.activo ? "Activo" : "Inactivo"}
+                        color={item.activo ? "success" : "default"}
                         size="small"
                       />
                     </TableCell>
@@ -242,8 +237,8 @@ export default function TiposPileta() {
                             color="error"
                             onClick={() =>
                               desactivar(
-                                getTipoPiletaId(item),
-                                getTipoPiletaNombre(item),
+                                item.tipo_pileta_id ?? item.id,
+                                item.nombre,
                               )
                             }
                           >
@@ -256,8 +251,8 @@ export default function TiposPileta() {
                             color="success"
                             onClick={() =>
                               activar(
-                                getTipoPiletaId(item),
-                                getTipoPiletaNombre(item),
+                                item.tipo_pileta_id ?? item.id,
+                                item.nombre,
                               )
                             }
                           >

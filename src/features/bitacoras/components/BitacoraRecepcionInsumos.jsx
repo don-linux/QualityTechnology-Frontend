@@ -34,17 +34,17 @@ function RecepcionInsumosContent() {
   const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor, getGroups } =
     useUbicacionesGranja();
   const [form, setForm] = useState({
-    fd_fecha: "",
-    fc_proveedor: "",
-    fc_producto: "",
-    fc_lote: "",
-    fc_cantidad: "",
-    fc_unidad_medida: "",
-    fc_condiciones_entrega: "",
-    fc_encargado_entrega: "",
-    fc_verifico: "",
-    fc_observaciones: "",
-    fi_usuario_id: usuarioId,
+    fecha: "",
+    proveedor_nombre: "",
+    producto: "",
+    numero_lote: "",
+    cantidad: "",
+    unidad_medida: "",
+    condiciones_entrega: "",
+    encargado_entrega: "",
+    verificador: "",
+    observaciones: "",
+    usuario_id: usuarioId,
     ubicacion: "",
   });
 
@@ -56,9 +56,9 @@ function RecepcionInsumosContent() {
 
   const requiredFields = [
     "ubicacion",
-    "fd_fecha", "fc_proveedor", "fc_producto", "fc_lote",
-    "fc_cantidad", "fc_unidad_medida", "fc_condiciones_entrega",
-    "fc_encargado_entrega", "fc_verifico", "fc_observaciones",
+    "fecha", "proveedor_nombre", "producto", "numero_lote",
+    "cantidad", "unidad_medida", "condiciones_entrega",
+    "encargado_entrega", "verificador", "observaciones",
   ];
 
   //  Opciones para selects
@@ -119,17 +119,17 @@ function RecepcionInsumosContent() {
       setEditId(null);
       cerrarFormulario();
       setForm({
-        fd_fecha: "",
-        fc_proveedor: "",
-        fc_producto: "",
-        fc_lote: "",
-        fc_cantidad: "",
-        fc_unidad_medida: "",
-        fc_condiciones_entrega: "",
-        fc_encargado_entrega: "",
-        fc_verifico: "",
-        fc_observaciones: "",
-        fi_usuario_id: usuarioId,
+        fecha: "",
+        proveedor_nombre: "",
+        producto: "",
+        numero_lote: "",
+        cantidad: "",
+        unidad_medida: "",
+        condiciones_entrega: "",
+        encargado_entrega: "",
+        verificador: "",
+        observaciones: "",
+        usuario_id: usuarioId,
         ubicacion: form.ubicacion,
       });
       cargarDatos();
@@ -140,24 +140,24 @@ function RecepcionInsumosContent() {
 
   const editar = (r) => {
     clearErrors();
-    setEditId(r.fi_id);
-    setForm({ ...r, fd_fecha: r.fd_fecha?.split("T")[0] });
+    setEditId(r.id);
+    setForm({ ...r, fecha: r.fecha?.split("T")[0] });
     
     window.scrollTo({ top: 0, behavior: "smooth" });
     abrirFormulario();
   };
 
   const columnas = [
-    { header: "Fecha", value: (r) => formatFecha(r.fd_fecha) },
-    { header: "Proveedor", value: (r) => r.fc_proveedor },
-    { header: "Producto", value: (r) => r.fc_producto, truncate: true, maxWidth: 160 },
-    { header: "Lote", value: (r) => r.fc_lote },
-    { header: "Cantidad", value: (r) => r.fc_cantidad },
-    { header: "Unidad", value: (r) => r.fc_unidad_medida },
-    { header: "Condiciones de entrega", value: (r) => r.fc_condiciones_entrega, truncate: true, maxWidth: 160 },
-    { header: "Encargado entrega", value: (r) => r.fc_encargado_entrega },
-    { header: "Verificó", value: (r) => r.fc_verifico },
-    { header: "Observaciones", value: (r) => r.fc_observaciones, truncate: true, maxWidth: 160 },
+    { header: "Fecha", value: (r) => formatFecha(r.fecha) },
+    { header: "Proveedor", value: (r) => r.proveedor_nombre },
+    { header: "Producto", value: (r) => r.producto, truncate: true, maxWidth: 160 },
+    { header: "Lote", value: (r) => r.numero_lote },
+    { header: "Cantidad", value: (r) => r.cantidad },
+    { header: "Unidad", value: (r) => r.unidad_medida },
+    { header: "Condiciones de entrega", value: (r) => r.condiciones_entrega, truncate: true, maxWidth: 160 },
+    { header: "Encargado entrega", value: (r) => r.encargado_entrega },
+    { header: "Verificó", value: (r) => r.verificador },
+    { header: "Observaciones", value: (r) => r.observaciones, truncate: true, maxWidth: 160 },
   ];
 
   const gruposUbicacion = getGroups(data);
@@ -208,64 +208,64 @@ function RecepcionInsumosContent() {
               <TextField
                 label="Fecha"
                 type="date"
-                name="fd_fecha"
-                value={form.fd_fecha}
+                name="fecha"
+                value={form.fecha}
                 InputLabelProps={{ shrink: true }}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fd_fecha}
-                helperText={errors.fd_fecha}
+                error={!!errors.fecha}
+                helperText={errors.fecha}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Proveedor"
-                name="fc_proveedor"
-                value={form.fc_proveedor}
+                name="proveedor_nombre"
+                value={form.proveedor_nombre}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fc_proveedor}
-                helperText={errors.fc_proveedor}
+                error={!!errors.proveedor_nombre}
+                helperText={errors.proveedor_nombre}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Producto"
-                name="fc_producto"
-                value={form.fc_producto}
+                name="producto"
+                value={form.producto}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fc_producto}
-                helperText={errors.fc_producto}
+                error={!!errors.producto}
+                helperText={errors.producto}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Lote"
-                name="fc_lote"
-                value={form.fc_lote}
+                name="numero_lote"
+                value={form.numero_lote}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fc_lote}
-                helperText={errors.fc_lote}
+                error={!!errors.numero_lote}
+                helperText={errors.numero_lote}
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 3 }}>
               <CampoNumerico
                 label="Cantidad"
-                name="fc_cantidad"
-                value={form.fc_cantidad}
+                name="cantidad"
+                value={form.cantidad}
                 onChange={handleChange}
                 fullWidth
                 size="small"
                 inputProps={{ step: "0.01", min: "0" }}
-                error={!!errors.fc_cantidad}
-                helperText={errors.fc_cantidad}
+                error={!!errors.cantidad}
+                helperText={errors.cantidad}
               />
             </Grid>
 
@@ -273,13 +273,13 @@ function RecepcionInsumosContent() {
               <TextField
                 select
                 label="Unidad de Medida"
-                name="fc_unidad_medida"
-                value={form.fc_unidad_medida}
+                name="unidad_medida"
+                value={form.unidad_medida}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fc_unidad_medida}
-                helperText={errors.fc_unidad_medida}
+                error={!!errors.unidad_medida}
+                helperText={errors.unidad_medida}
               >
                 {unidadesMedida.map((op) => (
                   <MenuItem key={op} value={op}>{op}</MenuItem>
@@ -290,13 +290,13 @@ function RecepcionInsumosContent() {
             <Grid size={{ xs: 12, sm: 3 }}>
               <TextField
                 label="Condiciones de entrega"
-                name="fc_condiciones_entrega"
-                value={form.fc_condiciones_entrega}
+                name="condiciones_entrega"
+                value={form.condiciones_entrega}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fc_condiciones_entrega}
-                helperText={errors.fc_condiciones_entrega}
+                error={!!errors.condiciones_entrega}
+                helperText={errors.condiciones_entrega}
               />
             </Grid>
 
@@ -304,22 +304,22 @@ function RecepcionInsumosContent() {
               <TextField
                 select
                 label="Encargado de Entrega"
-                name="fc_encargado_entrega"
-                value={form.fc_encargado_entrega}
+                name="encargado_entrega"
+                value={form.encargado_entrega}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fc_encargado_entrega}
-                helperText={errors.fc_encargado_entrega}
+                error={!!errors.encargado_entrega}
+                helperText={errors.encargado_entrega}
               >
                 <MenuItem value="">Selecciona un empleado</MenuItem>
                 {empleados.map((empleado) => (
-                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
-                    {empleado.fc_nombre_completo}
+                  <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
+                    {empleado.nombre_completo}
                   </MenuItem>
                 ))}
-                {form.fc_encargado_entrega && !empleados.some((e) => e.fc_nombre_completo === form.fc_encargado_entrega) && (
-                  <MenuItem value={form.fc_encargado_entrega}>{form.fc_encargado_entrega}</MenuItem>
+                {form.encargado_entrega && !empleados.some((e) => e.nombre_completo === form.encargado_entrega) && (
+                  <MenuItem value={form.encargado_entrega}>{form.encargado_entrega}</MenuItem>
                 )}
               </TextField>
             </Grid>
@@ -328,22 +328,22 @@ function RecepcionInsumosContent() {
               <TextField
                 select
                 label="Verificó"
-                name="fc_verifico"
-                value={form.fc_verifico}
+                name="verificador"
+                value={form.verificador}
                 onChange={handleChange}
                 fullWidth
                 size="small"
-                error={!!errors.fc_verifico}
-                helperText={errors.fc_verifico}
+                error={!!errors.verificador}
+                helperText={errors.verificador}
               >
                 <MenuItem value="">Selecciona un empleado</MenuItem>
                 {empleados.map((empleado) => (
-                  <MenuItem key={empleado.fi_empleado_id} value={empleado.fc_nombre_completo}>
-                    {empleado.fc_nombre_completo}
+                  <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
+                    {empleado.nombre_completo}
                   </MenuItem>
                 ))}
-                {form.fc_verifico && !empleados.some((e) => e.fc_nombre_completo === form.fc_verifico) && (
-                  <MenuItem value={form.fc_verifico}>{form.fc_verifico}</MenuItem>
+                {form.verificador && !empleados.some((e) => e.nombre_completo === form.verificador) && (
+                  <MenuItem value={form.verificador}>{form.verificador}</MenuItem>
                 )}
               </TextField>
             </Grid>
@@ -351,16 +351,16 @@ function RecepcionInsumosContent() {
             <Grid size={12}>
               <TextField
                 label="Observaciones"
-                name="fc_observaciones"
-                value={form.fc_observaciones}
+                name="observaciones"
+                value={form.observaciones}
                 onChange={handleChange}
                 fullWidth
                 multiline
                 rows={2}
                 size="small"
                 inputProps={{ maxLength: 500 }}
-                error={!!errors.fc_observaciones}
-                helperText={errors.fc_observaciones || `${form.fc_observaciones.length}/500`}
+                error={!!errors.observaciones}
+                helperText={errors.observaciones || `${form.observaciones.length}/500`}
               />
             </Grid>
           </Grid>
@@ -379,7 +379,7 @@ function RecepcionInsumosContent() {
         grupos={gruposUbicacion}
         renderTabla={renderTablaRecepcion}
         buscar
-        searchKeys={["fc_producto", "fc_lote", "fc_proveedor"]}
+        searchKeys={["producto", "numero_lote", "proveedor_nombre"]}
         placeholderBusqueda="Buscar producto, lote o proveedor"
         exportar={{
           columnas,
