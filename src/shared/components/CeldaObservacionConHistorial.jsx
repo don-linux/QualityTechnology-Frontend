@@ -135,12 +135,12 @@ function EntradaHistorial({ item }) {
 }
 
 /**
- * Celda de observación con menú kebab para abrir historial por pileta.
+ * Celda de observación con menú kebab para abrir historial por infraestructura física.
  */
 export default function CeldaObservacionConHistorial({
   texto,
-  piletaId,
-  piletaNombre,
+  infraestructuraFisicaId,
+  infraestructuraFisicaNombre,
   etapaLabel,
   cargarHistorial,
 }) {
@@ -152,13 +152,13 @@ export default function CeldaObservacionConHistorial({
   const abrirModal = useCallback(
     async (e) => {
       e.stopPropagation();
-      if (!piletaId || !cargarHistorial) return;
+      if (!infraestructuraFisicaId || !cargarHistorial) return;
       setAbierto(true);
       setCargando(true);
       setError(null);
       setHistorial([]);
       try {
-        const res = await cargarHistorial(piletaId);
+        const res = await cargarHistorial(infraestructuraFisicaId);
         setHistorial(normalizarHistorialObservaciones(res.data));
       } catch (err) {
         console.error("Error cargando historial de observaciones:", err);
@@ -167,7 +167,7 @@ export default function CeldaObservacionConHistorial({
         setCargando(false);
       }
     },
-    [piletaId, cargarHistorial],
+    [infraestructuraFisicaId, cargarHistorial],
   );
 
   const cerrarModal = () => {
@@ -195,7 +195,7 @@ export default function CeldaObservacionConHistorial({
         >
           {textoVisible}
         </Typography>
-        {piletaId && cargarHistorial && (
+        {infraestructuraFisicaId && cargarHistorial && (
           <IconButton
             size="small"
             onClick={abrirModal}
@@ -243,7 +243,7 @@ export default function CeldaObservacionConHistorial({
             sx={{ pr: 4, lineHeight: 1.3 }}
           >
             Historial de observaciones
-            {piletaNombre ? ` — ${piletaNombre}` : ""}
+            {infraestructuraFisicaNombre ? ` — ${infraestructuraFisicaNombre}` : ""}
           </Typography>
 
           {etapaLabel ? (
@@ -271,7 +271,7 @@ export default function CeldaObservacionConHistorial({
             </Typography>
           ) : historial.length === 0 ? (
             <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
-              No hay observaciones registradas para esta pileta.
+              No hay observaciones registradas para esta infraestructura física.
             </Typography>
           ) : (
             <Box>

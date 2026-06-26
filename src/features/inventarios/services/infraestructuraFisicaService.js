@@ -18,28 +18,28 @@ export function filtrosUbicacionAParams(params, filtros) {
   params.granja = filtros;
 }
 
-export function listPiletas(filtroUbicacion, tipo) {
+export function listInfraestructuraFisica(filtroUbicacion, tipo) {
   const params = {};
   filtrosUbicacionAParams(params, filtroUbicacion);
   if (tipo) params.tipo = tipo;
-  return axios.get(ENDPOINTS.piletas.base, { params });
+  return axios.get(ENDPOINTS.infraestructuraFisica.base, { params });
 }
 
-export function createPileta(data) {
-  return axios.post(ENDPOINTS.piletas.base, data);
+export function createInfraestructuraFisica(data) {
+  return axios.post(ENDPOINTS.infraestructuraFisica.base, data);
 }
 
-export function updatePileta(id, data) {
-  return axios.put(ENDPOINTS.piletas.byId(id), data);
+export function updateInfraestructuraFisica(id, data) {
+  return axios.put(ENDPOINTS.infraestructuraFisica.byId(id), data);
 }
 
 /**
- * Historial completo de `observacion` para una pileta (todos los procesos y bitácoras vinculadas).
- * @param {number|string} piletaId
- * @param {string[]} [procesos] Filtro opcional; si se omite, devuelve todas las vinculadas a la pileta.
+ * Historial completo de `observacion` para una infraestructura física (todos los procesos y bitácoras vinculadas).
+ * @param {number|string} infraestructuraFisicaId
+ * @param {string[]} [procesos] Filtro opcional; si se omite, devuelve todas las vinculadas a la infraestructura física.
  */
-export function listObservacionesPileta(piletaId, procesos) {
+export function listObservacionesInfraestructuraFisica(infraestructuraFisicaId, procesos) {
   const params = {};
   if (procesos?.length) params.proceso = procesos.join(",");
-  return axios.get(ENDPOINTS.piletas.observaciones(piletaId), { params });
+  return axios.get(ENDPOINTS.infraestructuraFisica.observaciones(infraestructuraFisicaId), { params });
 }

@@ -25,12 +25,12 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 
 import {
-  listPiletas,
-  createPileta,
-  updatePileta,
-} from "../services/piletasService";
-import { listTiposPiletaActivos } from "@features/catalogos/services/tiposPiletaService";
-import { ESTADOS_CONSERVACION_PILETA } from "@shared/constants/estadosConservacionPileta";
+  listInfraestructuraFisica,
+  createInfraestructuraFisica,
+  updateInfraestructuraFisica,
+} from "../services/infraestructuraFisicaService";
+import { listTiposInfraestructuraFisicaActivos } from "@features/catalogos/services/tiposInfraestructuraFisicaService";
+import { ESTADOS_CONSERVACION_INFRAESTRUCTURA_FISICA } from "@shared/constants/estadosConservacionInfraestructuraFisica";
 
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
@@ -43,8 +43,8 @@ const TRUNCAR_MAX = 60;
 const truncar = (texto) =>
   texto && texto.length > TRUNCAR_MAX ? texto.slice(0, TRUNCAR_MAX) + "…" : texto;
 
-const TIPOS_PILETA = ["alevinaje", "reproductores", "engorda", "incubacion"];
-const ESTADOS_PILETA = ["vacia", "ocupada"];
+const TIPOS_INFRAESTRUCTURA_FISICA = ["alevinaje", "reproductores", "engorda", "incubacion"];
+const ESTADOS_INFRAESTRUCTURA_FISICA = ["vacia", "ocupada"];
 const MATERIALES = ["concreto", "geomembrana", "fibra", "tierra", "otro"];
 
 const tipoLabel = (t) => {
@@ -54,27 +54,27 @@ const tipoLabel = (t) => {
 };
 
 /* ============================================================================
- *  PANTALLA PRINCIPAL — solo piletas físicas (CRUD)
+ *  PANTALLA PRINCIPAL — solo infraestructurasFisicas físicas (CRUD)
  * ========================================================================= */
-export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
+export default function InfraestructuraFisica({ pageTitle = "Infraestructura Física" } = {}) {
   const showSnackbar = useSnackbar();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
-  const [piletas, setPiletas] = useState([]);
+  const [infraestructurasFisicas, setInfraestructurasFisicas] = useState([]);
 
-  const cargarPiletas = useCallback(async () => {
+  const cargarInfraestructuraFisica = useCallback(async () => {
     try {
-      const resAll = await listPiletas();
-      setPiletas(Array.isArray(resAll.data) ? resAll.data : []);
+      const resAll = await listInfraestructuraFisica();
+      setInfraestructurasFisicas(Array.isArray(resAll.data) ? resAll.data : []);
     } catch {
-      setPiletas([]);
-      showSnackbar("Error cargando piletas", "error");
+      setInfraestructurasFisicas([]);
+      showSnackbar("Error cargando infraestructurasFisicas", "error");
     }
   }, [showSnackbar]);
 
   useEffect(() => {
-    cargarPiletas();
-  }, [cargarPiletas]);
+    cargarInfraestructuraFisica();
+  }, [cargarInfraestructuraFisica]);
 
   return (
     <Box>
@@ -84,13 +84,13 @@ export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
 
       <Paper sx={{ p: 2, mb: 2, backgroundColor: "#E3F2FD" }} elevation={0}>
         <Typography variant="body2">
-          <b>Piletas registradas:</b> {piletas.length}
+          <b>Instalaciones registradas:</b> {infraestructurasFisicas.length}
         </Typography>
       </Paper>
 
-      <PiletasTab
-        piletas={piletas}
-        onChange={cargarPiletas}
+      <InfraestructuraFisicaTab
+        infraestructurasFisicas={infraestructurasFisicas}
+        onChange={cargarInfraestructuraFisica}
         showSnackbar={showSnackbar}
         ubicacionesGranja={ubicacionesGranja}
         defaultUbicacion={defaultUbicacion}
@@ -101,10 +101,10 @@ export default function Pileta({ pageTitle = "Infraestructura Física" } = {}) {
 }
 
 /* ============================================================================
- *  Formulario + tabla — CRUD modelo `Pileta`
+ *  Formulario + tabla — CRUD modelo InfraestructuraFisica
  * ========================================================================= */
-function PiletasTab({
-  piletas,
+function InfraestructuraFisicaTab({
+  infraestructurasFisicas,
   onChange,
   showSnackbar,
   ubicacionesGranja,
@@ -116,7 +116,7 @@ function PiletasTab({
   const [editId, setEditId] = useState(null);
   const [ubicacionForm, setUbicacionForm] = useState("");
 
-  const [tiposPileta, setTiposPileta] = useState([]);
+  const [tiposInfraestructuraFisica, setTiposInfraestructuraFisica] = useState([]);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -127,7 +127,7 @@ function PiletasTab({
     estado: "vacia",
     tipo: "",
     estado_conservacion: "",
-    tipo_pileta_id: "",
+    tipo_infraestructura_fisica_id: "",
   });
 
   const required = [
@@ -138,7 +138,7 @@ function PiletasTab({
     "material",
     "tipo",
     "estado_conservacion",
-    "tipo_pileta_id",
+    "tipo_infraestructura_fisica_id",
   ];
 
   const ubicacionActual = useMemo(
@@ -146,15 +146,15 @@ function PiletasTab({
     [ubicacionesGranja, ubicacionForm],
   );
 
-  const gruposPiletas = useMemo(
-    () => getGroups(piletas, "granja"),
-    [getGroups, piletas],
+  const gruposInfraestructuraFisica = useMemo(
+    () => getGroups(infraestructurasFisicas, "granja"),
+    [getGroups, infraestructurasFisicas],
   );
 
   useEffect(() => {
-    listTiposPiletaActivos()
-      .then(({ data }) => setTiposPileta(Array.isArray(data) ? data : []))
-      .catch(() => setTiposPileta([]));
+    listTiposInfraestructuraFisicaActivos()
+      .then(({ data }) => setTiposInfraestructuraFisica(Array.isArray(data) ? data : []))
+      .catch(() => setTiposInfraestructuraFisica([]));
   }, []);
 
   const m3 = useMemo(() => {
@@ -182,7 +182,7 @@ function PiletasTab({
       estado: "vacia",
       tipo: "",
       estado_conservacion: "",
-      tipo_pileta_id: "",
+      tipo_infraestructura_fisica_id: "",
     });
     if (cerrarPanel) setMostrarFormulario(false);
   };
@@ -200,7 +200,7 @@ function PiletasTab({
       estado: "vacia",
       tipo: "",
       estado_conservacion: "",
-      tipo_pileta_id: "",
+      tipo_infraestructura_fisica_id: "",
     });
   };
 
@@ -220,7 +220,7 @@ function PiletasTab({
         estado: form.estado,
         tipo: form.tipo,
         estado_conservacion: form.estado_conservacion,
-        tipo_pileta_id: Number(form.tipo_pileta_id),
+        tipo_infraestructura_fisica_id: Number(form.tipo_infraestructura_fisica_id),
         granja: ubicacionForm,
       };
       if (ubicacionActual?.ubicacion_id != null) {
@@ -228,11 +228,11 @@ function PiletasTab({
       }
 
       if (editId) {
-        await updatePileta(editId, body);
-        showSnackbar("Pileta actualizada", "success");
+        await updateInfraestructuraFisica(editId, body);
+        showSnackbar("Infraestructura física actualizada", "success");
       } else {
-        await createPileta(body);
-        showSnackbar("Pileta creada", "success");
+        await createInfraestructuraFisica(body);
+        showSnackbar("Infraestructura física creada", "success");
       }
       reiniciarTrasGuardar();
       onChange();
@@ -248,7 +248,7 @@ function PiletasTab({
 
   const editar = (p) => {
     clearErrors();
-    setEditId(p.pileta_id);
+    setEditId(p.infraestructura_fisica_id);
     const matchUbicacion = ubicacionesGranja.find(
       (u) => u.value === p.granja || u.label === p.granja,
     );
@@ -262,7 +262,7 @@ function PiletasTab({
       estado: p.estado || "vacia",
       tipo: p.tipo || "",
       estado_conservacion: p.estado_conservacion || "",
-      tipo_pileta_id: p.tipo_pileta_id != null ? String(p.tipo_pileta_id) : "",
+      tipo_infraestructura_fisica_id: p.tipo_infraestructura_fisica_id != null ? String(p.tipo_infraestructura_fisica_id) : "",
     });
     setMostrarFormulario(true);
   };
@@ -283,7 +283,7 @@ function PiletasTab({
             }
           }}
         >
-          {mostrarFormulario ? "Cerrar formulario" : "Nueva pileta"}
+          {mostrarFormulario ? "Cerrar formulario" : "Nueva instalación"}
         </Button>
       </Stack>
 
@@ -291,7 +291,7 @@ function PiletasTab({
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" mb={2}>
-              {editId ? "Editar pileta" : "Nueva pileta"}
+              {editId ? "Editar instalación" : "Nueva instalación"}
             </Typography>
 
             {ubicacionesGranja.length === 0 && (
@@ -314,7 +314,7 @@ function PiletasTab({
                   helperText={
                     ubicacionActual?.ubicacion_id != null
                       ? `ID en catálogo de ubicaciones: ${ubicacionActual.ubicacion_id}`
-                      : "El alta de la pileta queda ligado a la sede elegida"
+                      : "El alta queda ligada a la sede elegida"
                   }
                 >
                   {ubicacionesGranja.length === 0 ? (
@@ -353,7 +353,7 @@ function PiletasTab({
                   helperText={errors.tipo}
                 >
                   <MenuItem value="">Seleccione</MenuItem>
-                  {TIPOS_PILETA.map((t) => (
+                  {TIPOS_INFRAESTRUCTURA_FISICA.map((t) => (
                     <MenuItem key={t} value={t}>
                       {tipoLabel(t)}
                     </MenuItem>
@@ -370,7 +370,7 @@ function PiletasTab({
                   onChange={handleChange}
                   fullWidth
                 >
-                  {ESTADOS_PILETA.map((s) => (
+                  {ESTADOS_INFRAESTRUCTURA_FISICA.map((s) => (
                     <MenuItem key={s} value={s}>
                       {s}
                     </MenuItem>
@@ -454,7 +454,7 @@ function PiletasTab({
                   helperText={errors.estado_conservacion}
                 >
                   <MenuItem value="">Seleccione</MenuItem>
-                  {ESTADOS_CONSERVACION_PILETA.map((ec) => (
+                  {ESTADOS_CONSERVACION_INFRAESTRUCTURA_FISICA.map((ec) => (
                     <MenuItem key={ec} value={ec}>
                       {ec}
                     </MenuItem>
@@ -466,24 +466,24 @@ function PiletasTab({
                 <TextField
                   select
                   required
-                  label="Tipo de pileta"
-                  name="tipo_pileta_id"
-                  value={form.tipo_pileta_id}
+                  label="Tipo de infraestructura física"
+                  name="tipo_infraestructura_fisica_id"
+                  value={form.tipo_infraestructura_fisica_id}
                   onChange={handleChange}
                   fullWidth
-                  error={!!errors.tipo_pileta_id}
+                  error={!!errors.tipo_infraestructura_fisica_id}
                   helperText={
-                    errors.tipo_pileta_id ||
-                    (tiposPileta.length === 0
-                      ? "Configure valores en Catálogos → Tipos de pileta"
+                    errors.tipo_infraestructura_fisica_id ||
+                    (tiposInfraestructuraFisica.length === 0
+                      ? "Configure valores en Catálogos → Tipos de infraestructura física"
                       : "")
                   }
                 >
                   <MenuItem value="">Seleccione</MenuItem>
-                  {tiposPileta.map((ti) => (
+                  {tiposInfraestructuraFisica.map((ti) => (
                     <MenuItem
-                      key={ti.tipo_pileta_id ?? ti.id}
-                      value={String(ti.tipo_pileta_id ?? ti.id)}
+                      key={ti.tipo_infraestructura_fisica_id ?? ti.id}
+                      value={String(ti.tipo_infraestructura_fisica_id ?? ti.id)}
                     >
                       {ti.nombre}
                     </MenuItem>
@@ -508,9 +508,9 @@ function PiletasTab({
       )}
 
       <TablasPorUbicacionGranja
-        grupos={gruposPiletas}
+        grupos={gruposInfraestructuraFisica}
         renderTabla={(rows) => {
-          const filas = ordenarYNumerar(rows, ["pileta_id"]);
+          const filas = ordenarYNumerar(rows, ["infraestructura_fisica_id"]);
           return (
           <Paper>
             <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
@@ -520,7 +520,7 @@ function PiletasTab({
                     <TableCell>ID</TableCell>
                     <TableCell>Nombre</TableCell>
                     <TableCell>Etapa</TableCell>
-                    <TableCell>Tipo de pileta</TableCell>
+                    <TableCell>Tipo de infraestructura física</TableCell>
                     <TableCell>Estado</TableCell>
                     <TableCell>Conservación</TableCell>
                     <TableCell align="right">Cantidad</TableCell>
@@ -536,18 +536,18 @@ function PiletasTab({
                   {filas.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={11} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                        Sin piletas en esta ubicación.
+                        Sin instalaciones en esta ubicación.
                       </TableCell>
                     </TableRow>
                   )}
                   {filas.map((p) => (
-                    <TableRow key={p.pileta_id} hover>
+                    <TableRow key={p.infraestructura_fisica_id} hover>
                       <TableCell>{p._num}</TableCell>
                       <TableCell>{p.nombre}</TableCell>
                       <TableCell>
                         <Chip size="small" variant="outlined" label={tipoLabel(p.tipo)} />
                       </TableCell>
-                      <TableCell>{p.tipo_pileta_nombre || "—"}</TableCell>
+                      <TableCell>{p.tipo_infraestructura_fisica_nombre || "—"}</TableCell>
                       <TableCell>
                         <Chip
                           size="small"

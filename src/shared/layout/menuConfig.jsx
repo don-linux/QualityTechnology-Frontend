@@ -66,7 +66,7 @@ export const MENU_SECTIONS = [
       { to: "/inventarios/trazabilidad", icon: <Timeline />, label: "Trazabilidad" },
       { to: "/inventarios/eficiencia-reproductiva", icon: <EggAltIcon />, label: "Eficiencia reproductiva" },
       { to: "/inventarios/ciclos-engorda", icon: <AutorenewIcon />, label: "Ciclos de engorda" },
-      { to: "/inventarios/piletas-fisicas", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
+      { to: "/inventarios/infraestructura-fisica", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
       { to: "/inventarios/equipos", icon: <Handyman />, label: "Equipo y Herramientas" },
     ],
   },
@@ -133,7 +133,7 @@ export const MENU_SECTIONS = [
           { to: "/puestos", icon: <Work />, label: "Puestos" },
           { to: "/unidades-negocio", icon: <Business />, label: "Unidades de Negocio" },
           { to: "/ubicaciones", icon: <HomeWorkIcon />, label: "Ubicaciones" },
-          { to: "/tipos-pileta", icon: <CategoryIcon />, label: "Tipos de pileta" },
+          { to: "/tipos-infraestructura-fisica", icon: <CategoryIcon />, label: "Tipos de infraestructura física" },
         ],
       },
       {

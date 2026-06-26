@@ -12,7 +12,7 @@ import {
   createAlimentacion,
   updateAlimentacion,
 } from "../services/alimentacionService";
-import { listPiletas } from "@features/inventarios/services/piletasService";
+import { listInfraestructuraFisica } from "@features/inventarios/services/infraestructuraFisicaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
@@ -43,7 +43,7 @@ export default function BioAlimentacion() {
   const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
-    pileta_id: "",
+    infraestructura_fisica_id: "",
     peso_promedio_entrada: "",
     fecha_siembra: "",
     origen_alevines: "",
@@ -66,7 +66,7 @@ export default function BioAlimentacion() {
 
   const requiredFields = [
     "ubicacion",
-    "pileta_id", "peso_promedio_entrada",
+    "infraestructura_fisica_id", "peso_promedio_entrada",
     "fecha_siembra", "origen_alevines", "fecha",
     "total_alimento_gramos", "mortalidad", "recambio_agua",
     "temperatura_agua", "amonio", "ph", "observaciones",
@@ -89,10 +89,10 @@ export default function BioAlimentacion() {
   const cargarOrigenes = async () => {
     if (!form.ubicacion) { setOrigenes([]); return; }
     try {
-      const res = await listPiletas(form.ubicacion, "alevinaje");
+      const res = await listInfraestructuraFisica(form.ubicacion, "alevinaje");
       const rows = (res.data || []).map((p) => ({
-        pileta_id: p.id ?? p.pileta_id,
-        nombre_instalacion: p.nombre ?? p.nombre_pileta,
+        infraestructura_fisica_id: p.id ?? p.infraestructura_fisica_id,
+        nombre_instalacion: p.nombre ?? p.nombre_infraestructura_fisica,
       }));
       setOrigenes(rows);
     } catch {
@@ -102,15 +102,15 @@ export default function BioAlimentacion() {
 
   const handleOrigenChange = (e) => {
     const origenSeleccionado = origenes.find(
-      (origen) => String(origen.pileta_id) === String(e.target.value)
+      (origen) => String(origen.infraestructura_fisica_id) === String(e.target.value)
     );
 
     clearFieldError("origen_alevines");
-    clearFieldError("pileta_id");
+    clearFieldError("infraestructura_fisica_id");
 
     setForm({
       ...form,
-      pileta_id: origenSeleccionado?.pileta_id || "",
+      infraestructura_fisica_id: origenSeleccionado?.infraestructura_fisica_id || "",
       origen_alevines: origenSeleccionado?.nombre_instalacion || "",
     });
   };
@@ -143,7 +143,7 @@ export default function BioAlimentacion() {
 
       setForm({
         ubicacion: form.ubicacion,
-        pileta_id: "",
+        infraestructura_fisica_id: "",
         peso_promedio_entrada: "",
         fecha_siembra: "",
         origen_alevines: "",
@@ -172,7 +172,7 @@ export default function BioAlimentacion() {
     setEditId(row.id);
     setForm({
       ubicacion: row.ubicacion || "",
-      pileta_id: row.pileta_id,
+      infraestructura_fisica_id: row.infraestructura_fisica_id,
       peso_promedio_entrada: row.peso_promedio_entrada,
       fecha_siembra: row.fecha_siembra?.split("T")[0],
       origen_alevines: row.origen_alevines,
@@ -193,7 +193,7 @@ export default function BioAlimentacion() {
 
   const columnas = [
     { header: "Mes", value: (r) => r.mes },
-    { header: "Instalación", value: (r) => r.pileta_id },
+    { header: "Instalación", value: (r) => r.infraestructura_fisica_id },
     { header: "Peso Entrada", value: (r) => r.peso_promedio_entrada },
     { header: "Siembra", value: (r) => formatFecha(r.fecha_siembra) },
     { header: "Origen", value: (r) => r.origen_alevines },
@@ -240,7 +240,7 @@ export default function BioAlimentacion() {
                 value={form.ubicacion}
                 onChange={(e) => {
                   handleChange(e);
-                  setForm(prev => ({ ...prev, ubicacion: e.target.value, pileta_id: "", origen_alevines: "" }));
+                  setForm(prev => ({ ...prev, ubicacion: e.target.value, infraestructura_fisica_id: "", origen_alevines: "" }));
                 }}
                 fullWidth
                 error={!!errors.ubicacion}
@@ -257,12 +257,12 @@ export default function BioAlimentacion() {
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Instalación"
-                name="pileta_id"
-                value={form.pileta_id}
+                name="infraestructura_fisica_id"
+                value={form.infraestructura_fisica_id}
                 fullWidth
                 InputProps={{ readOnly: true }}
-                error={!!errors.pileta_id}
-                helperText={errors.pileta_id}
+                error={!!errors.infraestructura_fisica_id}
+                helperText={errors.infraestructura_fisica_id}
               />
             </Grid>
 
@@ -297,7 +297,7 @@ export default function BioAlimentacion() {
                 select
                 label="Origen Alevines"
                 name="origen_alevines"
-                value={form.pileta_id || ""}
+                value={form.infraestructura_fisica_id || ""}
                 onChange={handleOrigenChange}
                 fullWidth
                 error={!!errors.origen_alevines}
@@ -306,14 +306,14 @@ export default function BioAlimentacion() {
                 <MenuItem value="">Selecciona un origen</MenuItem>
                 {origenes.map((origen) => (
                   <MenuItem
-                    key={origen.pileta_id}
-                    value={origen.pileta_id}
+                    key={origen.infraestructura_fisica_id}
+                    value={origen.infraestructura_fisica_id}
                   >
-                    {`${origen.nombre_instalacion} (Inst. ${origen.pileta_id})`}
+                    {`${origen.nombre_instalacion} (Inst. ${origen.infraestructura_fisica_id})`}
                   </MenuItem>
                 ))}
                 {form.origen_alevines && !origenes.some((origen) => origen.nombre_instalacion === form.origen_alevines) && (
-                  <MenuItem value={form.pileta_id}>{form.origen_alevines}</MenuItem>
+                  <MenuItem value={form.infraestructura_fisica_id}>{form.origen_alevines}</MenuItem>
                 )}
               </TextField>
             </Grid>
@@ -434,7 +434,7 @@ export default function BioAlimentacion() {
         grupos={gruposUbicacion}
         renderTabla={tablaAlimentacion}
         buscar
-        searchKeys={["mes", "pileta_id", "origen_alevines", "observaciones"]}
+        searchKeys={["mes", "infraestructura_fisica_id", "origen_alevines", "observaciones"]}
         placeholderBusqueda="Buscar mes, instalación u origen"
         exportar={{
           columnas,

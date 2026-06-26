@@ -17,7 +17,7 @@ const Puestos = lazy(() => import("@pages/catalogos/PuestosPage"));
 const Departamentos = lazy(() => import("@pages/catalogos/DepartamentosPage"));
 const UnidadesNegocio = lazy(() => import("@pages/catalogos/UnidadesNegocioPage"));
 const Ubicaciones = lazy(() => import("@pages/catalogos/UbicacionesPage"));
-const TiposPileta = lazy(() => import("@pages/catalogos/TiposPiletaPage"));
+const TiposInfraestructuraFisica = lazy(() => import("@pages/catalogos/TiposInfraestructuraFisicaPage"));
 const AreasInstalacion = lazy(() => import("@pages/catalogos/AreasInstalacionPage"));
 const FaunasDetectadas = lazy(() => import("@pages/catalogos/FaunasDetectadasPage"));
 const EvidenciasFauna = lazy(() => import("@pages/catalogos/EvidenciasFaunaPage"));
@@ -26,7 +26,7 @@ const AccionesCorrectivas = lazy(() => import("@pages/catalogos/AccionesCorrecti
 const Insumos = lazy(() => import("@pages/catalogos/InsumosPage"));
 
 // Inventarios
-const PiletasFisicas = lazy(() => import("@pages/inventarios/PiletasFisicasPage"));
+const InfraestructuraFisica = lazy(() => import("@pages/inventarios/InfraestructuraFisicaPage"));
 const Reproductores = lazy(() => import("@pages/inventarios/ReproductoresPage"));
 const Engorda = lazy(() => import("@pages/inventarios/EngordaPage"));
 const Equipos = lazy(() => import("@pages/inventarios/EquiposPage"));
@@ -138,7 +138,7 @@ export default function AppRouter() {
             <Route path="departamentos" element={<Departamentos />} />
             <Route path="unidades-negocio" element={<UnidadesNegocio />} />
             <Route path="ubicaciones" element={<Ubicaciones />} />
-            <Route path="tipos-pileta" element={<TiposPileta />} />
+            <Route path="tipos-infraestructura-fisica" element={<TiposInfraestructuraFisica />} />
             <Route path="areas-instalacion" element={<AreasInstalacion />} />
             <Route path="faunas-detectadas" element={<FaunasDetectadas />} />
             <Route path="evidencias-fauna" element={<EvidenciasFauna />} />
@@ -150,8 +150,7 @@ export default function AppRouter() {
 
         <Route element={<PrivateRoute modulo="Inventarios" />}>
           <Route element={<AppLayout />}>
-            <Route path="inventarios/piletas" element={<Navigate to="/inventarios/piletas-fisicas" replace />} />
-            <Route path="inventarios/piletas-fisicas" element={<PiletasFisicas />} />
+            <Route path="inventarios/infraestructura-fisica" element={<InfraestructuraFisica />} />
             <Route path="inventarios/reproductores" element={<Reproductores />} />
             <Route path="inventarios/engorda" element={<Engorda />} />
             <Route path="inventarios/eficiencia-reproductiva" element={<EficienciaReproductiva />} />

@@ -36,7 +36,7 @@ import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import ProximaVentaModal from "@features/ventas/components/ProximaVentaModal";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import { listMovimientos, createMovimiento } from "../services/trazabilidadService";
-import { listPiletas } from "../services/piletasService";
+import { listInfraestructuraFisica } from "../services/infraestructuraFisicaService";
 import { listLista } from "@features/ventas/services/listaEsperaService";
 
 const TIPOS_MOVIMIENTO = [
@@ -102,24 +102,24 @@ function configTipoMovimiento(value) {
   return TIPOS_MOVIMIENTO.find((t) => t.value === value) ?? TIPOS_MOVIMIENTO[0];
 }
 
-function piletasPorEtapa(piletas, etapa, soloConStock = false) {
-  return piletas.filter((p) => {
+function infraestructurasFisicasPorEtapa(infraestructurasFisicas, etapa, soloConStock = false) {
+  return infraestructurasFisicas.filter((p) => {
     const tipo = String(p.tipo ?? "").toLowerCase();
     if (tipo !== etapa) return false;
-    return soloConStock ? stockPileta(p) > 0 : true;
+    return soloConStock ? stockInfraestructuraFisica(p) > 0 : true;
   });
 }
 
 const TIPOS_VENTA_TRAZABLES = new Set(["ALEVIN", "ALEVINES", "KG", "MOJARRA_KG"]);
 
-function etapaPiletaParaTipo(tipo) {
+function etapaInfraestructuraFisicaParaTipo(tipo) {
   const t = String(tipo ?? "").trim().toUpperCase();
   if (t === "ALEVIN" || t === "ALEVINES") return "alevinaje";
   if (t === "KG" || t === "MOJARRA_KG" || t === "MOJARRA") return "engorda";
   return null;
 }
 
-function stockPileta(p) {
+function stockInfraestructuraFisica(p) {
   return Number(p?.cantidad ?? 0);
 }
 
@@ -133,27 +133,27 @@ function hoyISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function idPileta(p) {
-  return p?.pileta_id ?? null;
+function idInfraestructuraFisica(p) {
+  return p?.infraestructura_fisica_id ?? null;
 }
 
-function piletaOrigenIdDePedido(pedido) {
+function infraestructuraFisicaOrigenIdDePedido(pedido) {
   if (!pedido) return "";
-  const id = pedido.pileta_origen_id;
+  const id = pedido.infraestructura_fisica_origen_id;
   return id ? String(id) : "";
 }
 
-function piletaOrigenIdUnica(piletas) {
-  if (piletas.length !== 1) return "";
-  const id = idPileta(piletas[0]);
+function infraestructuraFisicaOrigenIdUnica(infraestructurasFisicas) {
+  if (infraestructurasFisicas.length !== 1) return "";
+  const id = idInfraestructuraFisica(infraestructurasFisicas[0]);
   return id ? String(id) : "";
 }
 
 const EMPTY_FORM = {
   tipo_movimiento: "ALEVINAJE_A_ALEVINAJE",
   lista_espera_id: "",
-  pileta_origen_id: "",
-  pileta_destino_id: "",
+  infraestructura_fisica_origen_id: "",
+  infraestructura_fisica_destino_id: "",
   cantidad: "",
   mortalidad: "",
   peso_gramos: "",
@@ -172,7 +172,7 @@ export default function Trazabilidad() {
   const [granja, setGranja] = useState(defaultUbicacion || "");
   const [form, setForm] = useState(EMPTY_FORM);
   const [movimientos, setMovimientos] = useState([]);
-  const [piletas, setPiletas] = useState([]);
+  const [infraestructurasFisicas, setInfraestructurasFisicas] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [openProximaVenta, setOpenProximaVenta] = useState(false);
@@ -191,24 +191,24 @@ export default function Trazabilidad() {
     return pedidos.find((p) => String(p.lista_id) === String(form.lista_espera_id)) ?? null;
   }, [form.lista_espera_id, pedidos]);
 
-  const piletasOrigen = useMemo(
-    () => piletasPorEtapa(piletas, tipoConfig.etapaOrigen, true),
-    [piletas, tipoConfig.etapaOrigen],
+  const infraestructurasFisicasOrigen = useMemo(
+    () => infraestructurasFisicasPorEtapa(infraestructurasFisicas, tipoConfig.etapaOrigen, true),
+    [infraestructurasFisicas, tipoConfig.etapaOrigen],
   );
 
-  const piletasDestino = useMemo(() => {
+  const infraestructurasFisicasDestino = useMemo(() => {
     if (!tipoConfig.etapaDestino) return [];
-    return piletasPorEtapa(piletas, tipoConfig.etapaDestino, false);
-  }, [piletas, tipoConfig.etapaDestino]);
+    return infraestructurasFisicasPorEtapa(infraestructurasFisicas, tipoConfig.etapaDestino, false);
+  }, [infraestructurasFisicas, tipoConfig.etapaDestino]);
 
-  const piletaOrigenSeleccionada = useMemo(() => {
-    const id = form.pileta_origen_id || piletaOrigenIdDePedido(pedidoSeleccionado);
+  const infraestructuraFisicaOrigenSeleccionada = useMemo(() => {
+    const id = form.infraestructura_fisica_origen_id || infraestructuraFisicaOrigenIdDePedido(pedidoSeleccionado);
     if (!id) return null;
-    return piletasOrigen.find((p) => String(idPileta(p)) === String(id)) ?? null;
-  }, [form.pileta_origen_id, pedidoSeleccionado, piletasOrigen]);
+    return infraestructurasFisicasOrigen.find((p) => String(idInfraestructuraFisica(p)) === String(id)) ?? null;
+  }, [form.infraestructura_fisica_origen_id, pedidoSeleccionado, infraestructurasFisicasOrigen]);
 
   const cantidadVenta = Number(pedidoSeleccionado?.cantidad_peces ?? 0);
-  const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
+  const stockOrigen = infraestructuraFisicaOrigenSeleccionada != null ? stockInfraestructuraFisica(infraestructuraFisicaOrigenSeleccionada) : null;
   const esVenta = tipoConfig.modo === "VENTA";
   const esMortalidad = tipoConfig.modo === "MORTALIDAD";
   const esTraslado = tipoConfig.modo === "TRASLADO";
@@ -230,38 +230,38 @@ export default function Trazabilidad() {
   const pedidosVenta = useMemo(() => {
     if (!esVenta) return [];
     return pedidos.filter((p) => {
-      const etapa = etapaPiletaParaTipo(p.tipo_venta);
+      const etapa = etapaInfraestructuraFisicaParaTipo(p.tipo_venta);
       return etapa === tipoConfig.etapaOrigen;
     });
   }, [pedidos, esVenta, tipoConfig.etapaOrigen]);
 
   const proximaVentaDefaults = useMemo(() => {
     const granjaLabel = ubicacionesGranja.find((op) => op.value === granja)?.label ?? granja;
-    const piletaId =
-      form.pileta_origen_id
-      || piletaOrigenIdDePedido(pedidoSeleccionado)
-      || piletaOrigenIdUnica(piletasOrigen);
-    const pileta = piletaId
-      ? piletasOrigen.find((p) => String(idPileta(p)) === String(piletaId))
+    const infraestructuraFisicaId =
+      form.infraestructura_fisica_origen_id
+      || infraestructuraFisicaOrigenIdDePedido(pedidoSeleccionado)
+      || infraestructuraFisicaOrigenIdUnica(infraestructurasFisicasOrigen);
+    const infraestructuraFisica = infraestructuraFisicaId
+      ? infraestructurasFisicasOrigen.find((p) => String(idInfraestructuraFisica(p)) === String(infraestructuraFisicaId))
       : null;
-    const stock = pileta ? stockPileta(pileta) : 0;
+    const stock = infraestructuraFisica ? stockInfraestructuraFisica(infraestructuraFisica) : 0;
 
     return {
       fecha_entrega: form.fecha_movimiento || hoyISO(),
       tipo_venta: tipoVentaParaEtapa(tipoConfig.etapaOrigen),
       granja: granja,
-      pileta_origen_id: piletaId,
+      infraestructura_fisica_origen_id: infraestructuraFisicaId,
       cantidad_peces: stock > 0 ? String(stock) : "",
       unidad_produccion: granjaLabel,
     };
   }, [
     granja,
     form.fecha_movimiento,
-    form.pileta_origen_id,
+    form.infraestructura_fisica_origen_id,
     pedidoSeleccionado,
     tipoConfig.etapaOrigen,
     ubicacionesGranja,
-    piletasOrigen,
+    infraestructurasFisicasOrigen,
   ]);
 
   const cargarMovimientos = useCallback(async () => {
@@ -279,23 +279,23 @@ export default function Trazabilidad() {
     }
   }, [ubicacionesGranja, resolveFiltroUbicacion]);
 
-  const cargarPiletas = useCallback(async () => {
+  const cargarInfraestructuraFisica = useCallback(async () => {
     if (!granja) return;
     try {
       const [alevRes, engRes, incRes] = await Promise.all([
-        listPiletas(null, "alevinaje"),
-        listPiletas(null, "engorda"),
-        listPiletas(null, "incubacion"),
+        listInfraestructuraFisica(null, "alevinaje"),
+        listInfraestructuraFisica(null, "engorda"),
+        listInfraestructuraFisica(null, "incubacion"),
       ]);
       const rows = [
         ...(Array.isArray(alevRes.data) ? alevRes.data : []),
         ...(Array.isArray(engRes.data) ? engRes.data : []),
         ...(Array.isArray(incRes.data) ? incRes.data : []),
       ];
-      setPiletas(filtrarPorUbicacion(rows, granja, ubicacionesGranja));
+      setInfraestructurasFisicas(filtrarPorUbicacion(rows, granja, ubicacionesGranja));
     } catch (err) {
-      console.error("Error al cargar piletas:", err);
-      setPiletas([]);
+      console.error("Error al cargar infraestructuraFisica:", err);
+      setInfraestructurasFisicas([]);
     }
   }, [granja, ubicacionesGranja]);
 
@@ -324,9 +324,9 @@ export default function Trazabilidad() {
 
   useEffect(() => {
     cargarMovimientos();
-    cargarPiletas();
+    cargarInfraestructuraFisica();
     cargarPedidos();
-  }, [cargarMovimientos, cargarPiletas, cargarPedidos]);
+  }, [cargarMovimientos, cargarInfraestructuraFisica, cargarPedidos]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -341,7 +341,7 @@ export default function Trazabilidad() {
       }
       if (name === "lista_espera_id") {
         const pedido = pedidos.find((p) => String(p.lista_id) === String(value));
-        next.pileta_origen_id = piletaOrigenIdDePedido(pedido);
+        next.infraestructura_fisica_origen_id = infraestructuraFisicaOrigenIdDePedido(pedido);
       }
       return next;
     });
@@ -358,9 +358,9 @@ export default function Trazabilidad() {
         showSnackbar("Seleccione un pedido de próximas ventas", "warning");
         return false;
       }
-      const piletaId = form.pileta_origen_id || piletaOrigenIdDePedido(pedidoSeleccionado);
-      if (!piletaId) {
-        showSnackbar("Seleccione la pileta de origen", "warning");
+      const infraestructuraFisicaId = form.infraestructura_fisica_origen_id || infraestructuraFisicaOrigenIdDePedido(pedidoSeleccionado);
+      if (!infraestructuraFisicaId) {
+        showSnackbar("Seleccione la infraestructura física de origen", "warning");
         return false;
       }
       if (cantidadExcedeStock) {
@@ -380,8 +380,8 @@ export default function Trazabilidad() {
     }
 
     if (esMortalidad) {
-      if (!form.pileta_origen_id) {
-        showSnackbar("Seleccione la pileta", "warning");
+      if (!form.infraestructura_fisica_origen_id) {
+        showSnackbar("Seleccione la infraestructura física", "warning");
         return false;
       }
       if (cantidadExcedeStockMortalidad) {
@@ -394,8 +394,8 @@ export default function Trazabilidad() {
       return true;
     }
 
-    if (!form.pileta_origen_id || !form.pileta_destino_id) {
-      showSnackbar("Seleccione pileta origen y destino", "warning");
+    if (!form.infraestructura_fisica_origen_id || !form.infraestructura_fisica_destino_id) {
+      showSnackbar("Seleccione infraestructura física origen y destino", "warning");
       return false;
     }
 
@@ -418,15 +418,15 @@ export default function Trazabilidad() {
 
     if (esVenta) {
       payload.lista_espera_id = Number(form.lista_espera_id);
-      payload.pileta_origen_id = Number(
-        form.pileta_origen_id || piletaOrigenIdDePedido(pedidoSeleccionado),
+      payload.infraestructura_fisica_origen_id = Number(
+        form.infraestructura_fisica_origen_id || infraestructuraFisicaOrigenIdDePedido(pedidoSeleccionado),
       );
     } else if (esMortalidad) {
-      payload.pileta_origen_id = Number(form.pileta_origen_id);
+      payload.infraestructura_fisica_origen_id = Number(form.infraestructura_fisica_origen_id);
       payload.cantidad = Number(form.cantidad);
     } else {
-      payload.pileta_origen_id = Number(form.pileta_origen_id);
-      payload.pileta_destino_id = Number(form.pileta_destino_id);
+      payload.infraestructura_fisica_origen_id = Number(form.infraestructura_fisica_origen_id);
+      payload.infraestructura_fisica_destino_id = Number(form.infraestructura_fisica_destino_id);
       payload.cantidad = Number(form.cantidad);
       if (esIncubacionOrigen) {
         if (form.peso_gramos !== "") payload.peso_gramos = Number(form.peso_gramos);
@@ -450,7 +450,7 @@ export default function Trazabilidad() {
       setForm({ ...EMPTY_FORM, fecha_movimiento: form.fecha_movimiento });
       cerrarFormulario();
       cargarMovimientos();
-      cargarPiletas();
+      cargarInfraestructuraFisica();
       cargarPedidos();
     } catch (err) {
       showSnackbar(err?.response?.data?.error || "Error al registrar movimiento", "error");
@@ -476,7 +476,7 @@ export default function Trazabilidad() {
     setForm((prev) => ({
       ...prev,
       lista_espera_id: String(pedido.lista_id),
-      pileta_origen_id: piletaOrigenIdDePedido(pedido) || prev.pileta_origen_id,
+      infraestructura_fisica_origen_id: infraestructuraFisicaOrigenIdDePedido(pedido) || prev.infraestructura_fisica_origen_id,
     }));
     cargarPedidos();
   };
@@ -488,10 +488,10 @@ export default function Trazabilidad() {
     return `#${p.lista_id} · ${cliente} · ${cant} org. · ${fecha}`;
   };
 
-  const etiquetaPileta = (p) => {
+  const etiquetaInfraestructuraFisica = (p) => {
     const tipo = String(p.tipo ?? "").toLowerCase();
     if (tipo === "incubacion") return `${p.nombre} (lote en eficiencia reproductiva)`;
-    return `${p.nombre} — ${formatCantidad(stockPileta(p))} org.`;
+    return `${p.nombre} — ${formatCantidad(stockInfraestructuraFisica(p))} org.`;
   };
 
   const gruposMovimientos = useMemo(
@@ -661,9 +661,9 @@ export default function Trazabilidad() {
                     <TextField
                       select
                       fullWidth
-                      label={`Pileta origen (${tipoConfig.etapaOrigen})`}
-                      name="pileta_origen_id"
-                      value={form.pileta_origen_id || piletaOrigenIdDePedido(pedidoSeleccionado)}
+                      label={`Infraestructura física origen (${tipoConfig.etapaOrigen})`}
+                      name="infraestructura_fisica_origen_id"
+                      value={form.infraestructura_fisica_origen_id || infraestructuraFisicaOrigenIdDePedido(pedidoSeleccionado)}
                       onChange={handleChange}
                       error={cantidadExcedeStock}
                       helperText={
@@ -671,13 +671,13 @@ export default function Trazabilidad() {
                           ? `Stock insuficiente: ${formatCantidad(stockOrigen)} disponibles`
                           : stockOrigen != null
                             ? `Disponible: ${formatCantidad(stockOrigen)} organismos`
-                            : `Solo piletas de ${tipoConfig.etapaOrigen} con stock`
+                            : `Solo infraestructurasFisicas de ${tipoConfig.etapaOrigen} con stock`
                       }
                     >
                       <MenuItem value="">— Seleccionar —</MenuItem>
-                      {piletasOrigen.map((p) => (
-                        <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
-                          {etiquetaPileta(p)}
+                      {infraestructurasFisicasOrigen.map((p) => (
+                        <MenuItem key={p.infraestructura_fisica_id} value={String(p.infraestructura_fisica_id)}>
+                          {etiquetaInfraestructuraFisica(p)}
                         </MenuItem>
                       ))}
                     </TextField>
@@ -691,9 +691,9 @@ export default function Trazabilidad() {
                     <TextField
                       select
                       fullWidth
-                      label={`Pileta (${tipoConfig.etapaOrigen})`}
-                      name="pileta_origen_id"
-                      value={form.pileta_origen_id}
+                      label={`Infraestructura física (${tipoConfig.etapaOrigen})`}
+                      name="infraestructura_fisica_origen_id"
+                      value={form.infraestructura_fisica_origen_id}
                       onChange={handleChange}
                       error={cantidadExcedeStockMortalidad}
                       helperText={
@@ -701,13 +701,13 @@ export default function Trazabilidad() {
                           ? `Stock insuficiente: ${formatCantidad(stockOrigen)} disponibles`
                           : stockOrigen != null
                             ? `Disponible: ${formatCantidad(stockOrigen)} organismos`
-                            : `Piletas de ${tipoConfig.etapaOrigen} con stock`
+                            : `Infraestructuras físicas de ${tipoConfig.etapaOrigen} con stock`
                       }
                     >
                       <MenuItem value="">— Seleccionar —</MenuItem>
-                      {piletasOrigen.map((p) => (
-                        <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
-                          {etiquetaPileta(p)}
+                      {infraestructurasFisicasOrigen.map((p) => (
+                        <MenuItem key={p.infraestructura_fisica_id} value={String(p.infraestructura_fisica_id)}>
+                          {etiquetaInfraestructuraFisica(p)}
                         </MenuItem>
                       ))}
                     </TextField>
@@ -732,15 +732,15 @@ export default function Trazabilidad() {
                     <TextField
                       select
                       fullWidth
-                      label={`Pileta origen (${tipoConfig.etapaOrigen})`}
-                      name="pileta_origen_id"
-                      value={form.pileta_origen_id}
+                      label={`Infraestructura física origen (${tipoConfig.etapaOrigen})`}
+                      name="infraestructura_fisica_origen_id"
+                      value={form.infraestructura_fisica_origen_id}
                       onChange={handleChange}
                     >
                       <MenuItem value="">— Seleccionar —</MenuItem>
-                      {piletasOrigen.map((p) => (
-                        <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
-                          {etiquetaPileta(p)}
+                      {infraestructurasFisicasOrigen.map((p) => (
+                        <MenuItem key={p.infraestructura_fisica_id} value={String(p.infraestructura_fisica_id)}>
+                          {etiquetaInfraestructuraFisica(p)}
                         </MenuItem>
                       ))}
                     </TextField>
@@ -749,15 +749,15 @@ export default function Trazabilidad() {
                     <TextField
                       select
                       fullWidth
-                      label={`Pileta destino (${tipoConfig.etapaDestino})`}
-                      name="pileta_destino_id"
-                      value={form.pileta_destino_id}
+                      label={`Infraestructura física destino (${tipoConfig.etapaDestino})`}
+                      name="infraestructura_fisica_destino_id"
+                      value={form.infraestructura_fisica_destino_id}
                       onChange={handleChange}
                     >
                       <MenuItem value="">— Seleccionar —</MenuItem>
-                      {piletasDestino.map((p) => (
-                        <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
-                          {etiquetaPileta(p)}
+                      {infraestructurasFisicasDestino.map((p) => (
+                        <MenuItem key={p.infraestructura_fisica_id} value={String(p.infraestructura_fisica_id)}>
+                          {etiquetaInfraestructuraFisica(p)}
                         </MenuItem>
                       ))}
                     </TextField>
@@ -854,7 +854,7 @@ export default function Trazabilidad() {
         onClose={() => setOpenProximaVenta(false)}
         onCreated={handleProximaVentaCreada}
         defaults={proximaVentaDefaults}
-        piletas={piletasOrigen}
+        infraestructurasFisicas={infraestructurasFisicasOrigen}
         lockTipoVenta
         lockGranja
       />

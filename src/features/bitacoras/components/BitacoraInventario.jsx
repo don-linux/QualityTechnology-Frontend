@@ -29,7 +29,7 @@ function BitacoraInventarioContent() {
   const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
   const [form, setForm] = useState({
     ubicacion: "",
-    pileta_id: "",
+    infraestructura_fisica_id: "",
     cantidad: "",
     talla: "",
     lote_nombre: "",
@@ -45,7 +45,7 @@ function BitacoraInventarioContent() {
 
   const requiredFields = [
     "ubicacion",
-    "pileta_id", "cantidad", "talla", "lote_nombre",
+    "infraestructura_fisica_id", "cantidad", "talla", "lote_nombre",
     "fecha_siembra", "fecha_salida_hormonado", "observacion",
   ];
 
@@ -85,7 +85,7 @@ function BitacoraInventarioContent() {
       cerrarFormulario();
       setForm({
         ubicacion: form.ubicacion,
-        pileta_id: "",
+        infraestructura_fisica_id: "",
         cantidad: "",
         talla: "",
         lote_nombre: "",
@@ -105,7 +105,7 @@ function BitacoraInventarioContent() {
     setEditId(r.id);
     setForm({
       ubicacion: r.ubicacion || "",
-      pileta_id: r.pileta_id ?? "",
+      infraestructura_fisica_id: r.infraestructura_fisica_id ?? "",
       cantidad: r.cantidad ?? "",
       talla: r.talla ?? "",
       lote_nombre: r.lote_nombre || "",
@@ -120,7 +120,7 @@ function BitacoraInventarioContent() {
   };
 
   const columnas = [
-    { header: "Instalación", value: (r) => r.pileta_id },
+    { header: "Instalación", value: (r) => r.infraestructura_fisica_id },
     { header: "Cantidad", value: (r) => r.cantidad },
     { header: "Talla", value: (r) => r.talla },
     { header: "Lote", value: (r) => r.lote_nombre },
@@ -175,12 +175,12 @@ function BitacoraInventarioContent() {
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 label="No. Instalación"
-                name="pileta_id"
-                value={form.pileta_id}
+                name="infraestructura_fisica_id"
+                value={form.infraestructura_fisica_id}
                 onChange={handleChange}
                 fullWidth
-                error={!!errors.pileta_id}
-                helperText={errors.pileta_id}
+                error={!!errors.infraestructura_fisica_id}
+                helperText={errors.infraestructura_fisica_id}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
@@ -272,7 +272,7 @@ function BitacoraInventarioContent() {
         grupos={gruposUbicacion}
         renderTabla={renderTablaInventario}
         buscar
-        searchKeys={["pileta_id", "lote_nombre", "observacion"]}
+        searchKeys={["infraestructura_fisica_id", "lote_nombre", "observacion"]}
         placeholderBusqueda="Buscar instalación, lote u observación"
         exportar={{
           columnas,

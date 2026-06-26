@@ -32,9 +32,9 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
-import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
+import { vistaActualPorInfraestructuraFisica } from "@shared/utils/inventarioVigente";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
-import { listPiletas } from "../services/piletasService";
+import { listInfraestructuraFisica } from "../services/infraestructuraFisicaService";
 
 const soloDecimal = (valor) => valor === "" || /^\d*\.?\d*$/.test(valor);
 const soloEntero = (valor) => valor === "" || /^\d+$/.test(valor);
@@ -47,29 +47,29 @@ const Alevinaje = () => {
 
   const requiredFields = [
     "ubicacion",
-    "pileta_destino_id",
+    "infraestructura_fisica_destino_id",
     "cantidad_total",
     "peso_gramos",
   ];
 
-  const [piletasDestinoAlevinaje, setPiletasDestinoAlevinaje] = useState([]);
+  const [infraestructurasFisicasDestinoAlevinaje, setInfraestructurasFisicasDestinoAlevinaje] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState({
     ubicacion: "",
-    pileta_destino_id: "",
+    infraestructura_fisica_destino_id: "",
     lote: "",
     cantidad_total: "",
     peso_gramos: "",
   });
 
-  const piletasFiltradas = useMemo(
-    () => filtrarPorUbicacion(piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja),
-    [piletasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja],
+  const infraestructurasFisicasFiltradas = useMemo(
+    () => filtrarPorUbicacion(infraestructurasFisicasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja),
+    [infraestructurasFisicasDestinoAlevinaje, formData.ubicacion, ubicacionesGranja],
   );
 
-  const registrosVista = useMemo(() => vistaActualPorPileta(registros), [registros]);
+  const registrosVista = useMemo(() => vistaActualPorInfraestructuraFisica(registros), [registros]);
 
   const gruposRegistros = useMemo(
     () => getGroups(registrosVista, "granja"),
@@ -77,8 +77,8 @@ const Alevinaje = () => {
   );
 
   const payloadComunBackend = () => ({
-    pileta_id: Number(formData.pileta_destino_id),
-    pileta_destino_id: Number(formData.pileta_destino_id),
+    infraestructura_fisica_id: Number(formData.infraestructura_fisica_destino_id),
+    infraestructura_fisica_destino_id: Number(formData.infraestructura_fisica_destino_id),
     lote: formData.lote?.trim() || null,
     cantidad_total: Number(formData.cantidad_total || 0),
     peso_gramos: formData.peso_gramos === "" ? null : Number(formData.peso_gramos),
@@ -96,19 +96,19 @@ const Alevinaje = () => {
 
     setFormData((prev) => {
       if (name === "ubicacion") {
-        return { ...prev, ubicacion: value, pileta_destino_id: "" };
+        return { ...prev, ubicacion: value, infraestructura_fisica_destino_id: "" };
       }
       return { ...prev, [name]: value };
     });
     clearFieldError(name);
   };
 
-  const cargarPiletasDestinoAlevinaje = useCallback(async () => {
+  const cargarInfraestructuraFisicaDestinoAlevinaje = useCallback(async () => {
     try {
-      const res = await listPiletas(null, "alevinaje");
-      setPiletasDestinoAlevinaje(Array.isArray(res.data) ? res.data : []);
+      const res = await listInfraestructuraFisica(null, "alevinaje");
+      setInfraestructurasFisicasDestinoAlevinaje(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error cargando piletas alevinaje:", err);
+      console.error("Error cargando infraestructurasFisicas alevinaje:", err);
     }
   }, []);
 
@@ -122,9 +122,9 @@ const Alevinaje = () => {
   }, []);
 
   useEffect(() => {
-    cargarPiletasDestinoAlevinaje();
+    cargarInfraestructuraFisicaDestinoAlevinaje();
     cargarRegistros();
-  }, [cargarPiletasDestinoAlevinaje, cargarRegistros]);
+  }, [cargarInfraestructuraFisicaDestinoAlevinaje, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
@@ -159,8 +159,8 @@ const Alevinaje = () => {
     clearErrors();
     setFormData({
       ubicacion: seleccionado.granja || formData.ubicacion || defaultUbicacion || "",
-      pileta_destino_id: String(
-        seleccionado.pileta_destino_id ?? seleccionado.pileta_id ?? "",
+      infraestructura_fisica_destino_id: String(
+        seleccionado.infraestructura_fisica_destino_id ?? seleccionado.infraestructura_fisica_id ?? "",
       ),
       lote: seleccionado.lote ?? seleccionado.lote_genetico ?? "",
       cantidad_total: String(seleccionado.cantidad_total ?? ""),
@@ -203,7 +203,7 @@ const Alevinaje = () => {
   const resetFormulario = () => {
     setFormData({
       ubicacion: defaultUbicacion || ubicacionesGranja[0]?.value || "",
-      pileta_destino_id: "",
+      infraestructura_fisica_destino_id: "",
       lote: "",
       cantidad_total: "",
       peso_gramos: "",
@@ -256,16 +256,16 @@ const Alevinaje = () => {
                 <TextField
                   select
                   label="Instalación"
-                  name="pileta_destino_id"
-                  value={formData.pileta_destino_id || ""}
+                  name="infraestructura_fisica_destino_id"
+                  value={formData.infraestructura_fisica_destino_id || ""}
                   onChange={handleChange}
                   fullWidth
                   sx={campoFormSx}
-                  error={!!errors.pileta_destino_id}
-                  {...(errors.pileta_destino_id ? { helperText: errors.pileta_destino_id } : {})}
+                  error={!!errors.infraestructura_fisica_destino_id}
+                  {...(errors.infraestructura_fisica_destino_id ? { helperText: errors.infraestructura_fisica_destino_id } : {})}
                 >
-                  {piletasFiltradas.map((p) => {
-                    const pid = p.pileta_id;
+                  {infraestructurasFisicasFiltradas.map((p) => {
+                    const pid = p.infraestructura_fisica_id;
                     return (
                       <MenuItem key={pid} value={String(pid)}>
                         {p.nombre}
@@ -336,10 +336,10 @@ const Alevinaje = () => {
       </FormularioRegistroPanel>
 
       <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
-        Estado actual por pileta
+        Estado actual por infraestructura física
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Muestra el último registro periódico de cada pileta. El historial de movimientos está en Trazabilidad.
+        Muestra el último registro periódico de cada infraestructura física. El historial de movimientos está en Trazabilidad.
       </Typography>
 
       <TablasPorUbicacionGranja
@@ -381,7 +381,7 @@ const Alevinaje = () => {
                       >
                         <TableCell>{l._num}</TableCell>
                         <TableCell>
-                          {l.nombre_pileta_destino || l.nombre_pileta || "—"}
+                          {l.nombre_infraestructura_fisica_destino || l.nombre_infraestructura_fisica || "—"}
                         </TableCell>
                         <TableCell align="right">{formatCantidad(l.cantidad_total)}</TableCell>
                         <TableCell align="right">{formatCantidad(l.peso_gramos ?? l.peso)}</TableCell>

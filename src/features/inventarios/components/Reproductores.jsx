@@ -4,7 +4,7 @@ import {
   createReproductor,
   updateReproductor,
 } from "../services/reproductoresService";
-import { listObservacionesPileta, listPiletas } from "../services/piletasService";
+import { listObservacionesInfraestructuraFisica, listInfraestructuraFisica } from "../services/infraestructuraFisicaService";
 import CeldaObservacionConHistorial from "@shared/components/CeldaObservacionConHistorial";
 import { formatCantidad, formatFecha } from "@shared/utils/formatters";
 import Box from "@mui/material/Box";
@@ -31,7 +31,7 @@ import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import { filtrarPorUbicacion } from "@shared/utils/fetchMergedPorUbicaciones";
-import { vistaActualPorPileta } from "@shared/utils/inventarioVigente";
+import { vistaActualPorInfraestructuraFisica } from "@shared/utils/inventarioVigente";
 import { ordenarYNumerar } from "@shared/utils/ordenarFilas";
 import {
   BloqueSeccionGris,
@@ -57,7 +57,7 @@ const hoyISO = () => new Date().toISOString().split("T")[0];
 
 const REPRODUCTOR_FORM_REQUIRED = [
   "ubicacion",
-  "pileta_destino_id",
+  "infraestructura_fisica_destino_id",
   "fecha_siembra",
   "lote_genetico",
   "machos",
@@ -74,20 +74,20 @@ const REPRODUCTOR_FORM_REQUIRED = [
 
 const FORM_INICIAL = {
   ubicacion: "",
-  pileta_destino_id: "",
+  infraestructura_fisica_destino_id: "",
   fecha_siembra: hoyISO(),
   lote_genetico: "",
   machos: "",
   genetica_machos: "",
   familia_machos: "",
   tipo_procedencia_machos: "",
-  procedencia_machos_pileta_id: "",
+  procedencia_machos_infraestructura_fisica_id: "",
   procedencia_machos_externa: "",
   hembras: "",
   genetica_hembras: "",
   familia_hembras: "",
   tipo_procedencia_hembras: "",
-  procedencia_hembras_pileta_id: "",
+  procedencia_hembras_infraestructura_fisica_id: "",
   procedencia_hembras_externa: "",
   cantidad: "",
   ratio: "",
@@ -95,12 +95,12 @@ const FORM_INICIAL = {
   observacion: "",
 };
 
-function resolverProcedencia(tipo, piletaId, textoExterno, piletasEngorda) {
+function resolverProcedencia(tipo, infraestructuraFisicaId, textoExterno, infraestructurasFisicasEngorda) {
   if (tipo === "interna") {
-    const pileta = piletasEngorda.find(
-      (p) => String(p.pileta_id) === String(piletaId),
+    const infraestructuraFisica = infraestructurasFisicasEngorda.find(
+      (p) => String(p.infraestructura_fisica_id) === String(infraestructuraFisicaId),
     );
-    return pileta?.nombre?.trim() ?? "";
+    return infraestructuraFisica?.nombre?.trim() ?? "";
   }
   if (tipo === "externa") {
     return String(textoExterno ?? "").trim();
@@ -108,27 +108,27 @@ function resolverProcedencia(tipo, piletaId, textoExterno, piletasEngorda) {
   return "";
 }
 
-function parseProcedenciaDesdeBackend(valor, piletasEngorda) {
+function parseProcedenciaDesdeBackend(valor, infraestructurasFisicasEngorda) {
   const texto = String(valor ?? "").trim();
   if (!texto) {
-    return { tipo: "", piletaId: "", externa: "" };
+    return { tipo: "", infraestructuraFisicaId: "", externa: "" };
   }
-  const pileta = piletasEngorda.find((p) => String(p.nombre ?? "").trim() === texto);
-  if (pileta) {
+  const infraestructuraFisica = infraestructurasFisicasEngorda.find((p) => String(p.nombre ?? "").trim() === texto);
+  if (infraestructuraFisica) {
     return {
       tipo: "interna",
-      piletaId: String(pileta.pileta_id ?? ""),
+      infraestructuraFisicaId: String(infraestructuraFisica.infraestructura_fisica_id ?? ""),
       externa: "",
     };
   }
-  return { tipo: "externa", piletaId: "", externa: texto };
+  return { tipo: "externa", infraestructuraFisicaId: "", externa: texto };
 }
 
-function CeldaTipoProcedencia({ valor, piletasEngorda }) {
+function CeldaTipoProcedencia({ valor, infraestructurasFisicasEngorda }) {
   const texto = String(valor ?? "").trim();
   if (!texto) return "—";
 
-  const { tipo } = parseProcedenciaDesdeBackend(texto, piletasEngorda);
+  const { tipo } = parseProcedenciaDesdeBackend(texto, infraestructurasFisicasEngorda);
   if (tipo !== "interna" && tipo !== "externa") return "—";
 
   const esInterna = tipo === "interna";
@@ -156,13 +156,13 @@ function CeldaTipoProcedencia({ valor, piletasEngorda }) {
   );
 }
 
-function valorProcedenciaTabla(valor, piletasEngorda) {
+function valorProcedenciaTabla(valor, infraestructurasFisicasEngorda) {
   const texto = String(valor ?? "").trim();
   if (!texto) return "—";
-  const { tipo } = parseProcedenciaDesdeBackend(texto, piletasEngorda);
+  const { tipo } = parseProcedenciaDesdeBackend(texto, infraestructurasFisicasEngorda);
   if (tipo === "interna") {
-    const pileta = piletasEngorda.find((p) => String(p.nombre ?? "").trim() === texto);
-    const granja = pileta?.granja ?? "";
+    const infraestructuraFisica = infraestructurasFisicasEngorda.find((p) => String(p.nombre ?? "").trim() === texto);
+    const granja = infraestructuraFisica?.granja ?? "";
     return granja ? `${texto} (${granja})` : texto;
   }
   return texto;
@@ -171,21 +171,21 @@ function valorProcedenciaTabla(valor, piletasEngorda) {
 function camposRequeridosProcedencia(formData) {
   const campos = [...REPRODUCTOR_FORM_REQUIRED];
   if (formData.tipo_procedencia_machos === "interna") {
-    campos.push("procedencia_machos_pileta_id");
+    campos.push("procedencia_machos_infraestructura_fisica_id");
   } else if (formData.tipo_procedencia_machos === "externa") {
     campos.push("procedencia_machos_externa");
   }
   if (formData.tipo_procedencia_hembras === "interna") {
-    campos.push("procedencia_hembras_pileta_id");
+    campos.push("procedencia_hembras_infraestructura_fisica_id");
   } else if (formData.tipo_procedencia_hembras === "externa") {
     campos.push("procedencia_hembras_externa");
   }
   return campos;
 }
 
-function CamposProcedencia({ prefijo, etiquetaTipo, formData, handleChange, errors, piletasEngorda }) {
+function CamposProcedencia({ prefijo, etiquetaTipo, formData, handleChange, errors, infraestructurasFisicasEngorda }) {
   const tipoField = `tipo_procedencia_${prefijo}`;
-  const piletaField = `procedencia_${prefijo}_pileta_id`;
+  const infraestructuraFisicaField = `procedencia_${prefijo}_infraestructura_fisica_id`;
   const externaField = `procedencia_${prefijo}_externa`;
   const tipo = formData[tipoField];
 
@@ -214,17 +214,17 @@ function CamposProcedencia({ prefijo, etiquetaTipo, formData, handleChange, erro
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <TextField
             select
-            label="Pileta de engorda"
-            name={piletaField}
-            value={formData[piletaField] || ""}
+            label="Infraestructura física de engorda"
+            name={infraestructuraFisicaField}
+            value={formData[infraestructuraFisicaField] || ""}
             onChange={handleChange}
             fullWidth
             sx={campoFormSx}
-            error={!!errors[piletaField]}
-            {...(errors[piletaField] ? { helperText: errors[piletaField] } : {})}
+            error={!!errors[infraestructuraFisicaField]}
+            {...(errors[infraestructuraFisicaField] ? { helperText: errors[infraestructuraFisicaField] } : {})}
           >
-            {piletasEngorda.map((p) => {
-              const pid = p.pileta_id;
+            {infraestructurasFisicasEngorda.map((p) => {
+              const pid = p.infraestructura_fisica_id;
               const granja = p.granja ?? p.nombre_ubicacion ?? "";
               const etiqueta = granja ? `${p.nombre} (${granja})` : p.nombre;
               return (
@@ -292,19 +292,19 @@ export default function Reproductores() {
   } = useFormularioVisible();
   const { ubicacionesGranja, defaultUbicacion, getGroups } = useUbicacionesGranja();
 
-  const [piletasDestino, setPiletasDestino] = useState([]);
-  const [piletasEngorda, setPiletasEngorda] = useState([]);
+  const [infraestructurasFisicasDestino, setInfraestructurasFisicasDestino] = useState([]);
+  const [infraestructurasFisicasEngorda, setInfraestructurasFisicasEngorda] = useState([]);
   const [registros, setRegistros] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formData, setFormData] = useState({ ...FORM_INICIAL });
 
-  const piletasFiltradas = useMemo(
-    () => filtrarPorUbicacion(piletasDestino, formData.ubicacion, ubicacionesGranja),
-    [piletasDestino, formData.ubicacion, ubicacionesGranja],
+  const infraestructurasFisicasFiltradas = useMemo(
+    () => filtrarPorUbicacion(infraestructurasFisicasDestino, formData.ubicacion, ubicacionesGranja),
+    [infraestructurasFisicasDestino, formData.ubicacion, ubicacionesGranja],
   );
 
-  const registrosVista = useMemo(() => vistaActualPorPileta(registros), [registros]);
+  const registrosVista = useMemo(() => vistaActualPorInfraestructuraFisica(registros), [registros]);
 
   const gruposRegistros = useMemo(
     () => getGroups(registrosVista, "granja"),
@@ -312,35 +312,35 @@ export default function Reproductores() {
   );
 
   const payloadComunBackend = () => ({
-    pileta_id: Number(formData.pileta_destino_id),
-    pileta_destino_id: Number(formData.pileta_destino_id),
+    infraestructura_fisica_id: Number(formData.infraestructura_fisica_destino_id),
+    infraestructura_fisica_destino_id: Number(formData.infraestructura_fisica_destino_id),
     fecha_siembra: formData.fecha_siembra || null,
     lote_genetico: formData.lote_genetico?.trim() || null,
     machos: Number(formData.machos || 0),
     hembras: Number(formData.hembras || 0),
     tipo_procedencia_machos: formData.tipo_procedencia_machos || undefined,
-    procedencia_machos_pileta_id: formData.procedencia_machos_pileta_id
-      ? Number(formData.procedencia_machos_pileta_id)
+    procedencia_machos_infraestructura_fisica_id: formData.procedencia_machos_infraestructura_fisica_id
+      ? Number(formData.procedencia_machos_infraestructura_fisica_id)
       : undefined,
     tipo_procedencia_hembras: formData.tipo_procedencia_hembras || undefined,
-    procedencia_hembras_pileta_id: formData.procedencia_hembras_pileta_id
-      ? Number(formData.procedencia_hembras_pileta_id)
+    procedencia_hembras_infraestructura_fisica_id: formData.procedencia_hembras_infraestructura_fisica_id
+      ? Number(formData.procedencia_hembras_infraestructura_fisica_id)
       : undefined,
     genetica_machos: formData.genetica_machos,
     familia_machos: formData.familia_machos,
     procedencia_machos: resolverProcedencia(
       formData.tipo_procedencia_machos,
-      formData.procedencia_machos_pileta_id,
+      formData.procedencia_machos_infraestructura_fisica_id,
       formData.procedencia_machos_externa,
-      piletasEngorda,
+      infraestructurasFisicasEngorda,
     ),
     genetica_hembras: formData.genetica_hembras,
     familia_hembras: formData.familia_hembras,
     procedencia_hembras: resolverProcedencia(
       formData.tipo_procedencia_hembras,
-      formData.procedencia_hembras_pileta_id,
+      formData.procedencia_hembras_infraestructura_fisica_id,
       formData.procedencia_hembras_externa,
-      piletasEngorda,
+      infraestructurasFisicasEngorda,
     ),
     talla: formData.talla === "" ? null : Number(formData.talla),
     observacion: formData.observacion,
@@ -358,7 +358,7 @@ export default function Reproductores() {
 
     setFormData((prev) => {
       if (name === "ubicacion") {
-        return { ...prev, ubicacion: value, pileta_destino_id: "" };
+        return { ...prev, ubicacion: value, infraestructura_fisica_destino_id: "" };
       }
       if (name === "machos") {
         return aplicarMachosHembras(prev, value, prev.hembras);
@@ -370,7 +370,7 @@ export default function Reproductores() {
         return {
           ...prev,
           tipo_procedencia_machos: value,
-          procedencia_machos_pileta_id: "",
+          procedencia_machos_infraestructura_fisica_id: "",
           procedencia_machos_externa: "",
         };
       }
@@ -378,7 +378,7 @@ export default function Reproductores() {
         return {
           ...prev,
           tipo_procedencia_hembras: value,
-          procedencia_hembras_pileta_id: "",
+          procedencia_hembras_infraestructura_fisica_id: "",
           procedencia_hembras_externa: "",
         };
       }
@@ -387,21 +387,21 @@ export default function Reproductores() {
     clearFieldError(name);
   };
 
-  const cargarPiletasDestino = useCallback(async () => {
+  const cargarInfraestructuraFisicaDestino = useCallback(async () => {
     try {
-      const res = await listPiletas(null, "reproductores");
-      setPiletasDestino(Array.isArray(res.data) ? res.data : []);
+      const res = await listInfraestructuraFisica(null, "reproductores");
+      setInfraestructurasFisicasDestino(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error cargando piletas reproductores:", err);
+      console.error("Error cargando infraestructurasFisicas reproductores:", err);
     }
   }, []);
 
-  const cargarPiletasEngorda = useCallback(async () => {
+  const cargarInfraestructuraFisicaEngorda = useCallback(async () => {
     try {
-      const res = await listPiletas(null, "engorda");
-      setPiletasEngorda(Array.isArray(res.data) ? res.data : []);
+      const res = await listInfraestructuraFisica(null, "engorda");
+      setInfraestructurasFisicasEngorda(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error cargando piletas engorda:", err);
+      console.error("Error cargando infraestructurasFisicas engorda:", err);
     }
   }, []);
 
@@ -415,10 +415,10 @@ export default function Reproductores() {
   }, []);
 
   useEffect(() => {
-    cargarPiletasDestino();
-    cargarPiletasEngorda();
+    cargarInfraestructuraFisicaDestino();
+    cargarInfraestructuraFisicaEngorda();
     cargarRegistros();
-  }, [cargarPiletasDestino, cargarPiletasEngorda, cargarRegistros]);
+  }, [cargarInfraestructuraFisicaDestino, cargarInfraestructuraFisicaEngorda, cargarRegistros]);
 
   useEffect(() => {
     if (!formData.ubicacion && defaultUbicacion) {
@@ -457,17 +457,17 @@ export default function Reproductores() {
   const mapSeleccionadoAForm = (row) => {
     const procedenciaMachos = parseProcedenciaDesdeBackend(
       row.procedencia_machos,
-      piletasEngorda,
+      infraestructurasFisicasEngorda,
     );
     const procedenciaHembras = parseProcedenciaDesdeBackend(
       row.procedencia_hembras,
-      piletasEngorda,
+      infraestructurasFisicasEngorda,
     );
 
     return {
       ubicacion: row.granja || defaultUbicacion || "",
-      pileta_destino_id: String(
-        row.pileta_destino_id ?? row.pileta_id ?? "",
+      infraestructura_fisica_destino_id: String(
+        row.infraestructura_fisica_destino_id ?? row.infraestructura_fisica_id ?? "",
       ),
       fecha_siembra: row.fecha_siembra
         ? String(row.fecha_siembra).split("T")[0]
@@ -477,13 +477,13 @@ export default function Reproductores() {
       genetica_machos: row.genetica_machos ?? "",
       familia_machos: row.familia_machos ?? "",
       tipo_procedencia_machos: procedenciaMachos.tipo,
-      procedencia_machos_pileta_id: procedenciaMachos.piletaId,
+      procedencia_machos_infraestructura_fisica_id: procedenciaMachos.infraestructuraFisicaId,
       procedencia_machos_externa: procedenciaMachos.externa,
       hembras: String(row.hembras ?? ""),
       genetica_hembras: row.genetica_hembras ?? "",
       familia_hembras: row.familia_hembras ?? "",
       tipo_procedencia_hembras: procedenciaHembras.tipo,
-      procedencia_hembras_pileta_id: procedenciaHembras.piletaId,
+      procedencia_hembras_infraestructura_fisica_id: procedenciaHembras.infraestructuraFisicaId,
       procedencia_hembras_externa: procedenciaHembras.externa,
       cantidad: String(row.cantidad_total ?? row.cantidad ?? ""),
       ratio: row.ratio ?? "",
@@ -545,7 +545,7 @@ export default function Reproductores() {
   );
 
   const cargarHistorialObservaciones = useCallback(
-    (piletaId) => listObservacionesPileta(piletaId),
+    (infraestructuraFisicaId) => listObservacionesInfraestructuraFisica(infraestructuraFisicaId),
     [],
   );
 
@@ -598,17 +598,17 @@ export default function Reproductores() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   select
-                  label="Pileta (reproductores)"
-                  name="pileta_destino_id"
-                  value={formData.pileta_destino_id || ""}
+                  label="Infraestructura física (reproductores)"
+                  name="infraestructura_fisica_destino_id"
+                  value={formData.infraestructura_fisica_destino_id || ""}
                   onChange={handleChange}
                   fullWidth
                   sx={campoFormSx}
-                  error={!!errors.pileta_destino_id}
-                  {...(errors.pileta_destino_id ? { helperText: errors.pileta_destino_id } : {})}
+                  error={!!errors.infraestructura_fisica_destino_id}
+                  {...(errors.infraestructura_fisica_destino_id ? { helperText: errors.infraestructura_fisica_destino_id } : {})}
                 >
-                  {piletasFiltradas.map((p) => {
-                    const pid = p.pileta_id;
+                  {infraestructurasFisicasFiltradas.map((p) => {
+                    const pid = p.infraestructura_fisica_id;
                     return (
                       <MenuItem key={pid} value={String(pid)}>
                         {p.nombre}
@@ -695,7 +695,7 @@ export default function Reproductores() {
                     formData={formData}
                     handleChange={handleChange}
                     errors={errors}
-                    piletasEngorda={piletasEngorda}
+                    infraestructurasFisicasEngorda={infraestructurasFisicasEngorda}
                   />
                 </Grid>
               </Grid>
@@ -749,7 +749,7 @@ export default function Reproductores() {
                     formData={formData}
                     handleChange={handleChange}
                     errors={errors}
-                    piletasEngorda={piletasEngorda}
+                    infraestructurasFisicasEngorda={infraestructurasFisicasEngorda}
                   />
                 </Grid>
               </Grid>
@@ -839,10 +839,10 @@ export default function Reproductores() {
       </FormularioRegistroPanel>
 
       <Typography variant="h6" sx={{ mb: 0.5, fontWeight: "bold", color: "#023047" }}>
-        Estado actual por pileta
+        Estado actual por infraestructura física
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Muestra el último registro periódico de cada pileta. Fechas y días se calculan al consultar.
+        Muestra el último registro periódico de cada infraestructura física. Fechas y días se calculan al consultar.
       </Typography>
 
       <TablasPorUbicacionGranja
@@ -856,7 +856,7 @@ export default function Reproductores() {
                 <TableHead sx={{ backgroundColor: "#006d77" }}>
                   <TableRow>
                     <TableCell sx={headerCell}>ID</TableCell>
-                    <TableCell sx={headerCell}>Pileta</TableCell>
+                    <TableCell sx={headerCell}>Infraestructura física</TableCell>
                     <TableCell sx={headerCell}>Machos</TableCell>
                     <TableCell sx={headerCell}>Genética machos</TableCell>
                     <TableCell sx={headerCell}>Familia machos</TableCell>
@@ -904,20 +904,20 @@ export default function Reproductores() {
                           }}
                         >
                           <TableCell>{l._num}</TableCell>
-                          <TableCell>{l.nombre_pileta_destino || l.nombre_pileta || "—"}</TableCell>
+                          <TableCell>{l.nombre_infraestructura_fisica_destino || l.nombre_infraestructura_fisica || "—"}</TableCell>
                           <TableCell align="right">{formatCantidad(l.machos)}</TableCell>
                           <TableCell>{l.genetica_machos ?? "—"}</TableCell>
                           <TableCell>{l.familia_machos ?? "—"}</TableCell>
                           <TableCell>
                             <CeldaTipoProcedencia
                               valor={l.procedencia_machos}
-                              piletasEngorda={piletasEngorda}
+                              infraestructurasFisicasEngorda={infraestructurasFisicasEngorda}
                             />
                           </TableCell>
                           <TableCell>
                             {valorProcedenciaTabla(
                               l.procedencia_machos,
-                              piletasEngorda,
+                              infraestructurasFisicasEngorda,
                             )}
                           </TableCell>
                           <TableCell align="right">{formatCantidad(l.hembras)}</TableCell>
@@ -926,13 +926,13 @@ export default function Reproductores() {
                           <TableCell>
                             <CeldaTipoProcedencia
                               valor={l.procedencia_hembras}
-                              piletasEngorda={piletasEngorda}
+                              infraestructurasFisicasEngorda={infraestructurasFisicasEngorda}
                             />
                           </TableCell>
                           <TableCell>
                             {valorProcedenciaTabla(
                               l.procedencia_hembras,
-                              piletasEngorda,
+                              infraestructurasFisicasEngorda,
                             )}
                           </TableCell>
                           <TableCell align="right">{formatCantidad(l.cantidad_total)}</TableCell>
@@ -947,10 +947,10 @@ export default function Reproductores() {
                           <TableCell sx={{ maxWidth: 200, verticalAlign: "top" }}>
                             <CeldaObservacionConHistorial
                               texto={l.observacion ?? ""}
-                              piletaId={
-                                l.pileta_destino_id ?? l.pileta_id
+                              infraestructuraFisicaId={
+                                l.infraestructura_fisica_destino_id ?? l.infraestructura_fisica_id
                               }
-                              piletaNombre={l.nombre_pileta_destino || l.nombre_pileta}
+                              infraestructuraFisicaNombre={l.nombre_infraestructura_fisica_destino || l.nombre_infraestructura_fisica}
                               etapaLabel="Reproductores"
                               cargarHistorial={cargarHistorialObservaciones}
                             />

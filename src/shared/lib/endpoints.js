@@ -43,10 +43,10 @@ export const ENDPOINTS = {
     removeModulo: (rolId, moduloId) => `/roles-modulos/${rolId}/modulos/${moduloId}`,
   },
 
-  piletas: {
-    base: "/piletas",
-    byId: (id) => `/piletas/${id}`,
-    observaciones: (id) => `/piletas/${id}/observaciones`,
+  infraestructuraFisica: {
+    base: "/infraestructura-fisica",
+    byId: (id) => `/infraestructura-fisica/${id}`,
+    observaciones: (id) => `/infraestructura-fisica/${id}/observaciones`,
   },
 
   reproductores: {
@@ -220,12 +220,12 @@ export const ENDPOINTS = {
     deactivate: (id) => `/ubicaciones/${id}/deactivate`,
   },
 
-  tiposPileta: {
-    base: "/tipos-pileta",
-    activos: "/tipos-pileta/activos",
-    byId: (id) => `/tipos-pileta/${id}`,
-    activate: (id) => `/tipos-pileta/${id}/activate`,
-    deactivate: (id) => `/tipos-pileta/${id}/deactivate`,
+  tiposInfraestructuraFisica: {
+    base: "/tipos-infraestructura-fisica",
+    activos: "/tipos-infraestructura-fisica/activos",
+    byId: (id) => `/tipos-infraestructura-fisica/${id}`,
+    activate: (id) => `/tipos-infraestructura-fisica/${id}/activate`,
+    deactivate: (id) => `/tipos-infraestructura-fisica/${id}/deactivate`,
   },
 
   areasInstalacion: {

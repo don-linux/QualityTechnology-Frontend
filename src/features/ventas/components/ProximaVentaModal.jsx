@@ -32,7 +32,7 @@ const REQUIRED_FIELDS = [
   "precio_unitario",
 ];
 
-function stockPileta(p) {
+function stockInfraestructuraFisica(p) {
   return Number(p?.cantidad ?? 0);
 }
 
@@ -40,7 +40,7 @@ function formatStock(num) {
   return Number(num ?? 0).toLocaleString("en-US");
 }
 
-function ventaRequierePileta(tipo) {
+function ventaRequiereInfraestructuraFisica(tipo) {
   const t = String(tipo ?? "").trim().toUpperCase();
   return t === "ALEVIN" || t === "ALEVINES" || t === "KG" || t === "MOJARRA_KG";
 }
@@ -54,7 +54,7 @@ function buildEmptyForm(defaults = {}, nombreUsuario = "") {
     fecha_entrega: defaults.fecha_entrega ?? hoyISO(),
     tipo_venta: defaults.tipo_venta ?? "",
     granja: defaults.granja ?? "",
-    pileta_origen_id: defaults.pileta_origen_id ? String(defaults.pileta_origen_id) : "",
+    infraestructura_fisica_origen_id: defaults.infraestructura_fisica_origen_id ? String(defaults.infraestructura_fisica_origen_id) : "",
     cantidad_peces: defaults.cantidad_peces ?? "",
     cliente_nombre: defaults.cliente_nombre ?? "",
     lugar_entrega: defaults.lugar_entrega ?? "",
@@ -66,8 +66,8 @@ function buildEmptyForm(defaults = {}, nombreUsuario = "") {
   };
 }
 
-function idPileta(p) {
-  return p?.pileta_id ?? null;
+function idInfraestructuraFisica(p) {
+  return p?.infraestructura_fisica_id ?? null;
 }
 
 export default function ProximaVentaModal({
@@ -75,7 +75,7 @@ export default function ProximaVentaModal({
   onClose,
   onCreated,
   defaults = {},
-  piletas = [],
+  infraestructurasFisicas = [],
   lockTipoVenta = false,
   lockGranja = false,
 }) {
@@ -108,40 +108,40 @@ export default function ProximaVentaModal({
   }, [open, defaults, nombreUsuario, clearErrors, cargarClientes]);
 
   useEffect(() => {
-    if (!open || !ventaRequierePileta(form.tipo_venta)) return;
-    if (form.pileta_origen_id) return;
+    if (!open || !ventaRequiereInfraestructuraFisica(form.tipo_venta)) return;
+    if (form.infraestructura_fisica_origen_id) return;
 
-    const fromDefaults = defaults.pileta_origen_id ? String(defaults.pileta_origen_id) : "";
+    const fromDefaults = defaults.infraestructura_fisica_origen_id ? String(defaults.infraestructura_fisica_origen_id) : "";
     const unica =
-      piletas.length === 1 && idPileta(piletas[0]) ? String(idPileta(piletas[0])) : "";
-    const piletaId = fromDefaults || unica;
-    if (!piletaId) return;
+      infraestructurasFisicas.length === 1 && idInfraestructuraFisica(infraestructurasFisicas[0]) ? String(idInfraestructuraFisica(infraestructurasFisicas[0])) : "";
+    const infraestructuraFisicaId = fromDefaults || unica;
+    if (!infraestructuraFisicaId) return;
 
     setForm((prev) => {
-      if (prev.pileta_origen_id) return prev;
-      const pileta = piletas.find((p) => String(idPileta(p)) === piletaId);
-      const stock = pileta ? stockPileta(pileta) : 0;
+      if (prev.infraestructura_fisica_origen_id) return prev;
+      const infraestructuraFisica = infraestructurasFisicas.find((p) => String(idInfraestructuraFisica(p)) === infraestructuraFisicaId);
+      const stock = infraestructuraFisica ? stockInfraestructuraFisica(infraestructuraFisica) : 0;
       return {
         ...prev,
-        pileta_origen_id: piletaId,
+        infraestructura_fisica_origen_id: infraestructuraFisicaId,
         cantidad_peces: prev.cantidad_peces || (stock > 0 ? String(stock) : ""),
       };
     });
-  }, [open, defaults.pileta_origen_id, piletas, form.pileta_origen_id, form.tipo_venta]);
+  }, [open, defaults.infraestructura_fisica_origen_id, infraestructurasFisicas, form.infraestructura_fisica_origen_id, form.tipo_venta]);
 
-  const piletaOrigenSeleccionada = useMemo(() => {
-    if (!form.pileta_origen_id) return null;
+  const infraestructuraFisicaOrigenSeleccionada = useMemo(() => {
+    if (!form.infraestructura_fisica_origen_id) return null;
     return (
-      piletas.find(
-        (p) => String(p.pileta_id) === String(form.pileta_origen_id),
+      infraestructurasFisicas.find(
+        (p) => String(p.infraestructura_fisica_id) === String(form.infraestructura_fisica_origen_id),
       ) ?? null
     );
-  }, [form.pileta_origen_id, piletas]);
+  }, [form.infraestructura_fisica_origen_id, infraestructurasFisicas]);
 
   const cantidadPedido = Number(form.cantidad_peces ?? 0);
-  const stockOrigen = piletaOrigenSeleccionada != null ? stockPileta(piletaOrigenSeleccionada) : null;
+  const stockOrigen = infraestructuraFisicaOrigenSeleccionada != null ? stockInfraestructuraFisica(infraestructuraFisicaOrigenSeleccionada) : null;
   const requiereValidacionStock =
-    ventaRequierePileta(form.tipo_venta) && Boolean(form.pileta_origen_id);
+    ventaRequiereInfraestructuraFisica(form.tipo_venta) && Boolean(form.infraestructura_fisica_origen_id);
   const cantidadExcedeStock =
     requiereValidacionStock
     && stockOrigen != null
@@ -154,9 +154,9 @@ export default function ProximaVentaModal({
     clearFieldError(name);
   };
 
-  const validarPiletaYCantidad = () => {
-    if (ventaRequierePileta(form.tipo_venta) && !form.pileta_origen_id) {
-      showSnackbar("Seleccione la pileta de origen para ventas de alevines o mojarra.", "warning");
+  const validarInfraestructuraFisicaYCantidad = () => {
+    if (ventaRequiereInfraestructuraFisica(form.tipo_venta) && !form.infraestructura_fisica_origen_id) {
+      showSnackbar("Seleccione la infraestructura física de origen para ventas de alevines o mojarra.", "warning");
       return false;
     }
     if (cantidadExcedeStock) {
@@ -171,7 +171,7 @@ export default function ProximaVentaModal({
 
   const registrar = async () => {
     if (!validate(form, REQUIRED_FIELDS)) return;
-    if (!validarPiletaYCantidad()) return;
+    if (!validarInfraestructuraFisicaYCantidad()) return;
 
     setGuardando(true);
     try {
@@ -186,14 +186,14 @@ export default function ProximaVentaModal({
     }
   };
 
-  const etiquetaPileta = (p) => `${p.nombre} — ${formatStock(stockPileta(p))} org.`;
+  const etiquetaInfraestructuraFisica = (p) => `${p.nombre} — ${formatStock(stockInfraestructuraFisica(p))} org.`;
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Registrar próxima venta</DialogTitle>
       <DialogContent>
         <Alert severity="info" sx={{ mt: 1, mb: 2 }}>
-          Los campos de granja, tipo de venta y pileta se completan según el movimiento en curso.
+          Los campos de granja, tipo de venta e infraestructura física se completan según el movimiento en curso.
         </Alert>
 
         <Grid container spacing={2}>
@@ -241,28 +241,28 @@ export default function ProximaVentaModal({
             />
           </Grid>
 
-          {ventaRequierePileta(form.tipo_venta) && (
+          {ventaRequiereInfraestructuraFisica(form.tipo_venta) && (
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <TextField
                 select
                 fullWidth
-                label="Pileta origen"
-                name="pileta_origen_id"
-                value={form.pileta_origen_id}
+                label="Infraestructura física origen"
+                name="infraestructura_fisica_origen_id"
+                value={form.infraestructura_fisica_origen_id}
                 onChange={handleChange}
                 error={cantidadExcedeStock}
                 helperText={
                   cantidadExcedeStock
                     ? `Stock insuficiente: disponible ${formatStock(stockOrigen)}`
-                    : piletas.length === 0
-                      ? "No hay piletas con stock en esta granja"
+                    : infraestructurasFisicas.length === 0
+                      ? "No hay infraestructurasFisicas con stock en esta granja"
                       : "Referencia para el egreso en trazabilidad"
                 }
               >
                 <MenuItem value="">— Seleccionar —</MenuItem>
-                {piletas.map((p) => (
-                  <MenuItem key={p.pileta_id} value={String(p.pileta_id)}>
-                    {etiquetaPileta(p)}
+                {infraestructurasFisicas.map((p) => (
+                  <MenuItem key={p.infraestructura_fisica_id} value={String(p.infraestructura_fisica_id)}>
+                    {etiquetaInfraestructuraFisica(p)}
                   </MenuItem>
                 ))}
               </TextField>
