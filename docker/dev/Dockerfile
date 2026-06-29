@@ -1,6 +1,8 @@
-FROM oven/bun:1.3.12-alpine
+FROM node:24.16.0-slim
 
-RUN apk add --no-cache git openssh-client bash flock
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends git openssh-client \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

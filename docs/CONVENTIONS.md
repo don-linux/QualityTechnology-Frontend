@@ -1,6 +1,6 @@
 # Conventions
 
-This file records conventions that are **evident from repository configuration and code**. For additional editorial rules used by automation and contributors, see **`AGENTS.md`** and **`CLAUDE.md`** in the repository root (they may overlap; this doc does not replace them).
+This file records conventions that are **evident from repository configuration and code**. For additional editorial rules used by automation and contributors, see **`AGENTS.md`** in the repository root (it may overlap; this doc does not replace it).
 
 ## Language and modules
 
@@ -16,7 +16,9 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 - Semicolon-terminated statements
 - 2-space indentation
 
-**Unverified:** No `eslint.config.*`, `.eslintrc*`, or committed Prettier config was found in the repository. The dev container recommends the ESLint and Prettier VS Code extensions (`.devcontainer/devcontainer.json`); whether the team enforces rules via editor only or unpublished config is **unknown**.
+**Linting:** **oxlint** via **`npm run lint`** / **`npm run lint:fix`** (config: **`.oxlintrc.json`**, devDependency **`oxlint`**). The dev container recommends the **oxc.oxc-vscode** extension (`.devcontainer/devcontainer.json`).
+
+**Formatting:** No committed Prettier config was found. The dev container recommends **Prettier** (`esbenp.prettier-vscode`); whether formatting is enforced via editor only is **unknown**.
 
 ## React patterns
 
@@ -34,7 +36,7 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 
 ## API and configuration
 
-- **Environment:** Vite exposes variables prefixed with **`VITE_`**. Backend base URL is read as **`VITE_API_URL`** in `src/shared/lib/config.js` (falls back to `http://localhost:5000`).
+- **Environment:** Vite exposes variables prefixed with **`VITE_`**. Backend base URL is read as **`VITE_API_URL`** in `src/shared/lib/config.js` (falls back to `http://localhost:5000/api`).
 - **Service layer:** Each domain has service files under `features/<domain>/services/` that encapsulate all HTTP calls. Prefer importing service functions (`import { listUsuarios } from "../services/usuariosService"`) rather than using `axiosInstance` directly in components.
 - **HTTP instance:** `axiosInstance` lives at `@shared/lib/axiosInstance`. Service files already import it; components should not need to import it directly.
 - **Upload URLs:** Use `getUploadUrl` from `@shared/lib/uploadUrl` for authenticated file download/upload URLs.
@@ -47,10 +49,13 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 
 ## Docker / toolchain
 
-- **Lockfile:** `bun.lock` is present; production Dockerfile uses **`bun install --frozen-lockfile`**.
-- **Dev container and Docker dev service** use **Bun** to install dependencies and run `bun run dev` (see `.devcontainer/devcontainer.json`, `docker/dev/compose.yaml`, `docker/dev/Dockerfile`).
+- **Runtime:** Node.js **24.x** and **npm** (dev image: `node:24.16.0-slim` in `docker/dev/Dockerfile`).
+- **Lockfile:** **`package-lock.json`**. Reproducible installs: **`npm ci`** (production Docker build).
+- **Dev container:** `postCreateCommand` → `npm install`; `postStartCommand` → `npm run dev` (`.devcontainer/devcontainer.json`).
+- **Docker dev service:** `npm install && npm run dev` (`docker/dev/compose.yaml`).
+- **Production Docker:** build with **`npm ci`** and **`npm run build`** (`docker/prod/Dockerfile`).
 
-**Local and container workflows** use **Bun** (`bun install`, `bun run …`). Do not assume `npm`, `npx`, `node`, or `yarn` are available in the standard dev environment; compatibility with those tools is **unverified**.
+Local and container workflows use **`npm install`**, **`npm run …`**, and **`npx`** for one-off tools. See **`docs/COMMANDS.md`** for script names.
 
 ## Static assets
 

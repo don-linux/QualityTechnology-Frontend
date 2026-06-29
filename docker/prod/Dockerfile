@@ -1,19 +1,19 @@
 # Stage 1: Build the application
-FROM oven/bun:1.3.12-alpine AS build
+FROM node:24.16.0-alpine AS build
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lock ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN bun install --frozen-lockfile
+RUN npm ci
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN bun run build
+RUN npm run build
 
 # Stage 2: Production image
 FROM alpine:3.23.4

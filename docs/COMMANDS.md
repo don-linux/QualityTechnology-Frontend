@@ -1,6 +1,24 @@
 # Commands
 
-All script names below come from **`package.json` `scripts`**. The runtime used in Docker and the dev container is **Bun** (see `docker/dev/Dockerfile`, `docker/prod/Dockerfile`, `.devcontainer/devcontainer.json`). Invoking scripts with **`bun run <script>`** matches the committed containerized workflow. The repository also contains older `npm` examples in `README.md`, but those are not the runtime used by the current container/devcontainer setup.
+Source of truth for setup, scripts, and container workflows. Script names come from **`package.json` `scripts`**.
+
+## Prerequisites
+
+- **Node.js 24.x** (dev image: `node:24.16.0-slim` in `docker/dev/Dockerfile`)
+- **npm** (ships with Node)
+
+## Local setup
+
+```bash
+npm install
+npm run dev
+```
+
+Dev server: **http://localhost:3000** (`vite.config.js`: port **3000**, `host: true`).
+
+Optional backend URL: set **`VITE_API_URL`** for Vite (read in `src/shared/lib/config.js`; default `http://localhost:5000/api`). Vite loads `.env` files per its usual rules.
+
+## npm scripts
 
 | Script | Command (from `package.json`) | Purpose |
 | ------ | ----------------------------- | ------- |
@@ -9,27 +27,69 @@ All script names below come from **`package.json` `scripts`**. The runtime used 
 | `build` | `vite build` | Production build to `dist/` |
 | `test` | `vitest run` | Run tests once |
 | `test:watch` | `vitest` | Run Vitest in watch mode |
+| `lint` | `oxlint src/` | Lint source with oxlint |
+| `lint:fix` | `oxlint --fix src/` | Lint and apply safe fixes |
 
-**Dev server defaults** (from `vite.config.js`): port **3000**, `host: true` (listen on all interfaces). **Test config:** `globals: true`, `environment: 'jsdom'`, `setupFiles: './src/setupTests.js'`.
+**Test config** (`vite.config.js`): `globals: true`, `environment: 'jsdom'`, `setupFiles: './src/setupTests.js'`.
 
-## Setup
+## Reproducible installs
 
-1. Install dependencies: **`bun install`** (dev container uses `bun install --frozen-lockfile` when possible, then falls back—see `.devcontainer/devcontainer.json`).
-2. Optional backend URL: set **`VITE_API_URL`** for Vite (see `src/utils/config.js`). **Unverified:** whether a root `.env` or `.env.local` is standard for this team; Vite loads env files per its usual rules.
+Use **`npm ci`** when you need a clean install from the lockfile (CI, production Docker build, or matching another machine exactly). Requires an up-to-date **`package-lock.json`**.
+
+```bash
+npm ci
+```
+
+## Dev container
+
+Open the repo in VS Code / Cursor with Dev Containers using **`.devcontainer/devcontainer.json`**.
+
+- Compose files: **`docker/dev/compose.yaml`** + **`.devcontainer/compose.yaml`**
+- **`postCreateCommand`:** `npm install`
+- **`postStartCommand`:** `npm run dev`
+- Port **3000** forwarded
+- Recommended extension: **`oxc.oxc-vscode`** (oxlint)
+
+The dev service image is **`node:24.16.0-slim`** (`docker/dev/Dockerfile`).
 
 ## Docker (optional)
 
 Sources: `docker/dev/compose.yaml`, `docker/prod/compose.yaml`, and `docker/dev/.env.example` / `docker/prod/.env.example`.
 
-- **Dev compose** expects environment variables such as **`DOCKER_DEV_NAME`** and **`DOCKER_DEV_REACT_PORT`** (see `docker/dev/.env.example`). The React service runs `bun install && bun run dev` inside the container.
-- **Prod compose** uses **`DOCKER_PROD_NAME`** (see `docker/prod/.env.example`). The service copies built artifacts from the image’s `/app/dist` to a mounted volume; exact deployment wiring is **unverified** beyond the compose file.
+### Development
 
-Exact `docker compose` invocations (working directory, project name) are **not** defined in the files inspected; use Compose’s usual `-f` / `--env-file` flags from your environment.
+- Env vars: **`DOCKER_DEV_NAME`**, **`DOCKER_DEV_REACT_PORT`** (see `docker/dev/.env.example`)
+- Service command: `npm install && npm run dev`
+- Maps `${DOCKER_DEV_REACT_PORT}:3000`
 
-## Dev Containers
+Example:
 
-Open the folder in VS Code / Cursor with Dev Containers support using **`.devcontainer/devcontainer.json`**, which references **`../docker/dev/compose.yaml`** and an additional **`.devcontainer/compose.yaml`** override.
+```bash
+docker compose -f docker/dev/compose.yaml --env-file docker/dev/.env.example up
+```
+
+Adjust `--env-file` and paths to your environment.
+
+### Production
+
+- Env var: **`DOCKER_PROD_NAME`** (see `docker/prod/.env.example`)
+- Build stage: **`node:24.16.0-alpine`**, **`npm ci`**, **`npm run build`** (`docker/prod/Dockerfile`)
+- Final image copies **`dist/`**; compose mounts `../../dist` and copies artifacts from the container
+
+Example:
+
+```bash
+docker compose -f docker/prod/compose.yaml --env-file docker/prod/.env.example up --build
+```
+
+## One-off tools (npx)
+
+```bash
+npx -y react-doctor@latest . --verbose --diff
+```
+
+See **`.agents/skills/react-doctor/SKILL.md`** for when to run it.
 
 ## CI
 
-No **`.github/workflows`** (or similar) were found in the repository at documentation time; automated CI commands are **unverified**.
+No **`.github/workflows`** (or similar) were found in the repository; automated CI commands are **unverified**.
