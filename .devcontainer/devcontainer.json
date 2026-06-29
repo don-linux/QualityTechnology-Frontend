@@ -1,43 +1,25 @@
 {
-  "name": "react-dev",
+  "name": "quality-frontend",
   "dockerComposeFile": ["../docker/dev/compose.yaml", "compose.yaml"],
   "service": "react",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-  "containerUser": "bun",
-  "remoteUser": "bun",
+  "containerUser": "node",
+  "remoteUser": "node",
   "overrideCommand": false,
   "forwardPorts": [3000],
-  "postCreateCommand": "bun install",
-  "postStartCommand": "bun run dev",
-  "remoteEnv": {
-    "SHELL": "/bin/bash"
-  },
+  "postCreateCommand": "npm install",
+  "postStartCommand": "npm run dev",
   "customizations": {
-    "vscode": {
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "terminal.integrated.profiles.linux": {
-          "bash": {
-            "path": "/bin/bash"
-          }
-        },
-        "terminal.integrated.automationProfile.linux": {
-          "path": "/bin/bash"
-        }
-      },
       "extensions": [
-        "dsznajder.es7-react-js-snippets",
         "esbenp.prettier-vscode",
         "christian-kohler.path-intellisense",
         "PKief.material-icon-theme",
-        "GitHub.copilot-chat",
-        "GitHub.copilot",
         "oxc.oxc-vscode",
         "EditorConfig.EditorConfig",
         "ms-azuretools.vscode-docker",
         "ms-vscode-remote.remote-containers",
-        "ms-azuretools.vscode-containers"
+        "anysphere.remote-containers"
+        //"ms-azuretools.vscode-containers"
       ]
     }
-  }
 }
