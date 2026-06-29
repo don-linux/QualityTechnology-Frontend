@@ -101,7 +101,7 @@ All inter-module imports use these aliases instead of relative paths.
 - **`src/shared/lib/auth.js`:** `isAuthenticated()` checks for a `token` in `localStorage`; `logout` clears storage and redirects to `/login`.
 - **`src/shared/lib/axiosInstance.js`:** Shared axios instance with `baseURL` from config. Request interceptor injects `Authorization: Bearer <token>`; response interceptor retries on 401/403 after refresh.
 - **`src/shared/lib/tokenRefresh.js`:** Uses native `fetch()` (not axios) to avoid circular dependency with the axios interceptors.
-- **Backend base URL:** **`src/shared/lib/config.js`** sets `API_URL` from `import.meta.env.VITE_API_URL`, defaulting to `http://localhost:5000`.
+- **Backend base URL:** **`src/shared/lib/config.js`** sets `API_URL` from `import.meta.env.VITE_API_URL`, defaulting to `http://localhost:5000/api`.
 
 ## API access pattern
 
@@ -114,6 +114,6 @@ All inter-module imports use these aliases instead of relative paths.
 
 ## Container and dev environment
 
-- **Dev container** (`.devcontainer/devcontainer.json`): Docker Compose-based, Bun runtime, port **3000** forwarded.
-- **Dev Docker Compose** (`docker/dev/compose.yaml`): builds from `docker/dev/Dockerfile`, bind-mounts the repo, runs `bun install && bun run dev`.
-- **Production Docker** (`docker/prod/`): multi-stage image, builds with `bun run build`, final stage serves `dist`.
+- **Dev container** (`.devcontainer/devcontainer.json`): Docker Compose-based, **Node.js 24.x** + **npm**, port **3000** forwarded; `npm install` on create, `npm run dev` on start.
+- **Dev Docker Compose** (`docker/dev/compose.yaml`): image `node:24.16.0-slim` (`docker/dev/Dockerfile`), bind-mounts the repo, runs `npm install && npm run dev`.
+- **Production Docker** (`docker/prod/`): multi-stage image on **Node 24**, **`npm ci`** + **`npm run build`**, final stage copies **`dist/`** to a mounted volume.
