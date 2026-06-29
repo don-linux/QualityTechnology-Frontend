@@ -1,5 +1,5 @@
 {
-  "name": "QualityTechnology-Frontend",
+  "name": "qualityfrontend",
   "dockerComposeFile": ["../docker/dev/compose.yaml", "compose.yaml"],
   "service": "react",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -8,7 +8,7 @@
   "overrideCommand": false,
   "forwardPorts": [3000],
   "postCreateCommand": "bun install",
-  "postAttachCommand": "bun run dev",
+  "postStartCommand": "bun run dev",
   "remoteEnv": {
     "SHELL": "/bin/bash"
   },
