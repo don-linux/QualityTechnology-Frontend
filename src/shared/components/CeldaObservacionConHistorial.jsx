@@ -47,7 +47,7 @@ const ETIQUETA_PROCESO = {
   controlFaunaNociva: "Control de Fauna Nociva",
   controlVisitas: "Control de Visitas",
   controlLimpieza: "Control de Limpieza",
-  recepcion_insumos: "Recepción insumos",
+  flujo_insumos: "Flujo de insumos",
 };
 
 function etiquetaProceso(proceso) {

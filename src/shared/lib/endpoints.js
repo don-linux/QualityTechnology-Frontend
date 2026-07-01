@@ -293,10 +293,10 @@ export const ENDPOINTS = {
       base: "/alimentacion",
       byId: (id) => `/alimentacion/${id}`,
     },
-    recepcionInsumos: {
-      base: "/recepcion_insumos",
-      empleados: "/recepcion_insumos/empleados",
-      byId: (id) => `/recepcion_insumos/${id}`,
+    flujoInsumos: {
+      base: "/flujo_insumos",
+      empleados: "/flujo_insumos/empleados",
+      byId: (id) => `/flujo_insumos/${id}`,
     },
     controlVisitas: {
       base: "/control-visitas",
