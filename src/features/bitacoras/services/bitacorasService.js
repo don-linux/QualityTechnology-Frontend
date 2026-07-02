@@ -20,19 +20,19 @@ export function updateControlFaunaNociva(id, data) {
 }
 
 /* =====================================================
-   Recepción de Insumos
+   Flujo de insumos
 ===================================================== */
-export function listEmpleadosRecepcionInsumos() {
-  return axios.get(B.recepcionInsumos.empleados);
+export function listEmpleadosFlujoInsumos() {
+  return axios.get(B.flujoInsumos.empleados);
 }
-export function listRecepcionInsumos(ubicacion) {
-  return axios.get(B.recepcionInsumos.base, { params: { ubicacion } });
+export function listFlujoInsumos(ubicacion) {
+  return axios.get(B.flujoInsumos.base, { params: { ubicacion } });
 }
-export function createRecepcionInsumo(data) {
-  return axios.post(B.recepcionInsumos.base, data);
+export function createFlujoInsumo(data) {
+  return axios.post(B.flujoInsumos.base, data);
 }
-export function updateRecepcionInsumo(id, data) {
-  return axios.put(B.recepcionInsumos.byId(id), data);
+export function updateFlujoInsumo(id, data) {
+  return axios.put(B.flujoInsumos.byId(id), data);
 }
 
 /* =====================================================
