@@ -271,6 +271,7 @@ function ControlLimpiezaContent() {
         grupos={gruposUbicacion}
         renderTabla={renderTablaControlLimpieza}
         buscar
+        filtroFecha
         searchKeys={["tipo_instalacion", "realizado_por", "observaciones"]}
         placeholderBusqueda="Buscar tipo, responsable u observaciones"
         exportar={{
