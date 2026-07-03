@@ -65,7 +65,8 @@ src/
 │       ├── components/ModulosPorRol.jsx
 │       └── services/seguridadService.js
 ├── shared/                       # Cross-cutting concerns
-│   ├── components/               # PageHeader, PasswordField, Copyright, SinAcceso
+│   ├── components/               # PageHeader, TablasPorUbicacionGranja, SinAcceso, ...
+│   │   └── listado/              # Modular listado filters, toolbar, export modal (see docs/HOW_TO_ADD_LISTADO_FILTERS.md)
 │   ├── layout/AppLayout.jsx
 │   ├── guards/PrivateRoute.jsx
 │   ├── hooks/                    # useConfirm, useFormValidation
@@ -107,6 +108,14 @@ All inter-module imports use these aliases instead of relative paths.
 
 - **Service files** under `features/<domain>/services/` encapsulate all HTTP calls for each domain. Import the specific service function rather than using `axiosInstance` directly in components.
 - **`src/shared/lib/uploadUrl.js`** exports `getUploadUrl(path)` for building authenticated download/upload URLs.
+
+## Location-grouped listados (`TablasPorUbicacionGranja`)
+
+Many bitácora and inventario screens render one accordion per farm/location, each with an optional filter toolbar and PDF/Excel export. The shell component is **`src/shared/components/TablasPorUbicacionGranja.jsx`** (import path unchanged for consumers).
+
+Filtering is modular: tables declare enabled filter ids and per-filter config; a registry under **`src/shared/components/listado/filtros/`** supplies UI and pure apply logic; **`useFiltrosListado`** wires state and separates view rows from export rows. Export date range is chosen in a modal and is independent of the on-screen date filter.
+
+Full API, filter contract, export behavior, and extension guide: **`docs/HOW_TO_ADD_LISTADO_FILTERS.md`**.
 
 ## Build and artifacts
 

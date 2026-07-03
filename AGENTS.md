@@ -30,3 +30,4 @@ Use these aliases for imports between modules. Avoid fragile relative paths acro
 - System shape, routing, auth, and containers: **`docs/ARCHITECTURE.md`**
 - Style, MUI, API patterns, testing, linting: **`docs/CONVENTIONS.md`**
 - Setup, scripts, Docker, dev container: **`docs/COMMANDS.md`**
+- Listado filters, export, `TablasPorUbicacionGranja`: **`docs/HOW_TO_ADD_LISTADO_FILTERS.md`**
