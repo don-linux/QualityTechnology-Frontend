@@ -8,7 +8,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
-import ExcelIcon from "./ExcelIcon";
+import ExcelIcon from "../ExcelIcon";
 
 const FECHAS_VACIAS = { desde: "", hasta: "" };
 

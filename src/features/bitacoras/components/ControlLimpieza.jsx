@@ -270,10 +270,13 @@ function ControlLimpiezaContent() {
       <TablasPorUbicacionGranja
         grupos={gruposUbicacion}
         renderTabla={renderTablaControlLimpieza}
-        buscar
-        filtroFecha
-        searchKeys={["tipo_instalacion", "realizado_por", "observaciones"]}
-        placeholderBusqueda="Buscar tipo, responsable u observaciones"
+        filtros={["busqueda", "fechas"]}
+        filtroConfig={{
+          busqueda: {
+            keys: ["tipo_instalacion", "realizado_por", "observaciones"],
+            placeholder: "Buscar tipo, responsable u observaciones",
+          },
+        }}
         exportar={{
           columnas,
           titulo: "Control de Limpieza",

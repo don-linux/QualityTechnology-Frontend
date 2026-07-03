@@ -1,16 +1,12 @@
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
-import ExcelIcon from "./ExcelIcon";
+import ExcelIcon from "../ExcelIcon";
 
 /**
  * Excel and PDF export buttons for listado toolbars.
  */
-export default function BotonesExportar({
-  onExportarExcel,
-  onExportarPDF,
-  exportDisabled = false,
-}) {
+export default function BotonesExportar({ onExportarExcel, onExportarPDF }) {
   return (
     <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
       <Button
@@ -19,7 +15,6 @@ export default function BotonesExportar({
         color="success"
         startIcon={<ExcelIcon />}
         onClick={onExportarExcel}
-        disabled={exportDisabled}
         sx={{ textTransform: "none", fontWeight: 600 }}
       >
         Excel
@@ -30,7 +25,6 @@ export default function BotonesExportar({
         color="error"
         startIcon={<PictureAsPdfRoundedIcon />}
         onClick={onExportarPDF}
-        disabled={exportDisabled}
         sx={{ textTransform: "none", fontWeight: 600 }}
       >
         PDF

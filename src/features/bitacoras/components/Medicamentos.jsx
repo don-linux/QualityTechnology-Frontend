@@ -333,9 +333,13 @@ function MedicamentosContent() {
       <TablasPorUbicacionGranja
         grupos={gruposUbicacion}
         renderTabla={renderTabla}
-        buscar
-        searchKeys={["nombre_instalacion", "diagnostico", "farmaco"]}
-        placeholderBusqueda="Buscar instalación, diagnóstico o fármaco"
+        filtros={["busqueda"]}
+        filtroConfig={{
+          busqueda: {
+            keys: ["nombre_instalacion", "diagnostico", "farmaco"],
+            placeholder: "Buscar instalación, diagnóstico o fármaco",
+          },
+        }}
         exportar={{
           columnas,
           titulo: "Aplicación de Medicamentos",

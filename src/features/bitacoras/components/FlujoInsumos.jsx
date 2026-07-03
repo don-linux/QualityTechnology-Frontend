@@ -486,9 +486,6 @@ function FlujoInsumosContent() {
       <TablasPorUbicacionGranja
         grupos={gruposUbicacion}
         renderTabla={renderTabla}
-        buscar
-        searchKeys={["codigo", "producto", "insumo_nombre", "destino", "responsable"]}
-        placeholderBusqueda="Buscar folio, producto, destino o responsable"
         exportar={{
           columnas,
           titulo: "Flujo de insumos",

@@ -6,38 +6,19 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ListadoToolbar from "./ListadoToolbar";
-import DialogExportarListado from "./DialogExportarListado";
+import ListadoToolbar from "./listado/ListadoToolbar";
+import DialogExportarListado from "./listado/DialogExportarListado";
+import useFiltrosListado from "./listado/useFiltrosListado";
 import useNombreImpresion from "@shared/hooks/useNombreImpresion";
 import {
   exportarTablaPDF,
   exportarTablaExcel,
   calcularRangoFechas,
 } from "@shared/utils/exportarTabla";
-import { toInputDate } from "@shared/utils/formatters";
-
-function filtrarFilas(rows, query, searchKeys, filtrar) {
-  const q = query.trim().toLowerCase();
-  if (!q) return rows;
-  if (typeof filtrar === "function") return rows.filter((row) => filtrar(row, q));
-  if (!searchKeys?.length) return rows;
-  return rows.filter((row) =>
-    searchKeys.some((key) => String(row[key] ?? "").toLowerCase().includes(q)),
-  );
-}
-
-function filtrarFilasPorFecha(rows, fechas, campoFecha) {
-  const { desde, hasta } = fechas || {};
-  if (!desde && !hasta) return rows;
-
-  return rows.filter((row) => {
-    const iso = toInputDate(row[campoFecha]);
-    if (!iso) return false;
-    if (desde && iso < desde) return false;
-    if (hasta && iso > hasta) return false;
-    return true;
-  });
-}
+import {
+  REGISTRO_FILTROS,
+  rangoFechasDesdeSeleccion,
+} from "./listado/filtros/registroFiltros";
 
 const resolverColumnas = (exportar) =>
   exportar
@@ -46,19 +27,19 @@ const resolverColumnas = (exportar) =>
       : exportar.columnas
     : null;
 
-const rangoFechasDesdeSeleccion = (fechas) => {
-  if (!fechas?.desde && !fechas?.hasta) return null;
-  return {
-    desde: fechas.desde || null,
-    hasta: fechas.hasta || null,
-  };
-};
+function resolverConfigFiltros(filtros, filtroConfig, campoFecha) {
+  const config = { ...filtroConfig };
 
-/**
- * Un listado (acordeón) por sede/granja: muestra el conteo de registros en el
- * resumen y, opcionalmente, una barra con búsqueda en cliente + exportación
- * (Excel/PDF) que actúa solo sobre las filas de ESE listado.
- */
+  if (filtros.includes("fechas")) {
+    config.fechas = {
+      ...(filtroConfig?.fechas ?? {}),
+      campo: filtroConfig?.fechas?.campo ?? campoFecha,
+    };
+  }
+
+  return config;
+}
+
 function ListadoUbicacionItem({
   value,
   label,
@@ -67,37 +48,26 @@ function ListadoUbicacionItem({
   defaultExpanded,
   accordionSx,
   detailsSx,
-  buscar,
-  searchKeys,
-  filtrar,
-  placeholderBusqueda,
+  filtros,
+  filtroConfig,
+  campoFecha,
   exportar,
   getLogo,
   getColor,
-  mostrarConteo,
-  filtroFecha,
-  campoFecha,
 }) {
-  const [busqueda, setBusqueda] = useState("");
-  const [fechasVista, setFechasVista] = useState({ desde: "", hasta: "" });
+  const config = useMemo(
+    () => resolverConfigFiltros(filtros, filtroConfig, campoFecha),
+    [filtros, filtroConfig, campoFecha],
+  );
+
+  const { valores, setFiltro, filas, filasExportacion, hayFiltroActivo } = useFiltrosListado({
+    rows,
+    filtros,
+    config,
+  });
+
   const [modalExport, setModalExport] = useState({ open: false, formato: "pdf" });
   const impresoPor = useNombreImpresion();
-
-  const filas = useMemo(() => {
-    let result = rows;
-    if (buscar) {
-      result = filtrarFilas(result, busqueda, searchKeys, filtrar);
-    }
-    if (filtroFecha) {
-      result = filtrarFilasPorFecha(result, fechasVista, campoFecha);
-    }
-    return result;
-  }, [rows, buscar, busqueda, searchKeys, filtrar, filtroFecha, fechasVista, campoFecha]);
-
-  const filasBaseExportacion = useMemo(() => {
-    if (!buscar) return rows;
-    return filtrarFilas(rows, busqueda, searchKeys, filtrar);
-  }, [rows, buscar, busqueda, searchKeys, filtrar]);
 
   const rangoDatosDisponibles = useMemo(
     () => calcularRangoFechas(rows, campoFecha),
@@ -106,9 +76,6 @@ function ListadoUbicacionItem({
 
   const total = rows.length;
   const visibles = filas.length;
-  const hayBusqueda = buscar && busqueda.trim().length > 0;
-  const hayFiltroFecha = filtroFecha && (fechasVista.desde || fechasVista.hasta);
-  const hayFiltroActivo = hayBusqueda || hayFiltroFecha;
   const conteoLabel = hayFiltroActivo
     ? `${visibles} de ${total}`
     : `${total} ${total === 1 ? "registro" : "registros"}`;
@@ -117,16 +84,20 @@ function ListadoUbicacionItem({
   const logo = getLogo ? getLogo(value) : undefined;
 
   const fechasInicialesModal = useMemo(() => {
-    if (hayFiltroFecha) {
+    const fechasVista = valores.fechas;
+    if (fechasVista?.desde || fechasVista?.hasta) {
       return { desde: fechasVista.desde, hasta: fechasVista.hasta };
     }
     return { desde: "", hasta: "" };
-  }, [hayFiltroFecha, fechasVista.desde, fechasVista.hasta]);
+  }, [valores.fechas]);
 
   const contarFilasExportacion = useCallback(
-    (fechasExportacion) =>
-      filtrarFilasPorFecha(filasBaseExportacion, fechasExportacion, campoFecha).length,
-    [filasBaseExportacion, campoFecha],
+    (fechasExportacion) => {
+      const filtroFechas = REGISTRO_FILTROS.fechas;
+      if (!filtroFechas) return filasExportacion.length;
+      return filtroFechas.aplicar(filasExportacion, fechasExportacion, config.fechas ?? {}).length;
+    },
+    [filasExportacion, config.fechas],
   );
 
   const ejecutarExportacion = useCallback(
@@ -134,11 +105,11 @@ function ListadoUbicacionItem({
       const columnas = resolverColumnas(exportar);
       if (!columnas) return;
 
-      const filasExport = filtrarFilasPorFecha(
-        filasBaseExportacion,
-        fechasExportacion,
-        campoFecha,
-      );
+      const filtroFechas = REGISTRO_FILTROS.fechas;
+      const filasExport = filtroFechas
+        ? filtroFechas.aplicar(filasExportacion, fechasExportacion, config.fechas ?? {})
+        : filasExportacion;
+
       const rangoFechas = rangoFechasDesdeSeleccion(fechasExportacion);
       const opciones = { impresoPor, rangoFechas };
 
@@ -166,7 +137,7 @@ function ListadoUbicacionItem({
 
       setModalExport({ open: false, formato: "pdf" });
     },
-    [exportar, filasBaseExportacion, campoFecha, impresoPor, label, color, logo],
+    [exportar, filasExportacion, config.fechas, impresoPor, label, color, logo],
   );
 
   const abrirModalExport = (formato) => {
@@ -181,7 +152,7 @@ function ListadoUbicacionItem({
     setModalExport((prev) => ({ ...prev, open: false }));
   };
 
-  const mostrarToolbar = Boolean(buscar || exportar || filtroFecha);
+  const mostrarToolbar = filtros.length > 0 || Boolean(exportar);
 
   return (
     <>
@@ -189,29 +160,24 @@ function ListadoUbicacionItem({
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, width: "100%" }}>
             <Typography fontWeight="bold">{label}</Typography>
-            {mostrarConteo && (
-              <Chip
-                size="small"
-                label={conteoLabel}
-                sx={{
-                  fontWeight: 600,
-                  color: "#fff",
-                  bgcolor: Array.isArray(color) ? `rgb(${color.join(",")})` : "primary.main",
-                }}
-              />
-            )}
+            <Chip
+              size="small"
+              label={conteoLabel}
+              sx={{
+                fontWeight: 600,
+                color: "#fff",
+                bgcolor: Array.isArray(color) ? `rgb(${color.join(",")})` : "primary.main",
+              }}
+            />
           </Box>
         </AccordionSummary>
         <AccordionDetails sx={{ p: 0, ...detailsSx }}>
           {mostrarToolbar && (
             <ListadoToolbar
-              busqueda={busqueda}
-              onBuscar={setBusqueda}
-              placeholder={placeholderBusqueda}
-              mostrarBusqueda={Boolean(buscar)}
-              fechas={fechasVista}
-              onFechas={setFechasVista}
-              mostrarFechas={Boolean(filtroFecha)}
+              filtros={filtros}
+              config={config}
+              valores={valores}
+              onFiltro={setFiltro}
               mostrarExportar={Boolean(exportar)}
               onExportarExcel={() => abrirModalExport("excel")}
               onExportarPDF={() => abrirModalExport("pdf")}
@@ -240,11 +206,10 @@ function ListadoUbicacionItem({
  * Una tabla (renderTabla) por cada sede/granja, en acordeones (patrón Recambios).
  *
  * Props opcionales para homogeneizar listados:
- * - `buscar`: habilita la barra de búsqueda en cliente por listado.
- * - `searchKeys` / `filtrar`: campos a filtrar, o un predicado `(row, q) => bool`.
- * - `filtroFecha`: habilita filtro por rango de fechas en el toolbar.
+ * - `filtros`: ids activos del registry, ej. `["busqueda", "fechas"]`.
+ * - `filtroConfig`: config por id, ej. `{ busqueda: { keys, placeholder } }`.
  * - `campoFecha`: campo de fecha en cada fila (default `"fecha"`).
- * - `exportar`: `{ columnas, titulo, subtitulo, nombreArchivo, campoFecha? }`.
+ * - `exportar`: `{ columnas, titulo, subtitulo, nombreArchivo }`.
  * - `getLogo` / `getColor`: resuelven logo y color por ubicación (`value`).
  */
 export default function TablasPorUbicacionGranja({
@@ -253,20 +218,14 @@ export default function TablasPorUbicacionGranja({
   defaultExpanded = false,
   accordionSx,
   detailsSx,
-  buscar = false,
-  searchKeys,
-  filtrar,
-  placeholderBusqueda = "Buscar...",
+  filtros = [],
+  filtroConfig = {},
   exportar,
   getLogo,
   getColor,
-  mostrarConteo = true,
-  filtroFecha = false,
   campoFecha = "fecha",
 }) {
   if (!grupos?.length) return null;
-
-  const campoFechaResuelto = exportar?.campoFecha || campoFecha;
 
   return grupos.map(({ value, label, rows }) => (
     <ListadoUbicacionItem
@@ -278,16 +237,12 @@ export default function TablasPorUbicacionGranja({
       defaultExpanded={defaultExpanded}
       accordionSx={accordionSx}
       detailsSx={detailsSx}
-      buscar={buscar}
-      searchKeys={searchKeys}
-      filtrar={filtrar}
-      placeholderBusqueda={placeholderBusqueda}
+      filtros={filtros}
+      filtroConfig={filtroConfig}
       exportar={exportar}
       getLogo={getLogo}
       getColor={getColor}
-      mostrarConteo={mostrarConteo}
-      filtroFecha={filtroFecha}
-      campoFecha={campoFechaResuelto}
+      campoFecha={campoFecha}
     />
   ));
 }

@@ -3,24 +3,20 @@ import ListadoFiltros from "./ListadoFiltros";
 import BotonesExportar from "./BotonesExportar";
 
 /**
- * Toolbar shown at the top of each listado: filters (search + date range)
- * plus Excel and PDF export buttons. Export buttons are disabled when there
- * are no rows to export.
+ * Toolbar at the top of each listado: registry-driven filters plus export buttons.
  */
 export default function ListadoToolbar({
-  busqueda = "",
-  onBuscar,
-  placeholder = "Buscar...",
-  mostrarBusqueda = true,
-  fechas = { desde: "", hasta: "" },
-  onFechas,
-  mostrarFechas = false,
+  filtros = [],
+  config = {},
+  valores = {},
+  onFiltro,
   onExportarExcel,
   onExportarPDF,
-  exportDisabled = false,
   mostrarExportar = true,
 }) {
-  const mostrarFiltros = mostrarBusqueda || mostrarFechas;
+  const mostrarFiltros = filtros.length > 0;
+
+  if (!mostrarFiltros && !mostrarExportar) return null;
 
   return (
     <Box
@@ -39,13 +35,10 @@ export default function ListadoToolbar({
     >
       {mostrarFiltros && (
         <ListadoFiltros
-          busqueda={busqueda}
-          onBuscar={onBuscar}
-          placeholder={placeholder}
-          mostrarBusqueda={mostrarBusqueda}
-          fechas={fechas}
-          onFechas={onFechas}
-          mostrarFechas={mostrarFechas}
+          filtros={filtros}
+          config={config}
+          valores={valores}
+          onFiltro={onFiltro}
         />
       )}
 
@@ -55,7 +48,6 @@ export default function ListadoToolbar({
         <BotonesExportar
           onExportarExcel={onExportarExcel}
           onExportarPDF={onExportarPDF}
-          exportDisabled={exportDisabled}
         />
       )}
     </Box>
