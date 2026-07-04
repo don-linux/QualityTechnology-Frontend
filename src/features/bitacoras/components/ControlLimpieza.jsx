@@ -15,8 +15,10 @@ import {
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useEmpleadosActivos from "@shared/hooks/useEmpleadosActivos";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoResponsableEmpleado from "@shared/components/CampoResponsableEmpleado";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
@@ -43,21 +45,21 @@ function ControlLimpiezaContent() {
   const [form, setForm] = useState({
     fecha: "",
     tipo_instalacion: "",
-    realizado_por: "",
+    responsable: "",
     observaciones: "",
     usuario_id: usuarioId,
     ubicacion: "",
   });
 
   const [data, setData] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
+  const { empleados } = useEmpleadosActivos(listEmpleadosControlLimpieza);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
   const { visible: mostrarFormulario, abrir: abrirFormulario, cerrar: cerrarFormulario, toggle: toggleFormulario } = useFormularioVisible();
 
   const requiredFields = [
     "fecha", "tipo_instalacion",
-    "realizado_por", "observaciones", "ubicacion",
+    "responsable", "observaciones", "ubicacion",
   ];
 
   const handleChange = (e) => {
@@ -74,18 +76,8 @@ function ControlLimpiezaContent() {
     }
   };
 
-  const cargarEmpleados = async () => {
-    try {
-      const res = await listEmpleadosControlLimpieza();
-      setEmpleados(res.data);
-    } catch {
-      showSnackbar("Error al cargar empleados.", "error");
-    }
-  };
-
   useEffect(() => {
     cargarDatos();
-    cargarEmpleados();
   }, []);
 
   useEffect(() => {
@@ -108,7 +100,7 @@ function ControlLimpiezaContent() {
       setForm({
         fecha: "",
         tipo_instalacion: "",
-        realizado_por: "",
+        responsable: "",
         observaciones: "",
         usuario_id: usuarioId,
         ubicacion: form.ubicacion,
@@ -128,7 +120,7 @@ function ControlLimpiezaContent() {
     setForm({
       fecha: row.fecha?.split("T")[0] || "",
       tipo_instalacion: getTipoInstalacion(row),
-      realizado_por: row.realizado_por,
+      responsable: row.responsable,
       observaciones: row.observaciones,
       usuario_id: row.usuario_id,
       ubicacion: row.ubicacion || "",
@@ -141,7 +133,7 @@ function ControlLimpiezaContent() {
   const columnas = [
     { header: "Fecha", value: (r) => formatFecha(r.fecha) },
     { header: "Tipo de Instalación", value: (r) => getTipoInstalacion(r), truncate: true, maxWidth: 160 },
-    { header: "Realizó", value: (r) => r.realizado_por, truncate: true, maxWidth: 160 },
+    { header: "Responsable", value: (r) => r.responsable, truncate: true, maxWidth: 160 },
     { header: "Observaciones", value: (r) => r.observaciones, truncate: true, maxWidth: 160 },
   ];
 
@@ -221,26 +213,13 @@ function ControlLimpiezaContent() {
               </TextField>
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField
-                select
-                label="Realizó"
-                name="realizado_por"
-                value={form.realizado_por}
+              <CampoResponsableEmpleado
+                value={form.responsable}
                 onChange={handleChange}
-                fullWidth
-                error={!!errors.realizado_por}
-                helperText={errors.realizado_por}
-              >
-                <MenuItem value="">Selecciona un empleado</MenuItem>
-                {empleados.map((empleado) => (
-                  <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
-                    {empleado.nombre_completo}
-                  </MenuItem>
-                ))}
-                {form.realizado_por && !empleados.some((e) => e.nombre_completo === form.realizado_por) && (
-                  <MenuItem value={form.realizado_por}>{form.realizado_por}</MenuItem>
-                )}
-              </TextField>
+                empleados={empleados}
+                error={!!errors.responsable}
+                helperText={errors.responsable}
+              />
             </Grid>
             <Grid size={12}>
               <TextField
@@ -273,7 +252,7 @@ function ControlLimpiezaContent() {
         filtros={["busqueda", "fechas"]}
         filtroConfig={{
           busqueda: {
-            keys: ["tipo_instalacion", "realizado_por", "observaciones"],
+            keys: ["tipo_instalacion", "responsable", "observaciones"],
             placeholder: "Buscar tipo, responsable u observaciones",
           },
         }}

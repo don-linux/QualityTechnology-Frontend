@@ -21,8 +21,10 @@ import {
 import { listInfraestructuraFisica } from "@features/inventarios/services/infraestructuraFisicaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useEmpleadosActivos from "@shared/hooks/useEmpleadosActivos";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoResponsableEmpleado from "@shared/components/CampoResponsableEmpleado";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import CampoNumericoConNA from "@shared/components/CampoNumericoConNA";
 import useAuth from "@app/providers/AuthProvider";
@@ -104,7 +106,7 @@ export default function ParametrosFisicoQuimicos() {
 
   const [form, setForm] = useState(emptyForm(usuarioId));
   const [data, setData] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
+  const { empleados } = useEmpleadosActivos(listEmpleadosParametrosFisicoQuimicos);
   const [infraestructurasFisicas, setInfraestructurasFisicas] = useState([]);
   const [editId, setEditId] = useState(null);
   const [registroDetalle, setRegistroDetalle] = useState(null);
@@ -159,15 +161,6 @@ export default function ParametrosFisicoQuimicos() {
     }));
   };
 
-  const cargarEmpleados = async () => {
-    try {
-      const res = await listEmpleadosParametrosFisicoQuimicos();
-      setEmpleados(res.data ?? []);
-    } catch {
-      showSnackbar("Error al cargar empleados.", "error");
-    }
-  };
-
   const cargarDatos = useCallback(async () => {
     if (!ubicacionesGranja.length) {
       setData([]);
@@ -181,10 +174,6 @@ export default function ParametrosFisicoQuimicos() {
       console.error("Error al cargar datos:", err.message);
     }
   }, [ubicacionesGranja]);
-
-  useEffect(() => {
-    cargarEmpleados();
-  }, []);
 
   useEffect(() => {
     if (!form.ubicacion && defaultUbicacion) {
@@ -561,24 +550,13 @@ export default function ParametrosFisicoQuimicos() {
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  select
-                  label="Responsable"
-                  name="responsable"
+                <CampoResponsableEmpleado
                   value={form.responsable}
                   onChange={handleChange}
-                  fullWidth
-                  size="small"
+                  empleados={empleados}
                   error={!!errors.responsable}
                   helperText={errors.responsable}
-                >
-                  <MenuItem value="">Selecciona un empleado</MenuItem>
-                  {empleados.map((empleado) => (
-                    <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
-                      {empleado.nombre_completo}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                />
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField

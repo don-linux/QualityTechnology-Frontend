@@ -16,8 +16,10 @@ import {
 import { listInfraestructuraFisica } from "@features/inventarios/services/infraestructuraFisicaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useEmpleadosActivos from "@shared/hooks/useEmpleadosActivos";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoResponsableEmpleado from "@shared/components/CampoResponsableEmpleado";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
@@ -62,7 +64,7 @@ const FORM_INICIAL = (ubicacion = "", usuarioId = "") => ({
   tipo_limpieza: "",
   porcentaje_recambio_agua: "",
   desinfectante_utilizado: "",
-  encargado: "",
+  responsable: "",
   observaciones: "",
   usuario_id: usuarioId,
 });
@@ -81,7 +83,7 @@ function BitacoraLimpiezaInstalacionesContent() {
 
   const [form, setForm] = useState(FORM_INICIAL("", usuarioId));
   const [data, setData] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
+  const { empleados } = useEmpleadosActivos(listEmpleadosLimpiezaInstalaciones);
   const [infraestructurasFisicas, setInfraestructurasFisicas] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -101,7 +103,7 @@ function BitacoraLimpiezaInstalacionesContent() {
       "infraestructura_fisica_id",
       "tipo_limpieza",
       "desinfectante_utilizado",
-      "encargado",
+      "responsable",
     ];
     if (esRecambio) fields.push("porcentaje_recambio_agua");
     return fields;
@@ -142,14 +144,9 @@ function BitacoraLimpiezaInstalacionesContent() {
     }
   };
 
-  const cargarEmpleados = async () => {
-    try {
-      const res = await listEmpleadosLimpiezaInstalaciones();
-      setEmpleados(Array.isArray(res.data) ? res.data : []);
-    } catch {
-      showSnackbar("Error al cargar empleados.", "error");
-    }
-  };
+  useEffect(() => {
+    cargarDatos();
+  }, []);
 
   const cargarInfraestructuraFisica = async (ubicacionSeleccionNombre) => {
     if (!ubicacionSeleccionNombre) {
@@ -171,11 +168,6 @@ function BitacoraLimpiezaInstalacionesContent() {
   };
 
   useEffect(() => {
-    cargarDatos();
-    cargarEmpleados();
-  }, []);
-
-  useEffect(() => {
     if (!form.ubicacion && defaultUbicacion) {
       setForm((prev) => ({ ...prev, ubicacion: defaultUbicacion }));
     }
@@ -194,7 +186,7 @@ function BitacoraLimpiezaInstalacionesContent() {
       infraestructura_fisica_id: Number(form.infraestructura_fisica_id),
       tipo_limpieza: form.tipo_limpieza,
       desinfectante_utilizado: form.desinfectante_utilizado,
-      encargado: form.encargado,
+      responsable: form.responsable,
       observaciones: form.observaciones || null,
     };
 
@@ -232,7 +224,7 @@ function BitacoraLimpiezaInstalacionesContent() {
       porcentaje_recambio_agua:
         row.porcentaje_recambio_agua != null ? String(row.porcentaje_recambio_agua) : "",
       desinfectante_utilizado: row.desinfectante_utilizado || "",
-      encargado: row.encargado || "",
+      responsable: row.responsable || "",
       observaciones: row.observaciones || "",
       usuario_id: row.usuario_id || usuarioId,
     });
@@ -250,7 +242,7 @@ function BitacoraLimpiezaInstalacionesContent() {
     },
     { header: "Tipo", value: (r) => labelTipoLimpieza(r.tipo_limpieza) },
     { header: "Detalle", value: formatDetalleLimpieza, truncate: true, maxWidth: 220 },
-    { header: "Encargado", value: (r) => r.encargado, truncate: true, maxWidth: 160 },
+    { header: "Responsable", value: (r) => r.responsable, truncate: true, maxWidth: 160 },
     { header: "Observaciones", value: (r) => r.observaciones, truncate: true, maxWidth: 180 },
   ];
 
@@ -402,28 +394,13 @@ function BitacoraLimpiezaInstalacionesContent() {
                 </Grid>
               )}
               <Grid size={{ xs: 12, md: 4 }}>
-                <TextField
-                  select
-                  label="Encargado"
-                  name="encargado"
-                  value={form.encargado}
+                <CampoResponsableEmpleado
+                  value={form.responsable}
                   onChange={handleChange}
-                  fullWidth
-                  size="small"
-                  error={!!errors.encargado}
-                  helperText={errors.encargado}
-                >
-                  <MenuItem value="">Selecciona un empleado</MenuItem>
-                  {empleados.map((empleado) => (
-                    <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
-                      {empleado.nombre_completo}
-                    </MenuItem>
-                  ))}
-                  {form.encargado &&
-                    !empleados.some((e) => e.nombre_completo === form.encargado) && (
-                      <MenuItem value={form.encargado}>{form.encargado}</MenuItem>
-                    )}
-                </TextField>
+                  empleados={empleados}
+                  error={!!errors.responsable}
+                  helperText={errors.responsable}
+                />
               </Grid>
               <Grid size={12}>
                 <TextField
@@ -460,10 +437,10 @@ function BitacoraLimpiezaInstalacionesContent() {
               "nombre_infraestructura_fisica",
               "tipo_limpieza",
               "desinfectante_utilizado",
-              "encargado",
+              "responsable",
               "observaciones",
             ],
-            placeholder: "Buscar instalación, tipo, encargado u observaciones",
+            placeholder: "Buscar instalación, tipo, responsable u observaciones",
           },
         }}
         exportar={{

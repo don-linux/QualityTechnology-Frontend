@@ -21,8 +21,10 @@ import {
 import { listCatalogoInsumosActivos } from "@features/catalogos/services/catalogoInsumosService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useEmpleadosActivos from "@shared/hooks/useEmpleadosActivos";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoResponsableEmpleado from "@shared/components/CampoResponsableEmpleado";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
@@ -89,7 +91,9 @@ function InsumosContent() {
 
   const [form, setForm] = useState(emptyForm(usuarioId));
   const [data, setData] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
+  const { empleados } = useEmpleadosActivos(listEmpleadosInventarioInsumos, {
+    errorMessage: "Error al cargar empleados o insumos.",
+  });
   const [insumos, setInsumos] = useState([]);
   const [editId, setEditId] = useState(null);
   const [registroDetalle, setRegistroDetalle] = useState(null);
@@ -148,14 +152,10 @@ function InsumosContent() {
 
   const cargarCatalogos = async () => {
     try {
-      const [empleadosRes, insumosRes] = await Promise.all([
-        listEmpleadosInventarioInsumos(),
-        listCatalogoInsumosActivos(),
-      ]);
-      setEmpleados(empleadosRes.data ?? []);
+      const insumosRes = await listCatalogoInsumosActivos();
       setInsumos(insumosRes.data ?? []);
     } catch {
-      showSnackbar("Error al cargar empleados o insumos.", "error");
+      showSnackbar("Error al cargar insumos.", "error");
     }
   };
 
@@ -433,28 +433,13 @@ function InsumosContent() {
               </Grid>
 
               <Grid size={{ xs: 12, sm: 3 }}>
-                <TextField
-                  select
-                  label="Responsable"
-                  name="responsable"
+                <CampoResponsableEmpleado
                   value={form.responsable}
                   onChange={handleChange}
-                  fullWidth
-                  size="small"
+                  empleados={empleados}
                   error={!!errors.responsable}
                   helperText={errors.responsable}
-                >
-                  <MenuItem value="">Selecciona un empleado</MenuItem>
-                  {empleados.map((empleado) => (
-                    <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
-                      {empleado.nombre_completo}
-                    </MenuItem>
-                  ))}
-                  {form.responsable &&
-                    !empleados.some((e) => e.nombre_completo === form.responsable) && (
-                      <MenuItem value={form.responsable}>{form.responsable}</MenuItem>
-                    )}
-                </TextField>
+                />
               </Grid>
 
               <Grid size={12}>

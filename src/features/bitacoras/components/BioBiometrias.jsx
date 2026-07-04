@@ -20,8 +20,10 @@ import {
 import { listInfraestructuraFisica } from "@features/inventarios/services/infraestructuraFisicaService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useEmpleadosActivos from "@shared/hooks/useEmpleadosActivos";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoResponsableEmpleado from "@shared/components/CampoResponsableEmpleado";
 import CampoNumerico from "@shared/components/CampoNumerico";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
@@ -44,7 +46,7 @@ export default function BioBiometrias() {
     useUbicacionesGranja();
 
   const [data, setData] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
+  const { empleados } = useEmpleadosActivos(listEmpleadosBiometrias);
   const [infraestructurasFisicas, setInfraestructurasFisicas] = useState([]);
   const [editId, setEditId] = useState(null);
   const { errors, validate, clearFieldError, clearErrors } = useFormValidation();
@@ -56,7 +58,7 @@ export default function BioBiometrias() {
     "fecha",
     "peso_total_gramos",
     "organismos_muestreados",
-    "encargado",
+    "responsable",
     "observaciones",
   ];
 
@@ -68,7 +70,7 @@ export default function BioBiometrias() {
     organismos_muestreados: "",
     peso_promedio: "",
     observaciones: "",
-    encargado: "",
+    responsable: "",
     usuario_id: usuario_id,
   });
 
@@ -103,18 +105,8 @@ export default function BioBiometrias() {
     }
   };
 
-  const cargarEmpleados = async () => {
-    try {
-      const res = await listEmpleadosBiometrias();
-      setEmpleados(Array.isArray(res.data) ? res.data : []);
-    } catch {
-      showSnackbar("Error al cargar empleados", "error");
-    }
-  };
-
   useEffect(() => {
     cargarDatos();
-    cargarEmpleados();
   }, []);
 
   useEffect(() => {
@@ -161,7 +153,7 @@ export default function BioBiometrias() {
         fecha: form.fecha,
         peso_total_gramos: form.peso_total_gramos,
         organismos_muestreados: form.organismos_muestreados,
-        encargado: form.encargado,
+        responsable: form.responsable,
         observaciones: form.observaciones,
         infraestructura_fisica_id: Number(form.infraestructura_fisica_id),
       };
@@ -197,7 +189,7 @@ export default function BioBiometrias() {
       organismos_muestreados: row.organismos_muestreados ?? "",
       peso_promedio: row.peso_promedio ?? "",
       observaciones: row.observaciones ?? "",
-      encargado: row.encargado ?? "",
+      responsable: row.responsable ?? "",
       usuario_id: usuario_id,
     });
     abrirFormulario();
@@ -217,7 +209,7 @@ export default function BioBiometrias() {
       organismos_muestreados: "",
       peso_promedio: "",
       observaciones: "",
-      encargado: "",
+      responsable: "",
       usuario_id: usuario_id,
     }));
     cerrarFormulario();
@@ -238,7 +230,7 @@ export default function BioBiometrias() {
     { header: "Peso Total", value: (r) => formatNum(r.peso_total_gramos) },
     { header: "Organismos", value: (r) => r.organismos_muestreados ?? "", fallback: "—" },
     { header: "Peso Promedio", value: (r) => formatNum(r.peso_promedio) },
-    { header: "Encargado", value: (r) => r.encargado || "", truncate: true, maxWidth: 160, fallback: "—" },
+    { header: "Responsable", value: (r) => r.responsable || "", truncate: true, maxWidth: 160, fallback: "—" },
     { header: "Observaciones", value: (r) => r.observaciones || "", truncate: true, maxWidth: 200, fallback: "—" },
   ];
 
@@ -450,29 +442,14 @@ export default function BioBiometrias() {
               />
             </Grid>
 
-            {/* ENCARGADO */}
             <Grid size={{ xs: 12, md: 8 }}>
-              <TextField
-                select
-                label="Encargado"
-                name="encargado"
-                value={form.encargado}
+              <CampoResponsableEmpleado
+                value={form.responsable}
                 onChange={handleChange}
-                fullWidth
-                error={!!errors.encargado}
-                helperText={errors.encargado}
-              >
-                <MenuItem value="">Selecciona un empleado</MenuItem>
-                {empleados.map((empleado) => (
-                  <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
-                    {empleado.nombre_completo}
-                  </MenuItem>
-                ))}
-                {form.encargado &&
-                  !empleados.some((e) => e.nombre_completo === form.encargado) && (
-                    <MenuItem value={form.encargado}>{form.encargado}</MenuItem>
-                  )}
-              </TextField>
+                empleados={empleados}
+                error={!!errors.responsable}
+                helperText={errors.responsable}
+              />
             </Grid>
 
             {/* OBSERVACIONES */}
@@ -515,8 +492,8 @@ export default function BioBiometrias() {
         filtros={["busqueda"]}
         filtroConfig={{
           busqueda: {
-            keys: ["nombre_infraestructura_fisica", "observacion_proceso", "encargado", "observaciones"],
-            placeholder: "Buscar infraestructura física, encargado u observación",
+            keys: ["nombre_infraestructura_fisica", "observacion_proceso", "responsable", "observaciones"],
+            placeholder: "Buscar infraestructura física, responsable u observación",
           },
         }}
         exportar={{

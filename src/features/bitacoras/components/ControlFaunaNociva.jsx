@@ -25,8 +25,10 @@ import { listEstadosTrampaActivos } from "@features/catalogos/services/estadosTr
 import { listAccionesCorrectivasActivos } from "@features/catalogos/services/accionesCorrectivasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
+import useEmpleadosActivos from "@shared/hooks/useEmpleadosActivos";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
+import CampoResponsableEmpleado from "@shared/components/CampoResponsableEmpleado";
 import useAuth from "@app/providers/AuthProvider";
 import useUbicacionesGranja from "@shared/hooks/useUbicacionesGranja";
 import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranja";
@@ -97,7 +99,9 @@ function ControlFaunaNocivaContent() {
 
   const [form, setForm] = useState(emptyForm(usuarioId));
   const [data, setData] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
+  const { empleados } = useEmpleadosActivos(listEmpleadosControlFaunaNociva, {
+    errorMessage: "Error al cargar catálogos o empleados.",
+  });
   const [areasInstalacion, setAreasInstalacion] = useState([]);
   const [faunasDetectadas, setFaunasDetectadas] = useState([]);
   const [evidenciasFauna, setEvidenciasFauna] = useState([]);
@@ -132,21 +136,19 @@ function ControlFaunaNocivaContent() {
 
   const cargarCatalogos = async () => {
     try {
-      const [areasRes, faunasRes, evidenciasRes, estadosRes, accionesRes, empleadosRes] =
+      const [areasRes, faunasRes, evidenciasRes, estadosRes, accionesRes] =
         await Promise.all([
           listAreasInstalacionActivos(),
           listFaunasDetectadasActivos(),
           listEvidenciasFaunaActivos(),
           listEstadosTrampaActivos(),
           listAccionesCorrectivasActivos(),
-          listEmpleadosControlFaunaNociva(),
         ]);
       setAreasInstalacion(areasRes.data ?? []);
       setFaunasDetectadas(faunasRes.data ?? []);
       setEvidenciasFauna(evidenciasRes.data ?? []);
       setEstadosTrampa(estadosRes.data ?? []);
       setAccionesCorrectivas(accionesRes.data ?? []);
-      setEmpleados(empleadosRes.data ?? []);
     } catch {
       showSnackbar("Error al cargar catálogos o empleados.", "error");
     }
@@ -398,28 +400,13 @@ function ControlFaunaNocivaContent() {
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  select
-                  label="Responsable"
-                  name="responsable"
+                <CampoResponsableEmpleado
                   value={form.responsable}
                   onChange={handleChange}
-                  fullWidth
-                  size="small"
+                  empleados={empleados}
                   error={!!errors.responsable}
                   helperText={errors.responsable}
-                >
-                  <MenuItem value="">Selecciona un empleado</MenuItem>
-                  {empleados.map((empleado) => (
-                    <MenuItem key={empleado.empleado_id} value={empleado.nombre_completo}>
-                      {empleado.nombre_completo}
-                    </MenuItem>
-                  ))}
-                  {form.responsable &&
-                    !empleados.some((e) => e.nombre_completo === form.responsable) && (
-                      <MenuItem value={form.responsable}>{form.responsable}</MenuItem>
-                    )}
-                </TextField>
+                />
               </Grid>
             </Grid>
 
