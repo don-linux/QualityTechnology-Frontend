@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 
@@ -66,18 +66,13 @@ const Proveedores = lazy(() => import("@pages/rrhh/ProveedoresPage"));
 // Seguridad
 const RolesModulos = lazy(() => import("@pages/seguridad/ModulosPorRolPage"));
 const SinAcceso = lazy(() => import("@pages/SinAccesoPage"));
+const NotFound = lazy(() => import("@pages/NotFoundPage"));
 
 const LazyFallback = () => (
   <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh" }}>
     <CircularProgress />
   </Box>
 );
-
-function RedirectRegistroOperativo() {
-  const { pathname, search } = useLocation();
-  const destino = pathname.replace(/^\/registro-operativo/, "/bitacoras") + search;
-  return <Navigate to={destino} replace />;
-}
 
 export default function AppRouter() {
   return (
@@ -107,7 +102,6 @@ export default function AppRouter() {
               <Route path="mantenimiento-equipo-herramientas" element={<MantenimientoEquipoHerramientas />} />
               <Route path="biometrias" element={<BioBiometrias />} />
             </Route>
-            <Route path="registro-operativo/*" element={<RedirectRegistroOperativo />} />
           </Route>
         </Route>
 
@@ -154,11 +148,7 @@ export default function AppRouter() {
             <Route path="inventarios/engorda" element={<Engorda />} />
             <Route path="inventarios/eficiencia-reproductiva" element={<EficienciaReproductiva />} />
             <Route path="inventarios/ciclos-engorda" element={<CiclosEngorda />} />
-            <Route path="inventarios/lotes" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
-            <Route path="inventarios/control-reproductivo" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
-            <Route path="inventarios/eventos-cosecha" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
             <Route path="inventarios/alevinaje" element={<Alevinaje />} />
-            <Route path="inventarios/incubacion" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
             <Route path="inventarios/trazabilidad" element={<Trazabilidad />} />
             <Route path="inventarios/equipos" element={<Equipos />} />
             <Route path="inventarios/insumos" element={<Insumos />} />
@@ -179,7 +169,7 @@ export default function AppRouter() {
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );
