@@ -17,7 +17,6 @@ import LocalHospital from "@mui/icons-material/LocalHospital";
 import CleaningServices from "@mui/icons-material/CleaningServices";
 import Grass from "@mui/icons-material/Grass";
 import Biotech from "@mui/icons-material/Biotech";
-import ReceiptLong from "@mui/icons-material/ReceiptLong";
 import Work from "@mui/icons-material/Work";
 import Badge from "@mui/icons-material/Badge";
 import Business from "@mui/icons-material/Business";
@@ -68,6 +67,7 @@ export const MENU_SECTIONS = [
       { to: "/inventarios/ciclos-engorda", icon: <AutorenewIcon />, label: "Ciclos de engorda" },
       { to: "/inventarios/infraestructura-fisica", icon: <PoolOutlinedIcon />, label: "Infraestructura Física" },
       { to: "/inventarios/equipos", icon: <Handyman />, label: "Equipo y Herramientas" },
+      { to: "/inventarios/insumos", icon: <Inventory2Icon />, label: "Insumos" },
     ],
   },
   {
@@ -76,7 +76,6 @@ export const MENU_SECTIONS = [
     moduleIcon: <Assignment />,
     items: [
       { to: "/bitacoras/control-fauna-nociva", icon: <BugReport />, label: "Control de Fauna Nociva" },
-      { to: "/bitacoras/flujo-insumos", icon: <ReceiptLong />, label: "Flujo de insumos" },
       { to: "/bitacoras/control-visitas", icon: <People />, label: "Control de Visitas" },
       { to: "/bitacoras/control-limpieza", icon: <CleaningServices />, label: "Control de Limpieza" },
       { to: "/bitacoras/parametros-fisico-quimicos", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
@@ -150,7 +149,7 @@ export const MENU_SECTIONS = [
         sublabel: "Insumos",
         sublabelColor: "#90cdffff",
         items: [
-          { to: "/insumos", icon: <Inventory2Icon />, label: "Catálogo de Insumos" },
+          { to: "/catalogo-insumos", icon: <Inventory2Icon />, label: "Catálogo de Insumos" },
         ],
       },
     ],

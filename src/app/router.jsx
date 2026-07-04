@@ -23,7 +23,7 @@ const FaunasDetectadas = lazy(() => import("@pages/catalogos/FaunasDetectadasPag
 const EvidenciasFauna = lazy(() => import("@pages/catalogos/EvidenciasFaunaPage"));
 const EstadosTrampa = lazy(() => import("@pages/catalogos/EstadosTrampaPage"));
 const AccionesCorrectivas = lazy(() => import("@pages/catalogos/AccionesCorrectivasPage"));
-const Insumos = lazy(() => import("@pages/catalogos/InsumosPage"));
+const CatalogoInsumos = lazy(() => import("@pages/catalogos/CatalogoInsumosPage"));
 
 // Inventarios
 const InfraestructuraFisica = lazy(() => import("@pages/inventarios/InfraestructuraFisicaPage"));
@@ -34,6 +34,7 @@ const Alevinaje = lazy(() => import("@pages/inventarios/AlevinajePage"));
 const EficienciaReproductiva = lazy(() => import("@pages/inventarios/EficienciaReproductivaPage"));
 const CiclosEngorda = lazy(() => import("@pages/inventarios/CiclosEngordaPage"));
 const Trazabilidad = lazy(() => import("@pages/inventarios/TrazabilidadPage"));
+const Insumos = lazy(() => import("@pages/inventarios/InsumosPage"));
 
 // Ventas + Finanzas
 const Venta = lazy(() => import("@pages/ventas/VentaPage"));
@@ -44,7 +45,6 @@ const Cuentas = lazy(() => import("@pages/catalogos/CuentasPage"));
 
 // Bitácoras
 const ControlFaunaNociva = lazy(() => import("@pages/bitacoras/ControlFaunaNocivaPage"));
-const FlujoInsumos = lazy(() => import("@pages/bitacoras/FlujoInsumosPage"));
 const ControlVisitas = lazy(() => import("@pages/bitacoras/ControlVisitasPage"));
 const ControlLimpieza = lazy(() => import("@pages/bitacoras/ControlLimpiezaPage"));
 const ParametrosFisicoQuimicos = lazy(() => import("@pages/bitacoras/ParametrosFisicoQuimicosPage"));
@@ -97,11 +97,6 @@ export default function AppRouter() {
           <Route element={<AppLayout />}>
             <Route path="bitacoras">
               <Route path="control-fauna-nociva" element={<ControlFaunaNociva />} />
-              <Route path="flujo-insumos" element={<FlujoInsumos />} />
-              <Route
-                path="recepcion-insumos"
-                element={<Navigate to="/bitacoras/flujo-insumos" replace />}
-              />
               <Route path="control-visitas" element={<ControlVisitas />} />
               <Route path="control-limpieza" element={<ControlLimpieza />} />
               <Route path="parametros-fisico-quimicos" element={<ParametrosFisicoQuimicos />} />
@@ -146,7 +141,7 @@ export default function AppRouter() {
             <Route path="evidencias-fauna" element={<EvidenciasFauna />} />
             <Route path="estados-trampa" element={<EstadosTrampa />} />
             <Route path="acciones-correctivas" element={<AccionesCorrectivas />} />
-            <Route path="insumos" element={<Insumos />} />
+            <Route path="catalogo-insumos" element={<CatalogoInsumos />} />
           </Route>
         </Route>
 
@@ -164,6 +159,7 @@ export default function AppRouter() {
             <Route path="inventarios/incubacion" element={<Navigate to="/inventarios/eficiencia-reproductiva" replace />} />
             <Route path="inventarios/trazabilidad" element={<Trazabilidad />} />
             <Route path="inventarios/equipos" element={<Equipos />} />
+            <Route path="inventarios/insumos" element={<Insumos />} />
           </Route>
         </Route>
 

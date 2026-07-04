@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  listInsumos,
-  createInsumo,
-  updateInsumo,
-  activateInsumo,
-  deactivateInsumo,
-} from "@features/catalogos/services/insumosService";
+  listCatalogoInsumos,
+  createCatalogoInsumo,
+  updateCatalogoInsumo,
+  activateCatalogoInsumo,
+  deactivateCatalogoInsumo,
+} from "@features/catalogos/services/catalogoInsumosService";
 import { listClientes } from "@features/catalogos/services/clientesService";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -71,7 +71,7 @@ function formatConUdm(valor, udm) {
   return `${formatNumero(valor, 3)} ${udm || ""}`.trim();
 }
 
-export default function Insumos() {
+export default function CatalogoInsumos() {
   const showSnackbar = useSnackbar();
   const [form, setForm] = useState(EMPTY_FORM);
   const [insumos, setInsumos] = useState([]);
@@ -99,7 +99,7 @@ export default function Insumos() {
   const obtenerDatos = async () => {
     setLoading(true);
     const [insumosRes, clientesRes] = await Promise.allSettled([
-      listInsumos(),
+      listCatalogoInsumos(),
       listClientes(),
     ]);
 
@@ -175,7 +175,7 @@ export default function Insumos() {
 
   const registrarInsumo = async () => {
     try {
-      if (await guardarConValidacion(createInsumo)) {
+      if (await guardarConValidacion(createCatalogoInsumo)) {
         showSnackbar("Insumo registrado correctamente", "success");
       }
     } catch (error) {
@@ -187,7 +187,7 @@ export default function Insumos() {
   const actualizarInsumo = async () => {
     if (!form.insumo_id) return showSnackbar("Selecciona un insumo para actualizar", "error");
     try {
-      if (await guardarConValidacion((payload) => updateInsumo(form.insumo_id, payload))) {
+      if (await guardarConValidacion((payload) => updateCatalogoInsumo(form.insumo_id, payload))) {
         showSnackbar("Insumo actualizado correctamente", "success");
       }
     } catch (error) {
@@ -199,7 +199,7 @@ export default function Insumos() {
   const desactivarInsumo = async (id, nombre) => {
     if (!await confirm(`¿Desactivar el insumo "${nombre}"?`)) return;
     try {
-      await deactivateInsumo(id);
+      await deactivateCatalogoInsumo(id);
       obtenerDatos();
       limpiarFormulario();
       showSnackbar("Insumo desactivado correctamente", "success");
@@ -212,7 +212,7 @@ export default function Insumos() {
   const activarInsumoItem = async (id, nombre) => {
     if (!await confirm(`¿Activar el insumo "${nombre}"?`)) return;
     try {
-      await activateInsumo(id);
+      await activateCatalogoInsumo(id);
       obtenerDatos();
       limpiarFormulario();
       showSnackbar("Insumo activado correctamente", "success");

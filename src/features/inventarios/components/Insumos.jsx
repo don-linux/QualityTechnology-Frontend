@@ -13,12 +13,12 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Divider from "@mui/material/Divider";
 import {
-  listFlujoInsumos,
-  listEmpleadosFlujoInsumos,
-  createFlujoInsumo,
-  updateFlujoInsumo,
-} from "../services/bitacorasService";
-import { listInsumosActivos } from "@features/catalogos/services/insumosService";
+  listInventarioInsumos,
+  listEmpleadosInventarioInsumos,
+  createInventarioInsumo,
+  updateInventarioInsumo,
+} from "../services/inventarioInsumosService";
+import { listCatalogoInsumosActivos } from "@features/catalogos/services/catalogoInsumosService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
@@ -81,7 +81,7 @@ function UdnSelect({ label, name, value, onChange, options, error, helperText, d
   );
 }
 
-function FlujoInsumosContent() {
+function InsumosContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
   const { ubicacionesGranja, defaultUbicacion, getLabel, getLogo, getColor, getGroups } =
@@ -149,8 +149,8 @@ function FlujoInsumosContent() {
   const cargarCatalogos = async () => {
     try {
       const [empleadosRes, insumosRes] = await Promise.all([
-        listEmpleadosFlujoInsumos(),
-        listInsumosActivos(),
+        listEmpleadosInventarioInsumos(),
+        listCatalogoInsumosActivos(),
       ]);
       setEmpleados(empleadosRes.data ?? []);
       setInsumos(insumosRes.data ?? []);
@@ -166,7 +166,7 @@ function FlujoInsumosContent() {
     }
     try {
       const granjas = ubicacionesGranja.map((op) => op.value);
-      const rows = await fetchMergedPorUbicaciones(granjas, listFlujoInsumos);
+      const rows = await fetchMergedPorUbicaciones(granjas, listInventarioInsumos);
       setData(rows);
     } catch (err) {
       console.error("Error al cargar datos:", err.message);
@@ -205,8 +205,8 @@ function FlujoInsumosContent() {
         payload.destino = form.destino || null;
       }
 
-      if (editId) await updateFlujoInsumo(editId, payload);
-      else await createFlujoInsumo(payload);
+      if (editId) await updateInventarioInsumo(editId, payload);
+      else await createInventarioInsumo(payload);
 
       const wasEdit = Boolean(editId);
       setEditId(null);
@@ -284,7 +284,7 @@ function FlujoInsumosContent() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Flujo de insumos
+        Insumos
       </Typography>
 
       <FormularioRegistroPanel visible={mostrarFormulario} onToggle={toggleFormulario}>
@@ -488,9 +488,9 @@ function FlujoInsumosContent() {
         renderTabla={renderTabla}
         exportar={{
           columnas,
-          titulo: "Flujo de insumos",
+          titulo: "Insumos",
           subtitulo: "Movimientos de insumos por unidad de negocio",
-          nombreArchivo: "Flujo_Insumos",
+          nombreArchivo: "Insumos",
         }}
         getLogo={getLogo}
         getColor={getColor}
@@ -546,6 +546,6 @@ function FlujoInsumosContent() {
   );
 }
 
-export default function FlujoInsumos() {
-  return <FlujoInsumosContent />;
+export default function Insumos() {
+  return <InsumosContent />;
 }

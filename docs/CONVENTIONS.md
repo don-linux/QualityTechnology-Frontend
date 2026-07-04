@@ -32,7 +32,7 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 
 ## Routing and URLs
 
-- Route path segments use **kebab-case** (e.g. `bitacoras/flujo-insumos`, `ventas/flujo-caja`). New routes should follow existing naming in `src/app/router.jsx` and navigation links in `AppLayout.jsx`.
+- Route path segments use **kebab-case** (e.g. `inventarios/insumos`, `catalogo-insumos`, `ventas/flujo-caja`). New routes should follow existing naming in `src/app/router.jsx` and navigation links in `AppLayout.jsx`.
 
 ## API and configuration
 

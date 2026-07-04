@@ -20,22 +20,6 @@ export function updateControlFaunaNociva(id, data) {
 }
 
 /* =====================================================
-   Flujo de insumos
-===================================================== */
-export function listEmpleadosFlujoInsumos() {
-  return axios.get(B.flujoInsumos.empleados);
-}
-export function listFlujoInsumos(ubicacion) {
-  return axios.get(B.flujoInsumos.base, { params: { ubicacion } });
-}
-export function createFlujoInsumo(data) {
-  return axios.post(B.flujoInsumos.base, data);
-}
-export function updateFlujoInsumo(id, data) {
-  return axios.put(B.flujoInsumos.byId(id), data);
-}
-
-/* =====================================================
    Control de Visitas
 ===================================================== */
 export function listControlVisitas(ubicacion, filtro) {

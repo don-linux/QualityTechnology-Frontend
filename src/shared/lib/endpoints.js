@@ -289,12 +289,18 @@ export const ENDPOINTS = {
     deactivate: (id) => `/acciones-correctivas/${id}/deactivate`,
   },
 
-  insumos: {
-    base: "/insumos",
-    activos: "/insumos/activos",
-    byId: (id) => `/insumos/${id}`,
-    activate: (id) => `/insumos/${id}/activate`,
-    deactivate: (id) => `/insumos/${id}/deactivate`,
+  catalogoInsumos: {
+    base: "/catalogo-insumos",
+    activos: "/catalogo-insumos/activos",
+    byId: (id) => `/catalogo-insumos/${id}`,
+    activate: (id) => `/catalogo-insumos/${id}/activate`,
+    deactivate: (id) => `/catalogo-insumos/${id}/deactivate`,
+  },
+
+  inventarioInsumos: {
+    base: "/inventario-insumos",
+    empleados: "/inventario-insumos/empleados",
+    byId: (id) => `/inventario-insumos/${id}`,
   },
 
   bitacoras: {
@@ -309,11 +315,6 @@ export const ENDPOINTS = {
       base: "/control-fauna-nociva",
       empleados: "/control-fauna-nociva/empleados",
       byId: (id) => `/control-fauna-nociva/${id}`,
-    },
-    flujoInsumos: {
-      base: "/flujo_insumos",
-      empleados: "/flujo_insumos/empleados",
-      byId: (id) => `/flujo_insumos/${id}`,
     },
     controlVisitas: {
       base: "/control-visitas",
