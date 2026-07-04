@@ -512,9 +512,13 @@ export default function BioBiometrias() {
       <TablasPorUbicacionGranja
         grupos={getGroups(data)}
         renderTabla={renderTablaBiometrias}
-        buscar
-        searchKeys={["nombre_infraestructura_fisica", "observacion_proceso", "encargado", "observaciones"]}
-        placeholderBusqueda="Buscar infraestructura física, encargado u observación"
+        filtros={["busqueda"]}
+        filtroConfig={{
+          busqueda: {
+            keys: ["nombre_infraestructura_fisica", "observacion_proceso", "encargado", "observaciones"],
+            placeholder: "Buscar infraestructura física, encargado u observación",
+          },
+        }}
         exportar={{
           columnas,
           titulo: "Bitácora de Biometrías",

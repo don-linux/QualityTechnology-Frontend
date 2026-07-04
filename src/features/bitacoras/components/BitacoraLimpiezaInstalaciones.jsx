@@ -453,15 +453,19 @@ function BitacoraLimpiezaInstalacionesContent() {
       <TablasPorUbicacionGranja
         grupos={gruposUbicacion}
         renderTabla={renderTabla}
-        buscar
-        searchKeys={[
-          "nombre_infraestructura_fisica",
-          "tipo_limpieza",
-          "desinfectante_utilizado",
-          "encargado",
-          "observaciones",
-        ]}
-        placeholderBusqueda="Buscar instalación, tipo, encargado u observaciones"
+        filtros={["busqueda"]}
+        filtroConfig={{
+          busqueda: {
+            keys: [
+              "nombre_infraestructura_fisica",
+              "tipo_limpieza",
+              "desinfectante_utilizado",
+              "encargado",
+              "observaciones",
+            ],
+            placeholder: "Buscar instalación, tipo, encargado u observaciones",
+          },
+        }}
         exportar={{
           columnas,
           titulo: "Registro de Limpieza y Desinfección de Instalaciones",

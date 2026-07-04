@@ -271,9 +271,13 @@ function BitacoraInventarioContent() {
       <TablasPorUbicacionGranja
         grupos={gruposUbicacion}
         renderTabla={renderTablaInventario}
-        buscar
-        searchKeys={["infraestructura_fisica_id", "lote_nombre", "observacion"]}
-        placeholderBusqueda="Buscar instalación, lote u observación"
+        filtros={["busqueda"]}
+        filtroConfig={{
+          busqueda: {
+            keys: ["infraestructura_fisica_id", "lote_nombre", "observacion"],
+            placeholder: "Buscar instalación, lote u observación",
+          },
+        }}
         exportar={{
           columnas,
           titulo: "Bitácora de Inventario",

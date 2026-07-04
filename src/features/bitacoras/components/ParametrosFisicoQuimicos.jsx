@@ -615,9 +615,13 @@ export default function ParametrosFisicoQuimicos() {
       <TablasPorUbicacionGranja
         grupos={gruposUbicacion}
         renderTabla={renderTabla}
-        buscar
-        searchKeys={["codigo", "nombre_infraestructura_fisica", "responsable", "turno_muestreo"]}
-        placeholderBusqueda="Buscar folio, instalación o responsable"
+        filtros={["busqueda"]}
+        filtroConfig={{
+          busqueda: {
+            keys: ["codigo", "nombre_infraestructura_fisica", "responsable", "turno_muestreo"],
+            placeholder: "Buscar folio, instalación o responsable",
+          },
+        }}
         exportar={{
           columnas,
           titulo: "Parámetros Físico-Químicos",

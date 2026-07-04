@@ -46,6 +46,17 @@ The following appear consistently in reviewed entry files (`src/index.jsx`, `src
 - **Runner:** Vitest (see `package.json` and `vite.config.js`).
 - **Environment:** `jsdom`, **`globals: true`**, setup file **`src/setupTests.js`** (imports `@testing-library/jest-dom`).
 - **Location / naming:** At least one test uses the pattern **`src/app/App.test.jsx`** (Vitest picks up tests per `vite.config.js` defaults). There is no custom `include`/`exclude` in `vite.config.js` beyond Vitest defaults.
+- **Listado filter pipeline:** Co-locate pure filter/registry tests with the registry — **`src/shared/components/listado/filtros/registroFiltros.test.js`**. Run with `npm test -- --run src/shared/components/listado/filtros/registroFiltros.test.js`.
+
+## Listado filters (`TablasPorUbicacionGranja`)
+
+Location-grouped tables use a registry-based filter system. See **`docs/HOW_TO_ADD_LISTADO_FILTERS.md`** for the full guide.
+
+- **Declarative config:** Pass `filtros={["busqueda", ...]}` and `filtroConfig={{ busqueda: { keys, placeholder }, ... }}` on `TablasPorUbicacionGranja`. Use top-level `campoFecha` for date field name (default `"fecha"`).
+- **Registry:** One module per filter under `src/shared/components/listado/filtros/`; register in `REGISTRO_FILTROS` in `registroFiltros.js`. Each entry exports `id`, `Componente`, `valorVacio`, `estaActivo`, `aplicar`, `enExportacion`.
+- **No legacy props:** Do not use removed props (`buscar`, `searchKeys`, `filtrar`, `placeholderBusqueda`, `filtroFecha`, `mostrarConteo`, `exportar.campoFecha`). There are no fallbacks.
+- **Export vs view:** Filters with `enExportacion: false` (e.g. `fechas`) affect the table only; export row selection and report footer dates come from `DialogExportarListado` plus filters with `enExportacion: true` (e.g. `busqueda`).
+- **Reference implementation:** `ControlLimpieza.jsx` (`filtros={["busqueda", "fechas"]}`); search-only bitácoras use `filtros={["busqueda"]}` only.
 
 ## Docker / toolchain
 

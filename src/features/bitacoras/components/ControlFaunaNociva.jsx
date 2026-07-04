@@ -435,18 +435,22 @@ function ControlFaunaNocivaContent() {
       <TablasPorUbicacionGranja
         grupos={gruposUbicacion}
         renderTabla={renderTabla}
-        buscar
-        searchKeys={[
-          "codigo",
-          "area_instalacion_nombre",
-          "fauna_detectada_nombre",
-          "evidencia_fauna_nombre",
-          "estado_trampa_nombre",
-          "accion_correctiva_nombre",
-          "responsable",
-          "condicion_malla",
-        ]}
-        placeholderBusqueda="Buscar folio, área, fauna o responsable"
+        filtros={["busqueda"]}
+        filtroConfig={{
+          busqueda: {
+            keys: [
+              "codigo",
+              "area_instalacion_nombre",
+              "fauna_detectada_nombre",
+              "evidencia_fauna_nombre",
+              "estado_trampa_nombre",
+              "accion_correctiva_nombre",
+              "responsable",
+              "condicion_malla",
+            ],
+            placeholder: "Buscar folio, área, fauna o responsable",
+          },
+        }}
         exportar={{
           columnas,
           titulo: "Control de Fauna Nociva",

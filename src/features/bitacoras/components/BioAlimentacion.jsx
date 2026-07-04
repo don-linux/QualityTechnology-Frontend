@@ -433,9 +433,13 @@ export default function BioAlimentacion() {
       <TablasPorUbicacionGranja
         grupos={gruposUbicacion}
         renderTabla={tablaAlimentacion}
-        buscar
-        searchKeys={["mes", "infraestructura_fisica_id", "origen_alevines", "observaciones"]}
-        placeholderBusqueda="Buscar mes, instalación u origen"
+        filtros={["busqueda"]}
+        filtroConfig={{
+          busqueda: {
+            keys: ["mes", "infraestructura_fisica_id", "origen_alevines", "observaciones"],
+            placeholder: "Buscar mes, instalación u origen",
+          },
+        }}
         exportar={{
           columnas,
           titulo: "Bitácora de Alimentación",

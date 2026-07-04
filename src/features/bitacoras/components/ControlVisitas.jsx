@@ -472,9 +472,13 @@ function ControlVisitasContent() {
       <TablasPorUbicacionGranja
         grupos={gruposUbicacion}
         renderTabla={renderTablaVisitas}
-        buscar
-        searchKeys={["nombre_completo", "procedencia", "motivo", "observaciones"]}
-        placeholderBusqueda="Buscar nombre, origen o motivo"
+        filtros={["busqueda"]}
+        filtroConfig={{
+          busqueda: {
+            keys: ["nombre_completo", "procedencia", "motivo", "observaciones"],
+            placeholder: "Buscar nombre, origen o motivo",
+          },
+        }}
         exportar={{
           columnas,
           titulo: "Control de Visitas",
