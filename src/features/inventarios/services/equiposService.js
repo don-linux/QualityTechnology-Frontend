@@ -16,15 +16,3 @@ export function createEquipo(data) {
 export function updateEquipo(id, data) {
   return axios.put(ENDPOINTS.equipos.byId(id), data);
 }
-
-export function listMantenimientos(equipoId) {
-  return axios.get(ENDPOINTS.equipos.mantenimientos(equipoId));
-}
-
-export function createMantenimiento(equipoId, data) {
-  return axios.post(ENDPOINTS.equipos.mantenimientos(equipoId), data);
-}
-
-export function updateMantenimiento(mantenimientoId, data) {
-  return axios.put(ENDPOINTS.equipos.mantenimientoById(mantenimientoId), data);
-}

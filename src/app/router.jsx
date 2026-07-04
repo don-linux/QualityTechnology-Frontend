@@ -51,6 +51,7 @@ const ParametrosFisicoQuimicos = lazy(() => import("@pages/bitacoras/ParametrosF
 const Medicamentos = lazy(() => import("@pages/bitacoras/MedicamentosPage"));
 const BitacoraLimpiezaInstalaciones = lazy(() => import("@pages/bitacoras/BitacoraLimpiezaInstalacionesPage"));
 const BitacoraInventario = lazy(() => import("@pages/bitacoras/BitacoraInventarioPage"));
+const MantenimientoEquipoHerramientas = lazy(() => import("@pages/bitacoras/MantenimientoEquipoHerramientasPage"));
 const BioBiometrias = lazy(() => import("@pages/bitacoras/BioBiometriasPage"));
 
 // RRHH
@@ -103,6 +104,7 @@ export default function AppRouter() {
               <Route path="medicamentos" element={<Medicamentos />} />
               <Route path="limpieza-instalaciones" element={<BitacoraLimpiezaInstalaciones />} />
               <Route path="inventario" element={<BitacoraInventario />} />
+              <Route path="mantenimiento-equipo-herramientas" element={<MantenimientoEquipoHerramientas />} />
               <Route path="biometrias" element={<BioBiometrias />} />
             </Route>
             <Route path="registro-operativo/*" element={<RedirectRegistroOperativo />} />

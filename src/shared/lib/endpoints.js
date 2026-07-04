@@ -111,8 +111,6 @@ export const ENDPOINTS = {
     empleados: "/equipos/empleados",
     byUsuario: (usuarioId) => `/equipos/${usuarioId}`,
     byId: (id) => `/equipos/${id}`,
-    mantenimientos: (equipoId) => `/equipos/${equipoId}/mantenimientos`,
-    mantenimientoById: (mantenimientoId) => `/equipos/mantenimientos/${mantenimientoId}`,
   },
 
   clientes: {
@@ -342,6 +340,10 @@ export const ENDPOINTS = {
     inventario: {
       base: "/inventario",
       byId: (id) => `/inventario/${id}`,
+    },
+    mantenimientoEquipoHerramientas: {
+      base: "/mantenimiento-equipo-herramientas",
+      byId: (id) => `/mantenimiento-equipo-herramientas/${id}`,
     },
   },
 };

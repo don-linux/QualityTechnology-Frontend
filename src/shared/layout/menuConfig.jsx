@@ -27,6 +27,7 @@ import EggAltIcon from "@mui/icons-material/EggAlt";
 import WaterDropIcon from "@mui/icons-material/WaterDrop";
 import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
 import PoolOutlinedIcon from "@mui/icons-material/PoolOutlined";
+import Build from "@mui/icons-material/Build";
 import MenuBook from "@mui/icons-material/MenuBook";
 import Security from "@mui/icons-material/Security";
 import Groups from "@mui/icons-material/Groups";
@@ -81,6 +82,7 @@ export const MENU_SECTIONS = [
       { to: "/bitacoras/parametros-fisico-quimicos", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
       { to: "/bitacoras/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
       { to: "/bitacoras/limpieza-instalaciones", icon: <ScienceOutlined />, label: "Limpieza y desinfección de instalaciones" },
+      { to: "/bitacoras/mantenimiento-equipo-herramientas", icon: <Build />, label: "Mantenimiento de Equipo y Herramientas" },
       { to: "/bitacoras/biometrias", icon: <Science />, label: "Biometrías" },
     ],
   },
