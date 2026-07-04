@@ -39,7 +39,6 @@ const ETIQUETA_PROCESO = {
   eficiencia_reproductiva: "Eficiencia reproductiva",
   evento_cosecha: "Eficiencia reproductiva",
   siembra: "Siembra",
-  alimentacion: "Alimentación",
   limpieza_instalaciones: "Limpieza y desinfección de instalaciones",
   inventario_alevines: "Inventario alevines",
   parametros_fisico_quimicos: "Parámetros físico-químicos",

@@ -83,7 +83,6 @@ export const MENU_SECTIONS = [
       { to: "/bitacoras/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
       { to: "/bitacoras/limpieza-instalaciones", icon: <ScienceOutlined />, label: "Limpieza y desinfección de instalaciones" },
       { to: "/bitacoras/biometrias", icon: <Science />, label: "Biometrías" },
-      { to: "/bitacoras/alimentacion", icon: <Grass />, label: "Alimentación" },
     ],
   },
   {

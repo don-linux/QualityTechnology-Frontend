@@ -310,10 +310,6 @@ export const ENDPOINTS = {
       empleados: "/control-fauna-nociva/empleados",
       byId: (id) => `/control-fauna-nociva/${id}`,
     },
-    alimentacion: {
-      base: "/alimentacion",
-      byId: (id) => `/alimentacion/${id}`,
-    },
     flujoInsumos: {
       base: "/flujo_insumos",
       empleados: "/flujo_insumos/empleados",
