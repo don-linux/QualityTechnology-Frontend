@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   listEquipos,
-  listEmpleadosEquipos,
   createEquipo,
   updateEquipo,
 } from "../services/equiposService";
@@ -48,12 +47,10 @@ function EquiposContent() {
     costo: "",
     estado: "Operativo",
     ubicacion: "",
-    responsable: "",
     notas: "",
   });
 
   const [data, setData] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
   const [editId, setEditId] = useState(null);
   const showSnackbar = useSnackbar();
 
@@ -62,7 +59,7 @@ function EquiposContent() {
   const requiredFields = [
     "nombre", "marca", "modelo", "tipo",
     "fecha_compra", "costo", "estado", "ubicacion",
-    "responsable", "notas",
+    "notas",
   ];
 
   const handleChange = (e) => {
@@ -84,18 +81,8 @@ function EquiposContent() {
     }
   }, [usuario_id, showSnackbar]);
 
-  const cargarEmpleados = async () => {
-    try {
-      const res = await listEmpleadosEquipos();
-      setEmpleados(res.data);
-    } catch {
-      showSnackbar("Error al cargar empleados", "error");
-    }
-  };
-
   useEffect(() => {
     cargarDatos();
-    cargarEmpleados();
   }, [cargarDatos]);
 
   const guardar = async () => {
@@ -127,7 +114,6 @@ function EquiposContent() {
       costo: row.costo,
       estado: row.estado,
       ubicacion: row.ubicacion,
-      responsable: row.responsable,
       notas: row.notas,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -144,7 +130,6 @@ function EquiposContent() {
       costo: "",
       estado: "Operativo",
       ubicacion: "",
-      responsable: "",
       notas: "",
     });
     setEditId(null);
@@ -174,7 +159,6 @@ function EquiposContent() {
       "Nombre",
       "Tipo",
       "Estado",
-      "Responsable",
       "Ubicación",
       "Costo",
     ];
@@ -183,7 +167,6 @@ function EquiposContent() {
       r.nombre,
       r.tipo,
       r.estado,
-      r.responsable,
       r.ubicacion,
       formatPrecio(r.costo),
     ]);
@@ -322,28 +305,6 @@ function EquiposContent() {
                 )}
               </TextField>
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                select
-                label="Responsable"
-                name="responsable"
-                value={form.responsable}
-                onChange={handleChange}
-                fullWidth
-                error={!!errors.responsable}
-                helperText={errors.responsable}
-              >
-                <MenuItem value="">Selecciona un empleado</MenuItem>
-                {empleados.map((emp) => (
-                  <MenuItem key={emp.empleado_id} value={emp.nombre_completo}>
-                    {emp.nombre_completo}
-                  </MenuItem>
-                ))}
-                {form.responsable && !empleados.some((e) => e.nombre_completo === form.responsable) && (
-                  <MenuItem value={form.responsable}>{form.responsable}</MenuItem>
-                )}
-              </TextField>
-            </Grid>
             <Grid size={12}>
               <TextField
                 label="Notas"
@@ -392,7 +353,6 @@ function EquiposContent() {
               <TableCell>Nombre</TableCell>
               <TableCell>Tipo</TableCell>
               <TableCell>Estado</TableCell>
-              <TableCell>Responsable</TableCell>
               <TableCell>Ubicación</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
@@ -404,7 +364,6 @@ function EquiposContent() {
                 <TableCell>{row.nombre}</TableCell>
                 <TableCell>{row.tipo}</TableCell>
                 <TableCell>{row.estado}</TableCell>
-                <TableCell>{row.responsable}</TableCell>
                 <TableCell>{row.ubicacion}</TableCell>
                 <TableCell>
                   <Button

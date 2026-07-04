@@ -108,7 +108,6 @@ export const ENDPOINTS = {
 
   equipos: {
     base: "/equipos",
-    empleados: "/equipos/empleados",
     byUsuario: (usuarioId) => `/equipos/${usuarioId}`,
     byId: (id) => `/equipos/${id}`,
   },

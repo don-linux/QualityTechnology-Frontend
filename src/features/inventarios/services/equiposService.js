@@ -1,10 +1,6 @@
 import axios from "@shared/lib/axiosInstance";
 import { ENDPOINTS } from "@shared/lib/endpoints";
 
-export function listEmpleadosEquipos() {
-  return axios.get(ENDPOINTS.equipos.empleados);
-}
-
 export function listEquipos(usuarioId) {
   return axios.get(ENDPOINTS.equipos.byUsuario(usuarioId));
 }
