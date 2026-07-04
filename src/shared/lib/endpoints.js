@@ -61,6 +61,27 @@ export const ENDPOINTS = {
     byId: (id) => `/engorda/${id}`,
   },
 
+  ciclosAvicola: {
+    base: "/ciclos-avicola",
+    byId: (id) => `/ciclos-avicola/${id}`,
+    calendario: (id) => `/ciclos-avicola/${id}/calendario`,
+    calendarioItem: (id, itemId) => `/ciclos-avicola/${id}/calendario/${itemId}`,
+    gastos: (id) => `/ciclos-avicola/${id}/gastos`,
+    gastosItem: (id, itemId) => `/ciclos-avicola/${id}/gastos/${itemId}`,
+    ventas: (id) => `/ciclos-avicola/${id}/ventas`,
+    ventasItem: (id, itemId) => `/ciclos-avicola/${id}/ventas/${itemId}`,
+    biometrias: (id) => `/ciclos-avicola/${id}/biometrias`,
+    biometriasItem: (id, itemId) => `/ciclos-avicola/${id}/biometrias/${itemId}`,
+    mortalidad: (id) => `/ciclos-avicola/${id}/mortalidad`,
+    mortalidadItem: (id, itemId) => `/ciclos-avicola/${id}/mortalidad/${itemId}`,
+    alimento: (id) => `/ciclos-avicola/${id}/alimento`,
+    alimentoItem: (id, itemId) => `/ciclos-avicola/${id}/alimento/${itemId}`,
+    consumoEstimado: (id) => `/ciclos-avicola/${id}/consumo-estimado`,
+    consumoEstimadoItem: (id, itemId) => `/ciclos-avicola/${id}/consumo-estimado/${itemId}`,
+    sanidad: (id) => `/ciclos-avicola/${id}/sanidad`,
+    sanidadItem: (id, itemId) => `/ciclos-avicola/${id}/sanidad/${itemId}`,
+  },
+
   alevinaje: {
     base: "/alevinaje",
     byId: (id) => `/alevinaje/${id}`,
