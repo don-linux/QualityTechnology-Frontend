@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
@@ -15,20 +15,32 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FormularioRegistroPanel from "@shared/components/FormularioRegistroPanel";
-import ListadoToolbar from "@shared/components/ListadoToolbar";
+import ListadoToolbar from "@shared/components/listado/ListadoToolbar";
+import DialogExportarListado from "@shared/components/listado/DialogExportarListado";
+import useFiltrosListado from "@shared/components/listado/useFiltrosListado";
+import {
+  REGISTRO_FILTROS,
+  rangoFechasDesdeSeleccion,
+} from "@shared/components/listado/filtros/registroFiltros";
 import useFormularioVisible from "@shared/hooks/useFormularioVisible";
+import useNombreImpresion from "@shared/hooks/useNombreImpresion";
 import useSnackbar from "@shared/hooks/useSnackbar";
-import { exportarTablaExcel, exportarTablaPDF } from "@shared/utils/exportarTabla";
+import {
+  exportarTablaExcel,
+  exportarTablaPDF,
+  calcularRangoFechas,
+} from "@shared/utils/exportarTabla";
 import { seccionToExportColumns } from "./cicloEngordaSecciones";
 import { campoFormSx } from "@shared/components/FormularioInventarioSecciones";
 
 const headerCell = { fontWeight: "bold", bgcolor: "#004d73", color: "#fff" };
+const COLOR_EXPORT = [0, 77, 115];
+const CAMPO_FECHA = "fecha";
 
-function filtrarFilas(rows, query, searchKeys) {
-  const q = query.trim().toLowerCase();
-  if (!q) return rows;
-  return rows.filter((row) =>
-    searchKeys.some((key) => String(row[key] ?? "").toLowerCase().includes(q)),
+function seccionTieneFecha(seccion) {
+  return (
+    seccion.fields.some((f) => f.name === CAMPO_FECHA && f.type === "date") ||
+    seccion.columns.some((c) => c.key === CAMPO_FECHA)
   );
 }
 
@@ -75,18 +87,97 @@ export default function CicloEngordaTablaSeccion({
   onReload,
 }) {
   const showSnackbar = useSnackbar();
+  const impresoPor = useNombreImpresion();
   const { visible, toggle, cerrar } = useFormularioVisible();
-  const [busqueda, setBusqueda] = useState("");
   const [editId, setEditId] = useState(null);
   const [formData, setFormData] = useState(() => buildEmptyForm(seccion.fields));
   const [guardando, setGuardando] = useState(false);
+  const [modalExport, setModalExport] = useState({ open: false, formato: "pdf" });
 
-  const filas = useMemo(
-    () => filtrarFilas(rows, busqueda, seccion.searchKeys ?? []),
-    [rows, busqueda, seccion.searchKeys],
+  const filtros = useMemo(() => {
+    const ids = ["busqueda"];
+    if (seccionTieneFecha(seccion)) ids.push("fechas");
+    return ids;
+  }, [seccion]);
+
+  const filtroConfig = useMemo(
+    () => ({
+      busqueda: {
+        keys: seccion.searchKeys ?? [],
+        placeholder: `Buscar en ${seccion.label.toLowerCase()}...`,
+      },
+      fechas: { campo: CAMPO_FECHA },
+    }),
+    [seccion],
   );
 
+  const { valores, setFiltro, filas, filasExportacion } = useFiltrosListado({
+    rows,
+    filtros,
+    config: filtroConfig,
+  });
+
   const exportColumnas = useMemo(() => seccionToExportColumns(seccion), [seccion]);
+
+  const rangoDatosDisponibles = useMemo(
+    () => (filtros.includes("fechas") ? calcularRangoFechas(rows, CAMPO_FECHA) : null),
+    [rows, filtros],
+  );
+
+  const fechasInicialesModal = useMemo(() => {
+    const fechasVista = valores.fechas;
+    if (fechasVista?.desde || fechasVista?.hasta) {
+      return { desde: fechasVista.desde, hasta: fechasVista.hasta };
+    }
+    return { desde: "", hasta: "" };
+  }, [valores.fechas]);
+
+  const contarFilasExportacion = useCallback(
+    (fechasExportacion) => {
+      const filtroFechas = REGISTRO_FILTROS.fechas;
+      if (!filtroFechas) return filasExportacion.length;
+      return filtroFechas.aplicar(filasExportacion, fechasExportacion, filtroConfig.fechas).length;
+    },
+    [filasExportacion, filtroConfig.fechas],
+  );
+
+  const tituloExport = `${seccion.label} — ${cicloLabel ?? cicloId}`;
+  const nombreArchivo = `${seccion.exportNombre}_${cicloLabel ?? cicloId}`;
+
+  const ejecutarExportacion = useCallback(
+    (formato, fechasExportacion) => {
+      const filtroFechas = REGISTRO_FILTROS.fechas;
+      const filasExport = filtroFechas
+        ? filtroFechas.aplicar(filasExportacion, fechasExportacion, filtroConfig.fechas)
+        : filasExportacion;
+
+      const rangoFechas = rangoFechasDesdeSeleccion(fechasExportacion);
+      const opciones = { impresoPor, rangoFechas };
+
+      if (formato === "excel") {
+        exportarTablaExcel({
+          columnas: exportColumnas,
+          filas: filasExport,
+          nombreHoja: seccion.label,
+          nombreArchivo,
+          color: COLOR_EXPORT,
+          ...opciones,
+        });
+      } else {
+        exportarTablaPDF({
+          columnas: exportColumnas,
+          filas: filasExport,
+          titulo: tituloExport,
+          nombreArchivo,
+          color: COLOR_EXPORT,
+          ...opciones,
+        });
+      }
+
+      setModalExport({ open: false, formato: "pdf" });
+    },
+    [exportColumnas, filasExportacion, filtroConfig.fechas, impresoPor, nombreArchivo, seccion.label, tituloExport],
+  );
 
   const resetForm = () => {
     setEditId(null);
@@ -145,33 +236,27 @@ export default function CicloEngordaTablaSeccion({
     }
   };
 
-  const tituloExport = `${seccion.label} — ${cicloLabel ?? cicloId}`;
-
   return (
     <Box>
-      <ListadoToolbar
-        busqueda={busqueda}
-        onBuscar={setBusqueda}
-        placeholder={`Buscar en ${seccion.label.toLowerCase()}...`}
-        exportDisabled={!filas.length}
-        onExportarExcel={() =>
-          exportarTablaExcel({
-            columnas: exportColumnas,
-            filas,
-            nombreHoja: seccion.label,
-            nombreArchivo: `${seccion.exportNombre}_${cicloLabel ?? cicloId}`,
-            color: [0, 77, 115],
-          })
-        }
-        onExportarPDF={() =>
-          exportarTablaPDF({
-            columnas: exportColumnas,
-            filas,
-            titulo: tituloExport,
-            nombreArchivo: `${seccion.exportNombre}_${cicloLabel ?? cicloId}`,
-            color: [0, 77, 115],
-          })
-        }
+      <Paper variant="outlined" sx={{ mb: 2, overflow: "hidden" }}>
+        <ListadoToolbar
+          filtros={filtros}
+          config={filtroConfig}
+          valores={valores}
+          onFiltro={setFiltro}
+          onExportarExcel={() => setModalExport({ open: true, formato: "excel" })}
+          onExportarPDF={() => setModalExport({ open: true, formato: "pdf" })}
+        />
+      </Paper>
+
+      <DialogExportarListado
+        open={modalExport.open}
+        formato={modalExport.formato}
+        fechasIniciales={fechasInicialesModal}
+        onConfirm={(fechasExportacion) => ejecutarExportacion(modalExport.formato, fechasExportacion)}
+        onClose={() => setModalExport((prev) => ({ ...prev, open: false }))}
+        contarFilas={contarFilasExportacion}
+        rangoDatosDisponibles={rangoDatosDisponibles}
       />
 
       <FormularioRegistroPanel
