@@ -69,7 +69,7 @@ const FORM_INICIAL = (ubicacion = "", usuarioId = "") => ({
   usuario_id: usuarioId,
 });
 
-function BitacoraLimpiezaInstalacionesContent() {
+function LimpiezaInstalacionesContent() {
   const showSnackbar = useSnackbar();
   const { usuarioId } = useAuth();
   const {
@@ -447,7 +447,7 @@ function BitacoraLimpiezaInstalacionesContent() {
           columnas,
           titulo: "Registro de Limpieza y Desinfección de Instalaciones",
           subtitulo: "Limpieza y desinfección de instalaciones físicas",
-          nombreArchivo: "Registro_Limpieza_Instalaciones",
+          nombreArchivo: "Limpieza_Instalaciones",
         }}
         getLogo={getLogo}
         getColor={getColor}
@@ -456,6 +456,6 @@ function BitacoraLimpiezaInstalacionesContent() {
   );
 }
 
-export default function BitacoraLimpiezaInstalaciones() {
-  return <BitacoraLimpiezaInstalacionesContent />;
+export default function LimpiezaInstalaciones() {
+  return <LimpiezaInstalacionesContent />;
 }

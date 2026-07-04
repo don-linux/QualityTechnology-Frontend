@@ -38,7 +38,7 @@ const tipoLabel = (t) => {
   return map[String(t).toLowerCase()] || t;
 };
 
-export default function BioBiometrias() {
+export default function Biometrias() {
   const auth = useAuth();
   const usuario_id = auth.usuarioId || "";
   const showSnackbar = useSnackbar();
@@ -500,7 +500,7 @@ export default function BioBiometrias() {
           columnas,
           titulo: "Bitácora de Biometrías",
           subtitulo: "Pesos, organismos muestreados y observaciones",
-          nombreArchivo: "Bitacora_Biometrias",
+          nombreArchivo: "Biometrias",
         }}
         getLogo={getLogo}
         getColor={getColor}

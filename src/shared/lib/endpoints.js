@@ -336,9 +336,9 @@ export const ENDPOINTS = {
       empleados: "/limpieza-instalaciones/empleados",
       byId: (id) => `/limpieza-instalaciones/${id}`,
     },
-    inventario: {
-      base: "/inventario",
-      byId: (id) => `/inventario/${id}`,
+    inventarioAlevines: {
+      base: "/inventario-alevines",
+      byId: (id) => `/inventario-alevines/${id}`,
     },
     mantenimientoEquipoHerramientas: {
       base: "/mantenimiento-equipo-herramientas",

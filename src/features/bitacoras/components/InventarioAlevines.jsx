@@ -8,9 +8,9 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import {
-  listInventario,
-  createInventario,
-  updateInventario,
+  listInventarioAlevines,
+  createInventarioAlevin,
+  updateInventarioAlevin,
 } from "../services/bitacorasService";
 import useFormValidation from "@shared/hooks/useFormValidation";
 import useSnackbar from "@shared/hooks/useSnackbar";
@@ -23,7 +23,7 @@ import TablasPorUbicacionGranja from "@shared/components/TablasPorUbicacionGranj
 import ListadoTabla from "@shared/components/ListadoTabla";
 import { formatFecha } from "@shared/utils/formatters";
 
-function BitacoraInventarioContent() {
+function InventarioAlevinesContent() {
   const { usuarioId } = useAuth();
   const showSnackbar = useSnackbar();
   const { ubicacionesGranja, defaultUbicacion, getLogo, getColor, getGroups } = useUbicacionesGranja();
@@ -56,7 +56,7 @@ function BitacoraInventarioContent() {
 
   const cargarDatos = async () => {
     try {
-      const res = await listInventario();
+      const res = await listInventarioAlevines();
       setData(res.data);
     } catch (err) {
       console.error("Error al cargar inventario:", err.message);
@@ -77,9 +77,9 @@ function BitacoraInventarioContent() {
     if (!validate(form, requiredFields)) return;
     try {
       if (editId)
-        await updateInventario(editId, form);
+        await updateInventarioAlevin(editId, form);
       else
-        await createInventario(form);
+        await createInventarioAlevin(form);
 
       setEditId(null);
       cerrarFormulario();
@@ -282,7 +282,7 @@ function BitacoraInventarioContent() {
           columnas,
           titulo: "Bitácora de Inventario",
           subtitulo: "Control de inventario de alevines, siembras y observaciones",
-          nombreArchivo: "Bitacora_Inventario",
+          nombreArchivo: "Inventario_Alevines",
         }}
         getLogo={getLogo}
         getColor={getColor}
@@ -291,6 +291,6 @@ function BitacoraInventarioContent() {
   );
 }
 
-export default function BitacoraInventario() {
-  return <BitacoraInventarioContent />;
+export default function InventarioAlevines() {
+  return <InventarioAlevinesContent />;
 }

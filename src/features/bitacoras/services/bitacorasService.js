@@ -95,14 +95,14 @@ export function updateLimpiezaInstalacion(id, data) {
 }
 
 /* =====================================================
-   Inventario
+   Inventario de alevines
 ===================================================== */
-export function listInventario() {
-  return axios.get(B.inventario.base);
+export function listInventarioAlevines() {
+  return axios.get(B.inventarioAlevines.base);
 }
-export function createInventario(data) {
-  return axios.post(B.inventario.base, data);
+export function createInventarioAlevin(data) {
+  return axios.post(B.inventarioAlevines.base, data);
 }
-export function updateInventario(id, data) {
-  return axios.put(B.inventario.byId(id), data);
+export function updateInventarioAlevin(id, data) {
+  return axios.put(B.inventarioAlevines.byId(id), data);
 }

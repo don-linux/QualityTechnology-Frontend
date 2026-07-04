@@ -82,6 +82,7 @@ export const MENU_SECTIONS = [
       { to: "/bitacoras/parametros-fisico-quimicos", icon: <Biotech />, label: "Parámetros Físico-Químicos" },
       { to: "/bitacoras/medicamentos", icon: <LocalHospital />, label: "Aplicación de Medicamentos" },
       { to: "/bitacoras/limpieza-instalaciones", icon: <ScienceOutlined />, label: "Limpieza y desinfección de instalaciones" },
+      { to: "/bitacoras/inventario-alevines", icon: <Inventory2Icon />, label: "Inventario de Alevines" },
       { to: "/bitacoras/mantenimiento-equipo-herramientas", icon: <Build />, label: "Mantenimiento de Equipo y Herramientas" },
       { to: "/bitacoras/biometrias", icon: <Science />, label: "Biometrías" },
     ],

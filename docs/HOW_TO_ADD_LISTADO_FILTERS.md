@@ -150,7 +150,7 @@ Bitácoras using `TablasPorUbicacionGranja`:
 | Screen | `filtros` | Notes |
 |--------|-----------|-------|
 | ControlLimpieza | `["busqueda", "fechas"]` | Pilot — full filter set |
-| ParametrosFisicoQuimicos, BitacoraInventario, BioBiometrias, Medicamentos, ControlFaunaNociva, ControlVisitas, BitacoraLimpiezaInstalaciones | `["busqueda"]` | Search only; `filtroConfig.busqueda` per screen |
+| ParametrosFisicoQuimicos, InventarioAlevines, Biometrias, Medicamentos, ControlFaunaNociva, ControlVisitas, LimpiezaInstalaciones | `["busqueda"]` | Search only; `filtroConfig.busqueda` per screen |
 | Insumos | (none) | Export only; flat table |
 | Inventarios (6 screens) | (none) | Unchanged — no filter props |
 
