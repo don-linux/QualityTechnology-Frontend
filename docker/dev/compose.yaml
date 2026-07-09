@@ -1,0 +1,13 @@
+name: ${DOCKER_DEV_NAME}
+
+services:
+  react:
+    build:
+      context: ../../
+      dockerfile: docker/dev/Dockerfile
+    volumes:
+      - ../../:/app
+    ports:
+      - '${DOCKER_DEV_REACT_PORT}:3000'
+    command: bash -c "npm install && npm run dev"
+    init: true
